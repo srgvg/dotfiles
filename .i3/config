@@ -333,15 +333,15 @@ hide_edge_borders none
 
 # new window default border <normal|1pixel|none|pixel> :
 new_window  pixel 2
-new_float   none
+#new_float   pixel 2
 
 ###############################################################################
 #
 ## Window assignments & rules
 #
 
-for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
-for_window [class="(X-terminal-emulator|Terminator)"]   floating disable
+for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
+for_window [class="Gnome-terminal"]                     floating enable,  border pixel 1
 for_window [class="SpiderOak"]                          floating enable
 for_window [class="Gnome-calculator"]                   floating enable
 for_window [class="SparkleShare"]                       floating enable
