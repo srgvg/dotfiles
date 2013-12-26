@@ -331,9 +331,6 @@ force_display_urgency_hint 1000 ms
 # <none|vertical|horizontal|both> :
 hide_edge_borders none
 
-# new window default border <normal|1pixel|none|pixel> :
-new_window  pixel 2
-#new_float   pixel 2
 
 ###############################################################################
 #
@@ -341,12 +338,12 @@ new_window  pixel 2
 #
 
 for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
-for_window [class="Gnome-terminal"]                     floating enable,  border pixel 1
+for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
 for_window [class="SpiderOak"]                          floating enable
 for_window [class="Gnome-calculator"]                   floating enable
 for_window [class="SparkleShare"]                       floating enable
-for_window [class="Nautilus" instance="file_progress"]  floating enable
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable
+for_window [class="Nautilus" instance="file_progress"]  floating enable, border pixel 2
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border pixel 2
 
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="(browser|!GtkFileChooserDialog)"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="(browser|!GtkFileChooserDialog)"]      border none
@@ -359,6 +356,15 @@ assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDia
 
 assign      [class="(Spotify|nuvolaplayer|rhythmbox)"]  →   "10"
 for_window  [class="(Spotify|nuvolaplayer|rhythmbox)"]      layout tabbed
+
+###############################################################################
+#
+## Client default rules, seems to be put after the assignments & rules
+#
+
+# new window default border <normal|1pixel|none|pixel> :
+new_window  pixel 2
+new_float   pixel 1
 
 ###############################################################################
 #
@@ -389,6 +395,7 @@ exec --no-startup-id "launch-screen autocutsel -verbose -debug"
 exec --no-startup-id "gnome-settings-daemon"
 exec --no-startup-id "dispout"
 exec --no-startup-id "setbg"
+exec --no-startup-id "unclutter"
 
 # Desktop Apps
 exec "nm-applet"
