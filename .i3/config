@@ -1,0 +1,416 @@
+# i3 config file (v4)
+#
+# Please see http://i3wm.org/docs/userguide.html for a complete reference!
+#
+# Comments start with a # and can only be used at the beginning of a line.
+
+set $mod Mod4
+
+# mouse settings
+focus_follows_mouse yes
+
+###############################################################################
+#
+## Key command assignments
+#
+# xmodmap -pke
+
+# reload the configuration file
+bindsym $mod+Shift+c reload
+
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r restart
+
+# exit i3 (logs you out of your X session)
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# resize window (you can also use the mouse for that)
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window’s width.
+        # Pressing right will grow the window’s width.
+        # Pressing up will shrink the window’s height.
+        # Pressing down will grow the window’s height.
+        bindsym j resize shrink width 10 px or 10 ppt
+        bindsym k resize grow height 10 px or 10 ppt
+        bindsym l resize shrink height 10 px or 10 ppt
+        bindsym semicolon resize grow width 10 px or 10 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+
+        # back to normal: Enter or Escape
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+# Enter resize mode
+bindsym $mod+Control+r mode "resize"
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# start a terminal
+bindsym $mod+Return exec i3-sensible-terminal
+
+# start a floating terminal
+bindsym $mod+Control+Return exec gnome-terminal
+
+# kill focused window
+bindsym $mod+x kill
+
+#
+## Navigation
+#
+# change focus
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move urp
+bindsym $mod+Shift+semicolon move right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# split in horizontal orientation
+bindsym $mod+h split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Toggle between stacking/tabbed/split:
+#bindsym $mod+z layout toggle
+# Toggle between stacking/tabbed/splith/splitv:
+#bindsym $mod+w layout toggle all
+
+
+# toggle tiling / floating
+#bindsym $mod+Control+space floating toggle
+bindsym $mod+t floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# focus the parent container
+bindsym $mod+Prior focus parent
+
+# focus the child container
+bindsym $mod+Next focus child
+
+# switch to workspace
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+bindsym $mod+0 workspace 10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+
+# start dmenu (a program launcher)
+bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+
+# switch to the next and previous workspace
+bindsym $mod+Control+Left workspace prev
+bindsym $mod+Control+Right workspace next
+
+# Move the current workspace to the next output
+# (effectively toggles when you only have two outputs)
+bindsym $mod+Control+Prior move workspace to output left
+bindsym $mod+Control+Next move workspace to output right
+
+# Make the currently focused window a scratchpad
+bindsym $mod+KP_Subtract move scratchpad
+# Show the first scratchpad window
+bindsym $mod+KP_Add scratchpad show
+
+#
+## launch applications
+#
+
+# start file manager
+bindsym $mod+d exec nautilus
+
+# Screenshot
+bindsym Print exec "~/bin/screengrab"
+
+# Lock Screen / Suspend
+bindsym Pause exec slock
+bindsym $mod+Pause exec lock-suspend
+
+#
+# volume and media controls
+#
+
+bindsym XF86AudioLowerVolume exec --no-startup-id  amixer -q set Master 2dB- unmute && killall -SIGUSR1 i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id  amixer -q set Master 2dB+ unmute && killall -SIGUSR1 i3status
+bindsym XF86AudioMute exec --no-startup-id  amixer -q set Master toggle && killall -SIGUSR1 i3status
+
+bindsym XF86AudioPrev exec --no-startup-id  mediaplayer_cmd prev
+bindsym XF86AudioPlay exec --no-startup-id  mediaplayer_cmd play
+bindsym XF86AudioNext exec --no-startup-id  mediaplayer_cmd next
+bindsym XF86Tools     exec --no-startup-id  mediaplayer_cmd next
+
+###############################################################################
+#
+## Colors, borders, layout, fonts
+#
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below. ISO 10646 = Unicode
+#font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# The font above is very space-efficient, that is, it looks good, sharp and
+# clear in small sizes. However, if you need a lot of unicode glyphs or
+# right-to-left text rendering, you should instead use pango for rendering and
+# chose a FreeType font, such as:
+#font pango:Ubuntu Mono 10
+font pango:DejaVu Sans Mono 10
+
+
+#
+# Client Container Colors
+#
+# color defines
+
+set $background #353535
+set $indicator  #0080FF
+
+# A client which is not the focused one of its container.
+set $border_unfocused   #585858
+set $text_unfocused     #BDBDBD
+
+# A client currently focused in its container, but does not have focus now.
+set $border_inactive    #225588
+set $text_inactive      #BDBDBD
+
+# A client which currently has the focus.
+set $border_focused     #0080FF
+set $text_focused       #FFFFFF
+
+# A client which has its urgency hint activated.
+set $border_urgent      #FF0000
+set $text_urgent        #FFFFFF
+
+## client windows       border              background          text
+client.unfocused        $border_unfocused   $border_unfocused   $text_unfocused
+client.focused_inactive $border_inactive    $border_inactive    $text_inactive
+client.focused          $border_focused     $border_focused     $text_focused
+client.urgent           $border_urgent      $border_urgent      $text_urgent
+
+#
+# status bar
+#
+bar {   id main
+        status_command i3status
+
+        # tray_output <none|primary|output>
+        tray_output primary
+
+        # position <top|bottom>
+        position top
+
+        # mode <dock|hide|invisible>
+        mode dock
+        # hidden_state <hide|show>
+        hidden_state hide
+        # modifier <Modifier>
+        modifier $mod
+
+        # font <font>
+        font pango:DejaVu Sans Mono 10
+        #font pango:Ubuntu Mono 10
+
+        # workspace_buttons <yes|no>
+        workspace_buttons yes
+
+        # binding_mode_indicator <yes|no>
+        # Specifies whether the current binding mode indicator should be shown
+        # or not. This is useful if you want to hide the workspace buttons but
+        # still be able to see the current binding mode indicator.
+        #binding_mode_indicator yes
+
+        colors {
+
+            # Text color to be used for the separator.
+            separator           $border_inactive
+
+            # Background color of the bar.
+            background          $background
+
+            # Text color to be used for the statusline.
+            statusline          $text_inactive
+
+            # workspace button when the workspace does not have focus and is not
+            # active (visible) on any output. This will be the case for most workspaces.
+            inactive_workspace  $border_unfocused $background $text_unfocused $indicator
+
+            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+            active_workspace    $border_inactive  $background $text_inactive  $indicator
+
+            # color for a workspace button when the workspace has focus.
+            focused_workspace   $border_focused   $background $text_focused   $indicator
+
+            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+            urgent_workspace    $border_urgent    $background $text_urgent    $indicator
+
+        }
+}
+
+###############################################################################
+#
+## workspace and window properties
+#
+
+# <default|stacking|tabbed>
+workspace_layout default
+
+# split orientation <horizontal|vertical|auto>
+default_orientation auto
+
+# popup_during_fullscreen <smart|ignore|leave_fullscreen>
+popup_during_fullscreen smart
+
+# force_focus_wrapping <yes|no>
+force_focus_wrapping no
+
+# This configuration directive enables automatic workspace back_and_forth when
+# switching to the workspace that is currently focused.
+workspace_auto_back_and_forth yes
+
+# If an application on another workspace sets an urgency hint, switching to
+# this workspace may lead to immediate focus of the application, which also
+# means the window decoration color would be immediately resetted to
+# client.focused. This may make it unnecessarily hard to tell which window
+# originally raised the event. In order to prevent this, you can tell i3 to
+# delay resetting the urgency state by a certain time using the
+# force_display_urgency_hint directive.
+# Setting the value to 0 disables this feature. The default is 500ms.
+force_display_urgency_hint 1000 ms
+
+# <none|vertical|horizontal|both> :
+hide_edge_borders none
+
+# new window default border <normal|1pixel|none|pixel> :
+new_window  pixel 2
+new_float   none
+
+###############################################################################
+#
+## Window assignments & rules
+#
+
+for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
+for_window [class="(X-terminal-emulator|Terminator)"]   floating disable
+for_window [class="SpiderOak"]                          floating enable
+for_window [class="Gnome-calculator"]                   floating enable
+for_window [class="SparkleShare"]                       floating enable
+for_window [class="Nautilus" instance="file_progress"]  floating enable
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable
+
+assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="(browser|!GtkFileChooserDialog)"]  →   "1"
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="(browser|!GtkFileChooserDialog)"]      border none
+
+assign [window_role="irc"]                          →   "2"
+assign [class="Pidgin"]                             →   "2"
+assign [class="jetbrains-idea"]                     →   "5"
+assign [class="Update-manager|Update-notifier"]     →   "9"
+assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "9"
+
+assign      [class="(Spotify|nuvolaplayer|rhythmbox)"]  →   "10"
+for_window  [class="(Spotify|nuvolaplayer|rhythmbox)"]      layout tabbed
+
+###############################################################################
+#
+## startup
+#
+
+#
+## osd notifications
+#
+### http://askubuntu.com/questions/128474/how-to-customize-on-screen-notifications
+### https://launchpad.net/~leolik/+archive/leolik
+# sudo add-apt-repository ppa:leolik/leolik
+# sudo add-apt-repository ppa:nilarimogard/webupd8
+# sudo apt-get update
+# sudo apt-get upgrade
+# sudo apt-get install libnotify-bin notifyosdconfig
+# pkill notify-osd
+#exec --no-startup-id "launch-screen /usr/lib/x86_64-linux-gnu/notify-osd"
+## config:  NotifyOSDConfiguration
+#
+exec --no-startup-id "launch-screen dunst -print"
+## to test: notify-send --icon=gtk-info Test "This is a test"
+
+# Background stuff
+exec --no-startup-id "launch-screen spotify-notify.py -ms"
+exec --no-startup-id "launch-screen xcompmgr -cf"
+exec --no-startup-id "launch-screen autocutsel -verbose -debug"
+exec --no-startup-id "gnome-settings-daemon"
+exec --no-startup-id "dispout"
+exec --no-startup-id "setbg"
+
+# Desktop Apps
+exec "nm-applet"
+exec "gnome-sound-applet"
+exec "xfce4-power-manager"
+exec "remmina -i"
+exec "dropbox start"
+exec "ownloud"
+exec "SpiderOak"
+exec "transmission-gtk --minimized"
+exec "pidgin"
+exec "ircwindow"
+exec "google-chrome"
+
+exec "spotify"
+exec "nuvolaplayer"
+
+# exec_always
+
+###############################################################################
+#
+## misc
+#
+
+
