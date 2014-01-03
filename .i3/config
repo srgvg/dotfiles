@@ -171,6 +171,7 @@ bindsym $mod+KP_Add scratchpad show
 # start some tools
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nautilus
+bindsym $mod+Control+c exec gnome-terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 
 # Screenshot
 bindsym Print exec "~/bin/screengrab"
@@ -426,7 +427,37 @@ exec "spotify"
 
 ###############################################################################
 #
-## misc
+## mouse buttons
 #
 
+## http://wiki.birth-online.de/know-how/hardware/evoluent-verticalmouse
+# Index finger button   1
+# Wheel button          2
+# Ring finger button    3
+# Wheel up              4
+# Wheel down            5
+# Middle finger button  8
+# Thumb button          9
+
+exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
+
+## http://wiki.birth-online.de/know-how/software/linux/remapping-mousebuttons
+#
+# 1  Left click
+# 2  Middle click
+# 3  Right click
+# 4  Wheel up
+# 5  Wheel down
+# 6  Wheel left
+# 7  Wheel right
+# 8  Thumb1
+# 9  Thumb2
+# 10 ExtBt7
+# 11 ExtBt8
+
+
+###############################################################################
+#
+## misc
+#
 
