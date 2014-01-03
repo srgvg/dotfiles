@@ -114,8 +114,8 @@ export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
 alias diff='diff -u'
-
 alias go='xdg-open'
+alias v="vcsh"
 
 alias as='apt-cache search'
 alias ash='apt-cache show'
