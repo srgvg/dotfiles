@@ -357,6 +357,7 @@ for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border 
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"]      border none
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="pop-up"]       floating enable
+for_window  [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]    floating enable
 
 assign [window_role="irc"]                          →   "2"
 assign [class="Pidgin"]                             →   "2"
