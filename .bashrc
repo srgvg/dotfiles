@@ -102,6 +102,10 @@ fi
 if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
+# set PATH so it includes user's private sbin if it exists
+if [ -d "$HOME/sbin" ] ; then
+    PATH="$HOME/sbin:$PATH"
+fi
 
 #####################
 ## my custom stuff ##
