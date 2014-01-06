@@ -139,9 +139,6 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias copy='xclip -in -selection c'
 alias paste='xclip -out -selection c'
 
-alias a='ansible'
-alias ab='ansible-playbook'
-
 # git shortcuts
 alias g='git'
 alias gd='git diff'
@@ -153,8 +150,12 @@ alias gl='git lola'
 alias gu='git up'
 alias gps='git svn rebase && git svn dcommit'
 
-# milieuinfo
+# ansible
+alias a='ansible'
+alias ab='ansible-playbook'
+alias ahack='. ~/src/ansible/hacking/env-setup'
 
+# milieuinfo
 alias acdplay="bin/acdplay"
 alias acdplaybook="ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
 
