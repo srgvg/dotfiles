@@ -123,6 +123,7 @@ alias ai='sudo aptitude install'
 alias aud='sudo aptitude update'
 alias aug='sudo aptitude upgrade'
 alias auu='au ; asu'
+alias dL='dpkg -L'
 
 alias swappy="/sbin/sysctl vm.swappiness"
 alias sysl="tail -f /var/log/syslog"
