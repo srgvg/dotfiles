@@ -402,9 +402,11 @@ exec --no-startup-id "launch-screen dunst -print"
 ## to test: notify-send --icon=gtk-info Test "This is a test"
 
 # Background stuff
-exec --no-startup-id "launch-screen spotify-notify.py -ms"
-exec --no-startup-id "launch-screen xcompmgr -cf"
-exec --no-startup-id "launch-screen autocutsel -verbose -debug"
+exec --no-startup-id "spotify-notify.py -ms"
+exec --no-startup-id "xcompmgr -cf"
+# running only one autocutsel instance doesn't always sync
+exec --no-startup-id "autocutsel -selection PRIMARY"
+exec --no-startup-id "autocutsel -selection CLIPBOARD"
 exec --no-startup-id "gnome-settings-daemon"
 exec --no-startup-id "dispout"
 exec --no-startup-id "setbg"
