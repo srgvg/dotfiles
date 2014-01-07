@@ -3,7 +3,10 @@
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 #
 # Comments start with a # and can only be used at the beginning of a line.
-
+#
+###############################################################################
+#
+#
 set $mod Mod4
 
 # mouse settings
@@ -356,6 +359,7 @@ for_window [class="Gnome-calculator"]                   floating enable
 for_window [class="SparkleShare"]                       floating enable
 for_window [class="Nautilus" instance="file_progress"]  floating enable, border pixel 2
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border none
+for_window [class="Remmina" instance="remmina" title="Remmina Remote Desktop Client"] floating enable
 
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"]      border none
@@ -431,6 +435,8 @@ exec "sparkleshare start"
 exec "spotify"
 #exec "nuvolaplayer"
 
+#exec --no-startup-id "xcompmgr -cf"
+exec --no-startup-id "unagi"
 # exec_always
 
 ###############################################################################
