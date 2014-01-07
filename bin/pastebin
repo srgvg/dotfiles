@@ -1,0 +1,31 @@
+#!/bin/bash
+
+args="$*"
+
+execute_commands()
+{
+        echo
+        export IFS=";"
+        for command in ${args}
+	    do
+            echo \$ $command
+            echo
+            eval $command 
+            echo
+        done
+}
+
+if [ -z "${args}" ]
+then
+	/usr/bin/pastebinit
+
+elif [ "$(basename $0)" = "execho" ]
+then
+        execute_commands
+
+else
+    execute_commands 2>&1 | tee >(/usr/bin/pastebinit)
+    echo
+    sleep 1
+fi
+

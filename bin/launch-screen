@@ -1,0 +1,15 @@
+#!/bin/bash
+
+name=$1
+command=$*
+
+if screen -list | grep "\.${name}" > /dev/null
+then
+    screen -Rx ${name}
+else
+    screen -S ${name} -t ${name} -d -m ${command}
+    echo 'Created new session.'
+    screen -list
+fi
+exit 0
+

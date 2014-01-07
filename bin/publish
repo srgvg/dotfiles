@@ -1,0 +1,21 @@
+#!/bin/sh
+
+publoc=~/Dropbox/Public
+file="$1"
+pubfile="${publoc}/$(basename "${file}")"
+
+if [ ! -f "${file}" ]
+then	echo File  \'${file}\' not found
+	exit 1
+fi
+
+cp "${file}" "${publoc}"
+    dropbox puburl "${pubfile}"| tr -d '\n' | xclip -in -selection clipboard
+echo "'${pubfile}' => $(dropbox puburl "${pubfile}")" && (
+    while	(dropbox filestatus "${pubfile}" | grep syncing)
+    do	sleep 3
+    done
+    notify-send --category=transfer.complete \
+                --urgency=low --icon=gtk-info \
+                "Dropbox file $file published" "uploaded, url copied"
+    ) || echo "Dropbox error"

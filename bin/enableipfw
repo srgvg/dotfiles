@@ -1,0 +1,2 @@
+[ "$1" = 0 ] && action=0 || action=1
+sudo sysctl net.ipv4.ip_forward=$action

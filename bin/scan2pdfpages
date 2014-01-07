@@ -1,0 +1,45 @@
+#!/bin/sh
+#set -x
+
+TEMP=scan.pdf
+OUTPUT=$(date +%Y%m%d)-scan$(date +%H%M).pdf
+
+cd ~/Downloads
+
+#scan a batch
+scanimage --device="brother2:net1;dev0" --batch --format tiff --resolution 150 -x 210 -y 297 --batch
+tiffs=$(ls out*.tif)
+
+for tiff in $tiffs
+do
+    tiffname=${tiff%.tif}
+    num=${tiffname#out}
+    ps=scan${num}.ps
+
+    #convert all the raw files to 1 postscript
+    convert -density 150 $tiff $ps
+
+    #remove raw scan files
+    rm $tiff
+
+    #convert the postscript to pdf
+    ps2pdf -sPAPERSIZE=a4 $ps $TEMP 
+
+    #set pdf meta info and security
+    cat <<-EOF | pdftk $TEMP update_info - output $OUTPUT 
+InfoKey: Title
+InfoValue: $OUTPUT
+InfoKey: Subject
+InfoValue: Scanned page
+InfoKey: Author
+InfoValue: Serge van Ginderachter
+InfoKey: Keywords
+InfoValue: scanned $(date +%Y%m%d) 
+EOF
+
+    #remove temp files
+    rm $ps
+    rm $TEMP
+done
+
+sleep 1

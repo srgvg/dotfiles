@@ -1,0 +1,4 @@
+#!/bin/sh
+proxy=$1
+shift
+ssh -o Proxycommand="ssh $proxy nc %h %p" $*

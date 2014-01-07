@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# apt-get install python-stdeb python-all-dev
+python setup.py --command-packages=stdeb.command bdist_deb
+

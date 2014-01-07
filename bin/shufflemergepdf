@@ -1,0 +1,18 @@
+#!/bin/bash
+FILENAME=$(date +%Y%m%d%H%M%S)-${1%.*}-shufflemerged.pdf
+pdftk A=$1 B=$2 shuffle A1-end Bend-1 output $FILENAME.tmp
+cat <<EOF | pdftk $FILENAME.tmp update_info - output $FILENAME 
+InfoKey: Title
+InfoValue: ${1%.*}
+InfoKey: Subject
+InfoValue: Merged PDF
+InfoKey: Author
+InfoValue: Ginsys - Serge van Ginderachter
+InfoKey: Keywords
+InfoValue: $*
+EOF
+rm $FILENAME.tmp
+
+# PDF simplex to duplex merge
+# pdftk A=odd.pdf B=even.pdf shuffle A1-end Bend-1S output duplex.pdf
+

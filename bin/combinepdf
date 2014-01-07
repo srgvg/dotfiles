@@ -1,0 +1,18 @@
+#!/bin/sh
+
+FILENAME=$(date +%Y%m%d-%H%M)-combined.pdf
+pdftk $1 burst output page-%02d-a.pdf
+pdftk $2 burst output page-%02d-b.pdf
+pdftk page-*.pdf cat output $FILENAME.tmp
+cat <<EOF | pdftk $FILENAME.tmp update_info - output $FILENAME
+InfoKey: Title
+InfoValue: $*
+InfoKey: Subject
+InfoValue: Combined PDF
+InfoKey: Author
+InfoValue: $USER
+InfoKey: Keywords
+InfoValue: $*
+EOF
+rm $FILENAME.tmp page-*.pdf doc_data.txt
+

@@ -1,0 +1,16 @@
+#!/bin/bash -x
+
+sleep 1
+imagefile="$HOME/Downloads/$(date +%Y%m%d%H%M%S).png"
+
+if /usr/bin/scrot --select ${imagefile}
+then
+    notify-send --category=transfer.complete \
+        --urgency=low --icon=gtk-info \
+        "Screen grabbed" "saved to ${imagefile}"
+    echo -n ${imagefile} | xclip -in -selection clipboard
+else
+    notify-send --category=transfer.error \
+        --urgency=critical --icon=gtk-info \
+        "Screen grab  error" "tried saving to ${imagefile}"
+fi

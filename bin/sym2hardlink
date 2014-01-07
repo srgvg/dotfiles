@@ -1,0 +1,15 @@
+#!/bin/sh
+
+symlink=$1
+target=$(readlink $symlink)
+[ -d $target ] && { echo no hardlinks on directories!; exit ;}
+
+rm $symlink
+ln $target $(dirname $symlink) || ln -s $target $(dirname $symlink)
+
+
+
+
+
+
+

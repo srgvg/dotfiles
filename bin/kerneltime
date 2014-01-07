@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ ! -z "$1" ]
+then	kerneltime=$1
+else 	echo "No timestamp given." >&2
+	exit 1
+fi
+
+# http://serverfault.com/questions/366392/how-to-convert-dmesg-time-format-to-real-time-format
+date -d"70-1-1 + $(date +%s) sec - $(cut -d' ' -f1 </proc/uptime) sec + $kerneltime sec" +"%F %T"
+

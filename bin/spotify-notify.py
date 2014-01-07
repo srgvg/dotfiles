@@ -1,0 +1,1 @@
+/home/serge/src/spotify-notify/spotify-notify.py

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+pwgen='/usr/bin/pwgen -N1'
+
+case $1 in
+    nor*)
+        [ -z $2 ] && L=30 || L=$2
+        pass=`$pwgen -Bcn $L 1`
+        msg="iquite secure, $L character length"
+        ;;
+    hi*)
+        [ -z $2 ] && L=50 || L=$2
+        pass=`$pwgen -cnys $L 1`
+        msg="very secure, $L character length"
+        ;;
+    xkcd)
+        [ -z $2 ] && L=4 || L=$2
+        # http://xkcd.com/936/
+        pass=`shuf -n$L /usr/share/dict/words | tr -d '\n' | tr -d \' `
+        msg="XKCD secure, $L word length"
+        ;;
+    *)
+        pass=`$pwgen $*`
+        msg="default settings"
+        ;;
+esac
+
+echo -n $pass | xclip -in -selection clipboard
+notify-send --category=transfer.complete \
+            --urgency=critical --icon=gtk-info \
+            "Password copied to clipboard" "$msg"
+echo "Password copied to clipboard ($msg)"
+

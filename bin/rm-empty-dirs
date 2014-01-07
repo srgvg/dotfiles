@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "$1" = "do" ]
+then    # act
+        find . -type d -empty | xargs rmdir --verbose 
+else    # no act
+        find . -type d -empty
+fi

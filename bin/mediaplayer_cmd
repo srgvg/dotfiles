@@ -1,0 +1,97 @@
+#!/bin/bash
+
+nuvola=$(pidof nuvolaplayer)
+spotify=$(pidof spotify)
+action=$1
+
+# nuvolaplayer gets priority
+if [ -z "$spotify" -a \
+     -z "$nuvola" ]     ; then
+    echo "No running mediaplayer found."
+elif [ ! -z "$nuvola" ]; then
+    player="nuvola"
+elif [ ! -z "$spotify" ]; then
+    player="spotify"
+fi
+
+case "${player}=${action}" in
+    # PLAY
+    "spotify=play")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+           /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause
+        ;;
+    "nuvola=play")
+        nuvolaplayer-client toggle
+        ;;
+
+    # NEXT
+    "spotify=next")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next
+        ;;
+    "nuvola=next")
+        nuvolaplayer-client next
+        ;;
+
+    # PREV
+    "spotify=prev")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous
+        ;;
+    "nuvola=prev")
+        nuvolaplayer-client prev
+        ;;
+
+    # TITLE
+    "spotify=getTitle")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
+            string:'org.mpris.MediaPlayer2.Player' string:'Metadata' | \
+            egrep -A 1 "title" | egrep -v "title" | cut -b 44- | \
+            cut -d '"' -f 1 | egrep -v ^$
+        ;;
+    "nuvola=getTitle")
+        nuvolaplayer-client status | grep '^Song' | cut -d\  -f2-
+        ;;
+
+    # ARTIST
+    "spotify=getArtist")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
+            string:'org.mpris.MediaPlayer2.Player' \
+            string:'Metadata' | egrep -A 2 "artist" | egrep -v "artist" | \
+            egrep -v "array"|cut -b 27-|cut -d '"' -f 1|egrep -v ^$
+        ;;
+    "nuvola=getArtist")
+        nuvolaplayer-client status | grep '^Artist' | cut -d\  -f2-
+        ;;
+
+    # ALBUM
+    "spotify=getAlbum")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
+            string:'org.mpris.MediaPlayer2.Player' string:'Metadata' | \
+            egrep -A 2 "album" | egrep -v "album" | egrep -v "array" | \
+            cut -b 44-|cut -d '"' -f 1|egrep -v ^$
+        ;;
+    "nuvola=getAlbum")
+        nuvolaplayer-client status | grep '^Album' | cut -d\  -f2-
+        ;;
+
+    # STATUS
+    "spotify=getStatus")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+            /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
+            string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus' | \
+            grep 'string "[^"]*"'|sed 's/.*"\(.*\)"[^"]*$/\1/'
+        ;;
+    "nuvola=getStatus")
+        nuvolaplayer-client status | grep '^Status' | cut -d\  -f2-
+        ;;
+
+    # No player and/or no action
+    *)
+        echo "$0 [play|next|prev|getTitle|getArtist|getAlbum|getStatus]"
+        ;;
+esac
+

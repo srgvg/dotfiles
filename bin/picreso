@@ -1,0 +1,16 @@
+#!/bin/bash
+
+[ -r "$1" ] || exit
+
+reso=$(identify -format "%w %h" "$1" 2> /dev/null)
+[ "$?" = 0 ] || exit
+
+w=${reso%%\ *}
+h=${reso##*\ }
+mp=$(expr $w \* $h / 1000)
+
+printf '%6s' $mp
+printf '%3s' "M  "
+printf '%12s' ${w}x${h}" "
+identify "$1"
+

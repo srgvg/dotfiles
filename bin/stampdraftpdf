@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ -z "$1" -o ! "${1##*.}" = "pdf" -a ! "${1##*.}" = "PDF" ]
+        then # first parameter is empty or no pdf extension
+                echo "Usage: $0 input.pdf"
+                exit
+        fi
+
+if [ ! -e $(which ps2pdf) ]
+        then echo "ps2pdf not installed"
+        exit
+        fi
+
+INPUTPDF=$1
+OUTPUTPDF=${1%.*}.draft.pdf
+shift
+
+pdftk $INPUTPDF stamp ~/Templates/DRAFT-Watermark.pdf output $OUTPUTPDF
+
+

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+convert -size 800x120 xc:white \
+        -font Times-Roman \
+        -pointsize 100 \
+        -fill gray \
+        -annotate +20+80 "$*" \
+        -fill black -annotate +23+83 "$*" \
+        -trim  +repage \
+        logo.png

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for md in $(grep ^md /proc/mdstat | cut -d: -f1)
+do 
+    sudo mdadm --detail /dev/$md
+done | grep -e dev -e Level -e Devices

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+[ -z $1 ] && echo Need crypttab name && exit 1
+cryptdisk=$1
+shift
+
+sudo cryptdisks_start $cryptdisk || exit 1
+udisksctl mount -b /dev/mapper/$cryptdisk 2>&1 | grep -v -e GDBus.Error:org.freedesktop.UDisks2.Error.AlreadyMounted: || exit 1
+
+[ -z $* ] && exit
+
+echo \$ $*
+$*
+
+udisksctl unmount -b /dev/mapper/$cryptdisk
+sudo cryptdisks_stop $cryptdisk

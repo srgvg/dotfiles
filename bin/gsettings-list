@@ -1,0 +1,15 @@
+#!/bin/sh
+
+schemalist=$(gsettings list-schemas|sort )
+
+for s in ${schemalist}
+    do
+    keylist=$(gsettings list-keys $s|sort)
+    echo $s
+    for k in ${keylist}
+        do
+        echo " $k = $(gsettings get $s $k)"
+        done
+    echo
+    done
+

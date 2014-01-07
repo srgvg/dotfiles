@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# Adapted from http://pebblesinthesand.wordpress.com/2008/05/22/a-srcipt-for-running-processes-in-parallel-in-bash/
+# extended with the -j 0 option 
+
+NUM=0
+QUEUE=""
+MAX_NPROC=0 # default
+REPLACE_CMD=0 # no replacement by default
+USAGE="A simple wrapper for running processes in parallel.
+Usage: `basename $0` [-h] [-r] [-j nb_jobs] command arg_list
+ 	-h		Shows this help
+	-r		Replace asterix * in the command string with argument
+	-j nb_jobs 	Set number of simultaneous jobs [0]
+			When set to zero (default) the number of simultaneous 
+			jobs will be set to the number of arguments.
+ Examples:
+ 	`basename $0` somecommand arg1 arg2 arg3
+ 	`basename $0` -j 3 \"somecommand -r -p\" arg1 arg2 arg3
+ 	`basename $0` -j 6 -r \"convert -scale 50% * small/small_*\" *.jpg"
+
+function queue {
+	# parameter $1 is a PID
+	# just ad PID on a stack and increase the count
+	QUEUE="$QUEUE $1"
+	echo "Adding proces command \"$(cat /proc/${PID}/cmdline | xargs -0 echo -n)\" with PID $PID to the queue."
+	NUM=$(($NUM+1))
+}
+
+function regeneratequeue {
+	# check all PID's on the queue to see if they are still alive, and only keep those still running on the stack
+	OLDREQUEUE=$QUEUE
+	QUEUE=""
+	NUM=0
+	for PID in $OLDREQUEUE
+	do
+		if [ -d /proc/$PID  ] ; then
+			QUEUE="$QUEUE $PID"
+			NUM=$(($NUM+1))
+		fi
+	done
+}
+
+function checkqueue {
+	# check all PID's on the queue to see if they are still alive, and if not, regenerate the queue
+	for PID in $QUEUE
+	do
+		if [ ! -d /proc/$PID ]
+		then
+			echo "Process $PID just terminated, and maybe more."
+			# but maybe more processes also finished, so 
+			regeneratequeue
+			break
+		fi
+	done
+}
+
+# parse command line
+if [ $# -eq 0 ]; then #  must be at least one arg
+	echo "$USAGE" >&2
+	exit 3
+fi
+
+while getopts j:rh OPT; do # "j:" waits for an argument "h" doesnt
+    case $OPT in
+	h)	echo "$USAGE"
+		exit 0 ;;
+	j)	MAX_NPROC=$OPTARG ;;
+	r)	REPLACE_CMD=1 ;;
+	\?)	# getopts issues an error message
+		echo "$USAGE" >&2
+		exit 1 ;;
+    esac
+done
+
+# Main program
+shift `expr $OPTIND - 1` # shift input args, ignore processed args
+COMMAND=$1
+shift
+
+if [ "$MAX_NPROC" = 0 ]; then
+	for INS in $* # for the rest of the arguments
+	do	MAX_NPROC=$((MAX_NPROC+1))
+	done
+fi
+
+echo Using $MAX_NPROC parallel threads
+
+for INS in $* # for the rest of the arguments
+do
+	# DEFINE COMMAND
+	if [ $REPLACE_CMD -eq 1 ]; then
+		CMD=${COMMAND//"*"/$INS}
+	else
+		CMD="$COMMAND $INS" #append args
+	fi
+	# DEFINE COMMAND END
+	eval "$CMD &"
+	PID=$!
+	queue $PID
+
+	while [ $NUM -ge $MAX_NPROC ]; do
+		[ $(date +%S) = 00 ] && \
+			( echo -n $(date +%H%M) "The $NUM running processe(s) are:" $QUEUE ; echo -n " - Last command was : " ; \
+			( [ -f /proc/${PID}/cmdline ] && cat /proc/${PID}/cmdline | xargs -0 echo -n ) ; echo )
+		# check all running PID's on the queue to see 
+		# if they are still alive, 
+		# and if not, regenerate the queue which will lower $NUM
+		checkqueue
+		sleep 1 #0.4
+	done
+done
+echo
+echo Loop done, now we still wait for $QUEUE
+echo
+for PID in $QUEUE
+do	[ ! -d /proc/$PID ] && (echo -n PID $PID : ; [ -f /proc/${PID}/cmdline ] && cat /proc/${PID}/cmdline | xargs -0 echo -n ; echo )
+done
+echo
+wait $QUEUE # wait for all processes to finish before exit
+

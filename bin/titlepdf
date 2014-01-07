@@ -1,0 +1,70 @@
+#! /bin/bash
+
+if [ -z "$1" ]
+	then # first parameter is empty, we didn't get any parameters
+		echo "Usage: $0 [ output.pdf ] "title" [ "subtitle" ] "
+		exit
+	fi
+OUTPUT=""
+
+if [ -z "$2" ]
+	then # one parameter only, should be title
+		TITLE="$1"
+		SUBTITLE="$2"
+	else # we have at two parameters, maybe three, but the third is anyway the subtitle which may be empty
+		if [ "${1##*.}" = "pdf" -o "${1##*.}" = "PDF" ]
+			then # first parameter is pdf filename  - this is the most usual case
+				OUTPUT=${1%.*}
+				TITLE="$2"
+				SUBTITLE="$3"  # we don't care if the third parameter empty
+			else # first parameter is title, second is subtitle
+				TITLE="$1"
+				SUBTITLE="$2"
+			fi
+	fi
+
+if [ ! -e $(which ps2pdf) ]
+	then echo "ps2pdf not installed"
+	exit
+	fi
+
+if  [ -z "$OUTPUT"  ]
+	then 
+		OUTPUT=$(date +%Y%m%d-%H%M)-$(echo $TITLE | sed s/\ /_/g)-$(echo $SUBTITLE | sed s/\ /_/g)
+	fi
+
+if [ -e $OUTPUT.pdf ]
+	then rm $OUTPUT.pdf
+	fi
+
+if [ -e $OUTPUT.ps ]
+        then rm $OUTPUT.ps
+        fi
+
+cat >> $OUTPUT.ps << EOF
+%!PS-Adobe-3.0
+%%BoundingBox: 0 0 596 842
+%%Pages: 1
+%%EndComments
+/PageSize [ 612 792 ]
+/w 596 def
+/h 842 def
+
+/Helvetica-Bold findfont 48 scalefont setfont
+
+80 500 moveto ($TITLE) show
+
+/Helvetica-Bold findfont 36 scalefont setfont
+80 400 moveto ($SUBTITLE) show
+
+showpage
+
+%%trailer
+%%EOF
+EOF
+
+#psresize  -Pletter -pA4 $OUTPUT.ps r$OUTPUT.ps
+#mv r$OUTPUT.ps $OUTPUT.ps
+ps2pdf -sPAPERSIZE=a4 $OUTPUT.ps $OUTPUT.pdf
+rm $OUTPUT.ps
+

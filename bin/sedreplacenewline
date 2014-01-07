@@ -1,0 +1,8 @@
+#sed ':a;N;$!ba;s/\n/ /g'
+
+#create a register via :a
+#append the current and next line to the register via N
+#if we are before the last line, branch to the created register $!ba (`$! means not to do it on the last line (as there should be one final newline)).
+#finally the substitution replaces every newline with a space on the pattern space (which is the contents of the a register = the whole file.
+
+sed ':a;N;s/\n/ /g'

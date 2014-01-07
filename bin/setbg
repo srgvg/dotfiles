@@ -1,0 +1,41 @@
+#! /bin/bash -e
+
+# File locations
+tmp=/tmp/filelist.log
+defaultbg=~/.background.png
+target=${1}
+
+
+if [ ! -z "${target}" -a ! -r "${target}" ]
+then
+    target=~/Pictures/${target}
+fi
+
+if [ -z "${target}" ]
+then
+    background=${defaultbg}
+elif [ -d "${target}" ]
+then
+    [ -d "${target}" ] && pictures="${target}"
+    # Create a temporary logfile of all matches
+    find -L ${pictures} -maxdepth 2 -iregex ".*.jpg" > ${tmp}
+
+    # Choose a random line number (any number from 1 to the length of the file)
+    LowerBound=1
+    RandomMax=32767
+    UpperBound=$(cat ${tmp} | wc -l)
+    RandomLine=$(( $LowerBound + ($UpperBound * $RANDOM) / ($RandomMax + 1) ))
+
+    # Use sed to grab the random line
+    background=$(sed -n "$RandomLine{p;q;}" "${tmp}")
+elif [ -r "${target}" ]
+then
+    background="${target}"
+else
+    exit 1
+fi
+
+[ ! "${background}" = "${defaultbg}" ] \
+    && ln -nfs "${background}" "${defaultbg}"
+echo `readlink ${background}`
+feh --no-fehbg --bg-fill ${defaultbg}

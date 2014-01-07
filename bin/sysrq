@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo 1 > /proc/sys/kernel/sysrq
+for i in s u b 
+do
+        echo $i > /proc/sysrq-trigger
+done

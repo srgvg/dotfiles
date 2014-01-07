@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for FILENAME in $1
+do
+	pdftk $* cat output $FILENAME.tmp
+	cat <<EOF |  pdftk $FILENAME.tmp update_info - output $FILENAME 
+InfoKey: Title
+InfoValue: ${FILENAME%.*}
+EOF
+	rm $FILENAME.tmp
+done

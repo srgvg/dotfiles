@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export GIT_EDITOR="sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'"
+git rebase -i HEAD~2

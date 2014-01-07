@@ -1,0 +1,13 @@
+#!/bin/sh
+
+PDF=$1
+Author=$(pdfinfo $PDF | grep Author | cut -c17- )
+Subject=$(pdfinfo $PDF | grep Subject | cut -c17- )
+NUMP=$(pdfinfo $PDF | grep Pages | cut -c17- )
+
+for page in $( seq 1 $NUMP)
+do
+	pdftk $PDF cat $page output ${PDF%.*}-$page.${PDF##*.} 
+done
+
+
