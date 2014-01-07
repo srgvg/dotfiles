@@ -35,7 +35,8 @@ else
     exit 1
 fi
 
-[ ! "${background}" = "${defaultbg}" ] \
-    && ln -nfs "${background}" "${defaultbg}"
-echo `readlink ${background}`
+[ ! "${background}" = "${defaultbg}" ] && (
+    background=`readlink -e ${background}`
+    ln -nfs "${background}" "${defaultbg}")
+echo ${background}
 feh --no-fehbg --bg-fill ${defaultbg}
