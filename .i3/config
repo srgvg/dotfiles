@@ -414,7 +414,6 @@ exec --no-startup-id "xcompmgr -cf"
 # running only one autocutsel instance doesn't always sync
 exec --no-startup-id "autocutsel -selection PRIMARY"
 exec --no-startup-id "autocutsel -selection CLIPBOARD"
-exec --no-startup-id "xdisp"
 #exec --no-startup-id "gnome-settings-daemon"
 exec --no-startup-id "setbg"
 exec --no-startup-id "unclutter"
@@ -434,10 +433,10 @@ exec "google-chrome"
 exec "sparkleshare start"
 exec "spotify"
 #exec "nuvolaplayer"
-
-#exec --no-startup-id "xcompmgr -cf"
 exec --no-startup-id "unagi"
+
 # exec_always
+exec_always --no-startup-id "xdisp"
 
 ###############################################################################
 #

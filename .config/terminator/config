@@ -9,7 +9,7 @@
   borderless = True
   enabled_plugins = InactivityWatch, TestPlugin, ActivityWatch, TerminalShot, LaunchpadCodeURLHandler, APTURLHandler, LaunchpadBugURLHandler
   title_transmit_bg_color = "#999999"
-  inactive_color_offset = 1.0
+  inactive_color_offset = 0.9
   title_inactive_bg_color = "#666666"
 [keybindings]
   hide_window = None
@@ -32,6 +32,7 @@
       type = Terminal
       parent = window0
       profile = default
+      command = ""
     [[[window0]]]
       type = Window
       parent = ""

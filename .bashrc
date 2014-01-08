@@ -156,8 +156,8 @@ alias ab='ansible-playbook'
 alias ahack='. ~/src/ansible/hacking/env-setup'
 
 # milieuinfo
-alias acdplay="bin/acdplay"
-alias acdplaybook="ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
+alias acdplay="cd ~/acd; bin/acdplay"
+alias acdplaybook="cd ~/acd; ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
 
 
 # make a dir and change to it
