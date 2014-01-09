@@ -394,27 +394,12 @@ new_float   pixel 1
 #
 ## osd notifications
 #
-### http://askubuntu.com/questions/128474/how-to-customize-on-screen-notifications
-### https://launchpad.net/~leolik/+archive/leolik
-# sudo add-apt-repository ppa:leolik/leolik
-# sudo add-apt-repository ppa:nilarimogard/webupd8
-# sudo apt-get update
-# sudo apt-get upgrade
-# sudo apt-get install libnotify-bin notifyosdconfig
-# pkill notify-osd
-#exec --no-startup-id "launch-screen /usr/lib/x86_64-linux-gnu/notify-osd"
-## config:  NotifyOSDConfiguration
-#
 exec --no-startup-id "launch-screen dunst -print"
-## to test: notify-send --icon=gtk-info Test "This is a test"
 
 # Background stuff
 exec --no-startup-id "spotify-notify.py -ms"
 exec --no-startup-id "xcompmgr -cf"
-# running only one autocutsel instance doesn't always sync
-exec --no-startup-id "autocutsel -selection PRIMARY"
 exec --no-startup-id "autocutsel -selection CLIPBOARD"
-#exec --no-startup-id "gnome-settings-daemon"
 exec --no-startup-id "setbg"
 exec --no-startup-id "unclutter"
 
