@@ -1,8 +1,22 @@
 #!/bin/sh
 
-if [ "$1" = "do" ]
+if [ x"$1" = xdo ]
+then
+    dir='.'
+    act=do
+elif [ x$2 = xdo ]
+then
+    dir="$1"
+    act="do"
+fi
+
+if [ x$act = "do" ]
 then    # act
-        find . -type d -empty | xargs rmdir --verbose 
+        find . -type d -empty | xargs rmdir --verbose
 else    # no act
+        echo 'Directories that would be deleted:'
+        echo
         find . -type d -empty
+        echo
+        echo 'Execute "'$0 $1 do'" to delete them.'
 fi
