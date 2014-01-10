@@ -1,0 +1,18 @@
+# http://www.freedesktop.org/wiki/Specifications/mime-actions-spec/
+# https://wiki.archlinux.org/index.php/Default_Applications
+
+[Default Applications]
+x-scheme-handler/http=chromium-browser.desktop
+x-scheme-handler/https=chromium-browser.desktop
+x-scheme-handler/about=chromium-browser.desktop
+x-scheme-handler/unknown=chromium-browser.desktop
+x-scheme-handler/mailto=chromium-browser.desktop
+x-scheme-handler/webcal=chromium-browser.desktop
+x-scheme-handler/ftp=chromium-browser.desktop
+text/html=chromium-browser.desktop
+text/xml=chromium-browser.desktop
+application/xhtml_xml=chromium-browser.desktop
+application/pdf=evince.desktop
+image/webp=chromium-browser.desktop
+
+[Added Associations]
