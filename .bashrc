@@ -249,7 +249,9 @@ fi
 
 alias svn-addall='svn add `svn status | grep ?`'
 
-eval $(keychain --quiet --agents ssh --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2 )
-
+if [ x$HOSTNAME = xgoldorak -o x$HOSTNAME = xcyberlab ]
+then
+    eval $(keychain --quiet --agents ssh --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2 )
+fi
 
 
