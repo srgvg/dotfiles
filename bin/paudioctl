@@ -1,29 +1,104 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ x"$HOSTNAME" = goldorak ]
+
+## check for pulseaudio
+if [ -x "`which pacmd`" -a -x "`which pactl`" ]
 then
-    sink="alsa_output.pci-0000_00_1b.0.analog-stereo"
+    :
+else
+    echo 'Could not detect Pulseaudio.' >&2
+    exit 1
 fi
 
-pacmd set-default-sink $sink
+## parameters #####
 
-pactl set-sink-mute $sink toggle
+command=$1
+sink=$2
+available_sinks=`pacmd list-sinks | grep -e name: -e index: \
+                    | sed s/[\<\>]//g | awk -F: '{ print $2}'`
+input_sinks=`pacmd list-sink-inputs | grep index | awk '{ print $2 }'`
 
-pactl set-sink-volume $sink 0-65536 of 50% of +20% ..
+
+## functions ######
+
+check_sink_name() {
+    echo "$available_sinks" | grep $sink >/dev/null
+    if [ ! $? -eq 0 ]
+    then
+        echo Could not find sink \"$sink\"
+        echo
+        exit 1
+    fi
+}
+
+set_default_sink_name() {
+    case $HOSTNAME in
+       "goldorak")
+           sink="alsa_output.pci-0000_00_1b.0.analog-stereo"
+           ;;
+       "cyberlab")
+           sink="alsa_output.pci-0000_00_1b.0.analog-surround-51"
+           ;;
+       *)
+           sink="0"
+           ;;
+    esac
+}
+
+set_sink() {
+    # move all sink-inputs automatically
+    echo "$input_sinks" | while read line
+    do
+        [ -z "$line" ] && break
+        input=`echo $line`
+        pactl move-sink-input $input $sink
+    done
+}
 
 
 
+## main loop ######
 
-# simple script to move all sink-inputs automatically
+# check given command & parameter
+if [ -z "$command" ]
+then
+    echo "`basename $0` toggle|min|plus|use [sink]" >&2
+    echo
+    exit 1
+fi
 
-#!/bin/bash 
-echo "Setting default sink to: $1";
-pacmd set-default-sink $1
-pacmd list-sink-inputs | grep index | while read line
-do
-    echo "Moving input: ";
-    echo $line | cut -f2 -d' ';
-    echo "to sink: $1";
-    pacmd move-sink-input `echo $line | cut -f2 -d' '` $1
+if [ -z "$sink" ]
+then
+    set_default_sink_name
+else
+    check_sink_name
+fi
 
-done
+
+# allways set the default sink
+pactl set-default-sink $sink
+
+# act on command
+case $command in
+    toggle)
+        pactl set-sink-mute $sink toggle
+        ;;
+    min)
+        pactl set-sink-volume $sink -- -2dB
+        ;;
+    plus)
+        pactl set-sink-volume $sink -- +2dB
+        ;;
+    use)
+        set_sink
+        ;;
+    *)
+        echo Unknown command $command >&2
+        echo
+        exit 1
+        ;;
+esac
+
+# trigger i3statusbar output if available
+killall -SIGUSR1 i3status
+
