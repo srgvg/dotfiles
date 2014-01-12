@@ -10,7 +10,7 @@ execute_commands()
 	    do
             echo \$ $command
             echo
-            eval $command 
+            eval $command
             echo
         done
 }
@@ -24,8 +24,15 @@ then
         execute_commands
 
 else
-    execute_commands 2>&1 | tee >(/usr/bin/pastebinit)
+    output=`execute_commands 2>&1`
+    echo -e "$output"
     echo
+    link=`echo "$output" | /usr/bin/pastebinit`
     sleep 1
+    echo $link
+    echo $link | tr -d '\n' | xclip -in -selection clipboard
+    notify-send --category=transfer.complete \
+                --urgency=low --icon=gtk-info \
+                "Command pasted" "url copied to clipboard"
 fi
 

@@ -17,5 +17,6 @@ echo "'${pubfile}' => $(dropbox puburl "${pubfile}")" && (
     done
     notify-send --category=transfer.complete \
                 --urgency=low --icon=gtk-info \
-                "Dropbox file $file published" "uploaded, url copied"
+                "Dropbox file $file published" \
+                "file uploaded and url copied to clipboard"
     ) || echo "Dropbox error"
