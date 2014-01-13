@@ -12,6 +12,10 @@ set $mod Mod4
 # mouse settings
 focus_follows_mouse yes
 
+# set the right default sink before we launch i3status
+exec --no-startup-id  paudioctl sink
+#
+
 ###############################################################################
 #
 ## Key command assignments
@@ -187,17 +191,19 @@ bindsym $mod+Pause exec lock-suspend
 # volume and media controls
 #
 
-bindsym XF86AudioLowerVolume exec --no-startup-id  paudioctl min
-bindsym XF86AudioRaiseVolume exec --no-startup-id  paudioctl plus
-bindsym XF86AudioMute        exec --no-startup-id  paudioctl toggle 
+bindsym XF86AudioLowerVolume        exec --no-startup-id  paudioctl min
+bindsym XF86AudioRaiseVolume        exec --no-startup-id  paudioctl plus
+bindsym XF86AudioMute               exec --no-startup-id  paudioctl toggle
 
-bindsym $mod+XF86AudioLowerVolume exec --no-startup-id  mediaplayer_cmd prev
-bindsym $mod+XF86AudioMute        exec --no-startup-id  mediaplayer_cmd play
-bindsym $mod+XF86AudioRaiseVolume exec --no-startup-id  mediaplayer_cmd next
-bindsym XF86AudioPrev exec --no-startup-id  mediaplayer_cmd prev
-bindsym XF86AudioPlay exec --no-startup-id  mediaplayer_cmd play
-bindsym XF86AudioNext exec --no-startup-id  mediaplayer_cmd next
-bindsym XF86Tools     exec --no-startup-id  mediaplayer_cmd next
+bindsym $mod+XF86AudioLowerVolume   exec --no-startup-id  mediaplayer_cmd prev
+bindsym $mod+XF86AudioMute          exec --no-startup-id  mediaplayer_cmd play
+bindsym $mod+XF86AudioRaiseVolume   exec --no-startup-id  mediaplayer_cmd next
+
+bindsym XF86AudioPrev               exec --no-startup-id  mediaplayer_cmd prev
+bindsym XF86AudioPlay               exec --no-startup-id  mediaplayer_cmd play
+bindsym XF86AudioNext               exec --no-startup-id  mediaplayer_cmd next
+
+bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 
 #bindsym XF86MonBrightnessUp exec --no-startup-id /usr/bin/xbacklight -inc 5
 #bindsym XF86MonBrightnessDown exec --no-startup-id /usr/bin/xbacklight -dec 5
@@ -350,6 +356,7 @@ hide_edge_borders none
 # Assignments are processed by i3 in the order in which they appear in the
 # config file. The first one which matches the window wins and later
 # assignments are not considered.
+# Maar volgens mij is het omgekeerd.
 
 for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
 for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
@@ -367,14 +374,15 @@ for_window  [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]    
 
 assign [window_role="irc"]                          →   "2"
 assign [class="Pidgin"]                             →   "2"
-for_window [class="Pidgin" instance="Pidgin" window_role="buddy_list|conversation"]  split vertical
-
+for_window [class="Pidgin" instance="Pidgin" window_role="(buddy_list|conversation)"]  split vertical
 assign [class="jetbrains-idea"]                     →   "5"
 assign [class="Update-manager|Update-notifier"]     →   "9"
 assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "9"
 
 assign      [class="(Spotify|nuvolaplayer|rhythmbox)"]  →   "10"
 for_window  [class="(Spotify|nuvolaplayer|rhythmbox)"]      layout tabbed
+
+for_window [window_role="SSHASKPASS"]                   floating enable, border pixel 10
 
 ###############################################################################
 #
@@ -389,42 +397,46 @@ new_float   pixel 1
 #
 ## startup
 #
-
-#
-## osd notifications
-#
-exec --no-startup-id "launch-screen dunst -print"
+# & send process to background avoids keeping calling sh shells in memory
 
 # Background stuff
-exec --no-startup-id "spotify-notify.py -ms"
-exec --no-startup-id "xcompmgr -cf"
-exec --no-startup-id "autocutsel -selection CLIPBOARD"
+exec --no-startup-id "unagi &"
+exec --no-startup-id "launch-screen dunst -print"
 exec --no-startup-id "setbg"
-exec --no-startup-id "unclutter"
+exec --no-startup-id "spotify-notify.py -ms &"
+exec --no-startup-id "autocutsel -selection CLIPBOARD &"
+exec --no-startup-id "unclutter &"
+exec --no-startup-id "numlockx on"
 
 # Desktop Apps
-exec "nm-applet"
-exec "gnome-sound-applet"
-exec "xfce4-power-manager"
-exec "remmina -i"
+exec "nm-applet &"
+exec "gnome-sound-applet &"
+exec "xfce4-power-manager &"
+exec "transmission-gtk --minimized &"
+exec "remmina -i &"
 exec "dropbox start"
-exec "ownloud"
-exec "transmission-gtk --minimized"
-exec "pidgin"
-exec "ircwindow"
-exec "chromium-browser"
-exec "sparkleshare start"
-exec "spotify"
-#exec "nuvolaplayer"
-exec --no-startup-id "unagi"
+#exec "ownloud"
+exec "pidgin &"
+exec "chromium-browser &"
+exec "spotify &"
+#exec "nuvolaplayer &"
+
+# start with interactive bash shell as this needs ssh keys to be unlocked
+exec gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
+
 
 # exec_always
-exec_always --no-startup-id "xdisp"
+exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
+#exec_always --no-startup-id "xdisp"
+
 
 ###############################################################################
 #
-## mouse buttons
+## Documentation
 #
+#
+## mouse buttons
+#  info for xinput set-button-map
 
 ## http://wiki.birth-online.de/know-how/hardware/evoluent-verticalmouse
 # Index finger button   1
@@ -435,7 +447,6 @@ exec_always --no-startup-id "xdisp"
 # Middle finger button  8
 # Thumb button          9
 
-exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
 
 ## http://wiki.birth-online.de/know-how/software/linux/remapping-mousebuttons
 #
@@ -450,10 +461,4 @@ exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3'
 # 9  Thumb2
 # 10 ExtBt7
 # 11 ExtBt8
-
-
-###############################################################################
-#
-## misc
-#
 

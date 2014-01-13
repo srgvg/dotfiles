@@ -249,9 +249,14 @@ fi
 
 alias svn-addall='svn add `svn status | grep ?`'
 
-if [ x$HOSTNAME = xgoldorak -o x$HOSTNAME = xcyberlab ]
+
+## SSH Agent
+#export SSH_ASKPASS=`which ssh-askpass`
+if [   X$HOSTNAME = Xgoldorak \
+    -o X$HOSTNAME = Xcyberlab ]
 then
-    eval $(keychain --quiet --agents ssh --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2 )
+    [ -x `which ssh-keychain` ]  && \
+        eval `keychain --lockwait 300 --quiet \
+        --agents ssh \
+        --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2`
 fi
-
-
