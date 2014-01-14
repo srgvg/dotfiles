@@ -120,6 +120,7 @@ export DEBEMAIL="serge@vanginderachter.be"
 alias diff='diff -u'
 alias go='xdg-open'
 alias v="vcsh"
+alias vs="vcsh status"
 
 alias as='apt-cache search'
 alias ash='apt-cache show'
