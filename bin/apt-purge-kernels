@@ -1,5 +1,13 @@
 #!/bin/bash
 
-dpkg -l 'linux-*' \
-    | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' \
-    | xargs sudo apt-get purge
+current=`uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/"`
+installed="`dpkg -l 'linux-*' | grep -e linux.*headers -e linux.*-image -e -linux.*tools  | sed '/^ii/!d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'`"
+
+echo -e "* Currently running kernel has version:\n"
+echo -e " $current\n"
+echo -e "* Currently installed kernels are:\n"
+echo -e "${installed}" | sed 's/^/ /'
+echo
+echo -e "* Uninstall old kernels with:\n"
+echo -e $installed | xargs echo sudo apt-get purge  | sed 's/^/ /'
+echo
