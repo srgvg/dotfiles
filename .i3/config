@@ -14,6 +14,9 @@ focus_follows_mouse yes
 
 # set the right default sink before we launch i3status
 exec --no-startup-id  paudioctl sink
+
+# Detect & set display
+exec --no-startup-id  xdisp
 #
 
 ###############################################################################
@@ -69,6 +72,10 @@ bindsym $mod+Control+Return exec gnome-terminal
 
 # kill focused window
 bindsym $mod+x kill
+
+# detect/set display
+bindsym XF86Display exec --no-startup-id xdisp
+bindsym $mod+Scroll_Lock exec --no-startup-id xdisp
 
 #
 ## Navigation
@@ -257,7 +264,8 @@ client.urgent           $border_urgent      $border_urgent      $text_urgent
 #
 # status bar
 #
-bar {   id main
+bar {
+        id main
         status_command i3status
 
         # tray_output <none|primary|output>
@@ -274,8 +282,8 @@ bar {   id main
         modifier $mod
 
         # font <font>
-        font pango:DejaVu Sans Mono 10
-        #font pango:Ubuntu Mono 10
+        #font pango:DejaVu Sans Mono 6
+        font pango:Ubuntu Mono 8
 
         # workspace_buttons <yes|no>
         workspace_buttons yes
