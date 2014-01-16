@@ -191,8 +191,8 @@ bindsym $mod+Control+c exec gnome-terminal -e 'less /usr/share/X11/locale/en_US.
 bindsym Print exec "~/bin/screengrab"
 
 # Lock Screen / Suspend
-bindsym Pause exec slock
-bindsym $mod+Pause exec lock-suspend
+bindsym Pause exec lock
+bindsym $mod+Pause exec lock suspend
 
 #
 # volume and media controls

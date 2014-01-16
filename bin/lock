@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#/usr/bin/slock &
+i3lock -i `setbg geek linkpng` -t
+sleep 2
+[ "$1" = suspend ] && sudo /usr/sbin/pm-suspend
