@@ -88,8 +88,9 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # some more ls aliases
-alias ll='ls -lhA'
 alias l='ls -AhCF'
+alias ll='ls -lh'
+alias lla='ls -lhA'
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -154,6 +155,7 @@ alias gps='git svn rebase && git svn dcommit'
 # ansible
 alias a='ansible'
 alias ab='ansible-playbook'
+alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
 alias ahack='. ~/src/ansible/hacking/env-setup'
 
 # milieuinfo
