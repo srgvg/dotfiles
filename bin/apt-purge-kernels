@@ -1,13 +1,20 @@
 #!/bin/bash
 
 current=`uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/"`
-installed="`dpkg -l 'linux-*' | grep -e linux.*headers -e linux.*-image -e -linux.*tools  | sed '/^ii/!d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'`"
+installed=`dpkg -l 'linux-*' | grep -e linux.*headers -e linux.*-image -e -linux.*tools  | sed '/^ii/!d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'`
+uninstall=`echo "$installed" | grep -v $current`
+douninstall=`echo $uninstall |  xargs echo sudo apt-get purge`
 
+echo
 echo -e "* Currently running kernel has version:\n"
 echo -e " $current\n"
-echo -e "* Currently installed kernels are:\n"
+echo -e "* Currently installed kernel packages are:\n"
 echo -e "${installed}" | sed 's/^/ /'
 echo
-echo -e "* Uninstall old kernels with:\n"
-echo -e $installed | xargs echo sudo apt-get purge  | sed 's/^/ /'
+echo -e "* Old kernel packages to be uninstalled:\n"
+echo -e "$uninstall\n" | sed 's/^/ /'
+
+[ ! "$1" = "do" ] && eval $douninstall --simulate
+[   "$1" = "do" ] && eval $douninstall
+
 echo
