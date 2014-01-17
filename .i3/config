@@ -434,13 +434,12 @@ exec "chromium-browser &"
 exec "spotify &"
 #exec "nuvolaplayer &"
 
-# start with interactive bash shell as this needs ssh keys to be unlocked
-exec gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
-
-
 # exec_always
 exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
 
+
+# start with interactive bash shell as this needs ssh keys to be unlocked
+exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
 
 ###############################################################################
 #
