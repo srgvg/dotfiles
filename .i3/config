@@ -435,6 +435,7 @@ exec "spotify &"
 #exec "nuvolaplayer &"
 
 # exec_always
+exec_always udevadm trigger --subsystem-match=input --action=change
 exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
 
 
