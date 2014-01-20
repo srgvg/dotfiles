@@ -122,6 +122,7 @@ alias diff='diff -u'
 alias x='xdg-open'
 alias v="vcsh"
 alias vs="vcsh status"
+alias poweroff="sudo poweroff"
 
 alias as='apt-cache search'
 alias ash='apt-cache show'
