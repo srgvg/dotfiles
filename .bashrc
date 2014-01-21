@@ -146,6 +146,7 @@ alias paste='xclip -out -selection c'
 alias g='git'
 alias gd='git diff'
 alias gdc='git diff --cached'
+alias gdpaste="git diff | grep -v -e diff -e ^index -e '---' -e @@"
 alias gds='git dfs'
 alias gi='git info'
 alias gls='git lol'
