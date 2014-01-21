@@ -3,6 +3,7 @@
 # File locations
 tmp=/tmp/filelist.log
 defaultbg=$HOME/.background.png
+pictures=Pictures/Backgrounds
 target=${1}
 action=${2}
 
@@ -20,9 +21,9 @@ fi
 # if target given but not readeable, assume subdir of
 if [ ! -z "${target}" -a ! -r "${target}" ]
 then
-    if [ -r "$HOME/Pictures/${target}" ]
+    if [ -r "$HOME/${pictures}/${target}" ]
     then
-        target="$HOME/Pictures/${target}"
+        target="$HOME/${pictures}/${target}"
     elif [ -r "$HOME/${target}" ]
     then
         target="$HOME/${target}"
