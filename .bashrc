@@ -165,6 +165,11 @@ alias acdplay="cd ~/acd; bin/acdplay"
 alias acdplaybook="cd ~/acd; ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
 
 
+# quick package search
+dl() {
+    dpkg -l | grep `for n in ${*:-^}; do echo -n " -e $n"; done`
+    }
+
 # make a dir and change to it
 mkcd () {
 	mkdir -v $1 && cd $1
