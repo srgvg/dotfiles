@@ -118,6 +118,8 @@ export EDITOR=vim
 export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
+alias poweroff='sudo /sbin/poweroff'
+
 alias diff='diff -u'
 alias x='xdg-open'
 alias v="vcsh"
