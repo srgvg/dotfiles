@@ -25,6 +25,9 @@ exec --no-startup-id  xdisp
 #
 # xmodmap -pke
 
+# poweroff
+bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
+
 # reload the configuration file
 bindsym $mod+Shift+c reload
 
