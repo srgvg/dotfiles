@@ -412,11 +412,11 @@ new_float   pixel 1
 #
 ## startup
 #
-# & send process to background avoids keeping calling sh shells in memory
+# & send process to background avoids keeping the calling sh shells in memory
 
 # Background stuff
 exec --no-startup-id "unagi &"
-exec --no-startup-id "launch-screen dunst -print"
+exec --no-startup-id "dunst -print"
 exec --no-startup-id "setbg"
 exec --no-startup-id "spotify-notify.py -ms &"
 exec --no-startup-id "autocutsel -selection CLIPBOARD &"
@@ -436,21 +436,25 @@ exec "chromium-browser &"
 exec "spotify &"
 #exec "nuvolaplayer &"
 
-# exec_always
-exec_always sudo udevadm trigger --subsystem-match=input --action=change ; sleep 2; xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
-
+## exec_always
 
 # start with interactive bash shell as this needs ssh keys to be unlocked
 exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
 
+# set keyboard
+# http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
+exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n
+
+
 ###############################################################################
 #
-## Documentation
+## Configure Vertical Mouse
 #
+exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
 #
 ## mouse buttons
 #  info for xinput set-button-map
-
+#
 ## http://wiki.birth-online.de/know-how/hardware/evoluent-verticalmouse
 # Index finger button   1
 # Wheel button          2
@@ -459,8 +463,7 @@ exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i 
 # Wheel down            5
 # Middle finger button  8
 # Thumb button          9
-
-
+#
 ## http://wiki.birth-online.de/know-how/software/linux/remapping-mousebuttons
 #
 # 1  Left click
@@ -474,4 +477,7 @@ exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i 
 # 9  Thumb2
 # 10 ExtBt7
 # 11 ExtBt8
+#
+###############################################################################
+#
 
