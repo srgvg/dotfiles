@@ -384,10 +384,9 @@ for_window [window_role="SSHASKPASS"]   floating enable, border pixel 10
 
 
 # Browsers
-assign      [class="Firefox" instance="Navigator" window_role="browser"]  →   "4"
-assign      [class="(Google-chrome|Chromium-browser)" instance="(google-chrome|chromium-browser)" window_role="browser"]  →   "1"
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)"   instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"]      border none
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)"   window_role="(Preferences|pop-upi|setup)" ] floating enable
+assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser)" window_role="browser"]  →   "1"
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"] border none, layout tabbed
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Preferences|pop-upi|setup)" ] floating enable
 
 # Messaging
 assign [window_role="irc"]                          →   "2"
@@ -435,7 +434,8 @@ exec "remmina -i &"
 exec "dropbox start"
 #exec "ownloud"
 exec "pidgin &"
-exec "chromium-browser &"
+exec "chromium-browser-facebook &"
+exec "sleep 1; chromium-browser-google &"
 exec "spotify &"
 #exec "nuvolaplayer &"
 

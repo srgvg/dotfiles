@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# set browser location and name
+defaultpath="/usr/bin/"
+defaultname="chromium-browser"
+
+# how were we launched?
+scriptname=`basename $0`
+
+# retrieve profilename from our basename
+profile=`echo ${scriptname} | sed -e "s@^${defaultname}@@" -e "s@^-@@"`
+
+# defaults settings
+# http://peter.sh/experiments/chromium-command-line-switches/
+defaultcommand=${defaultpath}${defaultname}
+defaultoptions="--cancel-first-run"
+privateoptions="--disable-local-storage --disable-session-storage --bwsi"
+nogoogleoptions=""
+
+# match profile name to profile dir and options
+case ${profile} in
+    "google")
+        OPTIONS="--profile-directory=\"Profile 1\" $defaultoptions"
+        ;;
+    "facebook")
+        OPTIONS="--profile-directory=\"Profile 2\""
+        OPTIONS="$OPTIONS $defaultoptions"
+        OPTIONS="$OPTIONS $nogoogleoptions"
+        ;;
+    "temp")
+        OPTIONS="--temp-profile"
+        OPTIONS="$OPTIONS $defaultoptions"
+        OPTIONS="$OPTIONS $nogoogleoptions"
+        OPTIONS="$OPTIONS $privateoptions"
+        ;;
+    "incognito")
+        OPTIONS="--incognito"
+        OPTIONS="$OPTIONS $defaultoptions"
+        OPTIONS="$OPTIONS $nogoogleoptions"
+        OPTIONS="$OPTIONS $privateoptions"
+        ;;
+    *) # default
+        OPTIONS="--profile-directory='Default'"
+        OPTIONS="$OPTIONS $defaultoptions"
+        OPTIONS="$OPTIONS $nogoogleoptions"
+        OPTIONS="$OPTIONS $privateoptions"
+        ;;
+esac
+
+# launch the browser now
+eval "$defaultcommand $OPTIONS $* &"
+
