@@ -16,6 +16,10 @@ defaultcommand=${defaultpath}${defaultname}
 defaultoptions="--cancel-first-run"
 privateoptions="--disable-local-storage --disable-session-storage --bwsi"
 nogoogleoptions=""
+searchoptions="https://duckduckgo.com/?q=`echo $* | sed 's/\s/+/g'`"
+
+# default parameters
+PARAMS="$*"
 
 # match profile name to profile dir and options
 case ${profile} in
@@ -39,6 +43,14 @@ case ${profile} in
         OPTIONS="$OPTIONS $nogoogleoptions"
         OPTIONS="$OPTIONS $privateoptions"
         ;;
+    "duck") # search
+        OPTIONS="--profile-directory='Default'"
+        OPTIONS="$OPTIONS $defaultoptions"
+        OPTIONS="$OPTIONS $nogoogleoptions"
+        OPTIONS="$OPTIONS $privateoptions"
+        OPTIONS="$OPTIONS $searchoptions"
+        PARAMS="$searchoptions"
+        ;;
     *) # default
         OPTIONS="--profile-directory='Default'"
         OPTIONS="$OPTIONS $defaultoptions"
@@ -48,5 +60,5 @@ case ${profile} in
 esac
 
 # launch the browser now
-eval "$defaultcommand $OPTIONS $* &"
+eval "$defaultcommand $OPTIONS $PARAMS &"
 
