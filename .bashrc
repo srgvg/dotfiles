@@ -121,7 +121,6 @@ export DEBEMAIL="serge@vanginderachter.be"
 alias poweroff='sudo /sbin/poweroff'
 
 alias diff='diff -u'
-alias duck="chromium-browser-duck"
 alias v="vcsh"
 alias vs="vcsh status"
 alias poweroff="sudo poweroff"
