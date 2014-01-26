@@ -30,7 +30,7 @@ case ${profile} in
         OPTIONS="--profile-directory=\"Profile 2\""
         OPTIONS="$OPTIONS $defaultoptions"
         OPTIONS="$OPTIONS $nogoogleoptions"
-        PARAMS="https://www.facebook.com $*"
+        PARAMS="https://www.facebook.com https://play.spotify.com $*"
         ;;
     "temp")
         OPTIONS="--temp-profile"
