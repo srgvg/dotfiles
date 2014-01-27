@@ -95,6 +95,12 @@ bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
+# with tab key
+bindsym $mod+Tab focus right
+bindsym $mod+Shift+Tab focus left
+bindsym $mod+Control+Tab focus down
+bindsym $mod+Control+Shift+Tab focus up
+
 # move focused window
 bindsym $mod+Shift+j move left
 bindsym $mod+Shift+k move down
@@ -392,9 +398,13 @@ for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Pref
 assign [window_role="irc"]                          →   "2"
 assign [class="Pidgin"]                             →   "2"
 for_window [class="Pidgin" instance="Pidgin" window_role="(buddy_list|conversation)"]  split vertical
+
+# Various
 assign [class="jetbrains-idea"]                     →   "5"
 assign [class="Update-manager|Update-notifier"]     →   "9"
 assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "9"
+assign [class="VirtualBox"] →   "6"
+for_window [class="VirtualBox"] layout tabbed
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox)"]  →   "10"
@@ -418,7 +428,7 @@ new_float   pixel 1
 
 # Background stuff
 exec --no-startup-id "unagi &"
-exec --no-startup-id "dunst -print"
+exec --no-startup-id "dunst -print &"
 exec --no-startup-id "setbg"
 exec --no-startup-id "spotify-notify.py -ms &"
 exec --no-startup-id "autocutsel -selection CLIPBOARD &"
@@ -433,11 +443,11 @@ exec "transmission-gtk --minimized &"
 exec "remmina -i &"
 exec "dropbox start"
 #exec "ownloud"
-exec "pidgin &"
 exec "chromium-browser-facebook &"
 exec "sleep 1; chromium-browser-google &"
 exec "spotify &"
 #exec "nuvolaplayer &"
+#exec "pidgin &"
 
 ## exec_always
 
