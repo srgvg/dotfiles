@@ -7,7 +7,7 @@ shift
 sudo cryptdisks_start $cryptdisk || exit 1
 udisksctl mount -b /dev/mapper/$cryptdisk 2>&1 | grep -v -e GDBus.Error:org.freedesktop.UDisks2.Error.AlreadyMounted: || exit 1
 
-[ -z $* ] && exit
+[ -z "$*" ] && exit
 
 echo \$ $*
 $*
