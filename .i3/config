@@ -376,9 +376,12 @@ hide_edge_borders none
 # assignments are not considered.
 # Maar volgens mij is het omgekeerd.
 
-# Tools
+# terminals
 for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
+for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
 for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
+
+# Tools
 for_window [class="SpiderOak"]                          floating enable
 for_window [class="Gnome-calculator"]                   floating enable
 for_window [class="SparkleShare"]                       floating enable
