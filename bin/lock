@@ -1,6 +1,19 @@
 #!/bin/sh
 
-#/usr/bin/slock &
-i3lock -i `setbg geek linkpng` -t
-sleep 2
-[ "$1" = suspend ] && sudo /usr/sbin/pm-suspend
+# create resize-filled background image for i3lock
+# same result as feh --bg-fill
+setbg i3lock
+
+# lock screen with background picture
+i3lock -i ~/.lockscreen.png
+
+# also suspend if told so
+if  [ "$1" = suspend ]
+then
+    # wait a bit to make sure it's locked
+    sleep 2
+
+    # suspend
+    sudo /usr/sbin/pm-suspend
+fi
+

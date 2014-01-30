@@ -3,66 +3,95 @@
 # File locations
 tmp=/tmp/filelist.log
 defaultbg=$HOME/.background.png
+lockscreen_image=".lockscreen.png"
 pictures=Pictures/Backgrounds
 target=${1}
 action=${2}
 
-# cd out of the way to avoid expansion of regexp
-cd $HOME/tmp
+# check target
+if [ ! -z "${target}" -a ! -r "${target}" ]
+# if target not empty but not a readable path
+# assume subdir or path in home or just action
+then
+    if [ -r "$HOME/${pictures}/${target}" ]
+    then # subdir of pictures folder
+        target="$HOME/${pictures}/${target}"
+    elif [ -r "$HOME/${target}" ]
+    then # folder beneath home
+        target="$HOME/${target}"
+    else # maybe an action?
+        case ${target} in
+            i3lock|path)
+                action=${target}
+                target="${defaultbg}"
+                ;;
+            *) # unknown, error
+                echo ${target} is unknown >&2
+                exit 1
+                ;;
+        esac
+    fi
+fi
 
-
-if [ "${action}" = "linkpng" ]
+if [ "${action}" = "i3lock" ]
 then
     _search="-iregex .*.png"
 else
     _search="-iregex .*.jpg -o -iregex .*.png"
 fi
 
-# if target given but not readeable, assume subdir of
-if [ ! -z "${target}" -a ! -r "${target}" ]
-then
-    if [ -r "$HOME/${pictures}/${target}" ]
-    then
-        target="$HOME/${pictures}/${target}"
-    elif [ -r "$HOME/${target}" ]
-    then
-        target="$HOME/${target}"
-    else
-        exit 1
-    fi
-fi
-
-# if empty, just confirm default
 if [ -z "${target}" ]
-then
+then # if no parameters, just confirm default bg
     background=${defaultbg}
-# else if directory
 elif [ -d "${target}" ]
-then
+then # if directory, the pick a random picture
     pictures="${target}"
+    
+    # disable shell expansion for the iregex
+    set -o noglob 
     # Create a temporary logfile of all matches
     find -L ${pictures} $_search > ${tmp}
+    # reenable shell expansion
+    set +o noglob
 
     # Choose a random line number (any number from 1 to the length of the file)
     LowerBound=1
     RandomMax=32767
     UpperBound=$(cat ${tmp} | wc -l)
+    if [ $UpperBound -eq 0 ]
+    then
+        echo "No matching pictures found" >&2
+        exit 1
+    fi
     RandomLine=$(( $LowerBound + ($UpperBound * $RANDOM) / ($RandomMax + 1) ))
 
     # Use sed to grab the random line
     background=$(sed -n "$RandomLine{p;q;}" "${tmp}")
 elif [ -r "${target}" ]
-then
+then # not a dir but readeable, should be a picture
     background="${target}"
 else
+    echo Unexpected error, this should not happen >&2
     exit 1
 fi
 
-echo ${background}
-if [ "${action}" != "link" -a  "${action}" != "linkpng" ]
-then
+# now we have a picture set for $background, let's do something with it
+if [ "${action}" = "i3lock" ]
+then    # create a picture fill-resized to the primary screen for the lockscreen
+    disp_res=`xrandr | grep primary | awk '{print $4}' | sed s/\+.*//g`
+    convert "${background}" -resize ${disp_res}^ -gravity center -extent ${disp_res} "${lockscreen_image}"
+elif [ "${action}" = "path" ]
+then    # just return the path later
+    :
+else    # set as background
+        # if same default, also resizes if new screen display
+        # this gets called from our xrandr script
     [ ! "${background}" = "${defaultbg}" ] && (
         background=`readlink -e "${background}"`
         ln -nfs "${background}" "${defaultbg}")
     feh --no-fehbg --bg-fill ${defaultbg}
 fi
+
+# show which picture is used
+echo `readlink --canonicalize ${background}`
+
