@@ -164,6 +164,7 @@ alias ahack='. ~/src/ansible/hacking/env-setup'
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
 alias acdplaybook="cd ~/acd; ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
+alias deploy="acdplay -t deploy"
 
 
 # quick package search
