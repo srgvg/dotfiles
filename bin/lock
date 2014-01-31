@@ -1,11 +1,10 @@
 #!/bin/sh
 
-# create resize-filled background image for i3lock
-# same result as feh --bg-fill
-setbg i3lock
+# update backrgound lockscreen
+setbg lock
 
-# lock screen with background picture
-i3lock -i ~/.lockscreen.png
+# lock screen with a background picture
+i3lock -i ~/.lockscreen.png -t
 
 # also suspend if told so
 if  [ "$1" = suspend ]

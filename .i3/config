@@ -391,7 +391,7 @@ for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border 
 for_window [class="Remmina" instance="remmina" title="Remmina Remote Desktop Client"] floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"] floating enable
 for_window [window_role="SSHASKPASS"]   floating enable, border pixel 10
-
+for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
 
 # Browsers
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser)" window_role="browser"]  →   "1"
@@ -435,7 +435,7 @@ new_float   pixel 1
 # Background stuff
 exec --no-startup-id "unagi &"
 exec --no-startup-id "dunst -print &"
-exec --no-startup-id "setbg"
+exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "spotify-notify.py -ms &"
 exec --no-startup-id "autocutsel -selection CLIPBOARD &"
 exec --no-startup-id "unclutter &"
@@ -446,14 +446,10 @@ exec "nm-applet &"
 exec "gnome-sound-applet &"
 exec "xfce4-power-manager &"
 exec "transmission-gtk --minimized &"
-exec "remmina -i &"
 exec "dropbox start"
-#exec "ownloud"
 exec "chromium-browser-facebook &"
 exec "sleep 1; chromium-browser-google &"
 exec "spotify &"
-#exec "nuvolaplayer &"
-#exec "pidgin &"
 
 ## exec_always
 
