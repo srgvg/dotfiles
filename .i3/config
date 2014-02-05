@@ -377,6 +377,10 @@ hide_edge_borders none
 # assignments are not considered.
 # Maar volgens mij is het omgekeerd.
 
+# execute when client set urgency
+# test in bash: sleep 2; echo $'\a'
+for_window [urgent=latest]  exec aplay ~/lib/CallResume.wav
+
 # terminals
 for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
 for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
