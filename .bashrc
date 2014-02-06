@@ -146,6 +146,9 @@ alias paste='xclip -out -selection c'
 
 # git shortcuts
 alias g='git'
+alias ga='git add'
+alias gA='git add --all'
+alias gap='git add --patch'
 alias gd='git diff'
 alias gdc='git diff --cached'
 alias gdpaste="git diff | grep -v -e diff -e ^index -e '---' -e @@"
