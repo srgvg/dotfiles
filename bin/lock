@@ -1,17 +1,36 @@
 #!/bin/sh
 
-# update backrgound lockscreen
-setbg lock geek
+# load some defaults
+. etc/defaults
+
+# check parameters
+if  [ "$1" = suspend ]
+then
+    sleep="yes"
+    lockscreen="${2:-$default_lockscreen}"
+elif [ "$2" = suspend ]
+then
+    sleep="yes"
+    lockscreen="${1:-$default_lockscreen}"
+else
+    sleep=""
+    lockscreen="${1:-$default_lockscreen}"
+fi
+
+if [ ! "$lockscreen" = "keep" ]
+then
+    # update background lockscreen
+    setbg lock "$lockscreen"
+fi
 
 # lock screen with a background picture
 i3lock -i ~/.lockscreen.png -t
 
 # also suspend if told so
-if  [ "$1" = suspend ]
+if  [ "$sleep" = yes ]
 then
     # wait a bit to make sure it's locked
-    sleep 2
-
+    sleep 1
     # suspend
     sudo /usr/sbin/pm-suspend
 fi

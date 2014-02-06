@@ -25,18 +25,6 @@ exec --no-startup-id  xdisp
 #
 # xmodmap -pke
 
-# poweroff
-bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
-
-# reload the configuration file
-bindsym $mod+Shift+c reload
-
-# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $mod+Shift+r restart
-
-# exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
-
 # resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
@@ -193,18 +181,28 @@ bindsym $mod+Control+Next move workspace to output right
 ## launch applications
 #
 
+# reload the configuration file
+bindsym $mod+Shift+c reload
+
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r restart
+
+# Lock Screen / Suspend / Poweroff
+bindsym Pause exec lock
+bindsym $mod+Pause exec lock suspend
+bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
+
+# exit i3 (logs you out of your X session)
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
 # start some tools
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nautilus
-bindsym $mod+Control+c exec gnome-terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+bindsym $mod+Control+c exec terminsator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 
 # Screenshot
-bindsym Print exec "~/bin/screengrab"
-
-# Lock Screen / Suspend
-bindsym Pause exec lock
-bindsym $mod+Pause exec lock suspend
+bindsym Print exec screengrab
 
 #
 # volume and media controls
@@ -434,7 +432,7 @@ new_float   pixel 1
 
 # Background stuff
 exec --no-startup-id "unagi &"
-exec --no-startup-id "dunst -print &"
+exec --no-startup-id "launch-screen dunst -print"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "spotify-notify.py -ms &"
 exec --no-startup-id "autocutsel -selection CLIPBOARD &"
