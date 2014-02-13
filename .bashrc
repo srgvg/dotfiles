@@ -273,6 +273,6 @@ if [   X$HOSTNAME = Xgoldorak \
 then
     [ -x `which ssh-keychain` ]  && \
         eval `keychain --lockwait 300 --quiet \
-        --agents ssh \
+        --agents ssh,gpg \
         --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2`
 fi
