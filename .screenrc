@@ -1,6 +1,11 @@
-#vbell [on|off]
+#http://quadpoint.org/articles/irssi/#utf8_in_irssi_and_screenvbell [on|off]
 vbell off
 #vbell_msg [message]
 #vbellwait sec
 defutf8 on
 termcapinfo xterm* 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+startup_message off
+defbce "on"
+term xterm
+defnonblock 5
+defscrollback 10000
