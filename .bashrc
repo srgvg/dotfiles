@@ -160,11 +160,14 @@ alias gl='git lola'
 alias gu='git up'
 alias gps='git svn rebase && git svn dcommit'
 
+# svn shortcuts
+alias svn-addall='svn add `svn status | grep ?`'
+
 # ansible
 alias a='ansible'
 alias ab='ansible-playbook'
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
-alias ahack='. ~/src/ansible/hacking/env-setup'
+alias ahack='ps1extra ; . ~/src/ansible/hacking/env-setup'
 
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
@@ -233,6 +236,13 @@ function _prompt_command() {
 
 PROMPT_COMMAND=_prompt_command
 
+# EXTRA PS stuff
+PS1BAK2="$PS1BAK"
+ps1extra() {
+    PS1EXTRA="\[\e[0;37;88;1m\][A]\[\e[0m\]"
+    PS1BAK="${PS1EXTRA} ${PS1BAK2}"
+    }
+
 
 ## git hub support
 
@@ -263,8 +273,6 @@ EOF
   # Ensure cached commands are cleared
   __git_all_commands=""
 fi
-
-alias svn-addall='svn add `svn status | grep ?`'
 
 
 ## SSH Agent
