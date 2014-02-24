@@ -409,6 +409,11 @@ for_window [class="VirtualBox"] layout tabbed
 assign [class="jetbrains-idea"]                     →   "5"
 assign [class="Update-manager|Update-notifier"]     →   "9"
 assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "9"
+# KeePass
+for_window [class="KeePass2" instance="keepass2"]               floating enable
+for_window [title="(KeePass|KeePass2|Open Database File)"]      floating enable
+assign [class="KeePass2" instance="keepass2"]                   → "9"
+assign [title="(KeePass|KeePass2|Open Database File)"]          → "9"
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox)"]  →   "10"
