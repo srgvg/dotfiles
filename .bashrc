@@ -144,6 +144,7 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 
 alias copy='xclip -in -selection c'
 alias paste='xclip -out -selection c'
+alias shredit='shred --verbose --iterations 5 --zero --remove'
 
 # git shortcuts
 alias g='git'
