@@ -17,10 +17,15 @@ else
     lockscreen="${1:-$default_lockscreen}"
 fi
 
-if [ ! "$lockscreen" = "keep" ]
+if [ ! "$lockscreen" = "keep" -a ! "$lockscreen" = "blurred" ]
 then
     # update background lockscreen
     setbg lock "$lockscreen"
+elif [ "$lockscreen" = "blurred" ]
+then
+    # take a screenshot and blur it for the lock screen
+    scrot --delay 0 "$screenshot_image" \
+        --exec "convert "$screenshot_image" -blur 0x3 "$lockscreen_image
 fi
 
 # lock screen with a background picture
