@@ -57,6 +57,10 @@ case $HOSTNAME in
                 xrandr --output DP1     --primary
         	    xrandr --output VGA1    --off
         	    xrandr --output HDMI1   --off
+
+                i3-msg workspace 10
+                i3-msg move workspace to output LVDS1
+                i3-msg workspace 1
         	    ;;
             *)
                 echo -e "* ERROR: Invalid action $action\n"
