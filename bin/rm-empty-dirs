@@ -8,6 +8,9 @@ elif [ x$2 = xdo ]
 then
     dir="$1"
     act="do"
+elif [ -z "$1" ]
+then
+    dir='.'
 else
     dir="$1"
 fi
