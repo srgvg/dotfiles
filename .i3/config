@@ -465,22 +465,6 @@ exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i 
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n
 
-
-###############################################################################
-#
-## Configure Vertical Mouse
-#                                                                                1 2 3 4 5 6 7 8 9 10 11
-exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
-exec_always xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
-#
-## mouse buttons
-#  info for xinput set-button-map
-#  xinfo list  => check id or name
-#  xinput query-state id
-#
-## http://wiki.birth-online.de/know-how/hardware/evoluent-verticalmouse
-## http://wiki.birth-online.de/know-how/software/linux/remapping-mousebuttons
-#
-###############################################################################
-#
+# Configure Vertical Mouse
+exec_always vertical-mouse-settings
 
