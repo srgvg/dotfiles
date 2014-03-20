@@ -2,7 +2,8 @@
 
 ## Parameters
 
-tmp=/tmp/filelist.log
+tmp=/tmp/background-file-list.setbg
+delay=1800
 
 # load some defaults
 . $HOME/etc/defaults
@@ -72,7 +73,7 @@ pickpic() {
         # disable shell expansion for the iregex
         set -o noglob
         # Create a temporary logfile of all matches
-        find -L ${pictures} -iregex .*.jpg -o -iregex .*.png > ${tmp}
+        find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R > ${tmp}
         # reenable shell expansion
         set +o noglob
 
@@ -113,15 +114,37 @@ createlockpic() {
                             "${lockscreen_image}"
 }
 
+loop() {
+    pool=`find ${target} -type f | sort -R`
+    while true
+    do  for target in ${pool}
+        do  setbg ${target}
+            sleep ${delay}
+        done
+    done
+}
+
 showpath() {
     # show which picture is used
-    echo `readlink --canonicalize ${background}`
+    echo -e "`date +%Y%m%d.%H%M%S`\t`readlink --canonicalize ${background}`"
+}
+
+setbg() {
+    checktarget
+    pickpic
+    definebg
+    displaybg
+    showpath
+    createlockpic
 }
 
 main() {
+    # what parameters did we get?
+    checkcli
     case ${action} in
         ## keep this in sync with options in checkcli
         'lock')
+            checktarget
             pickpic
             createlockpic
             showpath
@@ -130,11 +153,10 @@ main() {
             displaybg
             ;;
         'default')  # default action, pick and set a background
-            pickpic
-            definebg
-            displaybg
-            showpath
-            createlockpic
+            setbg
+            ;;
+        'loop')
+            loop
             ;;
         *)
             error "Unknown action \"${action}\""
@@ -142,15 +164,5 @@ main() {
     esac
 }
 
-
-## Main
-
-# what parameters did we get?
-checkcli
-
-# resolve target
-checktarget
-
-# action, and target are verified and set
 main
 
