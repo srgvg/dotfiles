@@ -281,8 +281,8 @@ fi
 if [   X$HOSTNAME = Xgoldorak \
     -o X$HOSTNAME = Xcyberlab ]
 then
-    [ -x `which ssh-keychain` ]  && \
+    [ -x `which keychain` ]  && \
         eval `keychain --lockwait 300 --quiet \
-        --agents ssh,gpg \
+        --inherit any --agents ssh,gpg \
         --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2`
 fi
