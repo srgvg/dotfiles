@@ -107,6 +107,10 @@ fi
 if [ -d "$HOME/sbin" ] ; then
     PATH="$HOME/sbin:$PATH"
 fi
+# set PATH so it includes user's extra bin2 if it exists
+if [ -d "$HOME/bin2" ] ; then
+    PATH="$HOME/bin2:$PATH"
+fi
 
 #####################
 ## my custom stuff ##
