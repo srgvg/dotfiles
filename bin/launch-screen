@@ -1,14 +1,27 @@
 #!/bin/bash
 
-name=$1
-command=$*
+name="$1"
+if [ -x "`which "$1"`" ]
+then
+    options="-d -m"
+    command="$*"
+elif [ -x "`which "$2"`" ]
+then
+    shift
+    options="-d -m"
+    command="$*"
+else
+    options=""
+    command=""
+fi
+
 
 if screen -list | grep "\.${name}" > /dev/null
 then
     screen -Rx ${name}
 else
-    screen -S ${name} -t ${name} -d -m ${command}
-    echo 'Created new session.'
+    screen -S ${name} -t ${name} ${options} ${command}
+    echo "Created new session '${name}': ${command}"
     screen -list
 fi
 exit 0
