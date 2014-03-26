@@ -115,7 +115,7 @@ createlockpic() {
 }
 
 loop() {
-    pool=`find ${target} -type f | sort -R`
+    pool=`find ${target}* -type f | sort -R`
     while true
     do  for target in ${pool}
         do  setbg ${target}
