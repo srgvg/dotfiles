@@ -3,7 +3,7 @@
 ## Parameters
 
 tmp=/tmp/background-file-list.setbg
-delay=1800
+setbg_delay=1800
 
 # load some defaults
 . $HOME/etc/defaults
@@ -72,23 +72,12 @@ pickpic() {
 
         # disable shell expansion for the iregex
         set -o noglob
-        # Create a temporary logfile of all matches
+        # Pick random picture
+        background="`find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
         find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R > ${tmp}
         # reenable shell expansion
         set +o noglob
 
-        # Choose a random line number (any number from 1 to the length of the file)
-        LowerBound=1
-        RandomMax=32767
-        UpperBound=$(cat ${tmp} | wc -l)
-        if [ $UpperBound -eq 0 ]
-        then
-            error "No matching pictures found."
-        fi
-        RandomLine=$(( $LowerBound + ($UpperBound * $RANDOM) / ($RandomMax + 1) ))
-
-        # Use sed to grab the random line
-        background=$(sed -n "$RandomLine{p;q;}" "${tmp}")
     else # a file, should be a picture
         background="${target}"
     fi
@@ -116,10 +105,10 @@ createlockpic() {
 
 loop() {
     pool=`find ${target}* -type f | sort -R`
-    while true
+    while [ ! -z "${pool}" ]
     do  for target in ${pool}
         do  setbg ${target}
-            sleep ${delay}
+            sleep ${setbg_delay}
         done
     done
 }
@@ -135,7 +124,13 @@ setbg() {
     definebg
     displaybg
     showpath
+}
+
+lock() {
+    checktarget
+    pickpic
     createlockpic
+    showpath
 }
 
 main() {
@@ -144,10 +139,7 @@ main() {
     case ${action} in
         ## keep this in sync with options in checkcli
         'lock')
-            checktarget
-            pickpic
-            createlockpic
-            showpath
+            lock
             ;;
         'redisplay') # just redisplay bg, adjusts new screen sizes
             displaybg
