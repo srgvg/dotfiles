@@ -164,6 +164,9 @@ alias gls='git lol'
 alias gl='git lola'
 alias gu='git up'
 alias gps='git svn rebase && git svn dcommit'
+gurp() {
+    git up && git co ${1:-devel} && git rebase && git push svg ${1:-devel}
+}
 
 # svn shortcuts
 alias svn-addall='svn add `svn status | grep ?`'
