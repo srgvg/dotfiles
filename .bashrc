@@ -128,7 +128,6 @@ alias diff='diff -u'
 alias v="vcsh"
 alias vs="vcsh status"
 alias poweroff="sudo poweroff"
-alias dmesg="pydmesg"
 
 alias as='apt-cache search'
 alias ash='apt-cache show'
