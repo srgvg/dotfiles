@@ -123,7 +123,6 @@ export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
 alias poweroff='sudo /sbin/poweroff'
-alias geek="setbg geek"
 
 alias diff='diff -u'
 alias v="vcsh"
