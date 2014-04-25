@@ -15,13 +15,31 @@ elif [ ! -z "$spotify" ]; then
 fi
 
 case "${player}=${action}" in
-    # PLAY
+    # PLAY/TOGGLE
     "spotify=play")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause
         ;;
     "nuvola=play")
         nuvolaplayer-client toggle
+        ;;
+
+    # PLAY/START
+    "spotify=start")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+           /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
+        ;;
+    "nuvola=start")
+        nuvolaplayer-client play
+        ;;
+
+    # PLAY/STOP
+    "spotify=stop")
+        dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
+           /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause
+        ;;
+    "nuvola=stop")
+        nuvolaplayer-client pause
         ;;
 
     # NEXT
@@ -91,7 +109,7 @@ case "${player}=${action}" in
 
     # No player and/or no action
     *)
-        echo "$0 [play|next|prev|getTitle|getArtist|getAlbum|getStatus]"
+        echo "$0 [start|stop|play|next|prev|getTitle|getArtist|getAlbum|getStatus]"
         ;;
 esac
 
