@@ -2,12 +2,16 @@
 
 nuvola=$(pidof nuvolaplayer)
 spotify=$(pidof spotify)
+tomahawk=$(pidof tomahawk)
 action=$1
 
 # nuvolaplayer gets priority
 if [ -z "$spotify" -a \
+     -z "$tomahawk" -a \
      -z "$nuvola" ]     ; then
     echo "No running mediaplayer found."
+elif [ ! -z "$tomahawk" ]; then
+    player="tomahawk"
 elif [ ! -z "$nuvola" ]; then
     player="nuvola"
 elif [ ! -z "$spotify" ]; then
@@ -23,6 +27,9 @@ case "${player}=${action}" in
     "nuvola=play")
         nuvolaplayer-client toggle
         ;;
+    "tomahawk=play")
+        tomahawk --playpause
+        ;;
 
     # PLAY/START
     "spotify=start")
@@ -31,6 +38,9 @@ case "${player}=${action}" in
         ;;
     "nuvola=start")
         nuvolaplayer-client play
+        ;;
+    "tomahawk=start")
+        tomahawk --play
         ;;
 
     # PLAY/STOP
@@ -41,6 +51,9 @@ case "${player}=${action}" in
     "nuvola=stop")
         nuvolaplayer-client pause
         ;;
+    "tomahawk=stop")
+        tomahawk --stop
+        ;;
 
     # NEXT
     "spotify=next")
@@ -50,6 +63,9 @@ case "${player}=${action}" in
     "nuvola=next")
         nuvolaplayer-client next
         ;;
+    "tomahawk=next")
+        tomahawk --next
+        ;;
 
     # PREV
     "spotify=prev")
@@ -58,6 +74,9 @@ case "${player}=${action}" in
         ;;
     "nuvola=prev")
         nuvolaplayer-client prev
+        ;;
+    "tomahawk=prev")
+        tomahawk --prev
         ;;
 
     # TITLE
