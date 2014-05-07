@@ -52,6 +52,9 @@
 	igd = ls-files --others -i --exclude-standard 
 	ca = commit --all
 
+    # http://vstone.eu/github-pull-requests-as-seen-by-git/
+    fpr = !sh -c \"git fetch ${1} pull/${2}/head:pr/${2}\" -
+
 [push]
 	# git push will by default push all branches that have the same name on the remote
 	# to limit this behavior to just the current branch, set this configuration option:
