@@ -1,72 +1,72 @@
 [user]
-	name = Serge van Ginderachter
-	email = serge@vanginderachter.be
+    name = Serge van Ginderachter
+    email = serge@vanginderachter.be
 
 [core]
-	editor = vim
+    editor = vim
 
 [color]
-	ui = auto
-	status = always
+    ui = auto
+    status = always
 
 [color "branch"]
-    	current = yellow reverse
-    	local = yellow
-    	remote = green
+    current = yellow reverse
+    local = yellow
+    remote = green
 
 [color "diff"]
-    	meta = yellow bold
-    	frag = magenta bold
-    	old = red bold
-    	new = green bold
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
 
 [color "status"]
-    	added = yellow
-   	changed = green
-	untracked = cyan
+    added = yellow
+    changed = green
+    untracked = cyan
 
 [sendemail]
-	smtpserver = smtp.gmail.com
-	smtpserverport = 587
-	smtpencryption = tls
-	smtpuser = serge@vanginderachter.be
+    smtpserver = smtp.gmail.com
+    smtpserverport = 587
+    smtpencryption = tls
+    smtpuser = serge@vanginderachter.be
 
 [alias]
-	br = branch
-	ci = commit
-	co = checkout
-	df = diff
-        dfs = "! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index"
-	st = status -sb
-	ls = ls-files
-	ls-untracked = ls-files --others
-	up = remote update
-        show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
-	changed = whatchanged --stat 
-	info = "!git remote -v && git branch --color=always --all -vv && git st"
-	lol =  log --graph --decorate --abbrev-commit       --pretty=custom
-	lola = log --graph --decorate --abbrev-commit --all --pretty=custom
-	rm-deleted = !git rm $(git ls-files --deleted)
-	rm-untracked = !rm -v $(git ls-files --others)
-	tags = !sh -c \"git tag | sort -V\"
-	igd = ls-files --others -i --exclude-standard 
-	ca = commit --all
+    br = branch
+    ci = commit
+    co = checkout
+    df = diff
+    dfs = "! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index"
+    st = status -sb
+    ls = ls-files
+    ls-untracked = ls-files --others
+    up = remote update
+    show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
+    changed = whatchanged --stat 
+    info = "!git remote -v && git branch --color=always --all -vv && git st"
+    lol =  log --graph --decorate --abbrev-commit       --pretty=custom
+    lola = log --graph --decorate --abbrev-commit --all --pretty=custom
+    rm-deleted = !git rm $(git ls-files --deleted)
+    rm-untracked = !rm -v $(git ls-files --others)
+    tags = !sh -c \"git tag | sort -V\"
+    igd = ls-files --others -i --exclude-standard 
+    ca = commit --all
 
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
     fpr = !sh -c \"git fetch ${1} pull/${2}/head:pr/${2}\" -
 
 [push]
-	# git push will by default push all branches that have the same name on the remote
-	# to limit this behavior to just the current branch, set this configuration option:
-	default = tracking
-	#default = matching
+    # git push will by default push all branches that have the same name on the remote
+    # to limit this behavior to just the current branch, set this configuration option:
+    default = tracking
+    #default = matching
 
 [branch]
-	autosetuprebase = always
+    autosetuprebase = always
 
 [diff]
-	renames = copies
+    renames = copies
 
 [pretty]
-	onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
-	custom = %C(bold blue)%h%C(reset) %C(bold green)%ar%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
+    onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
+    custom = %C(bold blue)%h%C(reset) %C(bold green)%ar%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
