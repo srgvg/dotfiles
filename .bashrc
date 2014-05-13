@@ -143,7 +143,7 @@ alias ping1="ping -c 1 "
 alias ping3="ping -c 3 "
 alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution: %wpx x %hpx\nColors: %k'"
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
-alias sshnc="ssh -o ControlPath=none"
+alias ncssh="ssh -o ControlPath=none"
 
 alias copy='xclip -in -selection c'
 alias paste='xclip -out -selection c'
