@@ -133,8 +133,8 @@ alias as='apt-cache search'
 alias ash='apt-cache show'
 alias ai='sudo aptitude install'
 alias aud='sudo aptitude update'
-alias aug='sudo aptitude upgrade'
-alias auu='au ; asu'
+alias aug='sudo aptitude full-upgrade'
+alias auu='aud ; aug'
 alias dL='dpkg -L'
 
 alias swappy="/sbin/sysctl vm.swappiness"
