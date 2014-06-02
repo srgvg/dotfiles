@@ -391,6 +391,11 @@ for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border 
 for_window [window_role="SSHASKPASS"]   floating enable, border pixel 10
 for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
 
+# Teamviewer
+assign [class="Wine" instance="TeamViewer.exe"]  → "8"
+for_window [class="Wine" instance="TeamViewer.exe"]     floating enable
+#for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
+
 # Remote Desktop Client
 #for_window [class="Remmina" instance="remmina" title="Remmina Remote Desktop Client"] floating enable
 for_window [class="Remmina" instance="remmina"] layout tabbed
