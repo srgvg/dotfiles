@@ -383,13 +383,14 @@ for_window [class="Gnome-terminal"]                     floating enable, border 
 
 # Tools
 for_window [class="SpiderOak"]                          floating enable
-for_window [class="Gnome-calculator"]                   floating enable
+for_window [class="Gcalctool"]                          floating enable
 for_window [class="SparkleShare"]                       floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"] floating enable
 for_window [class="Nautilus" instance="file_progress"]  floating enable, border pixel 2
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border none
 for_window [window_role="SSHASKPASS"]   floating enable, border pixel 10
 for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
+for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"] floating enable
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
@@ -406,8 +407,8 @@ assign [class="Remmina" instance="remmina"] → "8"
 assign [class="Wireshark" instance="wireshark"] → "7"
 
 # Browsers
-assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser)" window_role="browser"]  →   "1"
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|chromium-browser|Navigator)" window_role="browser"] layout tabbed
+assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser)" window_role="browser"]  →   "1"
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"] layout tabbed
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Preferences|pop-up|setup)" ] floating enable
 
 # Messaging
@@ -454,7 +455,6 @@ new_float   pixel 1
 exec --no-startup-id "unagi &"
 exec --no-startup-id "launch-screen dunst -print"
 exec --no-startup-id "setbg redisplay"
-exec --no-startup-id "spotify-notify.py -ms &"
 exec --no-startup-id "autocutsel -selection CLIPBOARD &"
 exec --no-startup-id "unclutter &"
 exec --no-startup-id "numlockx on"
@@ -465,6 +465,7 @@ exec "nm-applet &"
 exec "gnome-sound-applet &"
 exec "xfce4-power-manager &"
 exec "dropbox start"
+exec "seafile-applet &"
 exec "chromium-browser-facebook &"
 exec "sleep 1; chromium-browser-google &"
 exec "spotify &"
