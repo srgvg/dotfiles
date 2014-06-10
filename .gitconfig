@@ -43,7 +43,7 @@
     up = remote update
     show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
     changed = whatchanged --stat 
-    info = "!git remote -v && git branch --color=always --all -vv && git st"
+    myinfo = "!git remote -v && git branch --color=always --all -vv && git st"
     lol =  log --graph --decorate --abbrev-commit       --pretty=custom
     lola = log --graph --decorate --abbrev-commit --all --pretty=custom
     rm-deleted = !git rm $(git ls-files --deleted)
