@@ -194,6 +194,9 @@ mkcd () {
 	mkdir -v $1 && cd $1
 	}
 
+# quick character count
+wcc() { echo "$*" | wc -c; }
+
 # This will take you to the relevant part of the man page,
 # so you can see the description of the switch underneath.
 manswitch () {
