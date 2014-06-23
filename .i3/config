@@ -475,7 +475,7 @@ exec "sleep 3; browse-private &"
 ## exec_always
 
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 5; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
+exec sleep 7; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
 
 # set keyboard
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/

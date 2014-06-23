@@ -1,0 +1,17 @@
+#!/bin/bash
+
+. ~/etc/defaults
+
+on_exit() {
+    ssh ${irssi_host} -o PermitLocalCommand=no "pkill -f .irssi/fnotify"
+    ssh ${irssi_host} -o PermitLocalCommand=no "true > .irssi/fnotify"
+}
+trap on_exit INT TERM EXIT
+
+ssh ${irssi_host} -o PermitLocalCommand=no \
+    "cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
+    while read heading message
+    do
+        notify-send -u normal "${heading}" "${message}";
+    done
+

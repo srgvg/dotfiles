@@ -29,6 +29,11 @@ case ${profile} in
         ;;
     *|private|default)
         OPTIONS="-new-tab"
+        if [[ $PARAMS == *renew* ]]
+        then
+            pkill -f 'firefox -new-tab'
+            PARAMS=""
+        fi
         ;;
 esac
 

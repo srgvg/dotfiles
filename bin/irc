@@ -1,0 +1,7 @@
+#!/bin/bash
+
+. ~/etc/defaults
+
+fnotify_irssi &
+ssh -X ${irssi_host} -t ~/bin/launch-screen irssi
+
