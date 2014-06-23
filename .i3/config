@@ -408,9 +408,10 @@ assign [class="Remmina" instance="remmina"] → "8"
 assign [class="Wireshark" instance="wireshark"] → "7"
 
 # Browsers
-assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser)" window_role="browser"]  →   "1"
+assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"] layout tabbed
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Preferences|pop-up|setup)" ] floating enable
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Preferences|pop-up|setup|About)" ] floating enable
+
 
 # Messaging
 assign [window_role="irc"]                          →   "2"
@@ -466,9 +467,8 @@ exec "gnome-sound-applet &"
 exec "xfce4-power-manager &"
 exec "dropbox start"
 exec "seafile-applet &"
-exec "chromium-browser-facebook &"
-exec "sleep 1; chromium-browser-google &"
 exec "spotify &"
+exec "browse-persona &"
 
 #exec "transmission-gtk --minimized &"
 

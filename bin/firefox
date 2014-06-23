@@ -1,0 +1,37 @@
+#!/bin/bash -x
+
+# set browser location and name
+defaultpath="/usr/bin/"
+defaultname="firefox"
+
+# how were we launched?
+scriptname=`basename $0`
+
+# retrieve profilename from our basename
+profile=`echo ${scriptname} | sed -e "s@^${defaultname}@@" -e "s@^-@@"`
+
+# defaults settings
+defaultcommand=${defaultpath}${defaultname}
+searchoptions="https://duckduckgo.com/?q=`echo $* | sed 's/\s/+/g'`"
+
+# defaults
+OPTIONS=""
+PARAMS="$*"
+
+# match profile name to profile dir and options
+case ${profile} in
+    "persona")
+        OPTIONS="-P persona -no-remote"
+        ;;
+    "duck")
+        OPTIONS="-new-tab"
+        PARAMS="${searchoptions}"
+        ;;
+    *|private|default)
+        OPTIONS="-new-tab"
+        ;;
+esac
+
+# launch the browser now
+exec $defaultcommand $OPTIONS $PARAMS >/dev/null 2>&1 &
+
