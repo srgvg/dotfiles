@@ -410,8 +410,7 @@ assign [class="Wireshark" instance="wireshark"] → "7"
 # Browsers
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"] layout tabbed
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" window_role="(Preferences|pop-up|setup|About)" ] floating enable
-
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Places|Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
 
 # Messaging
 assign [window_role="irc"]                          →   "2"
@@ -469,6 +468,7 @@ exec "dropbox start"
 exec "seafile-applet &"
 exec "spotify &"
 exec "browse-persona &"
+exec "sleep 3; browse-private &"
 
 #exec "transmission-gtk --minimized &"
 
