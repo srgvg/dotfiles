@@ -28,6 +28,7 @@ case $HOSTNAME in
                 echo 'Detected ACD Samsung monitor, setting up dual screen.'
             fi
         fi
+        xrandr --dpi 96
         case $action in
             ''|lap*)
                 xrandr --output LVDS1   --mode 1366x768 --primary --pos 0x0
