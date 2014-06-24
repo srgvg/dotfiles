@@ -212,3 +212,5 @@ set nofoldenable
 " YAML stuff
 au BufNewFile,BufRead *.yaml,*.yml so ~/.vim/yaml.vim
 
+" indentLine
+let g:indentLine_color_term = 239
