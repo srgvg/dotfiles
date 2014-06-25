@@ -468,15 +468,15 @@ exec "xfce4-power-manager &"
 exec "dropbox start"
 exec "seafile-applet &"
 exec "spotify &"
-exec "browse-persona &"
-exec "sleep 3; browse-private &"
+exec "firefox-persona &"
+exec "sleep 1; firefox-private &"
 
 #exec "transmission-gtk --minimized &"
 
 ## exec_always
 
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 7; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
+exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'sparkleshare  start; ircwindow'"
 
 # set keyboard
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
