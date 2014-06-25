@@ -454,9 +454,10 @@ new_float   pixel 1
 
 # Background stuff
 exec --no-startup-id "unagi &"
-exec --no-startup-id "launch-screen dunst -print"
+exec --no-startup-id "launch-screen _i3_     dunst -print"
+exec --no-startup-id "launch-screen _i3_ add autocutsel -verbose -debug -selection CLIPBOARD"
+exec --no-startup-id "launch-screen _i3_ add autocutsel -verbose -debug -selection PIMARY"
 exec --no-startup-id "setbg redisplay"
-exec --no-startup-id "autocutsel -selection CLIPBOARD &"
 exec --no-startup-id "numlockx on"
 exec --no-startup-id "which setbg-loop && setbg-loop"
 

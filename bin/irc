@@ -3,5 +3,6 @@
 . ~/etc/defaults
 
 fnotify_irssi &
+sleep 1
 ssh -X ${irssi_host} -t ~/bin/launch-screen irssi
 

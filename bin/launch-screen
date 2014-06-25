@@ -1,28 +1,104 @@
 #!/bin/bash
 
-name="$1"
-if [ -x "`which "$1"`" ]
-then
-    options="-d -m"
-    command="$*"
-elif [ -x "`which "$2"`" ]
-then
-    shift
-    options="-d -m"
-    command="$*"
-else
-    options=""
-    command=""
-fi
+session_exists() {
+    if (screen -list | grep "\.$name" > /dev/null)
+    then    return 0
+    else    return 1
+    fi
+    }
 
+check_command() {
+    if [ -x "`which "$1"`" ]
+    then  # command starts at first parameter
+        cmd="_start_or_attach"
 
-if screen -list | grep "\.${name}" > /dev/null
-then
-    screen -Rx ${name}
-else
-    screen -S ${name} -t ${name} ${options} ${command}
-    echo "Created new session '${name}': ${command}"
+    elif [ -x "`which "$2"`" ]
+    then  # command starts at second parameter, first is session name
+        cmd="_start_or_attach"
+        shift # name is gone
+
+    elif [ -x "`which "$3"`" ]
+    then  # command starts at third parameter,
+          # first is session name, second a special commandoption
+        shift # name is gone
+        cmd=$1
+        shift # cmd is gone
+
+    else # no command, just reattach
+        cmd="_start_or_attach"
+        shift
+        shift
+    fi
+    command=$*
+    }
+
+not_empty() {
+    if [ ! -z "$*" ]
+    then    return 0
+    else    return 1
+    fi
+    }
+
+build_options() {
+    case $cmd in
+        _start_or_attach)
+            if session_exists
+            then # attach
+                echo "attach to screen session $name"
+                options="-Rx $name"
+                command=""
+            else # start new
+                if not_empty $command
+                then
+                    echo "start new screen session $name"
+                    options="-S $name -t $name -d -m"
+                else
+                    options=""
+                fi
+            fi
+            ;;
+        add)
+            if not_empty $command
+            then
+                if session_exists
+                then # add new window and command
+                    echo "add new command to session $name"
+                    options="-S $name -X screen"
+                else # start new
+                    echo "start new screen session $name"
+                    options="-S $name -t $name -d -m"
+                fi
+            else
+                options=""
+            fi
+            ;;
+        *)
+            options=""
+            command=""
+            ;;
+    esac
+    }
+
+execute_screen() {
+    screen $options $command
+    }
+
+main() {
+    if [ -z "$1" ]
+    then
+        echo "missing session name" >&2
+    else
+        name="$1"
+        check_command $*
+        build_options $*
+        if [ ! -z "$options$command" ]
+        then
+            execute_screen
+        else
+            echo "no command given"
+        fi
+    fi
     screen -list
-fi
-exit 0
+    }
 
+main $*
