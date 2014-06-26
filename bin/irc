@@ -2,7 +2,24 @@
 
 . ~/etc/defaults
 
+# make sure fnotify process gets killed afterwards
+on_exit() {
+    pkill -f -SIGTERM `which fnotify_irssi` || ( \
+        sleep 1 \
+        kill -9 $fnotify_irssi_pid)
+    pkill -f 'tail.*.irssi/fnotify'
+}
+trap on_exit INT TERM KILL EXIT
+
+# start the controlmaster (needs persist timeout)
+ssh ${irssi_host} :
+
+## now reuse the controlmaster
+# start irssi notification channel
 fnotify_irssi &
-sleep 1
+fnotify_irssi_pid=$!
+
+# start irssi
 ssh -X ${irssi_host} -t ~/bin/launch-screen irssi
+
 

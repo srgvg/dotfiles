@@ -3,10 +3,12 @@
 . ~/etc/defaults
 
 on_exit() {
-    ssh ${irssi_host} -o PermitLocalCommand=no "pkill -f .irssi/fnotify"
+    # kill remote process
+    ssh ${irssi_host} -o PermitLocalCommand=no "pkill -f 'tail.*.irssi/fnotify'"
+    # clear fnotify file
     ssh ${irssi_host} -o PermitLocalCommand=no "true > .irssi/fnotify"
 }
-trap on_exit INT TERM EXIT
+trap on_exit INT TERM KILL EXIT
 
 ssh ${irssi_host} -o PermitLocalCommand=no \
     "cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
