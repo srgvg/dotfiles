@@ -214,3 +214,8 @@ au BufNewFile,BufRead *.yaml,*.yml so ~/.vim/yaml.vim
 
 " indentLine
 let g:indentLine_color_term = 239
+
+" Every time you forget to sudo before opening a file and you do not have the
+" rights to save it, you just :w!!, write the superuser password and the file
+" gets saved.
+cmap w!! w !sudo tee % >/dev/null
