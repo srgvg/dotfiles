@@ -17,7 +17,7 @@ execute_commands()
 
 if [ -z "${args}" ]
 then
-	/usr/bin/pastebinit
+	/usr/bin/pastebinit | tr -d '\n' | xclip -in -selection clipboard 
 
 elif [ "$(basename $0)" = "execho" ]
 then
