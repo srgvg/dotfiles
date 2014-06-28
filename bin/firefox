@@ -24,18 +24,21 @@ case ${profile} in
         OPTIONS="-P persona -no-remote"
         ;;
     "duck")
-        OPTIONS=""
+        OPTIONS="-new-tab"
         PARAMS="${searchoptions}"
         ;;
     *|private|default)
         OPTIONS="-new-tab"
-        if [[ $PARAMS == *renew* ]]
-        then
-            pkill -f 'firefox -new-tab'
-            PARAMS=""
-        fi
         ;;
 esac
+
+# option to kill firefox if needed
+# "firefox is already running"
+if [[ $PARAMS == *renew* ]]
+then
+    pkill -f "$defaultname $OPTIONS"
+    PARAMS=""
+fi
 
 # launch the browser now
 exec $defaultcommand $OPTIONS $PARAMS >/dev/null 2>&1 &
