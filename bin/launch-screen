@@ -7,31 +7,6 @@ session_exists() {
     fi
     }
 
-check_command() {
-    if [ -x "`which "$1"`" ]
-    then  # command starts at first parameter
-        cmd="_start_or_attach"
-
-    elif [ -x "`which "$2"`" ]
-    then  # command starts at second parameter, first is session name
-        cmd="_start_or_attach"
-        shift # name is gone
-
-    elif [ -x "`which "$3"`" ]
-    then  # command starts at third parameter,
-          # first is session name, second a special commandoption
-        shift # name is gone
-        cmd=$1
-        shift # cmd is gone
-
-    else # no command, just reattach
-        cmd="_start_or_attach"
-        shift
-        shift
-    fi
-    command=$*
-    }
-
 not_empty() {
     if [ ! -z "$*" ]
     then    return 0
@@ -39,7 +14,36 @@ not_empty() {
     fi
     }
 
-build_options() {
+check_options() {
+    if [ -x "`which "$3"`" ]
+    then  # command starts at third parameter,
+          # first is session name, second a special commandoption
+        name="$1"
+        shift # name is gone
+        cmd="$1"
+        shift # cmd is gone
+        command="$*"
+
+    elif [ -x "`which "$2"`" ]
+    then  # command starts at second parameter, first is session name
+        cmd="_start_or_attach"
+        name="$1"
+        shift # name is gone
+        command="$*"
+
+    elif [ -x "`which "$1"`" ]
+    then  # command starts at first parameter
+        cmd="_start_or_attach"
+        name="$1"
+        command="$*"
+
+    else # no command, just reattach
+        name="$1"
+        cmd="_start_or_attach"
+    fi
+    }
+
+build_screen_options() {
     case $cmd in
         _start_or_attach)
             if session_exists
@@ -52,7 +56,7 @@ build_options() {
                 then
                     echo "start new screen session $name"
                     options="-S $name -t $name -d -m"
-                else
+                else # will fail
                     options=""
                 fi
             fi
@@ -84,19 +88,18 @@ execute_screen() {
     }
 
 main() {
-    if [ -z "$1" ]
+    if not_empty $*
     then
-        echo "missing session name" >&2
-    else
-        name="$1"
-        check_command $*
-        build_options $*
+        check_options $*
+        build_screen_options $*
         if [ ! -z "$options$command" ]
         then
             execute_screen
         else
             echo "no command given"
         fi
+    else
+        echo "missing session name" >&2
     fi
     screen -list
     }
