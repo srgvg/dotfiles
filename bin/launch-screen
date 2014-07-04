@@ -68,6 +68,8 @@ build_screen_options() {
                 then # add new window and command
                     echo "add new command to session $name"
                     options="-S $name -X screen"
+                    # avoid race condition with multiple launch commands & starting new
+                    sleep 1
                 else # start new
                     echo "start new screen session $name"
                     options="-S $name -t $name -d -m"
