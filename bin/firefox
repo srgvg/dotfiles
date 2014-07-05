@@ -23,12 +23,11 @@ case ${profile} in
     "me"|"persona*")
         OPTIONS="-P persona -no-remote"
         ;;
-    "duck")
+    *)
         OPTIONS="-new-tab"
-        PARAMS="${searchoptions}"
-        ;;
-    *|private|default)
-        OPTIONS="-new-tab"
+        if [ ${profile} = "duck" ]
+        then    PARAMS="${searchoptions}"
+        fi
         ;;
 esac
 
