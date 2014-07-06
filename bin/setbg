@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ## Parameters
 
@@ -104,12 +104,10 @@ createlockpic() {
 }
 
 loop() {
-    pool=`find ${target}* -type f | sort -R`
-    while [ ! -z "${pool}" ]
-    do  for target in ${pool}
-        do  setbg ${target}
-            sleep ${setbg_delay}
-        done
+    while true
+    do
+        setbg
+        sleep ${setbg_delay}
     done
 }
 

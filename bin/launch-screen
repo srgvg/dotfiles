@@ -15,7 +15,7 @@ not_empty() {
     }
 
 check_options() {
-    if [ -x "`which "$3"`" ]
+    if [ -x "`which "$3" 2>/dev/null`" ]
     then  # command starts at third parameter,
           # first is session name, second a special commandoption
         name="$1"
@@ -24,14 +24,14 @@ check_options() {
         shift # cmd is gone
         command="$*"
 
-    elif [ -x "`which "$2"`" ]
+    elif [ -x "`which "$2" 2>/dev/null`" ]
     then  # command starts at second parameter, first is session name
         cmd="_start_or_attach"
         name="$1"
         shift # name is gone
         command="$*"
 
-    elif [ -x "`which "$1"`" ]
+    elif [ -x "`which "$1" 2>/dev/null`" ]
     then  # command starts at first parameter
         cmd="_start_or_attach"
         name="$1"
@@ -84,6 +84,7 @@ build_screen_options() {
     }
 
 execute_screen() {
+    echo Executing: screen $options $command
     screen $options $command
     }
 
