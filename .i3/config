@@ -457,9 +457,7 @@ new_float   pixel 1
 
 # Background stuff
 exec --no-startup-id "unagi &"
-exec --no-startup-id "launch-screen i3     dunst -print"
-exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD"
-exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
+exec --no-startup-id "launch-screen i3 dunst -print; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "numlockx on"
 exec --no-startup-id "which setbg-loop && setbg-loop"
@@ -471,8 +469,7 @@ exec "xfce4-power-manager &"
 exec "dropbox start"
 exec "seafile-applet &"
 exec "spotify &"
-exec "firefox-persona &"
-exec "sleep 1; firefox-private &"
+exec "firefox-me &"
 
 #exec "transmission-gtk --minimized &"
 
