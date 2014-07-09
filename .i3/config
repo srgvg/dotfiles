@@ -414,7 +414,8 @@ for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Places|
 
 # IRC
 assign [window_role="irc"]                          →   "2"
-for_window [window_role="irc"]                      border none
+#for_window [window_role="irc"]                      border none    only when
+#maximized?
 
 # Pidgin
 assign [class="Pidgin"]                             →   "2"
@@ -432,8 +433,9 @@ assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDia
 # KeePass
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)"]      floating enable
 for_window [class="KeePass2" instance="keepass2"] floating enable
-assign [class="KeePass2" instance="keepass2"]                   → "9"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually)"]          → "9"
+# https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "9"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "9"
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
