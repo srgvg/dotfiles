@@ -22,10 +22,16 @@ case $HOSTNAME in
         then
             checkmon LVDS1 1366x768     ; laptop=$?
             checkmon DP1 2560x1440      ; acdsamsung=$?
+            checkmon VGA1 VGA1           ; VGA1=$?
             if [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
             then
                 action=acd
                 echo 'Detected ACD Samsung monitor, setting up dual screen.'
+            fi
+            if [ $laptop -eq 0 -a $VGA1 -eq 0 ]
+            then
+                action=vga
+                echo 'Detected VGA monitor, setting up dual screen.'
             fi
         fi
         xrandr --dpi 96
@@ -38,9 +44,9 @@ case $HOSTNAME in
         	    xrandr --output HDMI1   --off
                 ;;
         	vga)
-                xrandr --output LVDS1   --mode 1366x768 --primary --pos 0x0 \
-                       --output VGA1    --auto --noprimary --pos 1366x0
-                xrandr --output LVDS1   --primary
+                xrandr --output LVDS1   --mode 1366x768 --noprimary --pos 0x0 \
+                       --output VGA1    --auto --primary --pos 1366x0
+                xrandr --output VGA1    --primary
         	    xrandr --output DP1     --off
         	    xrandr --output HDMI1   --off
                 ;;
