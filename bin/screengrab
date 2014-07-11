@@ -3,7 +3,23 @@
 sleep 1
 imagefile="$HOME/Downloads/$(date +%Y%m%d%H%M%S).png"
 
-if /usr/bin/scrot --select ${imagefile}
+case $1 in
+    full)
+        options="--multidisp"
+        ;;
+    screen)
+        options=""
+        ;;
+    window)
+        options="--focused"
+        ;;
+    select|*)
+        options="--select"
+        ;;
+esac
+
+echo /usr/bin/scrot --silent $options ${imagefile}
+if /usr/bin/scrot --silent $options ${imagefile}
 then
     notify-send --category=transfer.complete \
         --urgency=low --icon=gtk-info \

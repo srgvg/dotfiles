@@ -203,7 +203,10 @@ bindsym $mod+d exec nautilus
 bindsym $mod+Control+c exec terminsator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 
 # Screenshot
-bindsym Print exec screengrab
+bindsym Print exec screengrab select
+bindsym Shift+Print exec screengrab window
+bindsym Control+Print exec screengrab screen
+bindsym Shift+Control+Print exec screengrab full
 
 #
 # volume and media controls
