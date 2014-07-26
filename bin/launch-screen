@@ -1,7 +1,7 @@
 #!/bin/bash
 
 session_exists() {
-    if (screen -list | grep "\.$name" > /dev/null)
+    if (screen -list | grep "\.$sname" > /dev/null)
     then    return 0
     else    return 1
     fi
@@ -18,7 +18,7 @@ check_options() {
     if [ -x "`which "$3" 2>/dev/null`" ]
     then  # command starts at third parameter,
           # first is session name, second a special commandoption
-        name="$1"
+        sname="$1"
         shift # name is gone
         cmd="$1"
         shift # cmd is gone
@@ -27,20 +27,21 @@ check_options() {
     elif [ -x "`which "$2" 2>/dev/null`" ]
     then  # command starts at second parameter, first is session name
         cmd="_start_or_attach"
-        name="$1"
+        sname="$1"
         shift # name is gone
         command="$*"
 
     elif [ -x "`which "$1" 2>/dev/null`" ]
     then  # command starts at first parameter
         cmd="_start_or_attach"
-        name="$1"
+        sname="$1"
         command="$*"
 
     else # no command, just reattach
-        name="$1"
+        sname="$1"
         cmd="_start_or_attach"
     fi
+    wname=`echo $command | sed 's/\s/_/g'`
     }
 
 build_screen_options() {
@@ -48,14 +49,14 @@ build_screen_options() {
         _start_or_attach)
             if session_exists
             then # attach
-                echo "attach to screen session $name"
-                options="-Rx $name"
+                echo "attach to screen session $sname"
+                options="-Rx $sname"
                 command=""
             else # start new
                 if not_empty $command
                 then
-                    echo "start new screen session $name"
-                    options="-S $name -t $name -d -m"
+                    echo "start new screen session $sname"
+                    options="-S $sname -t $wname -d -m"
                 else # will fail
                     options=""
                 fi
@@ -66,11 +67,11 @@ build_screen_options() {
             then
                 if session_exists
                 then # add new window and command
-                    echo "add new command to session $name"
-                    options="-S $name -X screen"
+                    echo "add new command to session $sname"
+                    options="-S $sname -X screen"
                 else # start new
-                    echo "start new screen session $name"
-                    options="-S $name -t $name -d -m"
+                    echo "start new screen session $sname"
+                    options="-S $sname -t $wname -d -m"
                 fi
             else
                 options=""
