@@ -1,0 +1,7 @@
+#!/bin/sh
+
+host=$1
+port=${2:-443}
+[ -z "$host" ] && exit
+
+echo -n | openssl s_client -connect $host:$port | openssl x509 -noout -dates
