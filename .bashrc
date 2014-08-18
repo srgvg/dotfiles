@@ -180,6 +180,7 @@ alias upansible='cd /home/serge/src/ansible && git co devel && git up && git reb
 
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
+alias acdplay2="cd ~/acd; bin/acdplay2"
 alias acdplaybook="cd ~/acd; ansible-playbook -i ~/src/acd/ansible-data/inventory ~/src/acd/ansible-data/main.yml $*"
 alias deploy="acdplay -t deploy"
 
