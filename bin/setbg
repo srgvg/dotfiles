@@ -102,11 +102,18 @@ createlockpic() {
                             -extent ${disp_res} \
                             "${lockscreen_image}"
 }
+trap_loop() {
+    loop
+}
 
 loop() {
     while true
     do
+        # press ctrl-c to change wallpaper, or twice to exit
+        trap SIGINT
+        sleep 0.5
         setbg
+        trap trap_loop SIGINT
         sleep ${setbg_delay}
     done
 }
