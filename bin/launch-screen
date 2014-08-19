@@ -41,7 +41,7 @@ check_options() {
         sname="$1"
         cmd="_start_or_attach"
     fi
-    wname=`echo $command | sed 's/\s/_/g'`
+    wname=`echo $command | sed -e 's/-//g' -e 's/\s/_/g'`
     }
 
 build_screen_options() {
@@ -68,7 +68,7 @@ build_screen_options() {
                 if session_exists
                 then # add new window and command
                     echo "add new command to session $sname"
-                    options="-S $sname -X screen"
+                    options="-S $sname -X screen -t $wname"
                 else # start new
                     echo "start new screen session $sname"
                     options="-S $sname -t $wname -d -m"
