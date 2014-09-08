@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ y"$1" = ydo ]
+then
+    shift
+    rename -v 's/\s+/_/g' "$1"
+else
+    rename -n 's/\s+/_/g' "$1"
+fi
