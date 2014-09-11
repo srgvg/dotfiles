@@ -10,7 +10,7 @@ case $1 in
         sudo iscsiadm -m node --target iqn.2000-01.com.synology:vega.ymedia.6fbb064b96 --logout
         ;;
     *)
-        echo start or stop
+        echo $0 start|stop
         ;;
 esac
 
