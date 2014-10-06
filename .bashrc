@@ -176,7 +176,7 @@ alias a='ansible'
 alias ab='ansible-playbook'
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
 alias ahack='ps1extra ; . ~/ansible/hacking/env-setup'
-alias upansible='cd /home/serge/src/ansible/ansible && git co devel && git up && git rebase && git push svg devel'
+alias upansible='cd /home/serge/src/ansible/ansible && git co devel && git up && git rebase  && git submodule update --init --recursive && git push svg devel'
 
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
