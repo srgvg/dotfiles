@@ -175,7 +175,7 @@ alias svn-addall='svn add `svn status | grep ?`'
 alias a='ansible'
 alias ab='ansible-playbook'
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
-alias ahack='ps1extra ; . ~/src/ansible/hacking/env-setup'
+alias ahack='ps1extra ; . ~/ansible/hacking/env-setup'
 alias upansible='cd /home/serge/src/ansible/ansible && git co devel && git up && git rebase && git push svg devel'
 
 # milieuinfo
