@@ -150,6 +150,8 @@ alias copy='xclip -in -selection c'
 alias paste='xclip -out -selection c'
 alias shredit='shred --verbose --iterations 5 --zero --remove'
 
+alias r='ranger'
+
 # git shortcuts
 alias g='git'
 alias ga='git add'
