@@ -55,6 +55,11 @@
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
     fpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:pr_${1}\" -
 
+    # http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
+    ignored = !git ls-files -v | grep "^[[:lower:]]"
+    ignore = update-index assume-unchanged
+    unignore = update-index --no-assume-unchanged
+
 [push]
     # git push will by default push all branches that have the same name on the remote
     # to limit this behavior to just the current branch, set this configuration option:
