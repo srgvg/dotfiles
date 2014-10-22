@@ -280,7 +280,9 @@ client.urgent           $border_urgent      $border_urgent      $text_urgent
 #
 bar {
         id main
-        status_command i3status
+        #status_command i3status
+        # https://github.com/ultrabug/py3status
+        status_command py3status -c ~/.i3/i3status.conf
 
         # tray_output <none|primary|output>
         tray_output primary
