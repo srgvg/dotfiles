@@ -91,5 +91,4 @@ case $command in
 esac
 
 # trigger i3statusbar output if available
-killall -SIGUSR1 i3status py3status
-
+killall -USR1 py3status

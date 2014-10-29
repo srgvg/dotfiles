@@ -1,0 +1,15 @@
+#!/bin/bash
+
+image=$1
+shift
+caption=$*
+
+image_base=${image%.*}
+image_ext=${image##*.}
+
+width=$(identify -format %w ${image})
+convert -background '#0008' -fill white -gravity center \
+  -size ${width}x30 caption:"${caption}" \
+  ${image} +swap -gravity south -composite \
+  ${image_base}_wm.${image_ext}
+
