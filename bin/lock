@@ -30,8 +30,11 @@ fi
 
 # make sure music stops
 mediaplayer_cmd stop
-# lock screen with a background picture
-i3lock -i ~/.lockscreen.png -t
+
+# pause notifications
+killall -SIGUSR1 dunst # pause
+# lock screen with a background picture, then re-enable notifications
+(i3lock -i ~/.lockscreen.png --tiling --nofork ; killall -SIGUSR2 dunst) &
 
 # also suspend if told so
 if  [ "$sleep" = yes ]
