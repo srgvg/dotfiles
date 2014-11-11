@@ -1,27 +1,38 @@
 #!/bin/bash
 
 pwgen='/usr/bin/pwgen -N1'
-
 case $1 in
-    nor*)
-        [ -z $2 ] && L=30 || L=$2
+    # http://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
+    ''|*[!0-9]*)  # it's not a number 
+        TYPE=$1
+        PL=$2
+        ;;
+    *)
+        TYPE=normal
+        PL=$1
+        ;;
+esac
+case $TYPE in
+    lo*)
+        [ -z $PL ] && L=15 || L=$PL
+        pass=`$pwgen $L 1`
+        msg="low security, $L character length"
+        ;;
+    no*)
+        [ -z $PL ] && L=30 || L=$PL
         pass=`$pwgen -Bcn $L 1`
         msg="quite secure, $L character length"
         ;;
     hi*)
-        [ -z $2 ] && L=50 || L=$2
+        [ -z $PL ] && L=50 || L=$PL
         pass=`$pwgen -cnys $L 1`
         msg="very secure, $L character length"
         ;;
     xkcd)
-        [ -z $2 ] && L=4 || L=$2
+        [ -z $PL ] && L=4 || L=$PL
         # http://xkcd.com/936/
         pass=`shuf -n$L /usr/share/dict/words | tr -d '\n' | tr -d \' `
         msg="XKCD secure, $L word length"
-        ;;
-    *)
-        pass=`$pwgen $*`
-        msg="default settings"
         ;;
 esac
 
