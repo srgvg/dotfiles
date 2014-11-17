@@ -5,13 +5,12 @@
 on_exit() {
     # kill remote process
     ssh ${irssi_host} -o PermitLocalCommand=no "pkill -f 'tail.*.irssi/fnotify'"
-    # clear fnotify file
-    ssh ${irssi_host} -o PermitLocalCommand=no "true > .irssi/fnotify"
 }
 trap on_exit INT TERM KILL EXIT
 
 ssh ${irssi_host} -o PermitLocalCommand=no \
-    "cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
+    "on_exit() { true > .irssi/fnotify; }; trap on_exit INT TERM KILL EXIT;
+     cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
     while read heading message
     do
         notify-send -u normal "${heading}" "${message}";
