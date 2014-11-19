@@ -467,10 +467,7 @@ exec --no-startup-id "unagi &"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "numlockx on"
 # i3wm desktop managing stuff runing in a screen
-exec --no-startup-id "launch-screen i3 add dunst -print"
-exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD"
-exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
-exec --no-startup-id "launch-screen i3 add setbg-loop"
+exec --no-startup-id "launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
 
 # Desktop Apps
 exec "nm-applet &"
@@ -487,7 +484,7 @@ exec "keepass2 &"
 ## exec_always
 
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "ircwindow'"
+exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'echo ; ircwindow'"
 
 # set keyboard
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
