@@ -11,8 +11,8 @@ trap on_exit INT TERM KILL EXIT
 ssh ${irssi_host} -o PermitLocalCommand=no \
     "on_exit() { true > .irssi/fnotify; }; trap on_exit INT TERM KILL EXIT;
      cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
-    while read heading message
+    while read network channel message
     do
-        notify-send -u normal "${heading}" "${message}";
+        notify-send -u normal "${channel} (${network})" "${message}";
     done
 
