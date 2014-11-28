@@ -13,6 +13,6 @@ ssh ${irssi_host} -o PermitLocalCommand=no \
      cat .irssi/fnotify; tail -n 0 -f $HOME/.irssi/fnotify" | \
     while read network channel message
     do
-        notify-send -u normal "${channel} (${network})" "${message}";
+        notify-send -u normal "${network}  ${channel}" "${message}";
     done
 
