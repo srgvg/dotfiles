@@ -116,6 +116,7 @@ fi
 ## my custom stuff ##
 #####################
 
+export GOPATH=~/src/go/
 export VISUAL=vim
 export EDITOR=vim
 

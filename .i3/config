@@ -467,7 +467,7 @@ exec --no-startup-id "unagi &"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "numlockx on"
 # i3wm desktop managing stuff runing in a screen
-exec --no-startup-id "launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
+exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
 
 # Desktop Apps
 exec "nm-applet &"
