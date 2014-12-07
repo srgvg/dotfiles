@@ -123,6 +123,7 @@ export EDITOR=vim
 export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
+alias o='gnome-open'
 alias poweroff='sudo /sbin/poweroff'
 
 alias diff='diff -u'
