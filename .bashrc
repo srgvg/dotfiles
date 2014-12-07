@@ -99,6 +99,12 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
+
+## PATH
+
+# golang bin path
+PATH="$HOME/src/go/bin/:$PATH"
+
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
