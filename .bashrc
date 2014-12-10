@@ -99,6 +99,9 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
+
+## PATH
+
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
@@ -112,6 +115,9 @@ if [ -d "$HOME/bin2" ] ; then
     PATH="$HOME/bin2:$PATH"
 fi
 
+# golang bin path
+PATH="$HOME/src/go/bin:$PATH"
+
 #####################
 ## my custom stuff ##
 #####################
@@ -123,6 +129,7 @@ export EDITOR=vim
 export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
+alias o='gnome-open'
 alias poweroff='sudo /sbin/poweroff'
 
 alias diff='diff -u'
