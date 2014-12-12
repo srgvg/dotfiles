@@ -179,6 +179,9 @@ gurp() {
     git up && git co ${1:-devel} && git rebase && git push svg ${1:-devel}
 }
 
+# personal bash completions
+. .bash_completion.d/git-flow-completion.bash
+
 # svn shortcuts
 alias svn-addall='svn add `svn status | grep ?`'
 
