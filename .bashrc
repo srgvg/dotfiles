@@ -180,7 +180,13 @@ gurp() {
 }
 
 # personal bash completions
-. .bash_completion.d/git-flow-completion.bash
+if [ -d ~/.bash_completion.d ]
+then
+    for file in ~/.bash_completion.d/*
+    do
+        source $file
+    done
+fi
 
 # svn shortcuts
 alias svn-addall='svn add `svn status | grep ?`'
