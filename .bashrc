@@ -116,7 +116,7 @@ if [ -d "$HOME/bin2" ] ; then
 fi
 
 # golang bin path
-PATH="$HOME/src/go/bin:$PATH"
+PATH="/usr/local/go/bin:$HOME/src/go/bin:$PATH"
 
 #####################
 ## my custom stuff ##
