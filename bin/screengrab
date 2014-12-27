@@ -23,10 +23,10 @@ if /usr/bin/scrot --silent $options ${imagefile}
 then
     notify-send --category=transfer.complete \
         --urgency=low --icon=gtk-info \
-        "Screen grabbed" "saved to ${imagefile}"
+        "Screen grabbed - $1" "saved to ${imagefile}"
     echo -n ${imagefile} | xclip -in -selection clipboard
 else
     notify-send --category=transfer.error \
         --urgency=critical --icon=gtk-info \
-        "Screen grab  error" "tried saving to ${imagefile}"
+        "Screen grab error" "$1"
 fi
