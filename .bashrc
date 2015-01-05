@@ -131,6 +131,7 @@ export DEBEMAIL="serge@vanginderachter.be"
 
 alias o='gnome-open'
 alias poweroff='sudo /sbin/poweroff'
+alias li3='launch-screen i3'
 
 alias diff='diff -u'
 alias v="vcsh"
