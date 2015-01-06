@@ -249,22 +249,18 @@ font pango:Ubuntu Mono 10
 #
 # color defines
 
-#set $background #353535
 set $background #000000
-set $indicator  #0080FF
+set $indicator  #111111
 
 # A client which is not the focused one of its container.
 set $border_unfocused   #585858
 set $text_unfocused     #BDBDBD
 
 # A client currently focused in its container, but does not have focus now.
-#set $border_inactive    #225588
-set $border_inactive    #707070
-#set $text_inactive      #BDBDBD
-set $text_inactive      #C0C0C0
+set $border_inactive    #585858
+set $text_inactive      #FFFFFF
 
 # A client which currently has the focus.
-#set $border_focused     #0080FF
 set $border_focused     #A0A0A0
 set $text_focused       #FFFFFF
 
@@ -272,12 +268,12 @@ set $text_focused       #FFFFFF
 set $border_urgent      #FF0000
 set $text_urgent        #FFFFFF
 
-## client windows       border              background          text
-client.unfocused        $border_unfocused   $border_unfocused   $text_unfocused
-client.focused_inactive $border_inactive    $border_inactive    $text_inactive
-client.focused          $border_focused     $border_focused     $text_focused
-client.urgent           $border_urgent      $border_urgent      $text_urgent
-#client.placeholder      $border_unfocused   $border_unfocused   $text_unfocused
+## client windows       border              background          text                indicator
+client.unfocused        $border_unfocused   $border_unfocused   $text_unfocused     $indicator
+client.focused_inactive $border_inactive    $border_inactive    $text_inactive      $indicator
+client.focused          $border_focused     $border_focused     $text_focused       $indicator
+client.urgent           $border_urgent      $border_urgent      $text_urgent        $indicator
+#client.placeholder      $border_unfocused   $border_unfocused   $text_unfocused     $indicator
 
 #
 # status bar
@@ -312,7 +308,7 @@ bar {
         # Specifies whether the current binding mode indicator should be shown
         # or not. This is useful if you want to hide the workspace buttons but
         # still be able to see the current binding mode indicator.
-        #binding_mode_indicator yes
+        binding_mode_indicator yes
 
         colors {
 
@@ -327,17 +323,17 @@ bar {
 
             # workspace button when the workspace does not have focus and is not
             # active (visible) on any output. This will be the case for most workspaces.
-            inactive_workspace  $border_unfocused $background $text_unfocused $indicator
+            inactive_workspace  $border_unfocused $background $text_unfocused
 
             # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
             # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-            active_workspace    $border_inactive  $background $text_inactive  $indicator
+            active_workspace    $border_inactive  $background $text_inactive
 
             # color for a workspace button when the workspace has focus.
-            focused_workspace   $border_focused   $background $text_focused   $indicator
+            focused_workspace   $border_focused   $background $text_focused
 
             # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-            urgent_workspace    $border_urgent    $background $text_urgent    $indicator
+            urgent_workspace    $border_urgent    $background $text_urgent
 
         }
 }
@@ -361,7 +357,7 @@ force_focus_wrapping no
 
 # This configuration directive enables automatic workspace back_and_forth when
 # switching to the workspace that is currently focused.
-workspace_auto_back_and_forth no
+workspace_auto_back_and_forth yes
 
 # If an application on another workspace sets an urgency hint, switching to
 # this workspace may lead to immediate focus of the application, which also
@@ -371,7 +367,7 @@ workspace_auto_back_and_forth no
 # delay resetting the urgency state by a certain time using the
 # force_display_urgency_hint directive.
 # Setting the value to 0 disables this feature. The default is 500ms.
-force_display_urgency_hint 1000 ms
+force_display_urgency_hint 3000 ms
 
 # <none|vertical|horizontal|both> :
 hide_edge_borders none
