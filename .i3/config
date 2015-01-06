@@ -249,7 +249,8 @@ font pango:Ubuntu Mono 10
 #
 # color defines
 
-set $background #353535
+#set $background #353535
+set $background #000000
 set $indicator  #0080FF
 
 # A client which is not the focused one of its container.
@@ -257,11 +258,14 @@ set $border_unfocused   #585858
 set $text_unfocused     #BDBDBD
 
 # A client currently focused in its container, but does not have focus now.
-set $border_inactive    #225588
-set $text_inactive      #BDBDBD
+#set $border_inactive    #225588
+set $border_inactive    #707070
+#set $text_inactive      #BDBDBD
+set $text_inactive      #C0C0C0
 
 # A client which currently has the focus.
-set $border_focused     #0080FF
+#set $border_focused     #0080FF
+set $border_focused     #A0A0A0
 set $text_focused       #FFFFFF
 
 # A client which has its urgency hint activated.
@@ -420,8 +424,8 @@ for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Topleve
 
 # IRC
 assign [window_role="irc"]                          →   "2"
-#for_window [window_role="irc"]                      border none    only when
-#maximized?
+# only when maximized?
+for_window [window_role="irc"]                      border none
 
 # Pidgin
 assign [class="Pidgin"]                             →   "2"
