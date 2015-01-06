@@ -370,7 +370,7 @@ workspace_auto_back_and_forth yes
 force_display_urgency_hint 3000 ms
 
 # <none|vertical|horizontal|both> :
-hide_edge_borders none
+hide_edge_borders both
 
 
 ###############################################################################
@@ -383,18 +383,21 @@ hide_edge_borders none
 # Maar volgens mij is het omgekeerd.
 
 # terminals
-for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
+#for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
 for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
-for_window [class="Gnome-terminal"]                     floating enable, border pixel 1
+for_window [class="Gnome-terminal"]                     floating enable
+#, border pixel 1
 
 # Tools
 for_window [class="SpiderOak"]                          floating enable
 for_window [class="Gcalctool"]                          floating enable
 for_window [class="SparkleShare"]                       floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"] floating enable
-for_window [class="Nautilus" instance="file_progress"]  floating enable, border pixel 2
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable, border none
-for_window [window_role="SSHASKPASS"]   floating enable, border pixel 10
+for_window [class="Nautilus" instance="file_progress"]  floating enable
+#, border pixel 2
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable
+#, border none
+for_window [window_role="SSHASKPASS"]   floating enable, border pixel 5
 for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
 for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"] floating enable
 
@@ -453,8 +456,10 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbe
 #
 
 # new window default border <normal|1pixel|none|pixel> :
-new_window  pixel 2
-new_float   pixel 1
+#new_window  pixel 2
+#new_float   pixel 1
+new_window  none
+new_float   none
 
 ###############################################################################
 #
@@ -485,7 +490,7 @@ exec "keepass2 &"
 ## exec_always
 
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 50x2 -e "/bin/bash -i -c 'echo ; ircwindow'"
+exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow'"
 
 # set keyboard
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
