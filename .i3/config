@@ -463,7 +463,8 @@ new_float   pixel 1
 # & send process to background avoids keeping the calling sh shells in memory
 
 # Background stuff
-exec --no-startup-id "unagi &"
+#exec --no-startup-id "unagi &"
+exec --no-startup-id "compton &"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "numlockx on"
 # i3wm desktop managing stuff runing in a screen
