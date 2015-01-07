@@ -2,6 +2,7 @@
 vbell off
 #vbell_msg [message]
 #vbellwait sec
+
 defutf8 on
 termcapinfo xterm* 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 startup_message off
@@ -9,17 +10,23 @@ defbce "on"
 term xterm
 defnonblock 5
 defscrollback 10000
+
 # http://billnye.blinkenshell.org/irssi/screenrc
 hardstatus on
 hardstatus alwayslastline
 hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G} %H %{..Y} %m/%d %C%a "
+## to disable manually: C-a : hardstatus ignore
+
 # terminfo and termcap for nice 256 color terminal
 # allow bold colors - necessary for some reason
 attrcolor b ".I"
+
 # tell screen how to set colors. AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
 # erase background with current bg color
-defbce "on" 
+defbce "on"
+
 #for irssi hangs
 defnonblock on
 
