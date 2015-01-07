@@ -38,8 +38,18 @@ check_options() {
         command="$*"
 
     else # no command, just reattach
-        sname="$1"
-        cmd="_start_or_attach"
+        if [ $# -eq 0 -o $# -ge 3 ]
+        then
+            exit 1
+        elif [ $# -eq 1 ]
+        then
+            sname="$1"
+            cmd="_start_or_attach"
+        elif [ $# -eq 2 ]
+        then
+            sname="$1"
+            cmd="$2"
+        fi
     fi
     wname=`echo $command | sed -e 's/-//g' -e 's/\s/_/g'`
     }
@@ -76,6 +86,10 @@ build_screen_options() {
             else
                 options=""
             fi
+            ;;
+        lockscreen)
+            options="-S $sname -X lockscreen"
+            command=""
             ;;
         *)
             options=""
