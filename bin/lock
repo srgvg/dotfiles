@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # load some defaults
 . etc/defaults
@@ -33,8 +33,12 @@ mediaplayer_cmd stop
 
 # pause notifications
 killall -SIGUSR1 dunst # pause
-# lock screen with a background picture, then re-enable notifications
-(i3lock -i ~/.lockscreen.png --tiling --nofork ; killall -SIGUSR2 dunst) &
+# first lock remote irssi screen, then lock screen with a background picture, 
+# then re-enable notifications when unlock happens
+(   irc lock
+    i3lock -i ~/.lockscreen.png --tiling --nofork
+    killall -SIGUSR2 dunst
+    ) &
 
 # also suspend if told so
 if  [ "$sleep" = yes ]

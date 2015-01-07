@@ -9,17 +9,23 @@ on_exit() {
         kill -9 $fnotify_irssi_pid)
     pkill -f 'tail.*.irssi/fnotify'
 }
-trap on_exit INT TERM KILL EXIT
 
-# start the controlmaster (needs persist timeout)
-ssh ${irssi_host} :
 
-## now reuse the controlmaster
-# start irssi notification channel
-fnotify_irssi &
-fnotify_irssi_pid=$!
+if [ "$1" = "lock" ]
+then
+    ssh -X ${irssi_host} "~/bin/launch-screen irssi lockscreen >/dev/null 2>&1"
+else
+    trap on_exit INT TERM KILL EXIT
 
-# start irssi
-ssh -X ${irssi_host} -t ~/bin/launch-screen irssi
+    # start the controlmaster (needs persist timeout)
+    ssh ${irssi_host} :
 
+    ## now reuse the controlmaster
+    # start irssi notification channel
+    fnotify_irssi &
+    fnotify_irssi_pid=$!
+
+    # start irssi
+    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/readreturn; ~/bin/launch-screen irssi"
+fi
 
