@@ -1,7 +1,7 @@
 #!/bin/sh
 
-publoc=~/Dropbox/Public
 file="$1"
+publoc=~/Dropbox/Public
 pubfile="${publoc}/$(basename "${file}")"
 
 if [ ! -f "${file}" ]
@@ -9,8 +9,12 @@ then	echo File  \'${file}\' not found
 	exit 1
 fi
 
-cp "${file}" "${publoc}"
-    dropbox puburl "${pubfile}"| tr -d '\n' | xclip -in -selection clipboard
+if [ "`dirname ${file}`" = "/home/serge/Downloads" ]
+then    mv "${file}" "${publoc}"
+else    cp "${file}" "${publoc}"
+fi
+dropbox puburl "${pubfile}"| tr -d '\n' | xclip -in -selection clipboard
+
 echo "'${pubfile}' => $(dropbox puburl "${pubfile}")" && (
     while	(dropbox filestatus "${pubfile}" | grep syncing)
     do	sleep 3
