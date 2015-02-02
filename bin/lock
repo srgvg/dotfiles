@@ -35,7 +35,7 @@ mediaplayer_cmd stop
 killall -SIGUSR1 dunst # pause
 # first lock remote irssi screen, then lock screen with a background picture, 
 # then re-enable notifications when unlock happens
-(   irc lock
+(   irc lock &
     i3lock -i ~/.lockscreen.png --tiling --nofork
     killall -SIGUSR2 dunst
     ) &
