@@ -442,11 +442,11 @@ assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDia
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "10"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "10"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "9"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "9"
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "9"
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
 
 
@@ -473,7 +473,7 @@ exec --no-startup-id "compton &"
 exec --no-startup-id "setbg redisplay"
 exec --no-startup-id "numlockx on"
 # i3wm desktop managing stuff runing in a screen
-exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY"
+exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY ; launch-screen i3 mopidy"
 
 # Desktop Apps
 exec "nm-applet &"
@@ -481,7 +481,6 @@ exec "gnome-sound-applet &"
 exec "xfce4-power-manager &"
 exec "dropbox start"
 exec "seafile-applet &"
-exec "spotify &"
 exec "firefox &"
 exec "keepass2 &"
 

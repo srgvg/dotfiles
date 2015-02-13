@@ -1,12 +1,14 @@
 #!/bin/bash
 
+mopidy=$(pidof -x mopidy)
 nuvola=$(pidof nuvolaplayer)
 spotify=$(pidof spotify)
 tomahawk=$(pidof tomahawk)
 action=$1
 
 # nuvolaplayer gets priority
-if [ -z "$spotify" -a \
+if [ -z "$mopidy" -a \
+     -z "$spotify" -a \
      -z "$tomahawk" -a \
      -z "$nuvola" ]     ; then
     echo "No running mediaplayer found."
@@ -16,10 +18,15 @@ elif [ ! -z "$nuvola" ]; then
     player="nuvola"
 elif [ ! -z "$spotify" ]; then
     player="spotify"
+elif [ ! -z "$mopidy" ]; then
+    player="mopidy"
 fi
 
 case "${player}=${action}" in
     # PLAY/TOGGLE
+    "mopidy=play")
+        ncmpcpp toggle
+        ;;
     "spotify=play")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause
@@ -32,6 +39,9 @@ case "${player}=${action}" in
         ;;
 
     # PLAY/START
+    "mopidy=start")
+        ncmpcpp play
+        ;;
     "spotify=start")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
@@ -44,6 +54,9 @@ case "${player}=${action}" in
         ;;
 
     # PLAY/STOP
+    "mopidy=stop")
+        ncmpcpp stop
+        ;;
     "spotify=stop")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
            /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause
@@ -56,6 +69,9 @@ case "${player}=${action}" in
         ;;
 
     # NEXT
+    "mopidy=next")
+        ncmpcpp next
+        ;;
     "spotify=next")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next
@@ -68,6 +84,9 @@ case "${player}=${action}" in
         ;;
 
     # PREV
+    "mopidy=prev")
+        ncmpcpp prev
+        ;;
     "spotify=prev")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous
@@ -80,6 +99,9 @@ case "${player}=${action}" in
         ;;
 
     # TITLE
+    "mopidy=getTitle")
+        ncmpcpp --now-playing %t
+        ;;
     "spotify=getTitle")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
@@ -92,6 +114,9 @@ case "${player}=${action}" in
         ;;
 
     # ARTIST
+    "mopidy=getArtist")
+        ncmpcpp --now-playing %a
+        ;;
     "spotify=getArtist")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
@@ -104,6 +129,9 @@ case "${player}=${action}" in
         ;;
 
     # ALBUM
+    "mopidy=getAlbum")
+        ncmpcpp --now-playing %b
+        ;;
     "spotify=getAlbum")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
@@ -116,6 +144,9 @@ case "${player}=${action}" in
         ;;
 
     # STATUS
+    "mopidy=getStatus")
+        ncmpcpp --now-playing
+        ;;
     "spotify=getStatus")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
             /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
