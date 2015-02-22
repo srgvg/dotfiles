@@ -203,7 +203,8 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo #nautilus
-bindsym $mod+Control+c exec terminsator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+bindsym $mod+Control+c exec terminator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+bindsym $mod+m exec gnome-terminal -e ncmpcpp
 
 # Screenshot
 bindsym Print exec screengrab select
@@ -439,17 +440,17 @@ for_window [class="VirtualBox"] layout tabbed
 
 # Various
 assign [class="jetbrains-idea"]                     →   "5"
-assign [class="Update-manager|Update-notifier"]     →   "9"
-assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "9"
+assign [class="Update-manager|Update-notifier"]     →   "10"
+assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "10"
 
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "9"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "9"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "10"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "10"
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "9"
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
 
 
