@@ -474,8 +474,10 @@ new_float   none
 # Background stuff
 #exec --no-startup-id "unagi &"
 exec --no-startup-id "compton &"
-exec --no-startup-id "setbg redisplay"
-exec --no-startup-id "numlockx on"
+exec_always --no-startup-id "setbg redisplay"
+exec_always --no-startup-id "numlockx on"
+# Configure Vertical Mouse
+exec_always --no-startup-id "vertical-mouse-settings"
 # i3wm desktop managing stuff runing in a screen
 exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY ; launch-screen i3 add mopidy"
 
@@ -498,7 +500,4 @@ exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i
 # set keyboard
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n
-
-# Configure Vertical Mouse
-exec_always vertical-mouse-settings
 
