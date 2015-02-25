@@ -29,7 +29,7 @@ then
 fi
 
 # make sure music stops
-mediaplayer_cmd play
+mediaplayer_cmd stop
 
 # pause notifications
 killall -SIGUSR1 dunst # pause
