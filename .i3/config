@@ -212,6 +212,9 @@ bindsym Shift+Print exec screengrab window
 bindsym Control+Print exec screengrab screen
 bindsym Shift+Control+Print exec screengrab full
 
+# Show current Background filename
+bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
+
 #
 # volume and media controls
 #
