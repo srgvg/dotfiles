@@ -190,7 +190,7 @@ then
 fi
 
 # svn shortcuts
-alias svn-addall='svn add `svn status | grep ?`'
+alias svn-addall='svn add `svn status | grep ? | cut -d\  -f2- | xargs`'
 
 # ansible
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
