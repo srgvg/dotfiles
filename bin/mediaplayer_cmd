@@ -55,7 +55,7 @@ case "${player}=${action}" in
 
     # PLAY/STOP
     "mopidy=stop")
-        ncmpcpp stop
+        ncmpcpp pause
         ;;
     "spotify=stop")
         dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify \
