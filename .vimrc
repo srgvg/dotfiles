@@ -219,3 +219,18 @@ let g:indentLine_color_term = 239
 " rights to save it, you just :w!!, write the superuser password and the file
 " gets saved.
 cmap w!! w !sudo tee % >/dev/null
+
+
+" If you need to move line (or a block of selected lines) all you have to do is to add the following lines to you .vimrc:
+" https://coderwall.com/p/hphtgg/vim-moving-lines-ain-t-hard
+" Normal mode
+nnoremap <C-j> :m .+1<CR>==
+nnoremap <C-k> :m .-2<CR>==
+" Insert mode
+inoremap <C-j> <ESC>:m .+1<CR>==gi
+inoremap <C-k> <ESC>:m .-2<CR>==gi
+" Visual mode
+vnoremap <C-j> :m '>+1<CR>gv=gv
+vnoremap <C-k> :m '<-2<CR>gv=gv
+
+
