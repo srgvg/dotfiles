@@ -26,6 +26,6 @@ else
     fnotify_irssi_pid=$!
 
     # start irssi
-    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/readreturn; ~/bin/launch-screen irssi"
+    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irssi"
 fi
 
