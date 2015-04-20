@@ -192,7 +192,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # Lock Screen / Suspend / Poweroff
-bindsym Pause exec lock
+bindsym Pause exec "xautolock -locknow || lock"
 bindsym $mod+Pause exec lock suspend
 bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
 
@@ -476,6 +476,7 @@ new_float   none
 # & send process to background avoids keeping the calling sh shells in memory
 
 # Background stuff
+exec_always --no-startup-id "xautolock -detectsleep -time 3 -notify 30 -notifier 'notify-send -u low -t 29500 WARNING Screen-will-auto-lock' -locker /home/serge/bin/lock &"
 #exec --no-startup-id "unagi &"
 exec --no-startup-id "compton &"
 exec_always --no-startup-id "setbg redisplay"
