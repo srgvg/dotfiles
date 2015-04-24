@@ -1,0 +1,14 @@
+#!/bin//bash
+
+if [ "$1" = "on" ]
+then
+    xautolock -disable
+    killall -SIGUSR1 dunst
+elif [ "$1" = "off" ]
+then
+    xautolock -enable
+    killall -SIGUSR2 dunst
+else
+    echo "`basename $0` on|off" >&2
+    exit 255
+fi
