@@ -215,6 +215,9 @@ bindsym Shift+Control+Print exec screengrab full
 # Show current Background filename
 bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
 
+# Toggle Presentation mode (disable screen save and notifications)
+bindsym $mod+p exec presentation-mode
+
 #
 # volume and media controls
 #
