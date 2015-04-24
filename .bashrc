@@ -132,7 +132,7 @@ export DEBEMAIL="serge@vanginderachter.be"
 alias o='gnome-open'
 alias poweroff='sudo /sbin/poweroff'
 alias li3='launch-screen i3'
-alias rmcm='rm -fv ~/.ssh/cm/*'
+alias rmcm='rm -fv ~/.ssh/cm-*'
 
 alias diff='diff -u'
 alias v="vcsh"
