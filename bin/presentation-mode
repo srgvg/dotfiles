@@ -1,14 +1,16 @@
-#!/bin//bash
+#!/bin/bash -x
 
-if [ "$1" = "on" ]
+self=`basename $0`
+runtray="gtrayicon --activated --deactivate-icon=/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-monitor.svg --activate='/bin/true' --deactivate='${self}'"
+activated=`pgrep -f gtrayicon.*presentation-mode`
+
+if [ -z "${activated}" ]
 then
     xautolock -disable
     killall -SIGUSR1 dunst
-elif [ "$1" = "off" ]
-then
+    eval ${runtray}
+else
     xautolock -enable
     killall -SIGUSR2 dunst
-else
-    echo "`basename $0` on|off" >&2
-    exit 255
+    kill ${activated}
 fi
