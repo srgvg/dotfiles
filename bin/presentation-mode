@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 self=`basename $0`
 runtray="gtrayicon --activated --deactivate-icon=/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-monitor.svg --activate='/bin/true' --deactivate='${self}'"
