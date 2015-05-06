@@ -177,6 +177,7 @@ alias gl='git lola'
 alias gu='git up'
 alias gps='git svn rebase && git svn dcommit'
 alias gsmu='git submodule update'
+alias gt='git show-tree'
 gurp() {
     git up && git co ${1:-devel} && git rebase && git push svg ${1:-devel}
 }
