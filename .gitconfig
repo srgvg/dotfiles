@@ -56,7 +56,7 @@
     tags = !sh -c \"git tag | sort -V\"
     igd = ls-files --others -i --exclude-standard 
     ca = commit --all
-    tree = show-tree
+    tree = log --all --graph --decorate --oneline --simplify-by-decoration
 
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
     gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:pull/${1}\" -
