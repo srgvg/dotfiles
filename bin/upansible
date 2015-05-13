@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd /home/serge/src/ansible/ansible
+git up && (
+    git co devel && \
+    git rebase devel && \
+    git push srvg devel && \
+    git submodule update --init --recursive
+    )
+

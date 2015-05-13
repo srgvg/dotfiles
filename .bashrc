@@ -197,7 +197,6 @@ alias svn-addall='svn add `svn status | grep ? | cut -d\  -f2- | xargs`'
 # ansible
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
 alias ahack='ps1extra ; . ~/ansible/hacking/env-setup'
-alias upansible='cd /home/serge/src/ansible/ansible && git co devel && git up && git rebase  && git submodule update --init --recursive && git push svg devel'
 
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
