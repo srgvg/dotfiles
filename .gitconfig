@@ -66,6 +66,9 @@
     ignore = update-index assume-unchanged
     unignore = update-index --no-assume-unchanged
 
+    authors-current = !git ls-files | xargs -n1 git blame --line-porcelain  | sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
+    authors = shortlog -sne
+
 [push]
     # git push will by default push all branches that have the same name on the remote
     # to limit this behavior to just the current branch, set this configuration option:
