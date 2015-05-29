@@ -162,6 +162,8 @@ alias shredit='shred --verbose --iterations 5 --zero --remove'
 
 alias r='ranger'
 
+alias upansible='cd ~/ansible && upansible'
+
 # git shortcuts
 alias g='git'
 alias ga='git add'
