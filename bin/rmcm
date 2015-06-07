@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$1" = "do" ]
+then
+    rm -fv ~/.ssh/cm-*
+else
+    echo ~/.ssh/cm-*
+fi
