@@ -378,7 +378,7 @@ workspace_auto_back_and_forth no
 # delay resetting the urgency state by a certain time using the
 # force_display_urgency_hint directive.
 # Setting the value to 0 disables this feature. The default is 500ms.
-force_display_urgency_hint 3000 ms
+force_display_urgency_hint 1500 ms
 
 # <none|vertical|horizontal|both> :
 hide_edge_borders both
@@ -394,10 +394,9 @@ hide_edge_borders both
 # Maar volgens mij is het omgekeerd.
 
 # terminals
-#for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
+for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
 for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
 for_window [class="Gnome-terminal"]                     floating enable
-#, border pixel 1
 
 # Tools
 for_window [class="SpiderOak"]                          floating enable
@@ -405,9 +404,7 @@ for_window [class="Gcalctool"]                          floating enable
 for_window [class="SparkleShare"]                       floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"] floating enable
 for_window [class="Nautilus" instance="file_progress"]  floating enable
-#, border pixel 2
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable
-#, border none
 for_window [window_role="SSHASKPASS"]   floating enable, border pixel 5
 for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
 for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"] floating enable
@@ -434,8 +431,7 @@ for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Topleve
 
 # IRC
 assign [window_role="irc"]                          →   "2"
-# only when maximized?
-for_window [window_role="irc"]                      border none
+#for_window [window_role="irc"]                      border none
 
 # Pidgin
 assign [class="Pidgin"]                             →   "2"
@@ -467,10 +463,8 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbe
 #
 
 # new window default border <normal|1pixel|none|pixel> :
-#new_window  pixel 2
-#new_float   pixel 1
-new_window  none
-new_float   none
+new_window  pixel 1
+new_float   pixel 1
 
 ###############################################################################
 #
