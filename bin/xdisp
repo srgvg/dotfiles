@@ -39,22 +39,29 @@ case $HOSTNAME in
             ''|lap*)
                 xrandr --output LVDS1   --mode 1366x768 --primary --pos 0x0
                 xrandr --output LVDS1   --primary
-        	    xrandr --output DP1     --off
-        	    xrandr --output VGA1    --off
-        	    xrandr --output HDMI1   --off
+                xrandr --output DP1     --off
+                xrandr --output VGA1    --off
+                xrandr --output HDMI1   --off
                 ;;
-        	vga)
+            vga)
                 xrandr --output LVDS1   --mode 1366x768 --noprimary --pos 0x0 \
                        --output VGA1    --auto --primary --pos 1366x0
                 xrandr --output VGA1    --primary
-        	    xrandr --output DP1     --off
-        	    xrandr --output HDMI1   --off
+                xrandr --output DP1     --off
+                xrandr --output HDMI1   --off
+                ;;
+            hdmi)
+                xrandr --output LVDS1   --mode 1366x768 --noprimary --pos 0x0 \
+                       --output HDMI1   --auto --primary --pos 1366x0
+                xrandr --output LVDS1   --primary
+                xrandr --output DP1     --off
+                xrandr --output VGA1    --off
                 ;;
             proj*)
                 xrandr --output LVDS1   --auto --primary
                 xrandr --output VGA1    --auto --same-as LVDS1
-        	    xrandr --output DP1     --off
-        	    xrandr --output HDMI1   --off
+                xrandr --output DP1     --off
+                xrandr --output HDMI1   --off
                 ;;
             acd)
                 xrandr --output DP1     --primary --mode 2560x1440 --pos 0x0
@@ -62,13 +69,13 @@ case $HOSTNAME in
                 xrandr --output DP1     --primary --mode 2560x1440 --pos 0x0 \
                        --output LVDS1   --mode 1366x768 --noprimary --pos 2560x0
                 xrandr --output DP1     --primary
-        	    xrandr --output VGA1    --off
-        	    xrandr --output HDMI1   --off
+                xrandr --output VGA1    --off
+                xrandr --output HDMI1   --off
 
                 i3-msg workspace 10
                 i3-msg move workspace to output LVDS1
                 i3-msg workspace 1
-        	    ;;
+                ;;
             *)
                 echo -e "* ERROR: Invalid action $action\n"
                 exit 1
