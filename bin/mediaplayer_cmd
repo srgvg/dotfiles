@@ -2,6 +2,7 @@
 
 mopidy=$(pidof -x mopidy)
 nuvola=$(pidof nuvolaplayer)
+nuvola3=$(pidof nuvolaplayer3)
 spotify=$(pidof spotify)
 tomahawk=$(pidof tomahawk)
 action=$1
@@ -10,12 +11,15 @@ action=$1
 if [ -z "$mopidy" -a \
      -z "$spotify" -a \
      -z "$tomahawk" -a \
+     -z "$nuvola3" -a \
      -z "$nuvola" ]     ; then
     echo "No running mediaplayer found."
 elif [ ! -z "$tomahawk" ]; then
     player="tomahawk"
 elif [ ! -z "$nuvola" ]; then
     player="nuvola"
+elif [ ! -z "$nuvola3" ]; then
+    player="nuvola3"
 elif [ ! -z "$spotify" ]; then
     player="spotify"
 elif [ ! -z "$mopidy" ]; then
@@ -34,6 +38,9 @@ case "${player}=${action}" in
     "nuvola=play")
         nuvolaplayer-client toggle
         ;;
+    "nuvola3=play")
+        nuvolaplayer3ctl action toggle-play
+        ;;
     "tomahawk=play")
         tomahawk --playpause
         ;;
@@ -48,6 +55,9 @@ case "${player}=${action}" in
         ;;
     "nuvola=start")
         nuvolaplayer-client play
+        ;;
+    "nuvola3=start")
+        nuvolaplayer3ctl action play
         ;;
     "tomahawk=start")
         tomahawk --play
@@ -64,6 +74,9 @@ case "${player}=${action}" in
     "nuvola=stop")
         nuvolaplayer-client pause
         ;;
+    "nuvola3=stop")
+        nuvolaplayer3ctl action stop
+        ;;
     "tomahawk=stop")
         tomahawk --stop
         ;;
@@ -79,6 +92,9 @@ case "${player}=${action}" in
     "nuvola=next")
         nuvolaplayer-client next
         ;;
+    "nuvola3=next")
+        nuvolaplayer3ctl action next-song
+        ;;
     "tomahawk=next")
         tomahawk --next
         ;;
@@ -93,6 +109,9 @@ case "${player}=${action}" in
         ;;
     "nuvola=prev")
         nuvolaplayer-client prev
+        ;;
+    "nuvola3=prev")
+        nuvolaplayer3ctl action prev-song
         ;;
     "tomahawk=prev")
         tomahawk --prev

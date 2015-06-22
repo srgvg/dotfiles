@@ -112,7 +112,11 @@ if [ -d "$HOME/sbin" ] ; then
 fi
 # set PATH so it includes user's extra bin2 if it exists
 if [ -d "$HOME/bin2" ] ; then
-    PATH="$HOME/bin2:$PATH"
+    if [ -d "$HOME/bin2/javabin" ] ; then
+        PATH="$HOME/bin2:$HOME/bin2/javabin/:$PATH"
+    else
+        PATH="$HOME/bin2:$PATH"
+    fi
 fi
 
 # golang bin path

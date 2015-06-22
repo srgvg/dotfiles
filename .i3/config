@@ -45,12 +45,25 @@ mode "resize" {
         bindsym Right resize grow width 10 px or 10 ppt
 
         # back to normal: Enter or Escape
+        bindsym $mod+Control+r mode "default"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
 
-# Enter resize mode
+mode "moveit" {
+        bindsym Up move up          100px
+        bindsym Left move left      100px
+        bindsym Down move down      100px
+        bindsym Right move right    100px
+        # back to normal: Enter or Escape
+        bindsym Mod4+m mode "default"
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+# Enter modes
 bindsym $mod+Control+r mode "resize"
+bindsym $mod+m focus floating; mode "moveit"
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -73,7 +86,7 @@ bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
 bindsym $mod+q exec quickswitch.py
 
 #
-## Navigation
+#p -pke                Navigation
 #
 # change focus
 bindsym $mod+j focus left
@@ -151,6 +164,11 @@ bindsym $mod+7 workspace 7
 bindsym $mod+8 workspace 8
 bindsym $mod+9 workspace 9
 bindsym $mod+0 workspace 10
+bindsym $mod+F1 workspace 6
+bindsym $mod+F2 workspace 7
+bindsym $mod+F3 workspace 8
+bindsym $mod+F4 workspace 9
+bindsym $mod+F5 workspace 10
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace 1
@@ -163,6 +181,26 @@ bindsym $mod+Shift+7 move container to workspace 7
 bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
+bindsym $mod+Shift+F1 move container to workspace 6
+bindsym $mod+Shift+F2 move container to workspace 7
+bindsym $mod+Shift+F3 move container to workspace 8
+bindsym $mod+Shift+F4 move container to workspace 9
+bindsym $mod+Shift+F5 move container to workspace 10
+bindsym $mod+Control+1 move container to workspace 1
+bindsym $mod+Control+2 move container to workspace 2
+bindsym $mod+Control+3 move container to workspace 3
+bindsym $mod+Control+4 move container to workspace 4
+bindsym $mod+Control+5 move container to workspace 5
+bindsym $mod+Control+6 move container to workspace 6
+bindsym $mod+Control+7 move container to workspace 7
+bindsym $mod+Control+8 move container to workspace 8
+bindsym $mod+Control+9 move container to workspace 9
+bindsym $mod+Control+0 move container to workspace 10
+bindsym $mod+Control+F1 move container to workspace 6
+bindsym $mod+Control+F2 move container to workspace 7
+bindsym $mod+Control+F3 move container to workspace 8
+bindsym $mod+Control+F4 move container to workspace 9
+bindsym $mod+Control+F5 move container to workspace 10
 
 # start dmenu (a program launcher)
 bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
@@ -181,6 +219,7 @@ bindsym $mod+Control+Next move workspace to output right
 ## Show the first scratchpad window
 #bindsym $mod+KP_Add scratchpad show
 
+###############################################################################
 #
 ## launch applications
 #
@@ -204,7 +243,7 @@ bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
 bindsym $mod+Control+c exec terminator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
-bindsym $mod+m exec gnome-terminal -e ncmpcpp
+bindsym $mod+Shift+m exec gnome-terminal -e ncmpcpp
 
 # Screenshot
 bindsym Print exec screengrab select
@@ -218,6 +257,7 @@ bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
 # Toggle Presentation mode (disable screen save and notifications)
 bindsym $mod+p exec presentation-mode
 
+###############################################################################
 #
 # volume and media controls
 #
@@ -252,39 +292,47 @@ bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
 #font pango:DejaVu Sans Mono 10
-font pango:Ubuntu Mono 10
+#font pango:Ubuntu Mono 10
 
+###############################################################################
 #
-# Client Container Colors
+## Client Container Colors
 #
 # color defines
 
-set $background #000000
-set $indicator  #111111
+set $IGNORED                #FF0000  # set where setting is ignored
+set $background             #000000
+set $indicator              #a3ccff
+set $separator              #333333
 
-# A client which is not the focused one of its container.
-set $border_unfocused   #000000
-set $text_unfocused     #848484
+set $border_unfocused       #777777
+set $border_inactive        #AAAAAA
+set $border_focused         #DDDDDD
 
-# A client currently focused in its container, but does not have focus now.
-set $border_inactive    #000000
-set $text_inactive      #BDBDBD
+set $text_unfocused         #DDDDDD
+set $text_focused           #555555
 
-# A client which currently has the focus.
-set $border_focused     #000000
-set $text_focused       #FFFFFF
+set $border_urgent          #FF0000
+set $text_urgent            #FFFFFF
 
-# A client which has its urgency hint activated.
-set $border_urgent      #FF0000
-set $text_urgent        #FFFFFF
-
+#
+## container colors
+# border colour is the color for the 2 horizontal lines of the titlebar; the
+# border of the whole container is the same as the background of the title bar!
+#
 ## client windows       border              background          text                indicator
+# A client which is not the focused one of its container.
 client.unfocused        $border_unfocused   $border_unfocused   $text_unfocused     $indicator
-client.focused_inactive $border_inactive    $border_inactive    $text_inactive      $indicator
+# A client currently focused in its container, but does not have focus now.
+client.focused_inactive $border_inactive    $border_inactive    $text_unfocused     $indicator
+# A client which currently has the focus.
 client.focused          $border_focused     $border_focused     $text_focused       $indicator
+# A client which has its urgency hint activated.
 client.urgent           $border_urgent      $border_urgent      $text_urgent        $indicator
-#client.placeholder      $border_unfocused   $border_unfocused   $text_unfocused     $indicator
+#Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
+client.placeholder      $IGNORED            $border_unfocused   $text_unfocused     $IGNORED
 
+###############################################################################
 #
 # status bar
 #
@@ -323,28 +371,29 @@ bar {
         colors {
 
             # Text color to be used for the separator.
-            #separator           $border_inactive
-            separator           $indicator
+            separator           $separator
+
+            # Text color to be used for the statusline.
+            statusline          $text_unfocused
 
             # Background color of the bar.
             background          $background
 
-            # Text color to be used for the statusline.
-            statusline          $text_inactive
 
+            ## type             border              background      text
+            #
             # workspace button when the workspace does not have focus and is not
             # active (visible) on any output. This will be the case for most workspaces.
-            inactive_workspace  $border_unfocused $background $text_unfocused
+            inactive_workspace  $background         $background     $border_unfocused
 
             # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
             # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-            active_workspace    $border_inactive  $background $text_inactive
-
+            active_workspace    $border_focused     $background     $border_unfocused
             # color for a workspace button when the workspace has focus.
-            focused_workspace   $border_focused   $background $text_focused
+            focused_workspace   $border_focused     $background     $border_unfocused
 
             # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-            urgent_workspace    $border_urgent    $background $text_urgent
+            urgent_workspace    $border_urgent      $background     $border_urgent
 
         }
 }
@@ -378,10 +427,10 @@ workspace_auto_back_and_forth no
 # delay resetting the urgency state by a certain time using the
 # force_display_urgency_hint directive.
 # Setting the value to 0 disables this feature. The default is 500ms.
-force_display_urgency_hint 1500 ms
+force_display_urgency_hint 3000 ms
 
 # <none|vertical|horizontal|both> :
-hide_edge_borders both
+hide_edge_borders none
 
 
 ###############################################################################
@@ -394,20 +443,21 @@ hide_edge_borders both
 # Maar volgens mij is het omgekeerd.
 
 # terminals
-for_window [class="(X-terminal-emulator|Terminator)"]   border pixel 1
-for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
-for_window [class="Gnome-terminal"]                     floating enable
+#for_window [class="(X-terminal-emulator|Terminator)"] border pixel 1
+for_window [class="(X-terminal-emulator|Terminator)" instance="(x-terminal-emulator|terminator)" title="Terminator Preferences"] floating enable
+for_window [class="Gnome-terminal" instance="gnome-terminal"] floating enable
+# IRC
+assign [window_role="irc"]                          →   "2"
+for_window [window_role="irc"]                     border none
 
 # Tools
-for_window [class="SpiderOak"]                          floating enable
-for_window [class="Gcalctool"]                          floating enable
-for_window [class="SparkleShare"]                       floating enable
-for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"] floating enable
-for_window [class="Nautilus" instance="file_progress"]  floating enable
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"] floating enable
-for_window [window_role="SSHASKPASS"]   floating enable, border pixel 5
-for_window [class="Gnome-control-center" instance="gnome-control-center"] floating enable
-for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"] floating enable
+for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
+for_window [class="Gcalctool"]                                                          floating enable
+for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable
+for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable
+for_window [class="Nautilus" instance="file_progress"]                                  floating enable
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable
+for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
@@ -425,13 +475,8 @@ assign [class="Wireshark" instance="wireshark"] → "7"
 
 # Browsers
 assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"]  →   "1"
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"] layout tabbed
+#for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser"] layout tabbed
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
-
-
-# IRC
-assign [window_role="irc"]                          →   "2"
-#for_window [window_role="irc"]                      border none
 
 # Pidgin
 assign [class="Pidgin"]                             →   "2"
@@ -473,15 +518,16 @@ new_float   pixel 1
 # & send process to background avoids keeping the calling sh shells in memory
 
 # Background stuff
+exec_always --no-startup-id "run-one alternating_layouts.py &"
 exec_always --no-startup-id "xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &"
-#exec --no-startup-id "unagi &"
+exec --no-startup-id "keynav &"
 exec --no-startup-id "compton &"
 exec_always --no-startup-id "setbg redisplay &"
 exec_always --no-startup-id "numlockx on &"
 # Configure Vertical Mouse
 exec_always --no-startup-id "vertical-mouse-settings &"
 # i3wm desktop managing stuff runing in a screen
-exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY ; launch-screen i3 add mopidy"
+exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY ; launch-screen i3 add mopidy ; launch-screen i3 add alternating_layouts.py"
 
 # Desktop Apps
 exec "nm-applet &"
