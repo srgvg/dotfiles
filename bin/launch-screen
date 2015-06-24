@@ -1,5 +1,5 @@
-#!/bin/bash
 
+#!/bin/bash -x
 session_exists() {
     if (screen -list | grep "\.$sname" > /dev/null)
     then    return 0
@@ -99,6 +99,10 @@ build_screen_options() {
     }
 
 execute_screen() {
+    if [ "$options" = "-S $sname -X screen -t $wname" ]
+    then    echo "Wait a bit to add a screen"
+            sleep $[ ( $RANDOM % 3 )  + 1 ]s
+    fi
     echo Executing: screen $options $command
     screen $options $command
     }
