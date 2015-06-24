@@ -527,7 +527,12 @@ exec_always --no-startup-id "numlockx on &"
 # Configure Vertical Mouse
 exec_always --no-startup-id "vertical-mouse-settings &"
 # i3wm desktop managing stuff runing in a screen
-exec --no-startup-id "launch-screen i3 sleep 5 ; launch-screen i3 add dunst -print ; launch-screen i3 add setbg-loop ; launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD ; launch-screen i3 add autocutsel -verbose -debug -selection PIMARY ; launch-screen i3 add mopidy ; launch-screen i3 add alternating_layouts.py"
+exec --no-startup-id "launch-screen i3 add alternating_layouts.py"
+exec --no-startup-id "launch-screen i3 add dunst -print"
+exec --no-startup-id "launch-screen i3 add setbg-loop"
+exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection CLIPBOARD"
+exec --no-startup-id "launch-screen i3 add autocutsel -verbose -debug -selection PRIMARY"
+exec --no-startup-id "launch-screen i3 add mopidy"
 
 # Desktop Apps
 exec "nm-applet &"
