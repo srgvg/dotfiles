@@ -4,10 +4,8 @@
 
 # make sure fnotify process gets killed afterwards
 on_exit() {
-    pkill -f -SIGTERM `which fnotify_irssi` || ( \
-        sleep 1 \
-        kill -9 $fnotify_irssi_pid)
-    pkill -f 'tail.*.irssi/fnotify'
+    # kill the control master
+    pkill -f .ssh/cm-irssi
 }
 
 
@@ -16,16 +14,9 @@ then
     ssh ${irssi_host} screen -S irssi -X lockscreen
 else
     trap on_exit INT TERM KILL EXIT
-
-    # start the controlmaster (needs persist timeout)
-    ssh ${irssi_host} :
-
-    ## now reuse the controlmaster
-    # start irssi notification channel
-    fnotify_irssi &
-    fnotify_irssi_pid=$!
-
-    # start irssi
-    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irssi"
+    ssh ${irssi_host} screen -S irssi -X lockscreen
+    run-one fnotify2mqtt
+    (sleep 3; ssh -X ${irssi_host} -t "~/bin/launch-screen irc add run-one fnotify2mqtt") &
+    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
 fi
 

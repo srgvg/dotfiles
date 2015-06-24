@@ -1,0 +1,33 @@
+#!/bin/bash
+
+on_exit() {
+    exit
+}
+
+trap on_exit INT TERM KILL EXIT
+
+listen_notify() {
+    mosquitto_sub -t irssi -i irssi_notify -c -q 2 | \
+    while read network channel message
+    do
+        echo "`date` ${network}  ${channel}" "${message}"
+        notify-send -u normal "${network}  ${channel}" "${message}"
+    done
+}
+
+check_message_queue() {
+    nc -z localhost 1883
+}
+
+while true
+do
+    if      check_message_queue
+    then
+            echo "`date` ### connected"
+            listen_notify
+            echo "`date` ### connection lost"
+    else
+            sleep 3
+    fi
+done
+
