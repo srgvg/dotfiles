@@ -14,8 +14,6 @@ then
     ssh ${irssi_host} screen -S irssi -X lockscreen
 else
     trap on_exit INT TERM KILL EXIT
-    ssh ${irssi_host} screen -S irssi -X lockscreen
-    run-one fnotify2mqtt
     (sleep 3; ssh -X ${irssi_host} -t "~/bin/launch-screen irc add run-one fnotify2mqtt") &
     ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
 fi
