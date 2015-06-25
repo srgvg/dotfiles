@@ -1,5 +1,5 @@
+#!/bin/bash
 
-#!/bin/bash -x
 session_exists() {
     if (screen -list | grep "\.$sname" > /dev/null)
     then    return 0
