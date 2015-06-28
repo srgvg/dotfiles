@@ -68,10 +68,10 @@ bindsym $mod+m focus floating; mode "moveit"
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec i3-sensible-terminal
+bindsym $mod+Return exec terminal
 
 # start a floating terminal
-bindsym $mod+Control+Return exec gnome-terminal
+bindsym $mod+Control+Return exec terminal --role xfce4-float
 
 # kill focused window
 bindsym $mod+x kill
@@ -241,8 +241,8 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
-bindsym $mod+Control+c exec terminator -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
-bindsym $mod+Shift+m exec gnome-terminal -e ncmpcpp
+bindsym $mod+Control+c exec terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+bindsym $mod+Shift+m exec terminal -e ncmpcpp
 
 # Screenshot
 bindsym Print exec screengrab select
@@ -442,9 +442,8 @@ hide_edge_borders none
 # Maar volgens mij is het omgekeerd.
 
 # terminals
-#for_window [class="(X-terminal-emulator|Terminator)"] border pixel 1
-for_window [class="(X-terminal-emulator|Terminator)" instance="(x-terminal-emulator|terminator)" title="Terminator Preferences"] floating enable
-for_window [class="Gnome-terminal" instance="gnome-terminal"] floating enable
+for_window [class="Xfce4-terminal" instance="xfce4-terminal" window_role="xfce4-float"]     floating enable
+#
 # IRC
 assign [window_role="irc"]                          →   "2"
 for_window [window_role="irc"]                     border none
@@ -461,7 +460,7 @@ for_window [class="Gnome-control-center" instance="gnome-control-center"]       
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
 for_window [class="Wine" instance="TeamViewer.exe"]     floating enable
-#for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
+for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
 
 # Remote Desktop Client
 #for_window [class="Remmina" instance="remmina" title="Remmina Remote Desktop Client"] floating enable
@@ -529,12 +528,12 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
 
 ## Run at i3 initial start only
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; gnome-terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'"
+exec sleep 3; terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'"
 
 # Desktop Apps
+exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
 exec "nm-applet &"
 exec "gnome-sound-applet &"
-exec "xfce4-power-manager &"
 exec "dropbox start &"
 exec "seafile-applet &"
 exec "synology-cloud-station &"
