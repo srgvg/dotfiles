@@ -515,7 +515,10 @@ new_float   pixel 1
 #
 # & send process to background avoids keeping the calling sh shells in memory
 
-## i3wm desktop managing stuff runing in a screen - long runining user services
+## Run at i3 initial start only
+# start with interactive bash shell as this needs ssh keys to be unlocked
+exec sleep 3; terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+# i3wm desktop managing stuff runing in a screen - long runining user services
 exec --no-startup-id "launch-i3jobs"
 
 ## One-off always run jobs
@@ -524,7 +527,6 @@ exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
-
 
 ## Run at i3 initial start only
 # start with interactive bash shell as this needs ssh keys to be unlocked
