@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 #
+# This script is a fork of
+# http://fabian-affolter.ch/blog/mqtt-and-desktop-notifications/
 # Copyright (c) 2013 Fabian Affolter <fabian at affolter-engineering.ch>
+#
+# Modified for my own use.
 # Copyright (c) 2015 Serge van Ginderachter <serge@vanginderachter.be>
 #
 # Released under the MIT license.
 #
+
 import sys
 import time
 import datetime
@@ -12,7 +17,8 @@ import dbus
 import paho.mqtt.client as paho
 import socket
 
-name = 'irssi'
+app_name = 'irssi'
+mqtt_client_name = 'irssi-notify'
 broker = '127.0.0.1'
 port = 1883
 topic = 'irssi'
@@ -50,7 +56,6 @@ def notify(summary, body):
     ''' Details: https://developer.gnome.org/notification-spec/
         http://cheesehead-techblog.blogspot.ch/2009/02/five-ways-to-make-notification-pop-up.html'''
 
-    app_name = name
     replaces_id = 0
     service = 'org.freedesktop.Notifications'
     path = '/org/freedesktop/Notifications'
@@ -69,7 +74,7 @@ def notify(summary, body):
 
 def main():
     # Setup the MQTT client
-    mqttclient = paho.Client(client_id='notify', clean_session=False)
+    mqttclient = paho.Client(client_id=mqtt_client_name, clean_session=False)
 
     # Callbacks
     mqttclient.on_message = on_message
