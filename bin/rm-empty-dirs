@@ -17,7 +17,7 @@ fi
 
 if [ x$act = xdo ]
 then    # act
-        find "$dir" -type d -empty | xargs rmdir --verbose
+        find "$dir" -type d -empty | xargs rmdir --parents --verbose
 else    # no act
         echo 'Directories that would be deleted:'
         echo
