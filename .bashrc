@@ -133,6 +133,8 @@ export EDITOR=vim
 export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
+alias terminal="/usr/bin/xfce4-terminal --disable-server"
+
 alias o='gnome-open'
 alias poweroff='sudo /sbin/poweroff'
 alias li3='launch-screen i3jobs'

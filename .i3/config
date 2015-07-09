@@ -8,6 +8,7 @@
 #
 #
 set $mod Mod4
+set $terminal /usr/bin/xfce4-terminal --disable-server
 
 # mouse settings
 focus_follows_mouse yes
@@ -68,10 +69,10 @@ bindsym $mod+m focus floating; mode "moveit"
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec terminal
+bindsym $mod+Return exec $terminal
 
 # start a floating terminal
-bindsym $mod+Control+Return exec terminal --role xfce4-float
+bindsym $mod+Control+Return exec $terminal --role xfce4-float
 
 # kill focused window
 bindsym $mod+x kill
@@ -241,8 +242,8 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
-bindsym $mod+Control+c exec terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
-bindsym $mod+Shift+m exec terminal -e ncmpcpp
+bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+bindsym $mod+Shift+m exec $terminal -e ncmpcpp
 
 # Screenshot
 bindsym Print exec screengrab select
@@ -517,7 +518,7 @@ new_float   pixel 1
 
 ## Run at i3 initial start only
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+exec sleep 3; $terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 # i3wm desktop managing stuff runing in a screen - long runining user services
 exec --no-startup-id "launch-i3jobs"
 
@@ -529,9 +530,6 @@ exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
-# start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'"
-
 # Desktop Apps
 exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
 exec "nm-applet &"
