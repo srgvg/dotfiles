@@ -1,8 +1,8 @@
 #!/bin/bash
 
 sleep 1 # make sure SSHASKPASS window runs first
-
 launch-screen i3jobs sleep 3
+
 launch-screen i3jobs add setbg-loop
 launch-screen i3jobs add compton
 launch-screen i3jobs add xautolock -detectsleep -time 7 -locker /home/serge/bin/lock
