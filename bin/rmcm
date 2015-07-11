@@ -1,8 +1,20 @@
 #!/bin/bash
 
-if [ ! "$1" = "" ]
+sockets=$(shopt -s nullglob; echo ~/.ssh/cm-*)
+if [ "$1" = "" ]
 then
-    rm -fv ~/.ssh/cm-*
+    paction=""
+elif [ "$1" = "do" ]
+then
+    paction="pkill"
 else
-    echo ~/.ssh/cm-*
+    sockets="$1"
+    paction="pkill"
 fi
+
+for socket in ${sockets}
+do
+    echo -n `pgrep -af "ssh:.*${socket}"`" "
+    [ -z "${paction}" ] || ${paction} -cf "ssh:.*${socket}" && echo
+done
+
