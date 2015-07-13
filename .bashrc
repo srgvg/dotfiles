@@ -203,7 +203,7 @@ alias svn-addall='svn add `svn status | grep ? | cut -d\  -f2- | xargs`'
 
 # ansible
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
-alias ahack='ps1extra ; . ~/ansible/hacking/env-setup'
+alias ahack='source ~/ansible/hacking/env-setup; ps1extra'
 
 # milieuinfo
 alias acdplay="cd ~/acd; bin/acdplay"
@@ -279,7 +279,8 @@ PROMPT_COMMAND=_prompt_command
 # EXTRA PS stuff
 PS1BAK2="$PS1BAK"
 ps1extra() {
-    PS1EXTRA="\[\e[0;37;88;1m\][A]\[\e[0m\]"
+    ANSIVER=$(ansible --version | head -n1 | sed -e 's/ansible //' -e's/ last updated.*//')
+    PS1EXTRA="\[\e[0;37;88;1m\][${ANSIVER}]\[\e[0m\]"
     PS1BAK="${PS1EXTRA} ${PS1BAK2}"
     }
 
