@@ -2,10 +2,10 @@
 
 . ~/etc/defaults
 
-# make sure fnotify process gets killed afterwards
+# make sure the irssi specific control master ends, so mqtt-irssi disconnects
 on_exit() {
-    # kill the control master
-    pkill -f .ssh/cm-irssi
+    # stop the control master
+    ssh ${irssi_host} -O exit
 }
 
 
