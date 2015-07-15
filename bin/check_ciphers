@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# Copyright 2015 <Serge van Ginderachter serge@vanginderachter.be>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Certain parts (c) original author:
+# Originally based on the script by http://superuser.com/users/21867/indiv
+# http://superuser.com/questions/109213/how-do-i-list-the-ssl-tls-cipher-suites-a-particular-website-offers
+
+if [ -z "$1" ]
+then
+    echo "Usage: $0 host [ port (default 443) ]"
+    exit 1
+fi
+
+SERVER=${1}
+PORT=${2:-443}
+
+DELAY=0.1
+
+ciphers=$(openssl ciphers 'ALL:eNULL' | sed -e 's/:/ /g')
+
+echo "Obtaining cipher list from $(openssl version)."
+
+for cipher in ${ciphers[@]}
+do
+    result=$(echo -n | \
+             openssl s_client -cipher "$cipher" -connect "$SERVER:$PORT" 2>&1)
+    if [[ "$result" =~ "Cipher is ${cipher}" || "$result" =~ "Cipher    :" ]]
+    then
+        printf "%-3s %-30s \n" "YES" "$cipher"
+    else
+        if [[ "$result" =~ :error: ]]
+        then
+            error=$(echo -n "$result" | cut -d':' -f6)
+            printf "%-3s %-30s %s\n" " NO" "$cipher" "(`echo "$error" | head -n1`)"
+        else
+            printf "%-3s %-30s %ss\n" " NO" "$colone" "UNKNOWN RESPONSE"
+            echo "|---------"
+            echo "$result"
+            echo "|_________"
+        fi
+    fi
+    sleep $DELAY
+done
+
