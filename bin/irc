@@ -14,6 +14,6 @@ then
     ssh ${irssi_host} screen -S irc -X lockscreen
 else
     trap on_exit INT TERM KILL EXIT
-    ssh -X ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
+    ssh -v ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
 fi
 
