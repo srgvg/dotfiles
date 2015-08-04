@@ -41,22 +41,28 @@
     ci = commit
     co = checkout
     df = diff
-    dfs = "! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index"
+    dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
     st = status -sb
     ls = ls-files
     ls-untracked = ls-files --others
     up = remote update
     show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
-    changed = whatchanged --stat 
-    myinfo = "!git remote -v && git branch --color=always --all -vv && git st"
+    changed = whatchanged --stat
+    myinfo = ! git remote -v && git branch --color=always --all -vv && git st
     lol =  log --graph --decorate --abbrev-commit       --pretty=custom
     lola = log --graph --decorate --abbrev-commit --all --pretty=custom
-    rm-deleted = !git rm $(git ls-files --deleted)
-    rm-untracked = !rm -v $(git ls-files --others)
+    rm-deleted = ! git rm $(git ls-files --deleted)
+    rm-untracked = ! rm -v $(git ls-files --others)
     tags = !sh -c \"git tag | sort -V\"
-    igd = ls-files --others -i --exclude-standard 
+    igd = ls-files --others -i --exclude-standard
     ca = commit --all
     tree = log --all --graph --decorate --oneline --simplify-by-decoration
+
+    wip = commit -a -m WIP
+    # squeeze new stuff into latest commit
+    squish = ! git status && git commit -a --amend -C HEAD
+    # squash last 2 commits, keep oldest commit message
+    squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
 
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
     gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:pull/${1}\" -
