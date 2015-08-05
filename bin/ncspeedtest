@@ -1,0 +1,28 @@
+#!/bin/bash
+
+REMOTE_NC_PORT=2222
+
+remote_ssh_host=$1
+if [ -z "$remote_ssh_host" ]
+then
+    echo $0 remote_ssh_host
+    exit 1
+fi
+
+# kill the remote listener on exit
+on_exit() {
+    kill $ssh_nc_pid
+}
+trap on_exit INT TERM KILL EXIT
+
+set -x
+# setup remote listener
+ssh $remote_ssh_host nc -v -l $REMOTE_NC_PORT &
+ssh_nc_pid=$!
+sleep 1
+
+# do the speed test
+dd if=/dev/zero bs=1024K count=512 | nc -v -w 2 $remote_ssh_host $REMOTE_NC_PORT
+
+set +x
+
