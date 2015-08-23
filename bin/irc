@@ -11,7 +11,9 @@ on_exit() {
 
 if [ "$1" = "lock" ]
 then
-    ssh ${irssi_host} screen -S irc -X lockscreen
+    # only lock existing open connections, so check if the CM socket is
+    # available
+    ssh ${irssi_host} -O check && ssh ${irssi_host} screen -S irc -X lockscreen
 else
     trap on_exit INT TERM KILL EXIT
     ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"

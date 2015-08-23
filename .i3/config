@@ -473,7 +473,8 @@ assign [class="Remmina" instance="remmina"] → "8"
 assign [class="Wireshark" instance="wireshark"] → "7"
 
 # Browsers
-assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
+#assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
+assign      [class="(Firefox)" instance="(Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1" 
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
 
 # Pidgin

@@ -122,7 +122,7 @@ fi
 # golang bin path
 PATH="/usr/local/go/bin:$HOME/src/go/bin:$PATH"
 # local pip and other thingz
-PATH="$HOME/.local/bin/:$PATH"
+PATH="$HOME/.local/bin:$PATH"
 
 #####################
 ## my custom stuff ##

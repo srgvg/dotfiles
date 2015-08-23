@@ -60,7 +60,7 @@
 
     wip = commit -a -m WIP
     # squeeze new stuff into latest commit
-    squish = ! git status && git commit -a --amend -C HEAD
+    squish = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
     # squash last 2 commits, keep oldest commit message
     squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
 
