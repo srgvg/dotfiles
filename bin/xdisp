@@ -22,13 +22,17 @@ case $HOSTNAME in
         then
             checkmon LVDS1 1366x768     ; laptop=$?
             checkmon DP1 2560x1440      ; acdsamsung=$?
-            checkmon VGA1 VGA1           ; VGA1=$?
+            checkmon HDMI1 1680x1050    ; neovo=$?
+            checkmon VGA1 VGA1          ; VGA1=$?
             if [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
             then
                 action=acd
                 echo 'Detected ACD Samsung monitor, setting up dual screen.'
-            fi
-            if [ $laptop -eq 0 -a $VGA1 -eq 0 ]
+            elif [ $laptop -eq 0 -a $neovo -eq 0 ]
+            then
+                action=home
+                echo 'Detected Home Neovo screen, setting up dual screen.'
+            elif [ $laptop -eq 0 -a $VGA1 -eq 0 ]
             then
                 action=vga
                 echo 'Detected VGA monitor, setting up dual screen.'
@@ -42,6 +46,23 @@ case $HOSTNAME in
                 xrandr --output DP1     --off
                 xrandr --output VGA1    --off
                 xrandr --output HDMI1   --off
+                ;;
+            home)
+                # as per original xorg.conf from cyberlab
+                xrandr --newmode "1680x1050_60.00" 147.14 1680 1784 1968 2256 1050 1051 1054 1087 -hsync +vsync
+                xrandr --addmode HDMI1 1680x1050_60.00
+                #
+                xrandr --output HDMI1   --primary --mode 1680x1050_60.00 --pos 0x0
+                xrandr --output LVDS1   --off
+                xrandr --output HDMI1   --primary --mode 1680x1050_60.00 --pos 0x0 \
+                       --output LVDS1   --mode 1366x768 --noprimary --pos 1680x0
+                xrandr --output HDMI1   --primary
+                xrandr --output VGA1    --off
+                xrandr --output DP1   --off
+
+                i3-msg workspace 10
+                i3-msg move workspace to output LVDS1
+                i3-msg workspace 1
                 ;;
             vga)
                 xrandr --output LVDS1   --mode 1366x768 --noprimary --pos 0x0 \
