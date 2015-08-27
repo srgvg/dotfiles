@@ -184,7 +184,7 @@ alias gi='git myinfo'
 alias gls='git lol'
 alias gl='git lola'
 alias gu='git up'
-alias gps='git svn rebase && git svn dcommit'
+alias gps='git svn rebase && git svn dcommit && git push'
 alias gsmu='git submodule update'
 alias gt='git show-tree'
 gurp() {
