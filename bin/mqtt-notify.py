@@ -17,8 +17,7 @@ import dbus
 import paho.mqtt.client as paho
 import socket
 
-app_name = 'irssi'
-mqtt_client_name = 'irssi-notify'
+app_name = mqtt_client_name = 'mqtt-notify'
 broker = '127.0.0.1'
 port = 1883
 topic = 'irssi'
@@ -33,17 +32,18 @@ def timestamp():
 def on_connect(client, userdata, flags, rc):
     ''' Assign a callback for connect and disconnect '''
     if rc == 0:
-        print '%s Connected successfully to %s:%s' % (timestamp(), broker,
-                                                      port)
-    # Subscribe to topic 'test'
-    client.subscribe(topic, qos)
+        print '%s Connected successfully to %s:%s as %s' % (
+                timestamp(), broker, port, mqtt_client_name)
+        # Subscribe to topic 'test'
+        client.subscribe(topic, qos)
+        print '%s Subscribing to %s with qos %s' % (timestamp(), topic, qos)
 
 
 def on_disconnect(client, userdata, rc):
     print '%s Disconnected from %s:%s' % (timestamp(), broker, port)
 
 
-def on_message(client, useruserdataa, msg):
+def on_message(client, userdata, msg):
     ''' Send a notification after a new message has arrived'''
     message = msg.payload.split('\n')
     summary = message[0]
