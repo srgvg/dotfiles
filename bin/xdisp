@@ -48,13 +48,9 @@ case $HOSTNAME in
                 xrandr --output HDMI1   --off
                 ;;
             home)
-                # as per original xorg.conf from cyberlab
-                xrandr --newmode "1680x1050_60.00" 147.14 1680 1784 1968 2256 1050 1051 1054 1087 -hsync +vsync
-                xrandr --addmode HDMI1 1680x1050_60.00
-                #
-                xrandr --output HDMI1   --primary --mode 1680x1050_60.00 --pos 0x0
+                xrandr --output HDMI1   --primary --mode 1680x1050 --pos 0x0
                 xrandr --output LVDS1   --off
-                xrandr --output HDMI1   --primary --mode 1680x1050_60.00 --pos 0x0 \
+                xrandr --output HDMI1   --primary --mode 1680x1050 --pos 0x0 \
                        --output LVDS1   --mode 1366x768 --noprimary --pos 1680x0
                 xrandr --output HDMI1   --primary
                 xrandr --output VGA1    --off
