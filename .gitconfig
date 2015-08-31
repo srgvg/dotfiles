@@ -65,7 +65,7 @@
     squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
 
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
-    gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:pull/${1}\" -
+    gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
 
     # http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
     ignored = !git ls-files -v | grep "^[[:lower:]]"
