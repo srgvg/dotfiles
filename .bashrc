@@ -13,8 +13,8 @@ HISTCONTROL=ignoredups:ignorespace
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+HISTSIZE=5000
+HISTFILESIZE=20000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -184,7 +184,7 @@ alias gi='git myinfo'
 alias gls='git lol'
 alias gl='git lola'
 alias gu='git up'
-alias gps='git svn rebase && git svn dcommit && git push'
+alias gps='git svn rebase && git svn dcommit && git push serge trunk:trunk'
 alias gsmu='git submodule update'
 alias gt='git show-tree'
 gurp() {
@@ -328,3 +328,7 @@ then
         --inherit any --agents ssh,gpg \
         --eval ~/.ssh/id_rsa ~/.ssh/id_rsa2`
 fi
+
+
+alias ecryptmount="sudo mount -t ecryptfs -o ecryptfs_enable_filename_crypto=yes"
+
