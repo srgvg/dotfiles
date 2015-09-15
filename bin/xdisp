@@ -1,8 +1,14 @@
-#!/bin/bash
+#!/bin/bash -x
 
 checkmon() {
     (echo -n "$DISPLAYS" | grep $1 | grep $2) 1>/dev/null 2>&1
     return $?
+}
+
+arrange-screens-multi-disp() {
+                i3-msg workspace 19; i3-msg move workspace to output LVDS1
+                i3-msg workspace 20; i3-msg move workspace to output LVDS1
+                i3-msg workspace 1
 }
 
 action=$1
@@ -56,14 +62,12 @@ case $HOSTNAME in
                 xrandr --output VGA1    --off
                 xrandr --output DP1   --off
 
-                i3-msg workspace 10
-                i3-msg move workspace to output LVDS1
-                i3-msg workspace 1
+                arrange-screens-multi-disp
                 ;;
             vga)
                 xrandr --output LVDS1   --mode 1366x768 --noprimary --pos 0x0 \
                        --output VGA1    --auto --primary --pos 1366x0
-                xrandr --output VGA1    --primary
+                xrandr --output LVDS1   --primary
                 xrandr --output DP1     --off
                 xrandr --output HDMI1   --off
                 ;;
@@ -89,9 +93,7 @@ case $HOSTNAME in
                 xrandr --output VGA1    --off
                 xrandr --output HDMI1   --off
 
-                i3-msg workspace 10
-                i3-msg move workspace to output LVDS1
-                i3-msg workspace 1
+                arrange-screens-multi-disp
                 ;;
             *)
                 echo -e "* ERROR: Invalid action $action\n"

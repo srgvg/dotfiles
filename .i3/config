@@ -164,11 +164,16 @@ bindsym $mod+7 workspace 7
 bindsym $mod+8 workspace 8
 bindsym $mod+9 workspace 9
 bindsym $mod+0 workspace 10
-bindsym $mod+F1 workspace 6
-bindsym $mod+F2 workspace 7
-bindsym $mod+F3 workspace 8
-bindsym $mod+F4 workspace 9
-bindsym $mod+F5 workspace 10
+bindsym $mod+F1 workspace 11
+bindsym $mod+F2 workspace 12
+bindsym $mod+F3 workspace 13
+bindsym $mod+F4 workspace 14
+bindsym $mod+F5 workspace 15
+bindsym $mod+F6 workspace 16
+bindsym $mod+F7 workspace 17
+bindsym $mod+F8 workspace 18
+bindsym $mod+F9 workspace 19
+bindsym $mod+F10 workspace 20
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace 1
@@ -181,11 +186,16 @@ bindsym $mod+Shift+7 move container to workspace 7
 bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
-bindsym $mod+Shift+F1 move container to workspace 6
-bindsym $mod+Shift+F2 move container to workspace 7
-bindsym $mod+Shift+F3 move container to workspace 8
-bindsym $mod+Shift+F4 move container to workspace 9
-bindsym $mod+Shift+F5 move container to workspace 10
+bindsym $mod+Shift+F1 move container to workspace 11
+bindsym $mod+Shift+F2 move container to workspace 12
+bindsym $mod+Shift+F3 move container to workspace 13
+bindsym $mod+Shift+F4 move container to workspace 14
+bindsym $mod+Shift+F5 move container to workspace 15
+bindsym $mod+Shift+F6 move container to workspace 16
+bindsym $mod+Shift+F7 move container to workspace 17
+bindsym $mod+Shift+F8 move container to workspace 18
+bindsym $mod+Shift+F9 move container to workspace 19
+bindsym $mod+Shift+F10 move container to workspace 20
 bindsym $mod+Control+1 move container to workspace 1
 bindsym $mod+Control+2 move container to workspace 2
 bindsym $mod+Control+3 move container to workspace 3
@@ -196,11 +206,16 @@ bindsym $mod+Control+7 move container to workspace 7
 bindsym $mod+Control+8 move container to workspace 8
 bindsym $mod+Control+9 move container to workspace 9
 bindsym $mod+Control+0 move container to workspace 10
-bindsym $mod+Control+F1 move container to workspace 6
-bindsym $mod+Control+F2 move container to workspace 7
-bindsym $mod+Control+F3 move container to workspace 8
-bindsym $mod+Control+F4 move container to workspace 9
-bindsym $mod+Control+F5 move container to workspace 10
+bindsym $mod+Control+F1 move container to workspace 11
+bindsym $mod+Control+F2 move container to workspace 12
+bindsym $mod+Control+F3 move container to workspace 13
+bindsym $mod+Control+F4 move container to workspace 14
+bindsym $mod+Control+F5 move container to workspace 15
+bindsym $mod+Control+F6 move container to workspace 16
+bindsym $mod+Control+F7 move container to workspace 17
+bindsym $mod+Control+F8 move container to workspace 18
+bindsym $mod+Control+F9 move container to workspace 19
+bindsym $mod+Control+F10 move container to workspace 20
 
 # start dmenu (a program launcher)
 bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
@@ -242,7 +257,7 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
-bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
+#bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 bindsym $mod+Shift+m exec $terminal -e ncmpcpp
 
 # Screenshot
@@ -493,11 +508,11 @@ assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDia
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "10"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "10"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "19"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "19"
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "20"
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
 
 
