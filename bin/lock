@@ -1,7 +1,14 @@
 #!/bin/bash -x
+# log this scripts full output
+exec >> ~/.lock.log 2>&1
+
+echo -n "START "; date
 
 # load some defaults
 . etc/defaults
+
+# Make sure i3lock doesn't run already
+pgrep i3lock && exit
 
 # check parameters
 if  [ "$1" = suspend ]
@@ -27,20 +34,35 @@ then
     scrot --delay 0 "$screenshot_image" \
         --exec "convert "$screenshot_image" -blur 0x3 "$lockscreen_image
 fi
+#
+
+# define lock procedure and what happens after unlock
+locknow() {
+
+    # then lock screen with a background picture,
+    i3lock -i ~/.lockscreen.png --tiling --nofork --ignore-empty-password
+
+    # then re-enable notifications when unlock happens
+    killall -v -SIGUSR2 dunst
+}
+
+##############################
+## now we start doing things #
+##############################
 
 # make sure music stops
 mediaplayer_cmd stop
 
 # pause notifications
-killall -SIGUSR1 dunst # pause
-# first lock remote irssi screen, then lock screen with a background picture, 
-# then re-enable notifications when unlock happens
-(   irc lock &
-    i3lock -i ~/.lockscreen.png --tiling --nofork
-    killall -SIGUSR2 dunst
-    ) &
+killall -v -SIGUSR1 dunst # pause
 
-# also suspend if told so
+# first lock remote irssi screen,
+irc lock &
+
+# perform the lock procedure
+locknow &
+
+# suspend if told so
 if  [ "$sleep" = yes ]
 then
     # wait a bit to make sure it's locked
@@ -49,3 +71,12 @@ then
     sudo /usr/sbin/pm-suspend
 fi
 
+# if this script exit's prematurely (before sthe screen is unlocked) xautolock
+# will not know the lock is still going on, so wait for i3lock to exit = screen 
+# being unlocked
+while pgrep i3lock
+do      sleep 3
+done
+
+echo -n "STOP "; date
+echo
