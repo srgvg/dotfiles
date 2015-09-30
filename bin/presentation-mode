@@ -1,16 +1,22 @@
-#!/bin/bash
+#!/bin/bash -x
 
 self=`basename $0`
-runtray="gtrayicon --activated --deactivate-icon=/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-monitor.svg --activate='/bin/true' --deactivate='${self}'"
-activated=`pgrep -f gtrayicon.*presentation-mode`
-
-if [ -z "${activated}" ]
+activated=`pgrep -f gtrayicon.*-mode`
+if [ "$1" = "nolock" ]
 then
-    xautolock -disable
-    killall -SIGUSR1 dunst
-    eval ${runtray}
+    icon="/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-keyboard-100.svg"
 else
-    xautolock -enable
-    killall -SIGUSR2 dunst
+    icon="/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-monitor.svg"
+fi
+runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
+
+if [ -z "${activated}" ]  # currently inactive
+then
+    xautolock -disable  #  disable autolock
+    [ "$1" = "nolock" ] || killall -SIGUSR1 dunst  # disable OSD notifications unless only nolock mode
+    eval ${runtray} &
+else  # currently a mode active
+    xautolock -enable  # re-enable autolock
+    killall -SIGUSR2 dunst  # re-enable OSD notifications
     kill ${activated}
 fi
