@@ -2,7 +2,7 @@
 
 ## Parameters
 
-tmp=/tmp/background-file-list.setbg
+#tmp=/tmp/background-file-list.setbg
 setbg_delay=1800
 
 # load some defaults
@@ -73,8 +73,8 @@ pickpic() {
         # disable shell expansion for the iregex
         set -o noglob
         # Pick random picture
-        background="`find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
-        find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R > ${tmp}
+        background="`find -L ${pictures} -type f -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
+        #find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R > ${tmp}
         # reenable shell expansion
         set +o noglob
 

@@ -1,18 +1,30 @@
 #!/bin/bash
 
-sleep 1 # make sure SSHASKPASS window runs first
-launch-screen i3jobs sleep 3
+# make sure SSHASKPASS window runs first
+sleep 1
 
-launch-screen i3jobs add setbg-loop
-launch-screen i3jobs add compton
-launch-screen i3jobs add xautolock -detectsleep -time 7 -locker /home/serge/bin/lock
-launch-screen i3jobs add autocutsel -verbose -debug -selection CLIPBOARD
-launch-screen i3jobs add autocutsel -verbose -debug -selection PRIMARY
-launch-screen i3jobs add mqtt-notify.py
-#launch-screen i3jobs add mopidy
+launch_job() {
+    echo
+    echo -n "Checking for \"$*\" ... "
+    if pgrep -f "$*"
+    then
+        echo Already running.
+    else
+        launch-screen i3jobs add $*
+    fi
+    echo; echo "----------------------------------------"
+}
 
-sleep 3
-launch-screen i3jobs add dunst -print
+launch_job compton
+launch_job dunst -print
+launch_job xautolock -detectsleep -time 7 -locker /home/serge/bin/lock
+launch_job autocutsel -verbose -debug -selection CLIPBOARD
+launch_job autocutsel -verbose -debug -selection PRIMARY
+launch_job mqtt-notify.py
 
-#launch-screen i3jobs add keynav
-#launch-screen i3jobs add alternating_layouts.sh
+#launch_job setbg loop geek
+
+#launch_job mopidy
+#launch_job keynav
+#launch_job alternating_layouts.sh
+

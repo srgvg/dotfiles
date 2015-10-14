@@ -3,7 +3,7 @@
 #sudo iscsiadm -m discovery --type sendtargets  -p files.lan.vanginderachter.be
 
 case $1 in
-    "start")
+    ""|"start")
         sudo service open-iscsi start
         sudo iscsiadm -m node --target iqn.2000-01.com.synology:vega.ymedia.6fbb064b96 --login
         ;;

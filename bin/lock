@@ -65,7 +65,7 @@ fi
 
 # then lock screen with a background picture
 # --nofork makes sure i3lock doesn't return until it gets unlocked
-i3lock -i ~/.lockscreen.png --tiling --nofork --ignore-empty-password
+i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
 
 # then re-enable notifications when unlock happens
 killall -v -SIGUSR2 dunst
