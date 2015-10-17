@@ -55,10 +55,10 @@ mode "resize" {
 }
 
 mode "moveit" {
-        bindsym Up move up          100px
-        bindsym Left move left      100px
-        bindsym Down move down      100px
-        bindsym Right move right    100px
+        bindsym Up move up          50px
+        bindsym Left move left      50px
+        bindsym Down move down      50px
+        bindsym Right move right    50px
         # back to normal: Enter or Escape
         bindsym Mod4+m mode "default"
         bindsym Return mode "default"
@@ -90,33 +90,18 @@ bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
 bindsym $mod+q exec quickswitch.py
 
 #
-#p -pke                Navigation
+# Navigation
 #
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
-
-# alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
-
 # with tab key
 bindsym $mod+Tab focus right
 bindsym $mod+Shift+Tab focus left
-bindsym $mod+Control+Tab focus down
-bindsym $mod+Control+Shift+Tab focus up
 
 # move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move urp
-bindsym $mod+Shift+semicolon move right
-
-# alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Up move up
@@ -124,7 +109,6 @@ bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
 bindsym $mod+h split h
-
 # split in vertical orientation
 bindsym $mod+v split v
 
@@ -132,10 +116,9 @@ bindsym $mod+v split v
 bindsym $mod+f fullscreen
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
-
+bindsym $mod+w layout tabbed
+#bindsym $mod+s layout stacking
 # Toggle between stacking/tabbed/split:
 #bindsym $mod+z layout toggle
 # Toggle between stacking/tabbed/splith/splitv:
@@ -156,6 +139,17 @@ bindsym $mod+Prior focus parent
 
 # focus the child container
 bindsym $mod+Next focus child
+
+# switch to the next and previous workspace
+bindsym $mod+Control+Left workspace prev
+bindsym $mod+Control+Right workspace next
+bindsym $mod+Control+Tab workspace next
+bindsym $mod+Control+Shift+Tab workspace prev
+
+# Move the current workspace to the next output
+# (effectively toggles when you only have two outputs)
+bindsym $mod+Control+Prior move workspace to output left
+bindsym $mod+Control+Next move workspace to output right
 
 # switch to workspace
 bindsym $mod+1 workspace 1
@@ -178,6 +172,8 @@ bindsym $mod+F7 workspace 17
 bindsym $mod+F8 workspace 18
 bindsym $mod+F9 workspace 19
 bindsym $mod+F10 workspace 20
+bindsym $mod+F11 workspace 21
+bindsym $mod+F12 workspace 22
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace 1
@@ -200,6 +196,8 @@ bindsym $mod+Shift+F7 move container to workspace 17
 bindsym $mod+Shift+F8 move container to workspace 18
 bindsym $mod+Shift+F9 move container to workspace 19
 bindsym $mod+Shift+F10 move container to workspace 20
+bindsym $mod+Shift+F11 move container to workspace 21
+bindsym $mod+Shift+F12 move container to workspace 22
 bindsym $mod+Control+1 move container to workspace 1
 bindsym $mod+Control+2 move container to workspace 2
 bindsym $mod+Control+3 move container to workspace 3
@@ -220,18 +218,8 @@ bindsym $mod+Control+F7 move container to workspace 17
 bindsym $mod+Control+F8 move container to workspace 18
 bindsym $mod+Control+F9 move container to workspace 19
 bindsym $mod+Control+F10 move container to workspace 20
-
-# start dmenu (a program launcher)
-bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
-
-# switch to the next and previous workspace
-bindsym $mod+Control+Left workspace prev
-bindsym $mod+Control+Right workspace next
-
-# Move the current workspace to the next output
-# (effectively toggles when you only have two outputs)
-bindsym $mod+Control+Prior move workspace to output left
-bindsym $mod+Control+Next move workspace to output right
+bindsym $mod+Control+F11 move container to workspace 21
+bindsym $mod+Control+F12 move container to workspace 22
 
 ## Make the currently focused window a scratchpad
 #bindsym $mod+KP_Subtract move scratchpad
@@ -242,6 +230,9 @@ bindsym $mod+Control+Next move workspace to output right
 #
 ## launch applications
 #
+
+# start dmenu (a program launcher)
+bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
