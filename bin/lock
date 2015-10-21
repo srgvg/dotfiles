@@ -63,6 +63,8 @@ then
     initiate_suspend &
 fi
 
+# make sure presentation mode is off
+presentation-mode stop
 # then lock screen with a background picture
 # --nofork makes sure i3lock doesn't return until it gets unlocked
 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png

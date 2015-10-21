@@ -2,7 +2,11 @@
 
 self=`basename $0`
 activated=`pgrep -f gtrayicon.*-mode`
-if [ "$1" = "nolock" ]
+disable=""
+if [ "$1" = "stop" ]
+then
+    disable="yes"
+elif [ "$1" = "nolock" ]
 then
     icon="/usr/share/notify-osd/icons/hicolor/scalable/status/notification-display-brightness.svg"
 else
@@ -10,13 +14,13 @@ else
 fi
 runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
 
-if [ -z "${activated}" ]  # currently inactive
-then
+if [ -z "${activated}" -a -z "${disable}" ]  # currently inactive and no need to disable
+then # activate presentation mode
     xautolock -disable  #  disable autolock
     [ "$1" = "nolock" ] || killall -SIGUSR1 dunst  # disable OSD notifications unless only nolock mode
     eval ${runtray} &
-else  # currently a mode active
+else  # currently a mode active, or make sure to stop it
     xautolock -enable  # re-enable autolock
     killall -SIGUSR2 dunst  # re-enable OSD notifications
-    kill ${activated}
+    [ "${activated}" ] && kill ${activated}
 fi
