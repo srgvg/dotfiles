@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for urlport in $*
+do
+    url=${urlport%:*}
+    openssl s_client -connect ${urlport} \
+        </dev/null \
+        2>/dev/null \
+        | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
+        > /usr/local/share/ca-certificates/${url} \
+        || echo "failed ${urlport}"
+done
+update-ca-certificates
