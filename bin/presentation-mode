@@ -4,9 +4,9 @@ self=`basename $0`
 activated=`pgrep -f gtrayicon.*-mode`
 if [ "$1" = "nolock" ]
 then
-    icon="/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-keyboard-100.svg"
+    icon="/usr/share/notify-osd/icons/hicolor/scalable/status/notification-display-brightness.svg"
 else
-    icon="/usr/share/notify-osd/icons/gnome/scalable/status/notification-gpm-monitor.svg"
+    icon="/usr/share/notify-osd/icons/Humanity/scalable/status/notification-gpm-monitor.svg"
 fi
 runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
 
