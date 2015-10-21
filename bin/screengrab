@@ -1,7 +1,8 @@
 #!/bin/bash -x
 
 sleep 1
-imagefile="$HOME/Downloads/$(date +%Y%m%d%H%M%S).png"
+screenshotdir="$HOME/Temp/Screenshots"
+imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
 
 case $1 in
     full)

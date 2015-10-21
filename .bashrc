@@ -155,7 +155,7 @@ alias auu='aud ; aug'
 alias dL='dpkg -L'
 
 alias swappy="/sbin/sysctl vm.swappiness"
-alias sysl="tail -f /var/log/syslog"
+alias sysl="less /var/log/syslog"
 alias ping1="ping -c 1 "
 alias ping3="ping -c 3 "
 alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution: %wpx x %hpx\nColors: %k'"
