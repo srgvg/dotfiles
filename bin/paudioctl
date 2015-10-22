@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 
 ## check for pulseaudio
@@ -75,10 +75,10 @@ case $command in
         pactl set-sink-mute $sink toggle
         ;;
     min)
-        pactl set-sink-volume $sink -- -2dB
+        pactl set-sink-volume $sink -2dB
         ;;
     plus)
-        pactl set-sink-volume $sink -- +2dB
+        pactl set-sink-volume $sink +2dB
         ;;
     use)
         set_sink
