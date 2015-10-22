@@ -51,8 +51,11 @@ fi
 # make sure music stops
 mediaplayer_cmd stop
 
-# pause notifications
-killall -v -SIGUSR1 dunst # pause
+# make sure presentation mode is off
+presentation-mode stop
+
+# pause notifications (sleep because seems too soon after pres mode stop)
+(sleep 1; killall -v -SIGUSR1 dunst) & # pause
 
 # first lock remote irssi screen
 irc lock &
@@ -63,8 +66,6 @@ then
     initiate_suspend &
 fi
 
-# make sure presentation mode is off
-presentation-mode stop
 # then lock screen with a background picture
 # --nofork makes sure i3lock doesn't return until it gets unlocked
 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
