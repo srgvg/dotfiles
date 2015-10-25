@@ -1,6 +1,6 @@
 #!/bin/sh
 
-/usr/bin/xfce4-terminal --disable-server \
+/usr/bin/terminator \
             --title IRC \
             --role irc \
-            --execute bash -i -c irc &
+            --command "bash -i -c irc" &
