@@ -1,6 +1,7 @@
 #!/bin/sh
 
 /usr/bin/terminator \
+            --geometry 800x600 \
             --title IRC \
             --role irc \
             --command "bash -i -c irc" &

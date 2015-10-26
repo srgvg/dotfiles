@@ -12,7 +12,7 @@
 #
 #
 set $mod Mod4
-set $terminal /usr/bin/terminator
+set $terminal /usr/bin/terminator --geometry 800x600
 
 # mouse settings
 focus_follows_mouse yes
@@ -76,7 +76,7 @@ floating_modifier $mod
 bindsym $mod+Return exec $terminal
 
 # start a floating terminal
-bindsym $mod+Control+Return exec $terminal --role xfce4-float
+bindsym $mod+Control+Return exec $terminal --role floating
 
 # kill focused window
 bindsym $mod+x kill
@@ -253,7 +253,7 @@ bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
 bindsym $mod+Shift+p exec /usr/bin/python /usr/share/system-config-printer/system-config-printer.py
 #bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
-bindsym $mod+Shift+m exec $terminal -e ncmpcpp
+#bindsym $mod+Shift+m exec $terminal -e ncmpcpp
 
 # Screenshot
 bindsym Print exec screengrab select
@@ -459,7 +459,7 @@ hide_edge_borders none
 # Maar volgens mij is het omgekeerd.
 
 # terminals
-for_window [window_role="xfce4-float"]     floating enable
+for_window [window_role="floating"]     floating enable
 #
 # IRC
 assign [window_role="irc"]                          →   "2"

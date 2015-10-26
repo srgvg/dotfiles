@@ -6,7 +6,6 @@
   close_button_on_tab = False
   title_inactive_fg_color = "#ffffff"
   suppress_multiple_term_dialog = True
-  borderless = False
   enabled_plugins = InactivityWatch, TestPlugin, ActivityWatch, TerminalShot, APTURLHandler
   title_transmit_bg_color = "#999999"
   inactive_color_offset = 0.9
@@ -21,11 +20,12 @@
     background_darkness = 0.8
     urgent_bell = True
     background_type = transparent
-    scrollbar_position = hidden
+    foreground_color = "#ffffff"
     show_titlebar = False
     copy_on_selection = True
     audible_bell = True
     scrollback_infinite = True
+    word_chars = '-A-Za-z0-9,./?%&#_'
   [[IRC]]
     background_image = None
     font = Monospace 6
@@ -33,7 +33,7 @@
     background_darkness = 0.8
     urgent_bell = True
     background_type = transparent
-    scrollbar_position = hidden
+    foreground_color = "#ffffff"
     show_titlebar = False
     copy_on_selection = True
     audible_bell = True
@@ -48,4 +48,5 @@
     [[[window0]]]
       type = Window
       parent = ""
+      #size = 900,500
 [plugins]
