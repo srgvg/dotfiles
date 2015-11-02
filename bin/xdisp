@@ -32,11 +32,11 @@ case $HOSTNAME in
             if [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
             then
                 action=acd
-                echo 'Detected ACD Samsung monitor, setting up dual screen.'
+                echo 'Detected ACD Samsung monitor, setting up screen.'
             elif [ $laptop -eq 0 -a $neovo -eq 0 ]
             then
                 action=home
-                echo 'Detected Home Neovo screen, setting up dual screen.'
+                echo 'Detected Home Neovo screen, setting upscreen.'
             elif [ $laptop -eq 0 -a $VGA-0 -eq 0 ]
             then
                 action=vga
