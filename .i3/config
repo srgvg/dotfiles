@@ -534,7 +534,7 @@ new_float   pixel 1
 
 ## Run at i3 initial start only
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; $terminal --role=SSHASKPASS --geometry 100x2 -e "/bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 100x2 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
 # i3wm desktop managing stuff runing in a screen - long runining user services
 exec --no-startup-id "launch-i3jobs"
 
