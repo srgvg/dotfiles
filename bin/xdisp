@@ -28,8 +28,18 @@ case $HOSTNAME in
             checkmon LVDS-0 1366x768     ; laptop=$?
             checkmon DisplayPort-0 2560x1440      ; acdsamsung=$?
             checkmon HDMI-0 1680x1050    ; neovo=$?
+            checkmon DisplayPort-0 3840x2160 ; iiyama=$?
             checkmon VGA-0 VGA-0          ; VGA=$?
-            if [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
+
+            if [ $laptop -eq 0 -a $neovo -eq 0 ]
+            then
+                action=home
+                echo 'Detected Home Neovo screen, setting up screen.'
+            elif [ $laptop -eq 0 -a $iiyama -eq 0 ]
+            then
+                action=home2
+                echo 'Detected Home iiyama screen, setting up screen.'
+            elif [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
             then
                 action=acd
                 echo 'Detected ACD Samsung monitor, setting up screen.'
@@ -57,6 +67,15 @@ case $HOSTNAME in
                 #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 1680x0
                 #arrange-screens-multi-disp
                 xrandr --output LVDS-0   --off
+                ;;
+            home2)
+                xrandr --output DisplayPort-0 --primary --mode 2560x1440 --pos 0x0
+                #xrandr --output DisplayPort-0 --primary --mode 3840x2160  --pos 0x0
+                #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 2560x0
+                #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 3840x0
+                #xrandr --output DisplayPort-0   --primary
+                xrandr --output LVDS-0   --off
+                #arrange-screens-multi-disp
                 ;;
             vga)
                 xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 0x0
