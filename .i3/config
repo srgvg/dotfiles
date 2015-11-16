@@ -269,7 +269,7 @@ bindsym $mod+Shift+Next move workspace to output right
 #
 
 # start dmenu (a program launcher)
-bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" \
+bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$light" -sf "$dark" \
                                     -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
@@ -351,43 +351,70 @@ bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 #
 # color defines
 
-set $IGNORED                #FF0000  # set where setting is ignored
-set $background             #000000
-set $indicator              #a3ccff
-set $separator              #333333
-
-set $border_unfocused       #777777
-set $border_inactive        #AAAAAA
-set $border_focused         #DDDDDD
-
-set $text_unfocused         #DDDDDD
-set $text_focused           #555555
-
-set $border_urgent          #FF0000
-set $text_urgent            #FFFFFF
+set $dark                   #000000
+set $light                  #FFFFFF
+set $grey                   #777777
+set $ginsys                 #1D396A
+set $red                    #FF0000
+set $IGNORED                #000000  # set where setting is ignored
 
 #
 ## container colors
 # border colour is the color for the 2 horizontal lines of the titlebar; the
 # border of the whole container is the same as the background of the title bar!
 #
-## client windows       border              background          text                indicator
+## client windows       border              background          text                indicator (indicates vertical or horizontal split)
+#
 # A client which is not the focused one of its container.
-client.unfocused        $border_unfocused   $border_unfocused   $text_unfocused     $indicator
+client.unfocused        $dark               $dark               $light              $dark
+
 # A client currently focused in its container, but does not have focus now.
-client.focused_inactive $border_inactive    $border_inactive    $text_unfocused     $indicator
+client.focused_inactive $dark               $dark               $light              $dark
+
 # A client which currently has the focus.
-client.focused          $border_focused     $border_focused     $text_focused       $indicator
+client.focused          $light              $light              $dark               $ginsys
+
 # A client which has its urgency hint activated.
-client.urgent           $border_urgent      $border_urgent      $text_urgent        $indicator
+client.urgent           $red                $red                $light              $red
+
 #Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder      $IGNORED            $border_unfocused   $text_unfocused     $IGNORED
+client.placeholder      $IGNORED            $dark               $dark               $IGNORED
 
 ##############################################################################################################################################################
 #
 # status bar
 #
 bar {
+        colors {
+
+            # Text color to be used for the separator.
+            separator           $grey
+
+            # Text color to be used for the statusline.
+            statusline          $light
+
+            # Background color of the bar.
+            background          $dark
+
+
+            ## type             border              background      text
+
+            # workspace button when the workspace does not have focus and is not
+            # active (visible) on any output. This will be the case for most workspaces.
+            inactive_workspace  $dark               $dark           $grey
+
+            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+            active_workspace    $grey               $dark           $grey
+
+            # color for a workspace button when the workspace has focus.
+            focused_workspace   $light              $dark           $light
+
+            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+            urgent_workspace    $red                $dark          $red
+
+        }
+
         id main
         #status_command i3status
         # https://github.com/ultrabug/py3status
@@ -401,8 +428,10 @@ bar {
 
         # mode <dock|hide|invisible>
         mode dock
+
         # hidden_state <hide|show>
         hidden_state hide
+
         # modifier <Modifier>
         modifier $mod
 
@@ -411,8 +440,8 @@ bar {
         #  matters. The first font in the list shall be the one containing
         #  icons, the latter the one for plain text
         #font pango:DejaVu Sans Mono 10
-        font pango:Ubuntu Mono 10  #, Terminus 8
         #font pango:FontAwesome 8, Terminus 8
+        font pango:Ubuntu Mono 10  #, Terminus 8
 
         # workspace_buttons <yes|no>
         workspace_buttons yes
@@ -423,34 +452,6 @@ bar {
         # still be able to see the current binding mode indicator.
         binding_mode_indicator yes
 
-        colors {
-
-            # Text color to be used for the separator.
-            separator           $separator
-
-            # Text color to be used for the statusline.
-            statusline          $text_unfocused
-
-            # Background color of the bar.
-            background          $background
-
-
-            ## type             border              background      text
-            #
-            # workspace button when the workspace does not have focus and is not
-            # active (visible) on any output. This will be the case for most workspaces.
-            inactive_workspace  $background         $background     $border_unfocused
-
-            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
-            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-            active_workspace    $border_focused     $background     $border_unfocused
-            # color for a workspace button when the workspace has focus.
-            focused_workspace   $border_focused     $background     $border_unfocused
-
-            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-            urgent_workspace    $border_urgent      $background     $border_urgent
-
-        }
 }
 
 ##############################################################################################################################################################
@@ -511,16 +512,16 @@ for_window [window_type="(dialog|dialog|utility|toolbar|splash|menu|dropdown_men
 no_focus [window_role="pop-up"]
 
 # terminals
-for_window [window_role="floating"]     floating enable
+for_window [window_role="floating"]     floating enable, move position mouse
 #
 # IRC
 assign [window_role="irc"]                          →   "2"
-for_window [window_role="irc"]                     border none
+#for_window [window_role="irc"]                     border none
 
 # Tools
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
 for_window [class="Gcalctool"]                                                          floating enable, move position mouse
-#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable
+#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
 for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
@@ -580,7 +581,7 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbe
 
 # new window default border <normal|1pixel|none|pixel> :
 new_window  pixel 1
-new_float   pixel 1
+new_float   pixel 2
 
 ##############################################################################################################################################################
 #
