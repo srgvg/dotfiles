@@ -1,14 +1,16 @@
+##############################################################################################################################################################
+#
 # i3 config file (v4)
 #
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 #
 # Comments start with a # and can only be used at the beginning of a line.
 #
-###############################################################################
+##############################################################################################################################################################
 #
 # i3 --moreversion
 #
-###############################################################################
+##############################################################################################################################################################
 #
 #
 set $mod Mod4
@@ -17,17 +19,27 @@ set $terminal /usr/bin/terminator --geometry 800x600
 # mouse settings
 focus_follows_mouse yes
 
+# Focus on window activation
+# smart: (default) If the window requesting focus is on an active workspace, it will receive the focus. Otherwise, the urgency hint will be set.
+# urgent: The window will always be marked urgent, but the focus will not be stolen.
+# focus: The window will always be focused and not be marked urgent.
+# none: The window will neither be focused, nor be marked urgent.
+focus_on_window_activation none
+
+# If activated, marks on windows are drawn in their window decoration. However, any mark starting with an underscore in its name (_)
+# will not be drawn even if this option is activated.
+show_marks yes
+
 # set the right default sink before we launch i3status
 exec --no-startup-id  paudioctl sink
 
 # Detect & set display
 exec --no-startup-id  xdisp
 
-###############################################################################
+##############################################################################################################################################################
 #
-## Key command assignments
+### Special Modes
 #
-# xmodmap -pke
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -53,6 +65,7 @@ mode "resize" {
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
+bindsym $mod+Control+r mode "resize"
 
 mode "moveit" {
         bindsym Up move up          50px
@@ -64,10 +77,28 @@ mode "moveit" {
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
-
-# Enter modes
-bindsym $mod+Control+r mode "resize"
 bindsym $mod+m focus floating; mode "moveit"
+
+set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
+mode "$mode_system" {
+    bindsym l exec --no-startup-id $Locker, mode "default"
+    bindsym e exec --no-startup-id i3-msg exit, mode "default"
+    bindsym s exec --no-startup-id $Locker && systemctl suspend, mode "default"
+    bindsym h exec --no-startup-id $Locker && systemctl hibernate, mode "default"
+    bindsym r exec --no-startup-id systemctl reboot, mode "default"
+    bindsym Shift+s exec --no-startup-id systemctl poweroff -i, mode "default"
+
+    # back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+Shift+e mode "$mode_system"
+
+##############################################################################################################################################################
+#
+## Key command assignments
+#
+# xmodmap -pke
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -89,7 +120,7 @@ bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
 # quickswitch
 bindsym $mod+q exec quickswitch.py
 
-###############################################################################
+##############################################################################################################################################################
 #
 # Window management
 #
@@ -113,6 +144,9 @@ bindsym $mod+w layout tabbed
 # Show border or not
 bindsym $mod+b border toggle
 
+# Set window sticky
+bindsym $mod+s sticky toggle
+
 # toggle tiling / floating
 #bindsym $mod+Control+space floating toggle
 bindsym $mod+t floating toggle
@@ -120,7 +154,7 @@ bindsym $mod+t floating toggle
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
 
-###############################################################################
+##############################################################################################################################################################
 #
 # Navigation
 #
@@ -229,13 +263,14 @@ bindsym $mod+Control+Next move container to output right
 bindsym $mod+Shift+Prior move workspace to output left
 bindsym $mod+Shift+Next move workspace to output right
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## launch applications
 #
 
 # start dmenu (a program launcher)
-bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$border_unfocused" -nf "$text_unfocused" -sb "$border_focused" -sf "$text_focused" \
+                                    -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
@@ -273,7 +308,7 @@ bindsym $mod+p exec presentation-mode
 # Toggle Nolock mode (disable screen saver)
 bindsym $mod+Control+p exec presentation-mode nolock
 
-###############################################################################
+##############################################################################################################################################################
 #
 # volume and media controls
 #
@@ -295,7 +330,7 @@ bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 #bindsym XF86MonBrightnessUp exec --no-startup-id /usr/bin/xbacklight -inc 5
 #bindsym XF86MonBrightnessDown exec --no-startup-id /usr/bin/xbacklight -dec 5
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## Colors, borders, layout, fonts
 #
@@ -310,7 +345,7 @@ bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 #font pango:DejaVu Sans Mono 10
 #font pango:Ubuntu Mono 10
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## Client Container Colors
 #
@@ -348,7 +383,7 @@ client.urgent           $border_urgent      $border_urgent      $text_urgent    
 #Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
 client.placeholder      $IGNORED            $border_unfocused   $text_unfocused     $IGNORED
 
-###############################################################################
+##############################################################################################################################################################
 #
 # status bar
 #
@@ -418,7 +453,7 @@ bar {
         }
 }
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## workspace and window properties
 #
@@ -453,7 +488,7 @@ force_display_urgency_hint 3000 ms
 hide_edge_borders none
 
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## Window assignments & rules
 #
@@ -461,6 +496,19 @@ hide_edge_borders none
 # config file. The first one which matches the window wins and later
 # assignments are not considered.
 # Maar volgens mij is het omgekeerd.
+#
+#
+
+# float windows
+for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
+for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
+for_window [instance="qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
+for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
+# http://build.i3wm.org/docs/userguide.html#_list_of_commands
+for_window [window_type="(dialog|dialog|utility|toolbar|splash|menu|dropdown_menu|popup_menu|tooltip)"] floating enable
+
+# Don’t focus window upon opening
+no_focus [window_role="pop-up"]
 
 # terminals
 for_window [window_role="floating"]     floating enable
@@ -471,12 +519,13 @@ for_window [window_role="irc"]                     border none
 
 # Tools
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
-for_window [class="Gcalctool"]                                                          floating enable
+for_window [class="Gcalctool"]                                                          floating enable, move position mouse
 #for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable
-for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable
-for_window [class="Nautilus" instance="file_progress"]                                  floating enable
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable
-for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable
+for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
+for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
+for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable, move position mouse
+for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
@@ -493,9 +542,11 @@ assign [class="Remmina" instance="remmina"] → "8"
 assign [class="Wireshark" instance="wireshark"] → "7"
 
 # Browsers
-#assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
+#assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" \
+#            window_role="browser" title="(?!Private Browsing)"]  →   "1"
 assign      [class="(Firefox)" instance="(Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
+            instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
 
 # Pidgin
 assign [class="Pidgin"]                             →   "2"
@@ -507,21 +558,22 @@ for_window [class="VirtualBox"] layout tabbed
 
 # Various
 assign [class="jetbrains-idea"]                     →   "5"
-assign [class="Update-manager|Update-notifier"]     →   "10"
-assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "10"
+#assign [class="Update-manager|Update-notifier"]     →   "10"
+#assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "10"
 
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
-for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "19"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "19"
+for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
+            instance="^(!?keepass2)"] floating enable
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "9"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "9"
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "20"
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
 
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## Client default rules, seems to be put after the assignments & rules
 #
@@ -530,7 +582,7 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbe
 new_window  pixel 1
 new_float   pixel 1
 
-###############################################################################
+##############################################################################################################################################################
 #
 ## startup
 #
@@ -538,7 +590,7 @@ new_float   pixel 1
 
 ## Run at i3 initial start only
 # start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 100x2 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
+exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
 # i3wm desktop managing stuff runing in a screen - long runining user services
 exec --no-startup-id "launch-i3jobs"
 
@@ -547,7 +599,8 @@ exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
-exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
+exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
+                        -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
 # Desktop Apps
