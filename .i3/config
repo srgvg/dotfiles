@@ -513,10 +513,9 @@ no_focus [window_role="pop-up"]
 
 # terminals
 for_window [window_role="floating"]     floating enable, move position mouse
-#
+
 # IRC
 assign [window_role="irc"]                          →   "2"
-#for_window [window_role="irc"]                     border none
 
 # Tools
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
@@ -530,13 +529,11 @@ for_window [title="Event Tester"]                                               
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
-for_window [class="Wine" instance="TeamViewer.exe"]     floating enable
+for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
 for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
 
 # Remote Desktop Client
-#for_window [class="Remmina" instance="remmina" title="Remmina Remote Desktop Client"] floating enable
 for_window [class="Remmina" instance="remmina"] layout tabbed
-#for_window [class="Remmina" id=65011715 instance="remmina" title="Remmina Remote Desktop Client"] layout tiled
 assign [class="Remmina" instance="remmina"] → "8"
 
 # Wireshark
@@ -547,11 +544,8 @@ assign [class="Wireshark" instance="wireshark"] → "7"
 #            window_role="browser" title="(?!Private Browsing)"]  →   "1"
 assign      [class="(Firefox)" instance="(Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
-            instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] floating enable
-
-# Pidgin
-assign [class="Pidgin"]                             →   "2"
-for_window [class="Pidgin" instance="Pidgin" window_role="(buddy_list|conversation)"]  split vertical
+            instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] \
+            floating enable, move position mouse
 
 # Virtualbox
 assign [class="VirtualBox"] →   "6"
@@ -559,8 +553,6 @@ for_window [class="VirtualBox"] layout tabbed
 
 # Various
 assign [class="jetbrains-idea"]                     →   "5"
-#assign [class="Update-manager|Update-notifier"]     →   "10"
-#assign [class="Gnome-control-center" window_role="!(^browser$|^GtkFileChooserDialog$)"] → "10"
 
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
