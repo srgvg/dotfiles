@@ -1,6 +1,6 @@
 #!/bin/sh
 
-file="$1"
+file="${1:-`xclip -out`}"
 publoc=~/Dropbox/Public
 pubfile="${publoc}/$(basename "${file}")"
 
@@ -9,18 +9,22 @@ then	echo File  \'${file}\' not found
 	exit 1
 fi
 
-if [ "`dirname ${file}`" = "/home/serge/Downloads" ]
+if [ "`dirname ${file}`" = "/home/serge/Downloads" -o "`dirname ${file}`" = "/home/serge/Temp/Screenshots" ]
 then    mv "${file}" "${publoc}"
 else    cp "${file}" "${publoc}"
 fi
-dropbox puburl "${pubfile}"| tr -d '\n' | xclip -in -selection clipboard
+dropbox_puburl=`dropbox puburl "${pubfile}"| tr -d '\n'`
+bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
+echo $bitly_url | xclip -in -selection clipboard
 
-echo "'${pubfile}' => $(dropbox puburl "${pubfile}")" && (
+echo "'${pubfile}' <= $(dropbox puburl "${pubfile}") <= $bitly_url" && (
     while	(dropbox filestatus "${pubfile}" | grep syncing)
     do	sleep 3
     done
+    echo
+    echo $bitly_url
     notify-send --category=transfer.complete \
                 --urgency=low --icon=gtk-info \
                 "Dropbox file $file published" \
-                "file uploaded and url copied to clipboard"
+                "file uploaded $bitly_url"
     ) || echo "Dropbox error"

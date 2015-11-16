@@ -15,24 +15,28 @@ execute_commands()
         done
 }
 
-if [ -z "${args}" ]
-then
-	/usr/bin/pastebinit | tr -d '\n' | xclip -in -selection clipboard 
-
-elif [ "$(basename $0)" = "execho" ]
+if [ "$(basename $0)" = "execho" ]
 then
         execute_commands
+        exit 0
+fi
 
+if [ -z "${args}" ]
+then
+	paste_url=`/usr/bin/pastebinit | tr -d '\n'`
 else
     output=`execute_commands 2>&1`
     echo -e "$output"
     echo
-    link=`echo "$output" | /usr/bin/pastebinit`
-    sleep 1
-    echo $link
-    echo $link | tr -d '\n' | xclip -in -selection clipboard
-    notify-send --category=transfer.complete \
-                --urgency=low --icon=gtk-info \
-                "Command pasted" "url copied to clipboard"
+    paste_url=`echo "$output" | /usr/bin/pastebinit`
 fi
+
+sleep 1
+
+link=`bitly $paste_url | tr -d '\n'`
+echo $link
+echo $link | tr -d '\n' | xclip -in -selection clipboard
+notify-send --category=transfer.complete \
+            --urgency=low --icon=gtk-info \
+            "Command pasted" "$link"
 
