@@ -1,6 +1,5 @@
 #!/bin/bash -x
 
-sleep 1
 screenshotdir="$HOME/Temp/Screenshots"
 imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
 
@@ -20,7 +19,9 @@ case $1 in
 esac
 
 echo /usr/bin/scrot --silent $options ${imagefile}
-if /usr/bin/scrot --silent $options ${imagefile}
+# https://code.google.com/p/xmonad/issues/detail?id=476
+sleep 0.2
+if /usr/bin/scrot --silent --delay 1 $options ${imagefile}
 then
     notify-send --category=transfer.complete \
         --urgency=low --icon=gtk-info \
