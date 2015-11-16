@@ -14,13 +14,20 @@ else
 fi
 runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
 
-if [ -z "${activated}" -a -z "${disable}" ]  # currently inactive and no need to disable
+if [ -z "${activated}" -a -z "${disable}" ]  # currently inactive and no need to disable presentation mode
 then # activate presentation mode
     xautolock -disable  #  disable autolock
-    [ "$1" = "nolock" ] || killall -SIGUSR1 dunst  # disable OSD notifications unless only nolock mode
+    if [ ! "$1" = "nolock" ] # some things to do unless nolock mode
+    then
+            killall -SIGUSR1 dunst  # disable OSD notifications
+            xset -dpms # disable dpms
+            xset s off # disable scren saver blanking
+    fi
     eval ${runtray} &
-else  # currently a mode active, or make sure to stop it
+else  # currently a mode active, and/or make sure to stop it
     xautolock -enable  # re-enable autolock
     killall -SIGUSR2 dunst  # re-enable OSD notifications
+    xset +dpms # re-enable dpms
+    xset s # re-enable screen saver blanking
     [ "${activated}" ] && kill ${activated}
 fi
