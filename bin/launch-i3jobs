@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# make sure SSHASKPASS window runs first
-sleep 1
-
 launch_job() {
     echo
     echo -n "Checking for \"$*\" ... "
@@ -14,6 +11,10 @@ launch_job() {
     fi
     echo; echo "----------------------------------------"
 }
+
+# make sure SSHASKPASS window runs first
+sleep 1
+launch_job sleep 5
 
 launch_job compton
 launch_job dunst -print
