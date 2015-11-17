@@ -269,7 +269,7 @@ bindsym $mod+Shift+Next move workspace to output right
 #
 
 # start dmenu (a program launcher)
-bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$light" -sf "$dark" \
+bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
                                     -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
@@ -388,7 +388,7 @@ bar {
         colors {
 
             # Text color to be used for the separator.
-            separator           $grey
+            separator           $ginsys
 
             # Text color to be used for the statusline.
             statusline          $light
@@ -408,7 +408,7 @@ bar {
             active_workspace    $grey               $dark           $grey
 
             # color for a workspace button when the workspace has focus.
-            focused_workspace   $light              $dark           $light
+            focused_workspace   $light              $ginsys         $light
 
             # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
             urgent_workspace    $red                $dark          $red
