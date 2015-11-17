@@ -15,7 +15,7 @@ else    cp "${file}" "${publoc}"
 fi
 dropbox_puburl=`dropbox puburl "${pubfile}"| tr -d '\n'`
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
-echo $bitly_url | xclip -in -selection clipboard
+echo -n $bitly_url | xclip -in -selection clipboard
 
 echo "'${pubfile}' <= $(dropbox puburl "${pubfile}") <= $bitly_url" && (
     while	(dropbox filestatus "${pubfile}" | grep syncing)
