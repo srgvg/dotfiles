@@ -18,7 +18,7 @@ sudo cryptdisks_start $device && \
 sudo mount /dev/mapper/$device /media/serge/datasafe
 
 sleep 2
-sudo rsnapshot daily
+sudo rsnapshot ${1:-daily}
 
 sudo umount /dev/mapper/$device && \
     sleep 5 && \
