@@ -1,104 +1,163 @@
-[user]
-    name = Serge van Ginderachter
-    email = serge@vanginderachter.be
-
-[core]
-    editor = vim
-	quotepath = false
-
-[status]
-    relativePaths = true
-    submodulesummary = true
-
-[color]
-	ui = true
-    status = always
-
-[color "branch"]
-    current = yellow reverse
-    local = yellow
-    remote = green
-
-[color "diff"]
-    meta = yellow bold
-    frag = magenta bold
-    old = red bold
-    new = green bold
-
-[color "status"]
-    added = yellow
-    changed = green
-    untracked = cyan
-
-[sendemail]
-    smtpserver = smtp.gmail.com
-    smtpserverport = 587
-    smtpencryption = tls
-    smtpuser = serge@vanginderachter.be
-
 [alias]
+
+    authors-current = !git ls-files | xargs -n1 git blame --line-porcelain  | sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
+    authors = shortlog -sne
+
     br = branch
-    ci = commit
+
+    changed = whatchanged --stat
+    ci = commit -vv
     co = checkout
+
     df = diff
     dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
-    st = status -sb
-    ls = ls-files
-    ls-untracked = ls-files --others
-    up = remote update
-    show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
-    changed = whatchanged --stat
-    myinfo = ! git remote -v && git branch --color=always --all -vv && git st
-    lol =  log --graph --decorate --abbrev-commit       --pretty=custom
-    lola = log --graph --decorate --abbrev-commit --all --pretty=custom
-    rm-deleted = ! git rm $(git ls-files --deleted)
-    rm-untracked = ! rm -v $(git ls-files --others)
-    tags = !sh -c \"git tag | sort -V\"
-    igd = ls-files --others -i --exclude-standard
-    ca = commit --all
-    tree = log --all --graph --decorate --oneline --simplify-by-decoration
-
-    wip = commit -a -m WIP
-    # squeeze new stuff into latest commit
-    squish = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
-    # squash last 2 commits, keep oldest commit message
-    squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
 
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
     gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
 
+    igd = ls-files --others -i --exclude-standard
     # http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
     ignored = !git ls-files -v | grep "^[[:lower:]]"
     ignore = update-index assume-unchanged
     unignore = update-index --no-assume-unchanged
 
-    authors-current = !git ls-files | xargs -n1 git blame --line-porcelain  | sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
-    authors = shortlog -sne
+    lol =  log --graph --decorate --abbrev-commit       --pretty=custom
+    lola = log --graph --decorate --abbrev-commit --all --pretty=custom
+    ls = ls-files
+    ls-untracked = ls-files --others
+
+    myinfo = ! git remote -v && git branch --color=always --all -vv && git st
+
+    rm-deleted = ! git rm $(git ls-files --deleted)
+    rm-untracked = ! rm -v $(git ls-files --others)
+
+    show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
+    st = status -sb
+    # squash last 2 commits, keep oldest commit message
+    squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
+    # squeeze new stuff into latest commit
+    squish = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
+
+    tags = !sh -c \"git tag | sort -V\"
+    tree = log --all --graph --decorate --oneline --simplify-by-decoration
+
+    up = remote update
+
+    wip = commit -a -m WIP
+
+
+[apply]
+
+    whitespace = fix
+
+
+[branch]
+
+    autosetupmerge = true
+    autosetuprebase = always
+
+
+[color]
+
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
+    ui = true
+
+
+[color "branch"]
+
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+
+[color "diff"]
+
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+
+
+[color "status"]
+
+    added = yellow
+    changed = green
+    untracked = cyan
+
+
+[core]
+
+    autocrlf = false
+    editor = vim
+    whitespace = trailing-space,space-before-tab
+	quotepath = false
+
+
+[diff]
+
+    renames = copies
+
+
+[fetch]
+
+    prune = true
+
+
+[github]
+
+    user = srvg
+
+
+[gitreview]
+
+    username = svg
+
+
+[merge]
+
+    conflictstyle = diff3
+
+
+[pretty]
+
+    onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
+    custom = %C(bold blue)%h%C(reset) %C(bold green)%ar%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
+
 
 [push]
+
     # git push will by default push all branches that have the same name on the remote
     # to limit this behavior to just the current branch, set this configuration option:
     default = tracking
     #default = matching
 
-[branch]
-    autosetuprebase = always
 
-[diff]
-    renames = copies
+[sendemail]
 
-[pretty]
-    onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
-    custom = %C(bold blue)%h%C(reset) %C(bold green)%ar%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
+    smtpserver = smtp.gmail.com
+    smtpserverport = 587
+    smtpencryption = tls
+    smtpuser = serge@vanginderachter.be
 
-[fetch]
-    prune = true
+
+[status]
+
+    relativePaths = true
+    submodulesummary = true
+
 
 [svn]
+
     # push empty directory removals back to svn as directory deletes
     rmdir = true
 
-[gitreview]
-	username = svg
-[github]
-	user = srvg
+
+[user]
+
+    name = Serge van Ginderachter
+    email = serge@vanginderachter.be
+
+
