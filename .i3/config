@@ -581,12 +581,6 @@ new_float   pixel 2
 #
 # & send process to background avoids keeping the calling sh shells in memory
 
-## Run at i3 initial start only
-# start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
-# i3wm desktop managing stuff runing in a screen - long runining user services
-exec --no-startup-id "launch-i3jobs"
-
 ## One-off always run jobs
 exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
@@ -596,6 +590,14 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
                         -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
+exec --no-startup-id compton &
+exec --no-startup-id dunst -print %
+exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
+# start with interactive bash shell as this needs ssh keys to be unlocked
+exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
+# i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
+exec --no-startup-id "launch-i3jobs"
+
 # Desktop Apps
 exec "syndaemon -dkRi 0.5"
 exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
@@ -604,6 +606,6 @@ exec "gnome-sound-applet &"
 exec "dropbox start &"
 exec "seafile-applet &"
 exec "synology-cloud-station &"
-#exec "firefox &"
 exec "keepass2 &"
+exec "firefox &"
 
