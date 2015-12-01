@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PWD=`dirname $0`
-USBRESET="sudo ${PWD}/usbreset"
+USBRESET="usbreset"
 
 ID=$1
 MATCHES=$(lsusb | sed -n 's@Bus \([0-9]*\) Device \([0-9]*\): ID '$ID'.*@/dev/bus/usb/\1/\2@p')
