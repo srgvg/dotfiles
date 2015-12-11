@@ -279,7 +279,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # Lock Screen / Suspend / Poweroff
-bindsym Pause exec "xautolock -locknow"
+bindsym Pause exec "/home/serge/bin/lock"
 bindsym $mod+Pause exec lock suspend
 bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
 
@@ -289,7 +289,8 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 # start some tools
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
-bindsym $mod+d exec nemo
+bindsym $mod+d exec nautilus
+bindsym $mod+Control+d exec nemo
 bindsym $mod+Shift+p exec /usr/bin/python /usr/share/system-config-printer/system-config-printer.py
 #bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 #bindsym $mod+Shift+m exec $terminal -e ncmpcpp
@@ -306,7 +307,7 @@ bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
 # Toggle Nolock mode (disable screen saver)
-bindsym $mod+Control+p exec presentation-mode nolock
+#bindsym $mod+Control+p exec presentation-mode nolock
 
 ##############################################################################################################################################################
 #
@@ -592,7 +593,7 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
 ## Run at i3 initial start only
 exec --no-startup-id compton &
 exec --no-startup-id dunst -print %
-exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
+#exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
 # start with interactive bash shell as this needs ssh keys to be unlocked
 exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact

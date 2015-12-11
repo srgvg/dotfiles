@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 self=`basename $0`
 activated=`pgrep -f gtrayicon.*-mode`
@@ -16,7 +16,7 @@ runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' 
 
 if [ -z "${activated}" -a -z "${disable}" ]  # currently inactive and no need to disable presentation mode
 then # activate presentation mode
-    xautolock -disable  #  disable autolock
+    #xautolock -disable  #  disable autolock
     if [ ! "$1" = "nolock" ] # some things to do unless nolock mode
     then
             killall -SIGUSR1 dunst  # disable OSD notifications
@@ -25,7 +25,7 @@ then # activate presentation mode
     fi
     eval ${runtray} &
 else  # currently a mode active, and/or make sure to stop it
-    xautolock -enable  # re-enable autolock
+    #xautolock -enable  # re-enable autolock
     killall -SIGUSR2 dunst  # re-enable OSD notifications
     xset +dpms # re-enable dpms
     xset s # re-enable screen saver blanking
