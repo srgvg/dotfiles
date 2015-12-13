@@ -9,7 +9,7 @@ then	echo File  \'${file}\' not found
 	exit 1
 fi
 
-if [ "`dirname ${file}`" = "/home/serge/Downloads" -o "`dirname ${file}`" = "/home/serge/Temp/Screenshots" ]
+if [ "`dirname ${file}`" = "/home/serge/Downloads" ]
 then    mv "${file}" "${publoc}"
 else    cp "${file}" "${publoc}"
 fi
