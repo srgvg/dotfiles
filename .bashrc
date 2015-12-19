@@ -14,7 +14,7 @@ export GIT_HOSTING='git@git.ginsys.eu'
 unset MAILCHECK
 
 # Change this to your console based IRC client of choice.
-export IRC_CLIENT='irssi'
+export IRC_CLIENT='/home/serge/bin/irc'
 
 # Set this to the command you use for todo.txt-cli
 export TODO="t"
