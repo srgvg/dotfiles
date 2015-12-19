@@ -76,10 +76,10 @@ case $command in
         pactl set-sink-mute $sink toggle
         ;;
     min)
-        pactl set-sink-volume $sink -2dB
+        pactl set-sink-volume $sink -1dB
         ;;
     plus)
-        pactl set-sink-volume $sink +2dB
+        pactl set-sink-volume $sink +1dB
         ;;
     use)
         set_sink
