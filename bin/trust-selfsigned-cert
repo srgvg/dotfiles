@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 for urlport in $*
 do
@@ -7,7 +7,7 @@ do
         </dev/null \
         2>/dev/null \
         | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
-        > /usr/local/share/ca-certificates/${url} \
+        | sudo tee /usr/local/share/ca-certificates/${url} \
         || echo "failed ${urlport}"
 done
-update-ca-certificates
+echo now execute sudo update-ca-certificates
