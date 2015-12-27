@@ -14,6 +14,7 @@
 #
 #
 set $mod Mod4
+set $alt Mod1
 set $terminal /usr/bin/terminator --geometry 800x600
 
 # mouse settings
@@ -289,6 +290,15 @@ bindsym $mod+Shift+p exec /usr/bin/python /usr/share/system-config-printer/syste
 bindsym $mod+Control+u exec unity-control-center
 #bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
 #bindsym $mod+Shift+m exec $terminal -e ncmpcpp
+
+# start browsers
+bindsym $mod+Shift+o            exec firefox
+bindsym $mod+o                  exec firefox            --private-window
+bindsym $mod+Control+o          exec google-chrome
+bindsym $mod+Control+Shift+o    exec google-chrome      --incognito
+bindsym $mod+$alt+o             exec chromium-browser
+bindsym $mod+$alt++Shift+o       exec chromium-browser   --incognito
+
 
 # Screenshot
 bindsym Print exec screengrab select
