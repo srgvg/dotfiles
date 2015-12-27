@@ -520,52 +520,54 @@ no_focus [window_role="pop-up"]
 # terminals
 for_window [window_role="floating"]     floating enable, move position mouse
 
-# IRC
-assign [window_role="irc"]                          →   "2"
-
 # Tools
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
 for_window [class="Gcalctool"]                                                          floating enable, move position mouse
-#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
 for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
 for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable, move position mouse
 for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
+#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
+
+# Browsers
+assign      [class="chromium-browser" instance="chromium-browser" window_role="browser"]  →   "1"
+assign      [class="chromium-browser" instance="chromium-browser" window_role="browser" title="(Facebook*)"]  →   "11"
+#assign      [class="Google-chrome"    instance="google-chrome"    window_role="browser"]  →   "1"
+assign      [class="Firefox"          instance="Navigator"        window_role="browser"]  →   "3"
+for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
+             instance="(Toplevel|Browser)" \
+             window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] \
+            floating enable
+
+# IRC
+assign [window_role="irc"]  →   "2"
+
+# Various
+assign [class="jetbrains-idea"] →   "4"
+
+# Virtualbox
+assign [class="VirtualBox"] →   "6"
+for_window [class="VirtualBox"] layout tabbed
+
+# Wireshark
+assign [class="Wireshark" instance="wireshark"] → "7"
+
+# Remote Desktop Client
+for_window [class="Remmina" instance="remmina"] layout tabbed
+assign [class="Remmina" instance="remmina"] → "8"
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"]  → "8"
 for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
 for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
 
-# Remote Desktop Client
-for_window [class="Remmina" instance="remmina"] layout tabbed
-assign [class="Remmina" instance="remmina"] → "8"
-
-# Wireshark
-assign [class="Wireshark" instance="wireshark"] → "7"
-
-# Browsers
-#assign      [class="(Google-chrome|Chromium-browser|Firefox)" instance="(google-chrome|Chromium-browser|Navigator)" \
-#            window_role="browser" title="(?!Private Browsing)"]  →   "1"
-assign      [class="(Firefox)" instance="(Navigator)" window_role="browser" title="(?!Private Browsing)"]  →   "1"
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
-            instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] \
-            floating enable, move position mouse
-
-# Virtualbox
-assign [class="VirtualBox"] →   "6"
-for_window [class="VirtualBox"] layout tabbed
-
-# Various
-assign [class="jetbrains-idea"]                     →   "5"
-
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              → "10"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]          → "10"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "10"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "10"
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "10"
