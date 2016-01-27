@@ -566,8 +566,8 @@ for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "20"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "20"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "22"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "22"
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "20"
