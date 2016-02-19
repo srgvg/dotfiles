@@ -159,6 +159,7 @@ bindsym $mod+space focus mode_toggle
 #
 
 # switch to workspace
+bindsym $mod+grave workspace 0
 bindsym $mod+1 workspace 1
 bindsym $mod+2 workspace 2
 bindsym $mod+3 workspace 3
@@ -183,6 +184,7 @@ bindsym $mod+F11 workspace 21
 bindsym $mod+F12 workspace 22
 
 # move focused container to workspace
+bindsym $mod+Control+grave move container to workspace 0
 bindsym $mod+Control+1 move container to workspace 1
 bindsym $mod+Control+2 move container to workspace 2
 bindsym $mod+Control+3 move container to workspace 3
@@ -566,11 +568,11 @@ for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "22"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "22"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "0"
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "0"
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "22"
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "0"
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
 
 
