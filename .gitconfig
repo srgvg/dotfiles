@@ -104,6 +104,8 @@
 [fetch]
 
     prune = true
+    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+    fsckobjects = true
 
 
 [github]
@@ -135,6 +137,12 @@
     #default = matching
 
 
+[receive]
+
+    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+    fsckobjects = true
+
+
 [sendemail]
 
     smtpserver = smtp.gmail.com
@@ -153,6 +161,12 @@
 
     # push empty directory removals back to svn as directory deletes
     rmdir = true
+
+
+[transfer]
+
+    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+    fsckobjects = true
 
 
 [user]
