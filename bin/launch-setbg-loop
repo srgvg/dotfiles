@@ -1,0 +1,17 @@
+#/bin/bash
+
+. ~/.bash_it/lib/custom.bash
+#set -x
+
+realname=$(basename $(readlink -f $0))
+basename=$(basename $0)
+backgrounds=${1:-$basename}
+
+if [ "${backgrounds}" = "${realname}" ]
+then
+    echo No background provided
+    exit 1
+fi
+
+echo launch-i3job setbg loop ${backgrounds}
+
