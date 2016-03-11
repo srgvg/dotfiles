@@ -47,7 +47,7 @@ case $HOSTNAME in
             then
                 action=home
                 echo 'Detected Home Neovo screen, setting upscreen.'
-            elif [ $laptop -eq 0 -a $VGA-0 -eq 0 ]
+            elif [ $laptop -eq 0 -a $VGA -eq 0 ]
             then
                 action=vga
                 echo 'Detected VGA- monitor, setting up dual screen.'
