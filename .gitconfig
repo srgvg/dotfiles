@@ -21,6 +21,11 @@
     ignore = update-index assume-unchanged
     unignore = update-index --no-assume-unchanged
 
+    # http://tschuermans.be/2016/03/git-compare-log-develop/
+    # A small git alias which can be used to list all commits which are
+    # different to the master (or an optionally named) branch.
+    logcompare = "!f() { git log --oneline --decorate ${1:-master}..$(git rev-parse --abbrev-ref HEAD); }; f"
+
     lol =  log --graph --decorate --abbrev-commit       --pretty=custom
     lola = log --graph --decorate --abbrev-commit --all --pretty=custom
     ls = ls-files
