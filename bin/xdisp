@@ -6,7 +6,7 @@ checkmon() {
 }
 
 arrange-screens-multi-disp() {
-                i3-msg workspace 22; i3-msg move workspace to output LVDS-0
+                i3-msg workspace 22; i3-msg move workspace to output LVDS-1
                 i3-msg workspace back_and_forth
 }
 
@@ -19,17 +19,17 @@ echo
 
 case $HOSTNAME in
     cyberlab)
-        xrandr --output VGA--0 --mode 1680x1050
-        xrandr --output VGA--0 --primary
+        xrandr --output VGA-1 --mode 1680x1050
+        xrandr --output VGA-1 --primary
         ;;
     goldorak)
         if [ -z "$action" ]
         then
-            checkmon LVDS-0 1366x768     ; laptop=$?
-            checkmon DisplayPort-0 2560x1440      ; acdsamsung=$?
-            checkmon HDMI-0 1680x1050    ; neovo=$?
-            checkmon DisplayPort-0 3840x2160 ; iiyama=$?
-            checkmon VGA-0 VGA-0          ; VGA=$?
+            checkmon LVDS-1 1366x768     ; laptop=$?
+            checkmon DP-1 2560x1440      ; acdsamsung=$?
+            checkmon HDMI-1 1680x1050    ; neovo=$?
+            checkmon DP-1 3840x2160 ; iiyama=$?
+            checkmon VGA-1 VGA-0          ; VGA=$?
 
             if [ $laptop -eq 0 -a $neovo -eq 0 ]
             then
@@ -56,44 +56,44 @@ case $HOSTNAME in
         xrandr --dpi 96
         case $action in
             ''|lap*)
-                xrandr --output LVDS-0   --mode 1366x768 --primary --pos 0x0
-                xrandr --output LVDS-0   --primary
-                xrandr --output DisplayPort-0     --off
-                xrandr --output VGA-0    --off
-                xrandr --output HDMI-0   --off
+                xrandr --output LVDS-1   --mode 1366x768 --primary --pos 0x0
+                xrandr --output LVDS-1   --primary
+                xrandr --output DP-1     --off
+                xrandr --output VGA-1    --off
+                xrandr --output HDMI-1   --off
                 ;;
             home)
-                xrandr --output HDMI-0   --primary --mode 1680x1050 --pos 0x0
-                #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 1680x0
+                xrandr --output HDMI-1   --primary --mode 1680x1050 --pos 0x0
+                #xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 1680x0
                 #arrange-screens-multi-disp
-                xrandr --output LVDS-0   --off
+                xrandr --output LVDS-1   --off
                 ;;
             home2)
-                xrandr --output DisplayPort-0 --primary --mode 2560x1440 --pos 0x0
-                #xrandr --output DisplayPort-0 --primary --mode 3840x2160  --pos 0x0
-                #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 2560x0
-                #xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 3840x0
-                #xrandr --output DisplayPort-0   --primary
-                xrandr --output LVDS-0   --off
+                xrandr --output DP-1 --primary --mode 2560x1440 --pos 0x0
+                #xrandr --output DP-1 --primary --mode 3840x2160  --pos 0x0
+                #xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 2560x0
+                #xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 3840x0
+                #xrandr --output DP-1   --primary
+                xrandr --output LVDS-1   --off
                 #arrange-screens-multi-disp
                 ;;
             vga)
-                xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 0x0
-                xrandr --output VGA-0    --auto --primary --pos 1366x0
+                xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 0x0
+                xrandr --output VGA-1    --auto --primary --pos 1366x0
                 ;;
             hdmi)
-                xrandr --output HDMI-0   --auto --primary --pos 1366x0
-                xrandr --output LVDS-0   --mode 1366x768 --noprimary --pos 0x0
+                xrandr --output HDMI-1   --auto --primary --pos 1366x0
+                xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 0x0
                 ;;
             proj*)
-                xrandr --output LVDS-0   --auto --primary
-                xrandr --output VGA-0    --auto --same-as LVDS-0
+                xrandr --output LVDS-1   --auto --primary
+                xrandr --output VGA-1    --auto --same-as LVDS-0
                 ;;
             acd)
-                xrandr --output DisplayPort-0   --primary --mode 2560x1440 --pos 0x0
-                #xrandr --output LVDS-0          --mode 1366x768 --noprimary --pos 2560x0
+                xrandr --output DP-1   --primary --mode 2560x1440 --pos 0x0
+                #xrandr --output LVDS-1          --mode 1366x768 --noprimary --pos 2560x0
                 #arrange-screens-multi-disp
-                xrandr --output LVDS-0   --off
+                xrandr --output LVDS-1   --off
                 ;;
             *)
                 echo -e "* ERROR: Invalid action $action\n"
