@@ -51,13 +51,16 @@ checkcli() {
 
 checktarget() {
     ## check target
+    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -o -wholename ${target} -type d | sort | head -n 1 )
 
-    if [ -r "${target}" ]
+    if [ -r "${deeptarget}" ]
+        then target="${deeptarget}"
+    elif [ -r "${target}" ]
         then :
-    elif [ -r "$HOME/${pictures}/${target}" ]
-        then target="$HOME/${pictures}/${target}"
     elif [ -r "$HOME/${target}" ]
         then target="$HOME/${target}"
+    elif [ -r "$HOME/${pictures}/${target}" ]
+        then target="$HOME/${pictures}/${target}"
     else
         error "Cannot find a target \"${target}\""
     fi

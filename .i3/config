@@ -363,6 +363,8 @@ bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
 set $dark                   #000000
 set $light                  #FFFFFF
 set $grey                   #777777
+set $focus                  #FFFF00
+#00FF00
 set $ginsys                 #1D396A
 set $red                    #FF0000
 # set where setting is ignored:
@@ -382,7 +384,7 @@ client.unfocused        $dark               $dark               $light          
 client.focused_inactive $dark               $dark               $light              $dark
 
 # A client which currently has the focus.
-client.focused          $light              $light              $dark               $ginsys
+client.focused          $focus              $focus              $dark               $ginsys
 
 # A client which has its urgency hint activated.
 client.urgent           $red                $red                $light              $red
