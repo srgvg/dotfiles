@@ -36,6 +36,7 @@
     rm-deleted = ! git rm $(git ls-files --deleted)
     rm-untracked = ! rm -v $(git ls-files --others)
 
+    show-tree = log --all --graph --decorate --oneline --simplify-by-decoration
     show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
     st = status -sb
     # squash last 2 commits, keep oldest commit message

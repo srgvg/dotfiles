@@ -31,13 +31,9 @@ case $HOSTNAME in
             checkmon DP-1 3840x2160 ; iiyama=$?
             checkmon VGA-1 VGA-0          ; VGA=$?
 
-            if [ $laptop -eq 0 -a $neovo -eq 0 ]
+            if [ $laptop -eq 0 -a $iiyama -eq 0 ]
             then
                 action=home
-                echo 'Detected Home Neovo screen, setting up screen.'
-            elif [ $laptop -eq 0 -a $iiyama -eq 0 ]
-            then
-                action=home2
                 echo 'Detected Home iiyama screen, setting up screen.'
             elif [ $laptop -eq 0 -a $acdsamsung -eq 0 ]
             then
@@ -63,12 +59,6 @@ case $HOSTNAME in
                 xrandr --output HDMI-1   --off
                 ;;
             home)
-                xrandr --output HDMI-1   --primary --mode 1680x1050 --pos 0x0
-                #xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 1680x0
-                #arrange-screens-multi-disp
-                xrandr --output LVDS-1   --off
-                ;;
-            home2)
                 xrandr --output DP-1 --primary --mode 2560x1440 --pos 0x0
                 #xrandr --output DP-1 --primary --mode 3840x2160  --pos 0x0
                 #xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 2560x0
@@ -78,8 +68,8 @@ case $HOSTNAME in
                 #arrange-screens-multi-disp
                 ;;
             vga)
-                xrandr --output LVDS-1   --mode 1366x768 --noprimary --pos 0x0
-                xrandr --output VGA-1    --auto --primary --pos 1366x0
+                xrandr --output LVDS-1   --mode 1366x768 --primary --pos 0x0
+                xrandr --output VGA-1    --auto --noprimary --pos 1366x0
                 ;;
             hdmi)
                 xrandr --output HDMI-1   --auto --primary --pos 1366x0
@@ -87,7 +77,7 @@ case $HOSTNAME in
                 ;;
             proj*)
                 xrandr --output LVDS-1   --auto --primary
-                xrandr --output VGA-1    --auto --same-as LVDS-0
+                xrandr --output VGA-1    --auto --same-as LVDS-1
                 ;;
             acd)
                 xrandr --output DP-1   --primary --mode 2560x1440 --pos 0x0
