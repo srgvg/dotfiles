@@ -278,6 +278,7 @@ bindsym $mod+Shift+r restart
 
 # Lock Screen / Suspend / Poweroff
 bindsym Pause exec "/home/serge/bin/lock"
+bindsym $mod+l exec "/home/serge/bin/lock"
 bindsym $mod+Pause exec lock suspend
 bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
 
