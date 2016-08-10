@@ -31,7 +31,7 @@
     ls = ls-files
     ls-untracked = ls-files --others
 
-    myinfo = ! git remote -v && git branch --color=always --all -vv && git st
+    myinfo = ! git remote -v && git branch --color=always --all -vv && git st && git log --decorate --abbrev-commit --pretty=custom -n 3
 
     rm-deleted = ! git rm $(git ls-files --deleted)
     rm-untracked = ! rm -v $(git ls-files --others)
@@ -94,6 +94,11 @@
     untracked = cyan
 
 
+[commit]
+
+    gpgsign = true
+
+
 [core]
 
     autocrlf = false
@@ -122,6 +127,11 @@
 [gitreview]
 
     username = svg
+
+
+[gpg]
+
+    #program = gpg
 
 
 [merge]
@@ -179,5 +189,6 @@
 
     name = Serge van Ginderachter
     email = serge@vanginderachter.be
+	signingkey = D08FC082B8E46E8E
 
 

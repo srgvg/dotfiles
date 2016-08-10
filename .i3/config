@@ -542,6 +542,7 @@ for_window [class="Keybase" instance="keybase" window_role="browser-window"]    
 assign      [class="chromium-browser" instance="chromium-browser" window_role="browser"]  →   "1"
 assign      [class="google-chrome"    instance="google-chrome"    window_role="browser"]  →   "11"
 assign      [class="Firefox"          instance="Navigator"        window_role="browser"]  →   "12"
+for_window  [class="chromium-browser" instance="chromium-browser" window_role="browser"]  layout tabbed
 for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
              instance="(Toplevel|Browser)" \
              window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] \

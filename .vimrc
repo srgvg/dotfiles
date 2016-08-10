@@ -24,6 +24,12 @@ set clipboard=unnamed
 map <silent> <F2> :set invnumber<cr>
 :nnoremap <silent> <F7> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl<CR>
 
+" https://coderwall.com/p/nckasg/map-w-to-w-in-vim
+:command WQ wq
+:command Wq wq
+:command W w
+:command Q q
+
 " http://www.swaroopch.com/blog/bash-vim-setup/
 set scrolloff=5
 

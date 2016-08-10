@@ -1,10 +1,10 @@
 #!/bin/bash
 
-cd /home/serge/src/ansible/ansible
+pushd /home/serge/src/ansible/ansible
 git up && (
     git co devel && \
     git rebase ansible/devel && \
     git push srvg devel && \
     git submodule update --init --recursive
     )
-
+popd
