@@ -33,7 +33,7 @@
     ls = ls-files
     ls-untracked = ls-files --others
 
-    myinfo = ! git remote -v && git branch --color=always --all -vv && git st && git log --decorate --abbrev-commit --pretty=custom -n 3
+    myinfo = ! echo && git remote -v && echo && git branch --color=always --all -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom -n 3 && echo
 
     rm-deleted = ! git rm $(git ls-files --deleted)
     rm-untracked = ! rm -v $(git ls-files --others)
