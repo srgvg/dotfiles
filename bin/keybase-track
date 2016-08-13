@@ -1,6 +1,6 @@
 echo "# track mij niet terug"
-keybase list-tracking | grep -v `keybase list-trackers | xargs -n 1 echo -n " -e"`
+keybase list-following | grep -v `keybase list-followers | xargs -n 1 echo -n " -e"`
 
 echo "# track ik niet terug"
-keybase list-trackers | grep -v `keybase list-tracking | xargs -n 1 echo -n " -e"`
+keybase list-followers | grep -v `keybase list-following | xargs -n 1 echo -n " -e"`
 
