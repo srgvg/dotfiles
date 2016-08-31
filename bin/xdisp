@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 checkmon() {
     (echo -n "$DISPLAYS" | grep $1 | grep $2) 1>/dev/null 2>&1
@@ -25,11 +26,12 @@ case $HOSTNAME in
     goldorak)
         if [ -z "$action" ]
         then
-            checkmon LVDS-1 1366x768     ; laptop=$?
-            checkmon DP-1 2560x1440      ; acdsamsung=$?
-            checkmon HDMI-1 1680x1050    ; neovo=$?
-            checkmon DP-1 3840x2160 ; iiyama=$?
-            checkmon VGA-1 VGA-0          ; VGA=$?
+            checkmon LVDS-1 1366x768    ; laptop=$?
+            checkmon DP-1 2560x1440     ; acdsamsung=$?
+            checkmon HDMI-1 1680x1050   ; neovo=$?
+            checkmon HDMI-1 1920x1080   ; telenetdell=$?
+            checkmon DP-1 3840x2160     ; iiyama=$?
+            checkmon VGA-1 VGA-0        ; VGA=$?
 
             if [ $laptop -eq 0 -a $iiyama -eq 0 ]
             then
@@ -39,6 +41,10 @@ case $HOSTNAME in
             then
                 action=acd
                 echo 'Detected ACD Samsung monitor, setting up screen.'
+            elif [ $laptop -eq 0 -a $telenetdell -eq 0 ]
+            then
+                action=telenet
+                echo 'Detected Telenet Dell monitor, setting up screen.'
             elif [ $laptop -eq 0 -a $neovo -eq 0 ]
             then
                 action=home
@@ -84,6 +90,12 @@ case $HOSTNAME in
                 #xrandr --output LVDS-1          --mode 1366x768 --noprimary --pos 2560x0
                 #arrange-screens-multi-disp
                 xrandr --output LVDS-1   --off
+                ;;
+            telenet)
+                xrandr --output HDMI-1 --mode 1920x1080 --pos 0x0 --primary
+                xrandr --output LVDS-1 --off
+                #xrandr --output LVDS-1 --mode 1366x768  --pos -1366x0 --noprimary 
+                #arrange-screens-multi-disp
                 ;;
             *)
                 echo -e "* ERROR: Invalid action $action\n"
