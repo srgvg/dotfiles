@@ -615,6 +615,7 @@ exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/ba
 exec --no-startup-id "launch-i3jobs"
 
 # Desktop Apps
+exec "pasystray"
 exec "syndaemon -dkRi 0.5"
 exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
 exec "nm-applet &"
