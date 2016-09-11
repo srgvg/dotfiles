@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 file="${1:-`xclip -out`}"
 publoc=~/Dropbox/Public
@@ -13,11 +13,12 @@ if [ "`dirname ${file}`" = "/home/serge/Downloads" ]
 then    mv "${file}" "${publoc}"
 else    cp "${file}" "${publoc}"
 fi
-dropbox_puburl=`dropbox puburl "${pubfile}"| tr -d '\n'`
+#dropbox_puburl=`dropbox puburl "${pubfile}"| tr -d '\n'`
+dropbox_puburl=https://dl.dropboxusercontent.com/u/13986042/$(basename "$pubfile")
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
 echo -n $bitly_url | xclip -in -selection clipboard
 
-echo "'${pubfile}' <= $(dropbox puburl "${pubfile}") <= $bitly_url" && (
+echo "'${pubfile}' <= ${dropbox_puburl} <= $bitly_url" && (
     while	(dropbox filestatus "${pubfile}" | grep syncing)
     do	sleep 3
     done
