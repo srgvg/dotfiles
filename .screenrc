@@ -8,7 +8,8 @@ termcapinfo xterm* 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 startup_message off
 defbce "on"
 term xterm
-defnonblock 5
+# http://superuser.com/questions/203090/irssi-in-screen-reconnecting-to-servers-when-ssh-connection-lost
+defnonblock on
 defscrollback 10000
 
 # http://billnye.blinkenshell.org/irssi/screenrc
