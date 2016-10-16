@@ -51,7 +51,7 @@ checkcli() {
 
 checktarget() {
     ## check target
-    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -o -wholename ${target} -type d 2>/dev/null | sort | head -n 1 )
+    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -type d | grep ${target} 2>/dev/null | sort | head -n 1 )
 
     if [ -r "${deeptarget}" ]
         then target="${deeptarget}"
