@@ -1,20 +1,19 @@
 #!/bin/bash
 
-file="${1:-`xclip -out`}"
 publoc=~/Dropbox/Public
-pubfile="${publoc}/$(basename "${file}")"
 
+file="${1:-`xclip -out`}"
 if [ ! -f "${file}" ]
 then	echo File  \'${file}\' not found
 	exit 1
 fi
 
-if [ "`dirname ${file}`" = "/home/serge/Downloads" ]
-then    mv "${file}" "${publoc}"
-else    cp "${file}" "${publoc}"
-fi
-#dropbox_puburl=`dropbox puburl "${pubfile}"| tr -d '\n'`
-dropbox_puburl=https://dl.dropboxusercontent.com/u/13986042/$(basename "$pubfile")
+pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
+pubfile="${publoc}/${pubfilename}"
+
+cp "${file}" "${pubfile}"
+dropbox_puburl="https://dl.dropboxusercontent.com/u/13986042/${pubfilename}"
+
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
 echo -n $bitly_url | xclip -in -selection clipboard
 
@@ -29,3 +28,4 @@ echo "'${pubfile}' <= ${dropbox_puburl} <= $bitly_url" && (
                 "Dropbox file $file published" \
                 "file uploaded $bitly_url"
     ) || echo "Dropbox error"
+
