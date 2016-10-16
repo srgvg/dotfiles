@@ -28,3 +28,9 @@ export SCM_CHECK=true
 
 # Load Bash It
 source $BASH_IT/bash_it.sh
+
+# custom things go here
+if [ -f $HOME/.bashrc2 ]
+then
+    source $HOME/.bashrc2
+fi
