@@ -42,7 +42,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_disconnect(client, userdata, rc):
-    print '%s Disconnected from %s:%s' % (timestamp(), broker, port)
+    print '%s Disconnected from %s:%s as %s' % (timestamp(), broker, port, mqtt_client_name)
 
 
 def on_message(client, userdata, msg):
