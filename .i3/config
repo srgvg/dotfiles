@@ -12,10 +12,177 @@
 #
 ##############################################################################################################################################################
 #
+### Basic settings
 #
-set $mod Mod4
-set $alt Mod1
-set $terminal /usr/bin/terminator --geometry 800x600
+set $mod            Mod4
+set $alt            Mod1
+set $terminal       /usr/bin/terminator --geometry 800x600
+set $lockscreen     /home/serge/bin/lock
+set $suspend        systemctl suspend
+
+# color defines
+set $dark                   #000000
+set $light                  #FFFFFF
+set $grey                   #777777
+set $focus                  #FFFF00
+set $ginsys                 #1D396A
+set $red                    #FF0000
+set $IGNORED                #000000
+
+# workspaces
+set $ws_chat        0
+set $ws_www         1
+set $ws_tool        10
+set $ws_util        22
+#set $ws_
+
+##############################################################################################################################################################
+#
+### Early commands
+#
+
+# set the right default sink before we launch i3status
+#exec --no-startup-id  paudioctl sink
+
+# Display stuff
+exec --no-startup-id xset +dpms
+# Make sure we have a primary before launching tray icons
+exec --no-startup-id xrandr --output eDP-1 --primary
+
+# wifi disabled by default
+#exec --no-startup-id nmcli radio wifi off
+
+# disable audible bell at Xorg level
+exec --no-startup-id xset -b
+
+##############################################################################################################################################################
+#
+## Colors, borders, layout, fonts
+#
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below. ISO 10646 = Unicode
+#font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# The font above is very space-efficient, that is, it looks good, sharp and
+# clear in small sizes. However, if you need a lot of unicode glyphs or
+# right-to-left text rendering, you should instead use pango for rendering and
+# chose a FreeType font, such as:
+#font pango:DejaVu Sans Mono 10
+#font pango:Ubuntu Mono 10
+
+##############################################################################################################################################################
+#
+## Client Container Colors
+#
+
+# border colour is the color for the 2 horizontal lines of the titlebar; the
+# border of the whole container is the same as the background of the title bar!
+#
+## client windows       border              background          text                indicator (indicates vertical or horizontal split)
+#
+# A client which is not the focused one of its container.
+client.unfocused        $dark               $dark               $light              $dark
+
+# A client currently focused in its container, but does not have focus now.
+client.focused_inactive $dark               $grey               $light              $dark
+
+# A client which currently has the focus.
+client.focused          $focus              $focus              $dark               $ginsys
+
+# A client which has its urgency hint activated.
+client.urgent           $red                $red                $light              $red
+
+#Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
+client.placeholder      $IGNORED            $dark               $dark               $IGNORED
+
+##############################################################################################################################################################
+#
+# status bar
+#
+bar {
+        colors {
+
+            # Text color to be used for the separator.
+            separator           $ginsys
+
+            # Text color to be used for the statusline.
+            statusline          $light
+
+            # Background color of the bar.
+            background          $dark
+
+
+            ## type             border              background      text
+
+            # workspace button when the workspace does not have focus and is not
+            # active (visible) on any output. This will be the case for most workspaces.
+            inactive_workspace  $dark               $dark           $grey
+
+            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+            active_workspace    $grey               $dark           $grey
+
+            # color for a workspace button when the workspace has focus.
+            focused_workspace   $light              $ginsys         $light
+
+            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+            urgent_workspace    $red                $dark          $red
+
+        }
+
+        id main
+        #status_command i3status
+        # https://github.com/ultrabug/py3status
+        status_command py3status -c ~/.i3/i3status.conf
+
+        # tray_output <none|primary|output>
+        tray_output primary
+
+        # By default, a padding of 2 pixels is used for the upper, lower and
+        # right-hand side of the tray area and between the individual icons.
+        # tray_padding <px> [px]
+        tray_padding 0
+
+        # custom symbol to be used for the separator as opposed to the
+        # vertical, one pixel thick separator.
+        # separator_symbol <symbol>
+        separator_symbol "■" # unicode ctrl+shift+25a0
+
+        # position <top|bottom>
+        position top
+
+        # mode <dock|hide|invisible>
+        mode dock
+
+        # hidden_state <hide|show>
+        hidden_state hide
+
+        # modifier <Modifier>
+        modifier $mod
+
+        # font <font>
+        #  the order in which fonts are “declared” for use in i3bar actually
+        #  matters. The first font in the list shall be the one containing
+        #  icons, the latter the one for plain text
+        #font pango:DejaVu Sans Mono 10
+        #font pango:FontAwesome 8, Terminus 8
+        font pango:Ubuntu Mono 10  #, Terminus 8
+
+        # workspace_buttons <yes|no>
+        workspace_buttons yes
+
+        # binding_mode_indicator <yes|no>
+        # Specifies whether the current binding mode indicator should be shown
+        # or not. This is useful if you want to hide the workspace buttons but
+        # still be able to see the current binding mode indicator.
+        binding_mode_indicator yes
+
+}
+
+##############################################################################################################################################################
+#
+## workspace and window properties
+#
 
 # mouse settings
 focus_follows_mouse yes
@@ -31,90 +198,47 @@ focus_on_window_activation none
 # will not be drawn even if this option is activated.
 show_marks yes
 
-# set the right default sink before we launch i3status
-exec --no-startup-id  paudioctl sink
-
-# Detect & set display
-exec --no-startup-id  xdisp
-
-##############################################################################################################################################################
-#
-### Special Modes
-#
-
-# resize window (you can also use the mouse for that)
-mode "resize" {
-        # These bindings trigger as soon as you enter the resize mode
-
-        # Pressing left will shrink the window’s width.
-        # Pressing right will grow the window’s width.
-        # Pressing up will shrink the window’s height.
-        # Pressing down will grow the window’s height.
-        bindsym j resize shrink width 10 px or 10 ppt
-        bindsym k resize grow height 10 px or 10 ppt
-        bindsym l resize shrink height 10 px or 10 ppt
-        bindsym semicolon resize grow width 10 px or 10 ppt
-
-        # same bindings, but for the arrow keys
-        bindsym Left resize shrink width 10 px or 10 ppt
-        bindsym Down resize grow height 10 px or 10 ppt
-        bindsym Up resize shrink height 10 px or 10 ppt
-        bindsym Right resize grow width 10 px or 10 ppt
-
-        # back to normal: Enter or Escape
-        bindsym $mod+Control+r mode "default"
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-}
-bindsym $mod+Control+r mode "resize"
-
-mode "moveit" {
-        bindsym Up move up          50px
-        bindsym Left move left      50px
-        bindsym Down move down      50px
-        bindsym Right move right    50px
-        # back to normal: Enter or Escape
-        bindsym Mod4+m mode "default"
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-}
-bindsym $mod+m focus floating; mode "moveit"
-
-set $mode_system (x) exit
-mode "$mode_system" {
-    bindsym x exec --no-startup-id i3-msg exit, mode "default"
-    # back to normal: Enter or Escape
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
-}
-bindsym $mod+Shift+e mode "$mode_system"
-
-##############################################################################################################################################################
-#
-## Key command assignments
-#
-# xmodmap -pke
-
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-# start a terminal
-bindsym $mod+Return exec $terminal
+# <default|stacking|tabbed>
+workspace_layout default
 
-# start a floating terminal
-bindsym $mod+Control+Return exec $terminal --role floating
-bindsym $mod+Shift+Return exec gnome-terminal --role floating
+# split orientation <horizontal|vertical|auto>
+default_orientation auto
 
-# kill focused window
-bindsym $mod+x kill
+# popup_during_fullscreen <smart|ignore|leave_fullscreen>
+popup_during_fullscreen smart
 
-# detect/set display
-bindsym XF86Display exec --no-startup-id xdisp
-bindsym $mod+Scroll_Lock exec --no-startup-id xdisp
-bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
+# force_focus_wrapping <yes|no>
+force_focus_wrapping no
 
-# quickswitch
-bindsym $mod+q exec quickswitch.py
+# This configuration directive enables automatic workspace back_and_forth when
+# switching to the workspace that is currently focused.
+workspace_auto_back_and_forth no
+
+# If an application on another workspace sets an urgency hint, switching to
+# this workspace may lead to immediate focus of the application, which also
+# means the window decoration color would be immediately resetted to
+# client.focused. This may make it unnecessarily hard to tell which window
+# originally raised the event. In order to prevent this, you can tell i3 to
+# delay resetting the urgency state by a certain time using the
+# force_display_urgency_hint directive.
+# Setting the value to 0 disables this feature. The default is 500ms.
+force_display_urgency_hint 3000 ms
+
+# <none|vertical|horizontal|both> :
+hide_edge_borders none
+
+
+##############################################################################################################################################################
+#
+## Client default rules, seems to be put after the assignments & rules
+#
+
+# new window default border <normal|1pixel|none|pixel> :
+new_window  pixel 2
+new_float   pixel 2
 
 ##############################################################################################################################################################
 #
@@ -292,8 +416,74 @@ bindsym $mod+Shift+Next move workspace to output right
 
 ##############################################################################################################################################################
 #
-## launch applications
+### Special Modes
 #
+
+# resize window (you can also use the mouse for that)
+bindsym $mod+Control+r mode "resize"
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window’s width.
+        # Pressing right will grow the window’s width.
+        # Pressing up will shrink the window’s height.
+        # Pressing down will grow the window’s height.
+        bindsym j resize shrink width 10 px or 10 ppt
+        bindsym k resize grow height 10 px or 10 ppt
+        bindsym l resize shrink height 10 px or 10 ppt
+        bindsym semicolon resize grow width 10 px or 10 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+
+        # back to normal: Enter or Escape
+        bindsym $mod+Control+r mode "default"
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+m focus floating; mode "moveit"
+mode "moveit" {
+        bindsym Up move up          50px
+        bindsym Left move left      50px
+        bindsym Down move down      50px
+        bindsym Right move right    50px
+        # back to normal: Enter or Escape
+        bindsym Mod4+m mode "default"
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+Shift+e mode "$mode_system"
+set $mode_system (x) exit
+mode "$mode_system" {
+    bindsym x exec --no-startup-id i3-msg exit, mode "default"
+    # back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+##############################################################################################################################################################
+#
+## Key command assignments & application launchers
+#
+# xmodmap -pke
+
+# start a terminal
+bindsym $mod+Return exec $terminal
+
+# start a floating terminal
+bindsym $mod+Control+Return exec $terminal --role floating
+bindsym $mod+Shift+Return exec gnome-terminal --role floating
+
+# kill focused window
+bindsym $mod+x kill
+
+# quickswitch
+bindsym $mod+q exec quickswitch.py
 
 # start dmenu (a program launcher)
 bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
@@ -306,10 +496,10 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # Lock Screen / Suspend / Poweroff
-bindsym Pause exec "/home/serge/bin/lock"
-bindsym $mod+l exec "/home/serge/bin/lock"
-bindsym $mod+Pause exec lock suspend
-bindsym $mod+Shift+Control+Pause exec sudo /sbin/poweroff
+bindsym Pause               exec --no-startup-id $lockscreen
+bindsym $mod+l              exec --no-startup-id $lockscreen
+bindsym $mod+Pause          exec --no-startup-id $suspend
+bindsym $mod+Control+l      exec --no-startup-id $suspend
 
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
@@ -317,27 +507,11 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 # start some tools
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
-bindsym $mod+d exec nemo
-bindsym $mod+Control+d exec nautilus
-bindsym $mod+Control+u exec unity-control-center
-bindsym $mod+Control+p exec /usr/bin/python3 /usr/share/system-config-printer/system-config-printer.py
-#bindsym $mod+Control+c exec $terminal -e 'less /usr/share/X11/locale/en_US.UTF-8/Compose'
-#bindsym $mod+Shift+m exec $terminal -e ncmpcpp
+bindsym $mod+d exec nautilus
 
 # start browsers
-bindsym $mod+Shift+o            exec firefox
-bindsym $mod+o                  exec firefox            --private-window
-bindsym $mod+Control+o          exec google-chrome
-bindsym $mod+Control+Shift+o    exec google-chrome      --incognito
-bindsym $mod+$alt+o             exec chromium-browser
-bindsym $mod+$alt++Shift+o       exec chromium-browser   --incognito
-
-
-# Screenshot
-bindsym Print exec screengrab select
-bindsym Shift+Print exec screengrab window
-bindsym Control+Print exec screengrab screen
-bindsym Shift+Control+Print exec screengrab full
+bindsym $mod+Ctrl+o             exec chromium --incognito
+bindsym $mod+o                  exec chromium
 
 # Show current Background filename
 bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
@@ -349,186 +523,57 @@ bindsym $mod+p exec presentation-mode
 
 ##############################################################################################################################################################
 #
-# volume and media controls
+# volume and media controls, special keys
 #
 
-bindsym XF86AudioLowerVolume        exec --no-startup-id  paudioctl min
-bindsym XF86AudioRaiseVolume        exec --no-startup-id  paudioctl plus
-bindsym XF86AudioMute               exec --no-startup-id  paudioctl toggle
+bindsym XF86AudioLowerVolume            exec --no-startup-id  ponymix decrease 5
+bindsym XF86AudioRaiseVolume            exec --no-startup-id  ponymix increase 5
+bindsym XF86AudioMute                   exec --no-startup-id  ponymix toggle
 
-bindsym $mod+XF86AudioLowerVolume   exec --no-startup-id  mediaplayer_cmd prev
-bindsym $mod+XF86AudioMute          exec --no-startup-id  mediaplayer_cmd play
-bindsym $mod+XF86AudioRaiseVolume   exec --no-startup-id  mediaplayer_cmd next
+bindsym $mod+Control+comma              exec --no-startup-id  ponymix decrease 5
+bindsym $mod+Control+period             exec --no-startup-id  ponymix increase 5
+bindsym $mod+Control+slash              exec --no-startup-id  ponymix toggle
 
-bindsym XF86AudioPrev               exec --no-startup-id  mediaplayer_cmd prev
-bindsym XF86AudioPlay               exec --no-startup-id  mediaplayer_cmd play
-bindsym XF86AudioNext               exec --no-startup-id  mediaplayer_cmd next
+bindsym XF86AudioPrev                   exec --no-startup-id  playerctl previous
+bindsym XF86AudioPlay                   exec --no-startup-id  playerctl play-pause
+bindsym XF86AudioNext                   exec --no-startup-id  playerctl next
 
-bindsym XF86Tools                   exec --no-startup-id  mediaplayer_cmd next
+bindsym Control+XF86AudioLowerVolume    exec --no-startup-id playerctl previous
+bindsym Control+XF86AudioRaiseVolume    exec --no-startup-id playerctl next
+bindsym Control+XF86AudioMute           exec --no-startup-id playerctl play-pause
 
-#bindsym XF86MonBrightnessUp exec --no-startup-id /usr/bin/xbacklight -inc 5
-#bindsym XF86MonBrightnessDown exec --no-startup-id /usr/bin/xbacklight -dec 5
+bindsym $mod+comma                      exec --no-startup-id playerctl previous
+bindsym $mod+period                     exec --no-startup-id playerctl next
+bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
 
-##############################################################################################################################################################
-#
-## Colors, borders, layout, fonts
-#
+# Fn-F4  XF86AudioMicMute
 
-# Font for window titles. Will also be used by the bar unless a different font
-# is used in the bar {} block below. ISO 10646 = Unicode
-#font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
-# The font above is very space-efficient, that is, it looks good, sharp and
-# clear in small sizes. However, if you need a lot of unicode glyphs or
-# right-to-left text rendering, you should instead use pango for rendering and
-# chose a FreeType font, such as:
-#font pango:DejaVu Sans Mono 10
-#font pango:Ubuntu Mono 10
+# Fn-F5  XF86MonBrightnessDown
+bindsym XF86MonBrightnessDown exec --no-startup-id brightness-notify.sh down
 
-##############################################################################################################################################################
-#
-## Client Container Colors
-#
-# color defines
+# Fn-F6  XF86MonBrightnessUp
+bindsym XF86MonBrightnessUp   exec --no-startup-id brightness-notify.sh up
 
-set $dark                   #000000
-set $light                  #FFFFFF
-set $grey                   #777777
-set $focus                  #FFFF00
-#00FF00
-set $ginsys                 #1D396A
-set $red                    #FF0000
-# set where setting is ignored:
-set $IGNORED                #000000
+## Fn-F7 XF86Display
+#bindsym XF86Display exec --no-startup-id xdisp
+#bindsym $mod+Scroll_Lock exec --no-startup-id xdisp
+#bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
 
-#
-## container colors
-# border colour is the color for the 2 horizontal lines of the titlebar; the
-# border of the whole container is the same as the background of the title bar!
-#
-## client windows       border              background          text                indicator (indicates vertical or horizontal split)
-#
-# A client which is not the focused one of its container.
-client.unfocused        $dark               $dark               $light              $dark
+# Fn-F9  XF86Tools
 
-# A client currently focused in its container, but does not have focus now.
-client.focused_inactive $dark               $grey               $light              $dark
+# Fn-F10 XF86Search
+# Screenshot
+bindsym --release Print                       exec --no-startup-id screengrab select
+bindsym --release XF86Search                  exec --no-startup-id screengrab select
+bindsym --release Shift+Print                 exec --no-startup-id screengrab window
+bindsym --release Shift+XF86Search            exec --no-startup-id screengrab window
+bindsym --release Control+Print               exec --no-startup-id screengrab screen
+bindsym --release Control+XF86Search          exec --no-startup-id screengrab screen
+bindsym --release Shift+Control+Print         exec --no-startup-id screengrab full
+bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab full
 
-# A client which currently has the focus.
-client.focused          $focus              $focus              $dark               $ginsys
-
-# A client which has its urgency hint activated.
-client.urgent           $red                $red                $light              $red
-
-#Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder      $IGNORED            $dark               $dark               $IGNORED
-
-##############################################################################################################################################################
-#
-# status bar
-#
-bar {
-        colors {
-
-            # Text color to be used for the separator.
-            separator           $ginsys
-
-            # Text color to be used for the statusline.
-            statusline          $light
-
-            # Background color of the bar.
-            background          $dark
-
-
-            ## type             border              background      text
-
-            # workspace button when the workspace does not have focus and is not
-            # active (visible) on any output. This will be the case for most workspaces.
-            inactive_workspace  $dark               $dark           $grey
-
-            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
-            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-            active_workspace    $grey               $dark           $grey
-
-            # color for a workspace button when the workspace has focus.
-            focused_workspace   $light              $ginsys         $light
-
-            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-            urgent_workspace    $red                $dark          $red
-
-        }
-
-        id main
-        #status_command i3status
-        # https://github.com/ultrabug/py3status
-        status_command py3status -c ~/.i3/i3status.conf
-
-        # tray_output <none|primary|output>
-        tray_output primary
-
-        # position <top|bottom>
-        position top
-
-        # mode <dock|hide|invisible>
-        mode dock
-
-        # hidden_state <hide|show>
-        hidden_state hide
-
-        # modifier <Modifier>
-        modifier $mod
-
-        # font <font>
-        #  the order in which fonts are “declared” for use in i3bar actually
-        #  matters. The first font in the list shall be the one containing
-        #  icons, the latter the one for plain text
-        #font pango:DejaVu Sans Mono 10
-        #font pango:FontAwesome 8, Terminus 8
-        font pango:Ubuntu Mono 10  #, Terminus 8
-
-        # workspace_buttons <yes|no>
-        workspace_buttons yes
-
-        # binding_mode_indicator <yes|no>
-        # Specifies whether the current binding mode indicator should be shown
-        # or not. This is useful if you want to hide the workspace buttons but
-        # still be able to see the current binding mode indicator.
-        binding_mode_indicator yes
-
-}
-
-##############################################################################################################################################################
-#
-## workspace and window properties
-#
-
-# <default|stacking|tabbed>
-workspace_layout default
-
-# split orientation <horizontal|vertical|auto>
-default_orientation auto
-
-# popup_during_fullscreen <smart|ignore|leave_fullscreen>
-popup_during_fullscreen smart
-
-# force_focus_wrapping <yes|no>
-force_focus_wrapping no
-
-# This configuration directive enables automatic workspace back_and_forth when
-# switching to the workspace that is currently focused.
-workspace_auto_back_and_forth no
-
-# If an application on another workspace sets an urgency hint, switching to
-# this workspace may lead to immediate focus of the application, which also
-# means the window decoration color would be immediately resetted to
-# client.focused. This may make it unnecessarily hard to tell which window
-# originally raised the event. In order to prevent this, you can tell i3 to
-# delay resetting the urgency state by a certain time using the
-# force_display_urgency_hint directive.
-# Setting the value to 0 disables this feature. The default is 500ms.
-force_display_urgency_hint 3000 ms
-
-# <none|vertical|horizontal|both> :
-hide_edge_borders none
+# Fn-F11 XF86LaunchA
+# Fn-F12 XF86Explorer
 
 
 ##############################################################################################################################################################
@@ -542,11 +587,16 @@ hide_edge_borders none
 #
 #
 
+###############################################################################
+#
+# various rules
+#
 # float windows
 for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
 for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
-for_window [instance="qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
+for_window [instance="qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
 for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
+
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
 for_window [window_type="(dialog|dialog|utility|toolbar|splash|menu|dropdown_menu|popup_menu|tooltip)"] floating enable
 
@@ -567,58 +617,70 @@ for_window [title="Event Tester"]                                               
 for_window [class="Keybase" instance="keybase" window_role="browser-window"]            floating enable
 #for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
 
+###############################################################################
+#
 # Browsers
-assign      [class="chromium-browser" instance="chromium-browser" window_role="browser"]  →   "1"
-assign      [class="google-chrome"    instance="google-chrome"    window_role="browser"]  →   "11"
-assign      [class="Firefox"          instance="Navigator"        window_role="browser"]  →   "12"
-for_window  [class="chromium-browser" instance="chromium-browser" window_role="browser"]  layout tabbed
-for_window  [class="(Google-chrome|Chromium-browser|Firefox)" \
+#
+#assign      [class="chromium-browser" instance="chromium-browser" window_role="browser"]    $ws_www
+#assign      [class="chromium" instance="chromium" window_role="browser"]                    $ws_www
+#assign      [class="google-chrome"    instance="google-chrome"    window_role="browser"]    $ws_www
+#assign      [class="Firefox"          instance="Navigator"        window_role="browser"]    $ws_www
+for_window  [class="chromium" instance="chromium" window_role="browser"]                     layout tabbed
+for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)" \
              instance="(Toplevel|Browser)" \
-             window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ] \
-            floating enable
+             window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+###############################################################################
+#
+# chat
+#
+assign [window_role="irc"] $ws_chat
 
-# IRC
-assign [window_role="irc"]  →   "2"
+assign [class="HipChat" instance="hipchat4" title="HipChat"]        $ws_chat
+for_window [class="HipChat" instance="hipchat4" title="HipChat"]    layout tabbed
 
-# Various
-assign [class="jetbrains-idea"] →   "4"
-
+###############################################################################
+#
+# large screen tools
+#
 # Virtualbox
-assign [class="VirtualBox"] →   "6"
+assign [class="VirtualBox"]     $ws_tool
 for_window [class="VirtualBox"] layout tabbed
 
 # Wireshark
-assign [class="Wireshark" instance="wireshark"] → "7"
+assign [class="Wireshark" instance="wireshark"] $ws_tool
 
 # Remote Desktop Client
 for_window [class="Remmina" instance="remmina"] layout tabbed
-assign [class="Remmina" instance="remmina"] → "8"
+assign [class="Remmina" instance="remmina"]     $ws_tools
 
 # Teamviewer
-assign [class="Wine" instance="TeamViewer.exe"]  → "8"
+assign [class="Wine" instance="TeamViewer.exe"] $ws_tool
 for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
-for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tiled
+for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tabbed
 
+
+###############################################################################
+#
+# side tools
+#
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          → "0"
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  → "0"
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util
+for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  →   "0"
-for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]      layout tabbed
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util
+for_window [class="Spotify"]                                    move to workspace "11"  # https://github.com/i3/i3/issues/2060#issuecomment-155179472
+for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 
+# https://worklogassistant.com
+for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
+for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
+assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util
 
-##############################################################################################################################################################
-#
-## Client default rules, seems to be put after the assignments & rules
-#
-
-# new window default border <normal|1pixel|none|pixel> :
-new_window  pixel 2
-new_float   pixel 2
 
 ##############################################################################################################################################################
 #
@@ -642,15 +704,13 @@ exec --no-startup-id dunst -print %
 exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "launch-i3jobs"
+exec --no-startup-id "syndaemon -dkRi 0.5"
 
 # Desktop Apps
 exec "pasystray"
-exec "syndaemon -dkRi 0.5"
-exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
 exec "nm-applet &"
-exec "gnome-sound-applet &"
-exec "dropbox start &"
-exec "seafile-applet &"
-exec "synology-cloud-station &"
-exec "keepass2 &"
+exec "sleep 5; dropbox start &"
+exec "sleep 5; seafile-applet &"
+#exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
+#exec "keepass2 &"
 

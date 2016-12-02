@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# switch to the IRC window, or start it
+wmctrl -a IRC || \
 /usr/bin/terminator \
             --geometry 800x600 \
             --title IRC \

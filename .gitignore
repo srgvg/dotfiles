@@ -253,6 +253,10 @@ flycheck_*.el
 # projectiles files
 .projectile
 
+# directory configuration
+.dir-locals.el
+
+
 ########################################
 # Ensime
 ########################################
@@ -288,14 +292,6 @@ secring.*
 
 
 ########################################
-# IPythonNotebook
-########################################
-
-# Temporary data
-.ipynb_checkpoints/
-
-
-########################################
 # JDeveloper
 ########################################
 
@@ -323,11 +319,9 @@ cwallet.sso.lck
 # User-specific stuff:
 .idea/workspace.xml
 .idea/tasks.xml
-.idea/dictionaries
-.idea/vcs.xml
-.idea/jsLibraryMappings.xml
 
 # Sensitive or high-churn files:
+.idea/dataSources/
 .idea/dataSources.ids
 .idea/dataSources.xml
 .idea/dataSources.local.xml
@@ -438,6 +432,9 @@ lib/
 
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
 
 
 ########################################
@@ -852,6 +849,7 @@ pip-selfcheck.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/extensions.json
 
 
 ########################################

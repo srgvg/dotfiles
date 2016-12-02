@@ -1,35 +1,17 @@
 #!/bin/bash
 
-# log this scripts full output
-exec >> ~/.lock.log 2>&1
-
-echo -n "START "; date
-
 # load some defaults
+cd ~serge
 . etc/defaults
 
-# check parameters
-if  [ "$1" = suspend ]
-then
-    sleep="yes"
-    lockscreen="${2:-$default_lockscreen}"
-elif [ "$2" = suspend ]
-then
-    sleep="yes"
-    lockscreen="${1:-$default_lockscreen}"
-else
-    sleep=""
-    lockscreen="${1:-$default_lockscreen}"
-fi
+lockscreen="${1:-$default_lockscreen}"
 
-# initiate a delayed sleep - should effectively happen after the screen gets
-# locked
-initiate_suspend() {
-    # this function should be started in the background
-    # wait a bit to make sure it's locked
-    sleep 1
-    # suspend
-    sudo /usr/sbin/pm-suspend
+perform_lock() {
+    # lock screen with a background picture
+    # --nofork makes sure i3lock doesn't return until it gets unlocked
+    i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
+    # then re-enable notifications when unlock happens
+    killall -v -SIGUSR2 dunst
 }
 
 ##############################
@@ -40,7 +22,7 @@ initiate_suspend() {
 if [ ! "$lockscreen" = "keep" -a ! "$lockscreen" = "blurred" ]
 then
     # update background lockscreen
-    setbg lock "$lockscreen"
+    bin/setbg lock "$lockscreen"
 elif [ "$lockscreen" = "blurred" ]
 then
     # take a screenshot and blur it for the lock screen
@@ -49,29 +31,23 @@ then
 fi
 
 # make sure music stops
-mediaplayer_cmd stop
+bin/playerctl stop
 
 # make sure presentation mode is off
-presentation-mode stop
+bin/presentation-mode stop
 
 # pause notifications (sleep because seems too soon after pres mode stop)
 (sleep 1; killall -v -SIGUSR1 dunst) & # pause
 
 # first lock remote irssi screen
-irc lock &
+bin/irc lock &
 
-# initiate suspend if told so
-if  [ "$sleep" = yes ]
-then
-    initiate_suspend &
-fi
+# then perform the lock and exit this script
+# see etc/root/etc/systemd/system/i3lock.service where this lock is called
+# 'forking'
+perform_lock &
 
-# then lock screen with a background picture
-# --nofork makes sure i3lock doesn't return until it gets unlocked
-i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
+# add in a bit to make sure the screen is locked before we handover to systemd
+# suspend
+sleep 1
 
-# then re-enable notifications when unlock happens
-killall -v -SIGUSR2 dunst
-
-echo -n "STOP "; date
-echo

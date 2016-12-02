@@ -34,7 +34,7 @@ map <silent> <F2> :set invnumber<cr>
 set scrolloff=5
 
 " Mouse and backspace
-"set mouse=a    " disable mouse support in all modes; on OSX press ALT and click
+set mouse-=a    " disable mouse support in all modes; on OSX press ALT and click
 set bs=2        " make backspace behave like normal again
 set mousehide   " hide the mouse when typing text
 
