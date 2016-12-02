@@ -673,7 +673,8 @@ for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util
-for_window [class="Spotify"]                                    move to workspace "11"  # https://github.com/i3/i3/issues/2060#issuecomment-155179472
+# https://github.com/i3/i3/issues/2060#issuecomment-155179472
+for_window [class="Spotify"]                                    move to workspace $ws_util
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 
 # https://worklogassistant.com
