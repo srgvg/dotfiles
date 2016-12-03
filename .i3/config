@@ -36,6 +36,10 @@ set $ws_tool        10
 set $ws_util        22
 #set $ws_
 
+# Xresources settings
+set_from_resource $outpri i3.output.primary     eDP1
+set_from_resource $outsec i3.output.secondary   eDP1
+
 ##############################################################################################################################################################
 #
 ### Early commands
@@ -183,6 +187,31 @@ bar {
 #
 ## workspace and window properties
 #
+
+# Automatically putting workspaces on specific screens
+workspace 0     output $outpri
+workspace 1     output $outpri
+workspace 2     output $outpri
+workspace 3     output $outpri
+workspace 4     output $outpri
+workspace 5     output $outpri
+workspace 6     output $outpri
+workspace 7     output $outpri
+workspace 8     output $outpri
+workspace 9     output $outpri
+workspace 10    output $outpri
+workspace 11    output $outpri
+workspace 12    output $outpri
+workspace 13    output $outpri
+workspace 14    output $outpri
+workspace 15    output $outsec
+workspace 16    output $outsec
+workspace 17    output $outsec
+workspace 18    output $outsec
+workspace 18    output $outsec
+workspace 19    output $outsec
+workspace 20    output $outsec
+workspace 21    output $outsec
 
 # mouse settings
 focus_follows_mouse yes
