@@ -669,10 +669,9 @@ for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)"
 #
 # chat
 #
-assign [window_role="irc"] $ws_chat
-
-assign [class="HipChat" instance="hipchat4" title="HipChat"]        $ws_chat
-for_window [class="HipChat" instance="hipchat4" title="HipChat"]    layout tabbed
+assign      [window_role="irc"]                 $ws_chat
+assign      [class="(HipChat|Franz)"]           $ws_chat
+for_window  [class="(HipChat|Franz)"]           layout tabbed
 
 ###############################################################################
 #
