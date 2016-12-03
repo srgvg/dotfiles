@@ -213,6 +213,13 @@ workspace 19    output $outsec
 workspace 20    output $outsec
 workspace 21    output $outsec
 
+#focus_on_window_activation smart|urgent|focus|none
+focus_on_window_activation urgent
+
+# When a new window appears, it will be focused. The no_focus directive allows
+# preventing this from happening
+no_focus [window_role="pop-up"]
+
 # mouse settings
 focus_follows_mouse yes
 
