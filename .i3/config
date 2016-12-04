@@ -30,8 +30,9 @@ set $red                    #FF0000
 set $IGNORED                #000000
 
 # workspaces
-set $ws_chat        0
-set $ws_www         1
+set $ws_chat        1
+set $ws_www         2
+set $ws_tool2       9
 set $ws_tool        10
 set $ws_util        22
 #set $ws_
@@ -71,8 +72,7 @@ exec --no-startup-id xset -b
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
-#font pango:DejaVu Sans Mono 10
-#font pango:Ubuntu Mono 10
+font pango:FontAwesome 8, Terminus 8
 
 ##############################################################################################################################################################
 #
@@ -168,9 +168,7 @@ bar {
         #  the order in which fonts are “declared” for use in i3bar actually
         #  matters. The first font in the list shall be the one containing
         #  icons, the latter the one for plain text
-        #font pango:DejaVu Sans Mono 10
-        #font pango:FontAwesome 8, Terminus 8
-        font pango:Ubuntu Mono 10  #, Terminus 8
+        font pango:FontAwesome 8, Terminus 8
 
         # workspace_buttons <yes|no>
         workspace_buttons yes
@@ -189,7 +187,7 @@ bar {
 #
 
 # Automatically putting workspaces on specific screens
-workspace 0     output $outpri
+#workspace 0     output $outpri
 workspace 1     output $outpri
 workspace 2     output $outpri
 workspace 3     output $outpri
@@ -320,7 +318,7 @@ bindsym $mod+space focus mode_toggle
 #
 
 # switch to workspace
-bindsym $mod+grave workspace 0
+#bindsym $mod+grave workspace 0
 bindsym $mod+1 workspace 1
 bindsym $mod+2 workspace 2
 bindsym $mod+3 workspace 3
@@ -345,7 +343,7 @@ bindsym $mod+F11 workspace 21
 bindsym $mod+F12 workspace 22
 
 # move focused container to workspace
-bindsym $mod+Control+grave move container to workspace 0
+#bindsym $mod+Control+grave move container to workspace 0
 bindsym $mod+Control+1 move container to workspace 1
 bindsym $mod+Control+2 move container to workspace 2
 bindsym $mod+Control+3 move container to workspace 3
@@ -370,7 +368,7 @@ bindsym $mod+Control+F11 move container to workspace 21
 bindsym $mod+Control+F12 move container to workspace 22
 
 # move focused container to workspace
-bindsym $mod+Shift+grave move container to workspace 0
+#bindsym $mod+Shift+grave move container to workspace 0
 bindsym $mod+Shift+1 move container to workspace 1
 bindsym $mod+Shift+2 move container to workspace 2
 bindsym $mod+Shift+3 move container to workspace 3
@@ -672,6 +670,7 @@ for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)"
 assign      [window_role="irc"]                 $ws_chat
 assign      [class="(HipChat|Franz)"]           $ws_chat
 for_window  [class="(HipChat|Franz)"]           layout tabbed
+for_window  [window_role="irc"]                 layout tabbed
 
 ###############################################################################
 #
@@ -683,16 +682,20 @@ for_window [class="VirtualBox"] layout tabbed
 
 # Wireshark
 assign [class="Wireshark" instance="wireshark"] $ws_tool
+for_window [class="Wireshark" instance="wireshark"] layout tabbed
 
 # Remote Desktop Client
-for_window [class="Remmina" instance="remmina"] layout tabbed
 assign [class="Remmina" instance="remmina"]     $ws_tools
+for_window [class="Remmina" instance="remmina"] layout tabbed
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"] $ws_tool
 for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
 for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tabbed
 
+# Gimp
+assign      [class="Gimp" instance="gimp"] $ws_tool2
+for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program" window_role="gimp-image-window"] layout tabbed
 
 ###############################################################################
 #
@@ -716,6 +719,7 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
 assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util
+
 
 
 ##############################################################################################################################################################
