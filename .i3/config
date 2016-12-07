@@ -589,9 +589,10 @@ bindsym XF86MonBrightnessDown exec --no-startup-id brightness-notify.sh down
 bindsym XF86MonBrightnessUp   exec --no-startup-id brightness-notify.sh up
 
 ## Fn-F7 XF86Display
-#bindsym XF86Display exec --no-startup-id xdisp
-#bindsym $mod+Scroll_Lock exec --no-startup-id xdisp
-#bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisp laptop
+bindsym XF86Display exec --no-startup-id rerandr3 restore
+bindsym Shift+XF86Display exec --no-startup-id xdisplcd
+bindsym $mod+Scroll_Lock exec --no-startup-id rerandr restore
+bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisplcd
 
 # Fn-F9  XF86Tools
 
