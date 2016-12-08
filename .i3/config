@@ -34,7 +34,8 @@ set $ws_chat        1
 set $ws_www         2
 set $ws_tool2       9
 set $ws_tool        10
-set $ws_util        22
+set $ws_util1       21
+set $ws_util2       22
 #set $ws_
 
 # Xresources settings
@@ -137,7 +138,7 @@ bar {
         id main
         #status_command i3status
         # https://github.com/ultrabug/py3status
-        status_command py3status -c ~/.i3/i3status.conf
+        status_command py3status -c ~/.i3/i3status.conf # -d -l /home/serge/.log/pystatus.log
 
         # tray_output <none|primary|output>
         tray_output primary
@@ -669,9 +670,11 @@ for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)"
 # chat
 #
 assign      [window_role="irc"]                 $ws_chat
-assign      [class="(HipChat|Franz)"]           $ws_chat
+assign      [class="(HipChat|Franz)"]           $ws_util1
 for_window  [class="(HipChat|Franz)"]           layout tabbed
 for_window  [window_role="irc"]                 layout tabbed
+
+for_window  [class="Skype"]                     floating enable
 
 ###############################################################################
 #
@@ -706,20 +709,20 @@ for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program"
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util2
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util2
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util2
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window [class="Spotify"]                                    move to workspace $ws_util
+for_window [class="Spotify"]                                    move to workspace $ws_util2
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 
 # https://worklogassistant.com
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
-assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util
+assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util1
 
 
 
@@ -750,8 +753,8 @@ exec --no-startup-id "syndaemon -dkRi 0.5"
 # Desktop Apps
 exec "pasystray"
 exec "nm-applet &"
-exec "sleep 5; dropbox start &"
-exec "sleep 5; seafile-applet &"
+exec "sleep 15; dropbox start &"
+exec "sleep 15; seafile-applet &"
 #exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"
 #exec "keepass2 &"
 
