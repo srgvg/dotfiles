@@ -32,8 +32,10 @@ set $IGNORED                #000000
 # workspaces
 set $ws_chat        1
 set $ws_www         2
-set $ws_tool2       9
-set $ws_tool        10
+set $ws_tool2       8
+set $ws_tool1       9
+set $ws_tool0       10
+set $ws_util0       20
 set $ws_util1       21
 set $ws_util2       22
 #set $ws_
@@ -206,7 +208,6 @@ workspace 14    output $outpri
 workspace 15    output $outsec
 workspace 16    output $outsec
 workspace 17    output $outsec
-workspace 18    output $outsec
 workspace 18    output $outsec
 workspace 19    output $outsec
 workspace 20    output $outsec
@@ -480,7 +481,7 @@ mode "resize" {
         bindsym Escape mode "default"
 }
 
-bindsym $mod+m focus floating; mode "moveit"
+bindsym $mod+Control+m focus floating; mode "moveit"
 mode "moveit" {
         bindsym Up move up          50px
         bindsym Left move left      50px
@@ -581,6 +582,8 @@ bindsym $mod+comma                      exec --no-startup-id playerctl previous
 bindsym $mod+period                     exec --no-startup-id playerctl next
 bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
 
+bindsym $mod+m                          exec pavucontrol
+
 # Fn-F4  XF86AudioMicMute
 
 # Fn-F5  XF86MonBrightnessDown
@@ -630,11 +633,21 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 # float windows
 for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
 for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
-for_window [instance="qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
+for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
 for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
-for_window [window_type="(dialog|dialog|utility|toolbar|splash|menu|dropdown_menu|popup_menu|tooltip)"] floating enable
+# (!) window_* seems to not take PCRE's
+#for_window [window_type="normal"]
+#for_window [window_type="dialog"]
+#for_window [window_type="utility"]
+#for_window [window_type="toolbar"]
+#for_window [window_type="splash"]
+#for_window [window_type="menu"]
+#for_window [window_type="dropdown_menu"]
+#for_window [window_type="popup_menu"]
+#for_window [window_type="tooltip"]
+#for_window [window_type="notification"]
 
 # Don’t focus window upon opening
 no_focus [window_role="pop-up"]
@@ -662,15 +675,18 @@ for_window [class="Keybase" instance="keybase" window_role="browser-window"]    
 #assign      [class="google-chrome"    instance="google-chrome"    window_role="browser"]    $ws_www
 #assign      [class="Firefox"          instance="Navigator"        window_role="browser"]    $ws_www
 for_window  [class="chromium" instance="chromium" window_role="browser"]                     layout tabbed
+for_window  [class="Google-chrome" instance="google-chrome" window_role="browser"] layout tabbed, border normal
 for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)" \
              instance="(Toplevel|Browser)" \
              window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+
+
 ###############################################################################
 #
 # chat
 #
 assign      [window_role="irc"]                 $ws_chat
-assign      [class="(HipChat|Franz)"]           $ws_util1
+assign      [class="(HipChat|Franz)"]           $ws_util0
 for_window  [class="(HipChat|Franz)"]           layout tabbed
 for_window  [window_role="irc"]                 layout tabbed
 
@@ -681,19 +697,19 @@ for_window  [class="Skype"]                     floating enable
 # large screen tools
 #
 # Virtualbox
-assign [class="VirtualBox"]     $ws_tool
+assign [class="VirtualBox"]     $ws_tool2
 for_window [class="VirtualBox"] layout tabbed
 
 # Wireshark
-assign [class="Wireshark" instance="wireshark"] $ws_tool
+assign [class="Wireshark" instance="wireshark"] $ws_tool1
 for_window [class="Wireshark" instance="wireshark"] layout tabbed
 
 # Remote Desktop Client
-assign [class="Remmina" instance="remmina"]     $ws_tools
+assign [class="Remmina" instance="remmina"]     $ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
 
 # Teamviewer
-assign [class="Wine" instance="TeamViewer.exe"] $ws_tool
+assign [class="Wine" instance="TeamViewer.exe"] $ws_tool0
 for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
 for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tabbed
 
@@ -709,9 +725,10 @@ for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program"
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util2
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util2
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util1
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util1
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
+for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          layout tabbed
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util2
@@ -722,7 +739,7 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 # https://worklogassistant.com
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
-assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util1
+#assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util0
 
 
 
@@ -741,7 +758,8 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
                         -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
-exec --no-startup-id compton &
+#exec --no-startup-id compton &
+exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
 #exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
 # start with interactive bash shell as this needs ssh keys to be unlocked
@@ -751,8 +769,9 @@ exec --no-startup-id "launch-i3jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 # Desktop Apps
-exec "pasystray"
+exec "pasystray &"
 exec "nm-applet &"
+exec "system-config-printer-applet &"
 exec "sleep 15; dropbox start &"
 exec "sleep 15; seafile-applet &"
 #exec "bash -c 'while sleep 1; do xfce4-power-manager --no-daemon; done' &"

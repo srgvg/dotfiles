@@ -8,9 +8,9 @@ then
     disable="yes"
 elif [ "$1" = "nolock" ]
 then
-    icon="/usr/share/notify-osd/icons/hicolor/scalable/status/notification-display-brightness.svg"
+    icon="/usr/share/icons/hicolor/scalable/apps/terminator-layout.svg"
 else
-    icon="/usr/share/notify-osd/icons/Humanity/scalable/status/notification-gpm-monitor.svg"
+    icon="/usr/share/icons/hicolor/scalable/apps/terminator.svg"
 fi
 runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
 

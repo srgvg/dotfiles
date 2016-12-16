@@ -12,7 +12,7 @@ pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
 pubfile="${publoc}/${pubfilename}"
 
 cp "${file}" "${pubfile}"
-dropbox_puburl="https://dl.dropboxusercontent.com/u/13986042/${pubfilename}"
+dropbox_puburl="$(dropbox sharelink ${pubfile})"
 
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
 echo -n $bitly_url | xclip -in -selection clipboard

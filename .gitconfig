@@ -38,6 +38,9 @@
     rm-deleted = ! git rm $(git ls-files --deleted)
     rm-untracked = ! rm -v $(git ls-files --others)
 
+    # Print absolute path of repo root directory
+    root = rev-parse --show-toplevel
+
     show-tree = log --all --graph --decorate --oneline --simplify-by-decoration
     show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
     st = status -sb
