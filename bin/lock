@@ -1,10 +1,16 @@
 #!/bin/bash
 
+# log this scripts full output
+# exec >> ~/.lock.log 2>&1
+
 # load some defaults
 cd ~serge
 . etc/defaults
 
 lockscreen="${1:-$default_lockscreen}"
+MYUID=$(id -u $USERNAME)
+PIDPATH=/var/run/user/$MYUID/i3lock
+mkdir -p $PIDPATH
 
 perform_lock() {
     # lock screen with a background picture
@@ -46,6 +52,11 @@ bin/irc lock &
 # see etc/root/etc/systemd/system/i3lock.service where this lock is called
 # 'forking'
 perform_lock &
+PID=$!
+echo $PID >$PIDPATH/pid
+echo i3lock started with pid $PID
+
+mkdir -p $PIDPATH
 
 # add in a bit to make sure the screen is locked before we handover to systemd
 # suspend

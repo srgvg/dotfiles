@@ -24,7 +24,7 @@ set $suspend        systemctl suspend
 set $dark                   #000000
 set $light                  #FFFFFF
 set $grey                   #777777
-set $focus                  #FFFF00
+set $focus                  #2890FF
 set $ginsys                 #1D396A
 set $red                    #FF0000
 set $IGNORED                #000000
@@ -35,9 +35,9 @@ set $ws_www         2
 set $ws_tool2       8
 set $ws_tool1       9
 set $ws_tool0       10
-set $ws_util0       20
-set $ws_util1       21
-set $ws_util2       22
+set $ws_util_pw     20
+set $ws_util_chat   21
+set $ws_util_music  22
 #set $ws_
 
 # Xresources settings
@@ -75,7 +75,8 @@ exec --no-startup-id xset -b
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
-font pango:FontAwesome 8, Terminus 8
+#font pango:FontAwesome 8, Terminus 8
+font pango:FontAwesome 10, Terminus 10
 
 ##############################################################################################################################################################
 #
@@ -171,7 +172,8 @@ bar {
         #  the order in which fonts are “declared” for use in i3bar actually
         #  matters. The first font in the list shall be the one containing
         #  icons, the latter the one for plain text
-        font pango:FontAwesome 8, Terminus 8
+        #font pango:FontAwesome 8, Terminus 8
+        font pango:FontAwesome 10, Terminus 10
 
         # workspace_buttons <yes|no>
         workspace_buttons yes
@@ -273,8 +275,8 @@ hide_edge_borders smart
 #
 
 # new window default border <normal|1pixel|none|pixel> :
-new_window  pixel 2
-new_float   pixel 2
+new_window  pixel 3
+new_float   pixel 3
 
 ##############################################################################################################################################################
 #
@@ -309,6 +311,18 @@ bindsym $mod+t floating toggle
 
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
+
+
+# vertical mouse buttons
+# 1 - left
+# 2 - middle
+# 3 - right
+# 8 - back
+# 9 - forward
+# 10  scroll wheel button
+#
+# The scrollwheel button and a modifer over any part of the window kills the window
+bindsym --whole-window $mod+button10 kill
 
 ##############################################################################################################################################################
 #
@@ -632,6 +646,7 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 #
 # float windows
 for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
+for_window [title="chromeIPass"] floating enable
 for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
 for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
 for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
@@ -654,6 +669,10 @@ no_focus [window_role="pop-up"]
 
 # terminals
 for_window [window_role="floating"]     floating enable, move position mouse
+for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable, move position mouse
+for_window [class="Gnome-terminal"]     floating enable, move position mouse
+
+
 
 # Tools
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
@@ -670,15 +689,14 @@ for_window [class="Keybase" instance="keybase" window_role="browser-window"]    
 #
 # Browsers
 #
-#assign      [class="chromium-browser" instance="chromium-browser" window_role="browser"]    $ws_www
-#assign      [class="chromium" instance="chromium" window_role="browser"]                    $ws_www
-#assign      [class="google-chrome"    instance="google-chrome"    window_role="browser"]    $ws_www
-#assign      [class="Firefox"          instance="Navigator"        window_role="browser"]    $ws_www
-for_window  [class="chromium" instance="chromium" window_role="browser"]                     layout tabbed
-for_window  [class="Google-chrome" instance="google-chrome" window_role="browser"] layout tabbed, border normal
-for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)" \
-             instance="(Toplevel|Browser)" \
-             window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+#assign [class="(Chromium|chromium)" instance="chromium" window_role="browser"]
+#assign [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]
+#assign [class="Firefox" instance="Navigator" window_role="browser"]
+
+#for_window  [class="(Chromium|chromium)" instance="chromium" window_role="browser"]                 layout tabbed
+#for_window  [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]  layout tabbed
+for_window  [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]  border normal
+for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)" instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
 
 
 ###############################################################################
@@ -686,8 +704,6 @@ for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)"
 # chat
 #
 assign      [window_role="irc"]                 $ws_chat
-assign      [class="(HipChat|Franz)"]           $ws_util0
-for_window  [class="(HipChat|Franz)"]           layout tabbed
 for_window  [window_role="irc"]                 layout tabbed
 
 for_window  [class="Skype"]                     floating enable
@@ -725,21 +741,27 @@ for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program"
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
 for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util1
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util1
+assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util_pw
+assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util_pw
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
 for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          layout tabbed
 
+# chat
+assign      [class="(HipChat|Franz)"]           $ws_util_chat
+for_window  [class="(HipChat|Franz)"]           layout tabbed
+assign      [class="Chromium" title="Signal" window_role="app"] $ws_util_chat
+
+
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util2
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util_music
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window [class="Spotify"]                                    move to workspace $ws_util2
+for_window [class="Spotify"]                                    move to workspace $ws_util_music
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 
 # https://worklogassistant.com
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
-#assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] $ws_util0
+#assign [class="Worklog Assistant" instance="Worklog Assistant" title="Main Window — Worklog Assistant"] blah
 
 
 
@@ -758,6 +780,7 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
                         -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
+exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
 #exec --no-startup-id compton &
 exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
