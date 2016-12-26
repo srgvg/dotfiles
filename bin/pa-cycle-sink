@@ -1,0 +1,15 @@
+#!/bin/bash
+
+outputs=$(pactl list short sinks | awk '{print $1}')
+current=$(pactl list short sinks | grep RUNNING | head -n 1 | awk '{print $1}')
+defaultsink=$(pactl info | awk -F": " '/^Default Sink: /{print $2}')
+current=$(pactl list short sinks | grep $defaultsink | awk '{print $1}')
+newsink=$(echo ${outputs/$current})
+
+pacmd set-default-sink $newsink
+pactl list short sink-inputs | while read stream
+do
+    streamid=$(echo $stream | awk '{print $1}')
+    pactl move-sink-input "$streamid" "$newsink"
+done
+
