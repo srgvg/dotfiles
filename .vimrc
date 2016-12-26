@@ -8,12 +8,56 @@ set encoding=utf-8
 " Automatic reloading of .vimrc
 autocmd! bufwritepost .vimrc source %
 
+
+set noerrorbells                " No beeps
+set number                      " Show line numbers
+set backspace=indent,eol,start  " Makes backspace key more powerful.
+set showcmd                     " Show me what I'm typing
+set showmode                    " Show current mode.
+
+set noswapfile                  " Don't use swapfile
+set nobackup                    " Don't create annoying backup files
+set nowritebackup
+set splitright                  " Split vertical windows right to the current windows
+set splitbelow                  " Split horizontal windows below to the current windows
+set encoding=utf-8              " Set default encoding to UTF-8
+set autowrite                   " Automatically save before :next, :make etc.
+set autoread                    " Automatically reread changed files without asking me anything
+set laststatus=2
+set hidden
+
+set ruler                       " Show the cursor position all the time
+au FocusLost * :wa              " Set vim to save the file on focus out.
+
+set fileformats=unix,dos,mac    " Prefer Unix over Windows over OS 9 formats
+
+set noshowmatch                 " Do not show matching brackets by flickering
+set noshowmode                  " We show the mode with airlien or lightline
+set incsearch                   " Shows the match while typing
+set hlsearch                    " Highlight found searches
+set ignorecase                  " Search case insensitive...
+set smartcase                   " ... but not when search pattern contains upper case characters
+set ttyfast
+" set ttyscroll=3               " noop on linux ?
+set lazyredraw                  " Wait to redraw "
+
+" speed up syntax highlighting
+set nocursorcolumn
+set nocursorline
+
+syntax sync minlines=256
+set synmaxcol=300
+set re=1
+
+
 set background=dark
 set nocompatible                " vim defaults, not vi!
 set autoread                    " watch for file changes by other programs
 set visualbell                  " visual beep
 set scrolloff=5                 " keep at least 5 lines above/below cursor
 set ruler                       " show the line number on bar
+
+
 
 " Better copy & paste
 " When you want to paste large blocks of code into vim, press F2 before you
@@ -88,10 +132,40 @@ vnoremap < <gv  " better indentation
 vnoremap > >gv  " better indentation
 
 
-" Show whitespace
-" MUST be inserted BEFORE the colorscheme command
-autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
-au InsertLeave * match ExtraWhitespace /\s\+$/
+" Only do this part when compiled with support for autocommands.
+if has("autocmd")
+
+  " Enable file type detection.
+  " Use the default filetype settings, so that mail gets 'tw' set to 72,
+  " 'cindent' is on in C files, etc.
+  " Also load indent files, to automatically do language-dependent indenting.
+  filetype plugin indent on
+
+  " Put these in an autocmd group, so that we can delete them easily.
+  augroup vimrcEx
+    au!
+
+    " For all text files set 'textwidth' to 78 characters.
+    autocmd FileType text setlocal textwidth=78
+
+    " When editing a file, always jump to the last known cursor position.
+    " Don't do it when the position is invalid or when inside an event handler
+    " (happens when dropping a file on gvim).
+    " Also don't do it when the mark is in the first line, that is the default
+    " position when opening a file.
+    autocmd BufReadPost *
+          \ if line("'\"") > 1 && line("'\"") <= line("$") |
+          \ exe "normal! g`\"" |
+          \ endif
+
+  augroup END
+  " Show whitespace
+  " MUST be inserted BEFORE the colorscheme command
+  autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+  au InsertLeave * match ExtraWhitespace /\s\+$/
+
+else
+endif " has("autocmd")
 
 
 " Color scheme
@@ -113,6 +187,8 @@ set number  " show line numbers
 set tw=79   " width of document (used by gd)
 set wrap
 set fo-=t   " don't automatically wrap text when typing
+set formatoptions=qrn1
+
 if exists('+colorcolumn')
   set colorcolumn=80
 else
@@ -148,6 +224,13 @@ set incsearch
 set ignorecase
 set smartcase
 
+" Time out on key codes but not mappings.
+" Basically this makes terminal Vim work sanely.
+set notimeout
+set ttimeout
+set ttimeoutlen=10
+
+
 
 " Disable stupid backup and swap files - they trigger too many events
 " for file system watchers
@@ -160,7 +243,77 @@ set smartcase
 " mkdir -p ~/.vim/autoload ~/.vim/bundle
 " curl -so ~/.vim/autoload/pathogen.vim https://raw.github.com/tpope/vim-pathogen/HEAD/autoload/pathogen.vim
 " Now you can install any plugin into a .vim/bundle/plugin-name/ folder
-call pathogen#infect()
+execute pathogen#infect()
+call pathogen#helptags()
+
+
+
+
+" ----------------------------------------- "
+" File Type settings              "
+" ----------------------------------------- "
+
+au BufNewFile,BufRead *.vim setlocal noet ts=4 sw=4 sts=4
+au BufNewFile,BufRead *.txt setlocal noet ts=4 sw=4
+au BufNewFile,BufRead *.md setlocal noet ts=4 sw=4
+au BufNewFile,BufRead *.yml,*.yaml setlocal expandtab ts=2 sw=2
+au BufNewFile,BufRead *.cpp setlocal expandtab ts=2 sw=2
+au BufNewFile,BufRead *.hpp setlocal expandtab ts=2 sw=2
+au BufNewFile,BufRead *.json setlocal expandtab ts=2 sw=2
+
+augroup filetypedetect
+  au BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
+  au BufNewFile,BufRead .nginx.conf*,nginx.conf* setf nginx
+augroup END
+
+au FileType nginx setlocal noet ts=4 sw=4 sts=4
+
+" Go settings
+au BufNewFile,BufRead *.go setlocal noet ts=4 sw=4 sts=4
+
+" scala settings
+autocmd BufNewFile,BufReadPost *.scala setl shiftwidth=2 expandtab
+
+" Markdown Settings
+autocmd BufNewFile,BufReadPost *.md setl ts=4 sw=4 sts=4 expandtab
+
+" lua settings
+autocmd BufNewFile,BufRead *.lua setlocal noet ts=4 sw=4 sts=4
+
+" Dockerfile settings
+autocmd FileType dockerfile set noexpandtab
+
+" shell/config/systemd settings
+autocmd FileType fstab,systemd set noexpandtab
+autocmd FileType gitconfig,sh,toml set noexpandtab
+
+" python indent
+autocmd BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 smarttab expandtab
+
+" toml settings
+au BufRead,BufNewFile MAINTAINERS set ft=toml
+
+" Wildmenu completion {{{
+set wildmenu
+" set wildmode=list:longest
+set wildmode=list:full
+
+set wildignore+=.hg,.git,.svn                    " Version control
+set wildignore+=*.aux,*.out,*.toc                " LaTeX intermediate files
+set wildignore+=*.jpg,*.bmp,*.gif,*.png,*.jpeg   " binary images
+set wildignore+=*.o,*.obj,*.exe,*.dll,*.manifest " compiled object files
+set wildignore+=*.spl                            " compiled spelling word lists
+set wildignore+=*.sw?                            " Vim swap files
+set wildignore+=*.DS_Store                       " OSX bullshit
+set wildignore+=*.luac                           " Lua byte code
+set wildignore+=migrations                       " Django migrations
+set wildignore+=go/pkg                       " Go static files
+set wildignore+=go/bin                       " Go bin files
+set wildignore+=go/bin-vagrant               " Go bin-vagrant files
+set wildignore+=*.pyc                            " Python byte code
+set wildignore+=*.orig                           " Merge resolution files
+
+
 
 
 " ============================================================================
@@ -193,6 +346,7 @@ set wildignore+=*/coverage/*
 
 " Better navigating through omnicomplete option list
 " See http://stackoverflow.com/questions/2170023/how-to-map-keys-for-popup-menu-in-vim
+set complete=.,w,b,u,t
 set completeopt=longest,menuone
 function! OmniPopup(action)
     if pumvisible()
