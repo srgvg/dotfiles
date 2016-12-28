@@ -13,3 +13,6 @@ do
     pactl move-sink-input "$streamid" "$newsink"
 done
 
+newsinkname=$(ponymix defaults | grep -A1 sink | grep -v sink)
+notify-send -u low "Active Sink:" "${newsinkname}"
+

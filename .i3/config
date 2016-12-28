@@ -16,7 +16,8 @@
 #
 set $mod            Mod4
 set $alt            Mod1
-set $terminal       /usr/bin/terminator --geometry 800x600
+set $terminal       terminator
+set $terminalfl     terminator-floating
 set $lockscreen     /home/serge/bin/lock
 set $suspend        systemctl suspend
 
@@ -48,9 +49,6 @@ set_from_resource $outsec i3.output.secondary   eDP1
 #
 ### Early commands
 #
-
-# set the right default sink before we launch i3status
-#exec --no-startup-id  paudioctl sink
 
 # Display stuff
 exec --no-startup-id xset +dpms
@@ -141,7 +139,8 @@ bar {
         id main
         #status_command i3status
         # https://github.com/ultrabug/py3status
-        status_command py3status -c ~/.i3/i3status.conf # -d -l /home/serge/.log/pystatus.log
+        #status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
+        status_command py3status -c ~/.i3/i3status.conf | ~/.i3/i3status_wrapper.py
 
         # tray_output <none|primary|output>
         tray_output primary
@@ -526,8 +525,8 @@ mode "$mode_system" {
 bindsym $mod+Return exec $terminal
 
 # start a floating terminal
-bindsym $mod+Control+Return exec $terminal --role floating
-bindsym $mod+Shift+Return exec gnome-terminal --role floating
+bindsym $mod+Control+Return exec $terminalfl
+bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window
 bindsym $mod+x kill
@@ -557,14 +556,15 @@ bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 # start some tools
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
-bindsym $mod+d exec nautilus
+bindsym $mod+d exec nemo
+bindsym $mod+Control+d exec nautilus
 
 # start browsers
 bindsym $mod+Ctrl+o             exec chromium --incognito
 bindsym $mod+o                  exec chromium
 
 # Show current Background filename
-bindsym $mod+Control+b exec notify-send -u low "Current Background" `bgcurrent`
+bindsym $mod+Control+b exec --no-startup-id notify-send -u low "Current Background" `bgcurrent`
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
@@ -680,6 +680,8 @@ for_window [window_role="SSHASKPASS"]                                           
 for_window [class="Gcalctool"]                                                          floating enable, move position mouse
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
 for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
+for_window [class="Nemo" instance="nemo" title="Plugins"]                               floating enable, move position mouse
+for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]                   floating enable, move position mouse
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
 for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable, move position mouse
 for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
