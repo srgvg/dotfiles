@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import urllib.parse
+import sys
+
+# Nutze urllib, um kodierte URLs zu dekodieren, also Zeichenfolgen wie
+# '%3A' oder '%20'. Lies von stdin, falls keine Argumente übergeben
+# wurden.
+
+if len(sys.argv) > 1:
+	for i in sys.argv[1:]:
+		print(urllib.parse.unquote(i))
+else:
+	for i in sys.stdin:
+		print(urllib.parse.unquote(i), end='')
+
+
+#
+# source: https://github.com/vain/bin-pub
+#
+# ------------------------------------------------------------------
+# "THE PIZZA-WARE LICENSE" (Revision 42):
+# Peter Hofmann <pcode@uninformativ.de> wrote these files. As long as you
+# retain this notice you can do whatever you want with this stuff. If we
+# meet some day, and you think this stuff is worth it, you can buy me a
+# pizza in return.
+# ------------------------------------------------------------------
+#
+

@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# usage: retrieve-ssl-cert.sh remote.host.name [port]
+#
+REMHOST=$1
+REMPORT=${2:-443}
+
+echo |
+openssl s_client -connect ${REMHOST}:${REMPORT} 2>&1 |
+sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'
+
+
+#
+# source: https://github.com/vain/bin-pub
+#
+# ------------------------------------------------------------------
+# "THE PIZZA-WARE LICENSE" (Revision 42):
+# Peter Hofmann <pcode@uninformativ.de> wrote these files. As long as you
+# retain this notice you can do whatever you want with this stuff. If we
+# meet some day, and you think this stuff is worth it, you can buy me a
+# pizza in return.
+# ------------------------------------------------------------------
+#
+

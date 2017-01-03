@@ -1,0 +1,8 @@
+#!/bin/sh
+COMMAND="/usr/bin/terminator --geometry 800x600"
+
+if [ $(basename $0) = terminator-floating ]
+then
+	COMMAND="$COMMAND --role floating"
+fi
+exec $COMMAND --working-directory="${PWD}" $*
