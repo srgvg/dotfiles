@@ -26,11 +26,22 @@
 
 import sys
 import json
+import subprocess
 
 def get_governor():
     """ Get the current governor for cpu0, assuming all CPUs use the same. """
     with open('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor') as fp:
         return fp.readlines()[0].strip()
+
+def get_sink():
+    """ Get the default sink name """
+    #p = subprocess.Popen(['ponymix', 'defaults', '|', 'grep', '-A1', 'sink', '|', 'grep', '-v', 'sink'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('ponymix defaults | grep -A1 sink | grep -v sink', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    sink = out.strip()
+    if sink == "Built-in Audio Analog Stereo":
+        sink = ""
+    return sink
 
 def print_line(message):
     """ Non-buffered printing to stdout. """
@@ -66,6 +77,6 @@ if __name__ == '__main__':
         j = json.loads(line)
         # insert information into the start of the json, but could be anywhere
         # CHANGE THIS LINE TO INSERT SOMETHING ELSE
-        j.insert(0, {'full_text' : '%s' % get_governor(), 'name' : 'gov'})
+        j.insert(-2, {'full_text' : '%s' % get_sink(), 'name' : 'gov'})
         # and echo back new encoded json
         print_line(prefix+json.dumps(j))
