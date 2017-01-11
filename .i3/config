@@ -30,6 +30,9 @@ set $ginsys                 #1D396A
 set $red                    #FF0000
 set $IGNORED                #000000
 
+# window parameters
+set $defaultborder          pixel 3
+
 # workspaces
 set $ws_chat        1
 set $ws_www         2
@@ -274,8 +277,8 @@ hide_edge_borders smart
 #
 
 # new window default border <normal|1pixel|none|pixel> :
-new_window  pixel 3
-new_float   pixel 3
+new_window  $defaultborder
+new_float   $defaultborder
 
 ##############################################################################################################################################################
 #
@@ -613,7 +616,7 @@ bindsym XF86MonBrightnessUp   exec --no-startup-id brightness-notify.sh up
 ## Fn-F7 XF86Display
 bindsym XF86Display exec --no-startup-id rerandr3 restore
 bindsym Shift+XF86Display exec --no-startup-id xdisplcd
-bindsym $mod+Scroll_Lock exec --no-startup-id rerandr restore
+bindsym $mod+Scroll_Lock exec --no-startup-id rerandr3 restore
 bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisplcd
 
 # Fn-F9  XF86Tools
@@ -643,7 +646,10 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 # Maar volgens mij is het omgekeerd.
 #
 #
+for_window [window_type="normal"]                                                                  border $defaultborder
 
+
+##############################################################################################################################################################
 ###############################################################################
 #
 # various rules
@@ -691,6 +697,8 @@ for_window [class="Gnome-control-center" instance="gnome-control-center"]       
 for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
 for_window [class="Keybase" instance="keybase" window_role="browser-window"]            floating enable
 #for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
+#for_window [class="Evince" instance="evince"]                                           border pixel 3
+for_window  [instance="libreoffice"]  border normal
 
 ###############################################################################
 #
@@ -773,7 +781,6 @@ for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Workl
 
 
 
-##############################################################################################################################################################
 #
 ## startup
 #
@@ -788,24 +795,25 @@ exec_always setxkbmap -layout us -variant euro -model pc105 -option -option comp
                         -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
 ## Run at i3 initial start only
-exec --no-startup sleep 10 && pulseaudio --start &
+exec --no-startup mate-polkit
 exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
 #exec --no-startup-id compton &
 exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
 #exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
-# start with interactive bash shell as this needs ssh keys to be unlocked
-exec sleep 3; /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
+exec --no-startup-id setbg /home/serge/Pictures/Backgrounds/geek/linux/debian/debian-swirl-red.jpg
+
+## start with interactive bash shell as this needs ssh keys to be unlocked
+exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
+
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
-exec --no-startup-id "launch-i3jobs"
+exec --no-startup-id "sleep 3; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 # Desktop Apps
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
-exec "sleep 15; dropbox start &"
-exec "sleep 15; seafile-applet &"
 exec "keepass2 &"
 exec "franz &"
 exec "spotify &"

@@ -39,7 +39,7 @@ def get_sink():
     p = subprocess.Popen('ponymix defaults | grep -A1 sink | grep -v sink', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     sink = out.strip()
-    if sink == "Built-in Audio Analog Stereo":
+    if sink.startswith("Built-in Audio"):
         sink = ""
     return sink
 
