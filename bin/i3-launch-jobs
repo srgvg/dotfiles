@@ -12,14 +12,14 @@ launch_job() {
     echo; echo "----------------------------------------"
 }
 
-# make sure SSHASKPASS window runs first
-sleep 1
 launch_job sleep 5
-
-launch_job rerandr3 daemon
 launch_job autocutsel -verbose -debug -selection CLIPBOARD
-#launch_job autocutsel -verbose -debug -selection PRIMARY
 launch_job mqtt-notify.py
+#launch_job rerandr3 daemon
+#launch_job autocutsel -verbose -debug -selection PRIMARY
 #launch_job setbg loop debian
-setbg /home/serge/Pictures/Backgrounds/geek/linux/debian/debian-swirl-red.jpg
 
+pulseaudio --check || pulseaudio --start
+dropbox stop; sleep 1; dropbox start
+pkill seafile-applet; sleep 1; seafile-applet &
+echo

@@ -1,0 +1,27 @@
+#!/bin/bash
+# james shubin, agplv3+
+# pause until key press and then continue
+# https://ttboj.wordpress.com/2017/01/06/ten-minute-hacks-process-pause-resume
+
+if [ ! "$#" -eq 1 ]; then
+	echo "Usage: `basename $0` <process>"
+	echo "Pauses process until key press and then continues!"
+	exit 1
+fi
+
+echo "Stopping '$1'..."
+killall -SIGSTOP "$1"
+e=$?
+if [ $e -ne 0 ]; then
+	echo "Could not pause '$1', error '$e'."
+	exit $e
+fi
+
+echo "[press any key to continue]"
+#read -n1 -r -s -p "[press any key to continue]" key
+read -n1 -r -s key
+tput cuu 1 && tput el	# remove last line
+echo "Continuing '$1'..."
+#echo	# newline
+killall -SIGCONT "$1"
+exit $?
