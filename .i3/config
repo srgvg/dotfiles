@@ -34,8 +34,8 @@ set $IGNORED                #000000
 set $defaultborder          pixel 3
 
 # workspaces
-set $ws_chat        1
-set $ws_www         2
+set $ws_www         1
+set $ws_chat        2
 set $ws_tool2       8
 set $ws_tool1       9
 set $ws_tool0       10
@@ -563,8 +563,9 @@ bindsym $mod+d exec nemo
 bindsym $mod+Control+d exec nautilus
 
 # start browsers
-bindsym $mod+Ctrl+o             exec chromium --incognito
-bindsym $mod+o                  exec chromium
+bindsym $mod+Control+o          exec google-chrome serge
+bindsym $mod+Control+Shift+o    exec google-chrome serge --incognito
+bindsym $mod+o                  exec google-chrome
 
 # Show current Background filename
 bindsym $mod+Control+b exec --no-startup-id notify-send -u low "Current Background" `bgcurrent`
@@ -700,6 +701,7 @@ for_window [class="Keybase" instance="keybase" window_role="browser-window"]    
 #for_window [class="Evince" instance="evince"]                                           border pixel 3
 for_window  [instance="libreoffice"]  border normal
 
+
 ###############################################################################
 #
 # Browsers
@@ -708,10 +710,12 @@ for_window  [instance="libreoffice"]  border normal
 #assign [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]
 #assign [class="Firefox" instance="Navigator" window_role="browser"]
 
-#for_window  [class="(Chromium|chromium)" instance="chromium" window_role="browser"]                 layout tabbed
-#for_window  [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]  layout tabbed
-for_window  [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]  border normal
-for_window  [class="(Google-chrome|Chromium-browser|Chromium|chromiium|Firefox)" instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+
+assign      [class="(browser-*)"]               $ws_www
+for_window  [class="(browser-*)"]               layout tabbed
+assign      [class="browser-temp"]              $ws_www
+for_window  [class="browser-temp"]              border pixel 5
 
 
 ###############################################################################
@@ -764,8 +768,8 @@ for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 for_window  [class="(HipChat|Franz)"]           layout tabbed
-for_window  [class="Chromium" title="Signal" window_role="app"] floating disable,layout tabbed
-assign      [class="Chromium" title="Signal" window_role="app"] $ws_util_chat
+for_window  [class="(Chromium|Google-chrome)" title="Signal" window_role="app"] floating disable,layout tabbed
+assign      [class="(Chromium|Google-chrome)" title="Signal" window_role="app"] $ws_util_chat
 
 
 # Music
