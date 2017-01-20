@@ -1,17 +1,26 @@
 #!/bin/bash
 
-publoc=~/Dropbox/Public
+dropbox=$HOME/Dropbox
+publoc=$dropbox/Public
+
 
 file="${1:-`xclip -out`}"
 if [ ! -f "${file}" ]
 then	echo File  \'${file}\' not found
 	exit 1
 fi
+file=$(readlink -f "${file}")
 
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
 pubfile="${publoc}/${pubfilename}"
 
-cp "${file}" "${pubfile}"
+# do not copy the file to Dropbox/Public if the file is already in Dropbox
+if [[ "$file" =~ $dropbox ]]
+then
+	pubfile="$file"
+else
+	cp "${file}" "${pubfile}"
+fi
 dropbox_puburl="$(dropbox sharelink ${pubfile})"
 
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
