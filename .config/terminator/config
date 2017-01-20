@@ -1,5 +1,6 @@
 [global_config]
   close_button_on_tab = False
+  custom_url_handler = /home/serge/bin/google-chrome
   enabled_plugins = InactivityWatch, TestPlugin, ActivityWatch, TerminalShot, APTURLHandler
   focus = mouse
   handle_size = 1
@@ -10,6 +11,7 @@
   title_inactive_bg_color = "#666666"
   title_inactive_fg_color = "#ffffff"
   title_transmit_bg_color = "#999999"
+  use_custom_url_handler = True
   window_state = maximise
 [keybindings]
   broadcast_all = None
@@ -18,7 +20,7 @@
   edit_window_title = None
   go_next = <Primary><Shift>n
   hide_window = None
-  new_window = <Primary>n
+  new_window = <Primary><Shift>n
 [layouts]
   [[default]]
     [[[child1]]]
@@ -33,7 +35,7 @@
 [profiles]
   [[default]]
     audible_bell = True
-    background_darkness = 0.7
+    background_darkness = 0.8
     background_type = transparent
     copy_on_selection = True
     cursor_color = "#ffffff"

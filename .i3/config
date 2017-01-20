@@ -25,6 +25,7 @@ set $suspend        systemctl suspend
 set $dark                   #000000
 set $light                  #FFFFFF
 set $grey                   #777777
+set $grey2                  #555555
 set $focus                  #2890FF
 set $ginsys                 #1D396A
 set $red                    #FF0000
@@ -77,7 +78,8 @@ exec --no-startup-id xset -b
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
 #font pango:FontAwesome 8, Terminus 8
-font pango:FontAwesome 10, Terminus 10
+#font pango:FontAwesome 10, Terminus 10
+font pango:Monospace 10, Terminus 10
 
 ##############################################################################################################################################################
 #
@@ -90,10 +92,10 @@ font pango:FontAwesome 10, Terminus 10
 ## client windows       border              background          text                indicator (indicates vertical or horizontal split)
 #
 # A client which is not the focused one of its container.
-client.unfocused        $dark               $dark               $light              $dark
+client.unfocused        $dark               $grey2              $light              $dark
 
 # A client currently focused in its container, but does not have focus now.
-client.focused_inactive $dark               $grey               $light              $dark
+client.focused_inactive $grey               $grey2              $light              $dark
 
 # A client which currently has the focus.
 client.focused          $focus              $focus              $dark               $ginsys
@@ -217,9 +219,6 @@ workspace 19    output $outsec
 workspace 20    output $outsec
 workspace 21    output $outsec
 
-#focus_on_window_activation smart|urgent|focus|none
-focus_on_window_activation urgent
-
 # When a new window appears, it will be focused. The no_focus directive allows
 # preventing this from happening
 no_focus [window_role="pop-up"]
@@ -232,6 +231,7 @@ focus_follows_mouse yes
 # urgent: The window will always be marked urgent, but the focus will not be stolen.
 # focus: The window will always be focused and not be marked urgent.
 # none: The window will neither be focused, nor be marked urgent.
+#focus_on_window_activation smart|urgent|focus|none
 focus_on_window_activation none
 
 # If activated, marks on windows are drawn in their window decoration. However, any mark starting with an underscore in its name (_)
@@ -250,6 +250,14 @@ default_orientation auto
 # popup_during_fullscreen <smart|ignore|leave_fullscreen>
 popup_during_fullscreen smart
 
+# When being in a tabbed or stacked container, the first container will be
+# focused when you use focus down on the last container — the focus wraps. If
+# however there is another stacked/tabbed container in that direction, focus
+# will be set on that container. This is the default behavior so you can
+# navigate to all your windows without having to use focus parent.
+# If you want the focus to always wrap and you are aware of using focus parent
+# to switch to different containers, you can use the force_focus_wrapping
+# configuration directive. After enabling it, the focus will always wrap.
 # force_focus_wrapping <yes|no>
 force_focus_wrapping no
 
@@ -270,6 +278,13 @@ force_display_urgency_hint 3000 ms
 # <none|vertical|horizontal|both|smart> :
 hide_edge_borders smart
 
+# By default, when switching focus to a window on a different output (e.g.
+# focusing a window on workspace 3 on output VGA-1, coming from workspace 2 on
+# LVDS-1), the mouse cursor is warped to the center of that window.
+# With the mouse_warping option, you can control when the mouse cursor should
+# be warped. none disables warping entirely, whereas output is the default
+# behavior described above.
+#mouse_warping output|none
 
 ##############################################################################################################################################################
 #
@@ -290,7 +305,8 @@ bindsym $mod+h split h
 bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen
+bindsym $mod+f fullscreen toggle
+bindsym $mod+shift+f fullscreen toggle global
 
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+e layout toggle split
@@ -711,11 +727,14 @@ for_window  [instance="libreoffice"]  border normal
 #assign [class="Firefox" instance="Navigator" window_role="browser"]
 
 for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
+assign      [title="Signal" window_role="app"] $ws_util_chat
+for_window  [title="Signal" window_role="app"] layout tabbed
 
-assign      [class="(browser-*)"]               $ws_www
-for_window  [class="(browser-*)"]               layout tabbed
-assign      [class="browser-temp"]              $ws_www
-for_window  [class="browser-temp"]              border pixel 5
+assign      [class="^(browser-*)"] $ws_www
+for_window  [class="^(browser-*)"] layout tabbed
+
+
+for_window  [class="tempbrowser" window_role="browser"] border pixel 5, floating enable, move position mouse
 
 
 ###############################################################################
@@ -815,6 +834,7 @@ exec --no-startup-id "sleep 3; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 # Desktop Apps
+exec "google-chrome serge &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
