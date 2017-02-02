@@ -142,63 +142,6 @@ dw_php_codehinting.config
 
 
 ########################################
-# Eclipse
-########################################
-
-
-.metadata
-bin/
-tmp/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.settings/
-.loadpath
-.recommenders
-
-# Eclipse Core
-.project
-
-# External tool builders
-.externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-# PyDev specific (Python IDE for Eclipse)
-*.pydevproject
-
-# CDT-specific (C/C++ Development Tooling)
-.cproject
-
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
-
-# Java annotation processor (APT)
-.factorypath
-
-# PDT-specific (PHP Development Tools)
-.buildpath
-
-# sbteclipse plugin
-.target
-
-# Tern plugin
-.tern-project
-
-# TeXlipse plugin
-.texlipse
-
-# STS (Spring Tool Suite)
-.springBeans
-
-# Code Recommenders
-.recommenders/
-
-
-########################################
 # EiffelStudio
 ########################################
 
@@ -272,15 +215,6 @@ flycheck_*.el
 ########################################
 
 *.esproj
-
-
-########################################
-# FlexBuilder
-########################################
-
-bin/
-bin-debug/
-bin-release/
 
 
 ########################################
@@ -704,6 +638,9 @@ Package Control.ca-bundle
 Package Control.system-ca-bundle
 Package Control.cache/
 Package Control.ca-certs/
+Package Control.merged-ca-bundle
+Package Control.user-ca-bundle
+oscrypto-ca-bundle.crt
 bh_unicode_properties.cache
 
 # Sublime-github package stores a github token in this file
@@ -812,8 +749,10 @@ tmtags
 ########################################
 
 # swap
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
 # session
 Session.vim
 # temporary
@@ -876,9 +815,10 @@ pip-selfcheck.json
 # Windows
 ########################################
 
-# Windows image file caches
+# Windows thumbnail cache files
 Thumbs.db
 ehthumbs.db
+ehthumbs_vista.db
 
 # Folder config file
 Desktop.ini

@@ -1,0 +1,99 @@
+#!/bin/bash -x
+# based on https://www.uninformativ.de/blog/postings/2016-06-19/0/POSTING-en.html
+#
+
+echo $*
+defaultbrowser="google-chrome"
+
+browser=$(basename $0)
+case ${browser} in
+	google-chrome)	:;;
+	chromium)		:;;
+	*)				browser=${defaultbrowser} ;;
+esac
+
+PROFILESDIR="/home/serge/.config/${browser}/profiles"
+
+ENV="${1}"
+case $ENV in
+	serge*)
+		shift
+		class=browser-${ENV}
+		tmp=${PROFILESDIR}/${ENV}
+		;;
+	facebook)
+		shift
+		class=browser-${ENV}
+		tmp=${PROFILESDIR}/${ENV}
+		#switches="${switches} https://www.facebook.com"
+		;;
+	*)
+		class=tempbrowser
+		mkdir -p ${PROFILESDIR}
+		tmp=$(mktemp -d -p ${PROFILESDIR})
+		trap 'rm -Rf "$tmp"' EXIT
+		mkdir -p "$tmp"/user_data/Default
+		cat >"$tmp"/user_data/Default/Preferences <<EOF
+{
+  	"translate_blocked_languages": [
+    	"en",
+    	"nl",
+    	"fr"
+  	],
+    "alternate_error_pages": {
+        "enabled": false
+    },
+    "autofill": {
+        "enabled": false
+    },
+    "browser": {
+        "custom_chrome_frame": false,
+        "enable_spellchecking": false
+    },
+  	"bookmark_bar": {
+    	"show_apps_shortcut": false,
+    	"show_on_all_tabs": false
+  	},
+    "download": {
+	    "directory_upgrade": true,
+	    "prompt_for_download": true,
+        "default_directory": "/tmp/tmp"
+    },
+    "net": {
+        "network_prediction_options": 2
+    },
+    "profile": {
+        "password_manager_enabled": false
+    },
+    "safebrowsing": {
+        "enabled": false
+    },
+    "search": {
+        "suggest_enabled": false
+    }
+}
+EOF
+		switches="${switches} --no-first-run"
+		switches="${switches} --disable-infobars"
+		switches="${switches} --disable-translate"
+		switches="${switches} --window-size=1200,800"
+		;;
+esac
+
+
+
+args=("$@")
+echo "${args[@]}"
+
+if [ ! -z "${class}" ]
+then
+	switches="${switches} --class=${class}"
+fi
+
+if [ ! -z "${tmp}" ]
+then
+	switches="${switches} --user-data-dir=$tmp"
+fi
+
+/usr/bin/${browser} ${switches} "${args[@]}"
+

@@ -590,6 +590,7 @@ bindsym $mod+Control+b exec --no-startup-id notify-send -u low "Current Backgrou
 bindsym $mod+p exec presentation-mode
 # Toggle Nolock mode (disable screen saver)
 #bindsym $mod+Control+p exec presentation-mode nolock
+bindsym $mod+Control+p exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
 bindsym $mod+n exec nmcli_dmenu
@@ -787,8 +788,8 @@ for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 for_window  [class="(HipChat|Franz)"]           layout tabbed
-for_window  [class="(Chromium|Google-chrome)" title="Signal" window_role="app"] floating disable,layout tabbed
-assign      [class="(Chromium|Google-chrome)" title="Signal" window_role="app"] $ws_util_chat
+for_window  [title="Signal" window_role="app"]  floating disable,layout tabbed
+assign      [title="Signal" window_role="app"]  $ws_util_chat
 
 
 # Music
