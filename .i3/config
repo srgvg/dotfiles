@@ -57,7 +57,8 @@ set_from_resource $outsec i3.output.secondary   eDP1
 # Display stuff
 exec --no-startup-id xset +dpms
 # Make sure we have a primary before launching tray icons
-exec --no-startup-id xrandr --output eDP-1 --primary
+#exec --no-startup-id xrandr --output eDP-1 --primary
+exec --no-startup-id rerandr3 restore
 
 # wifi disabled by default
 #exec --no-startup-id nmcli radio wifi off
@@ -830,10 +831,6 @@ exec --no-startup-id setbg /home/serge/Pictures/Backgrounds/geek/linux/debian/de
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
 
-# i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
-exec --no-startup-id "sleep 3; i3-launch-jobs"
-exec --no-startup-id "syndaemon -dkRi 0.5"
-
 # Desktop Apps
 exec "google-chrome serge &"
 exec "pasystray &"
@@ -843,4 +840,7 @@ exec "keepass2 &"
 exec "franz &"
 exec "spotify &"
 
+# i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
+exec --no-startup-id "sleep 10; i3-launch-jobs"
+exec --no-startup-id "syndaemon -dkRi 0.5"
 

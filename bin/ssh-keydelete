@@ -1,0 +1,22 @@
+#!/bin/bash
+
+HOSTNAME=$(ssh -G "$@" | grep '^hostname ' | awk '{print $2}')
+CNAME="1"
+while [ -n "$CNAME" ]; do
+  CNAME=$(dig +short +search -t CNAME "$HOSTNAME")
+  if [ -n "$CNAME" ]; then
+    HOSTNAME="$CNAME"
+  fi
+done
+IP4ADDRESS=$(dig +short +search -t A "$HOSTNAME")
+IP6ADDRESS=$(dig +short +search -t AAAA "$HOSTNAME")
+
+echo "HOSTNAME $HOSTNAME"
+echo "IP4ADDRESS $IP4ADDRESS"
+echo "IP6ADDRESS $IP6ADDRESS"
+
+[ -n "$HOSTNAME" ] && ssh-keygen -R "$HOSTNAME"
+[ -n "$IP4ADDRESS" ] && ssh-keygen -R "$IP4ADDRESS"
+[ -n "$IP6ADDRESS" ] && ssh-keygen -R "$IP6ADDRESS"
+
+#ssh -oStrictHostKeyChecking=no -oVisualHostKey=yes "$@"

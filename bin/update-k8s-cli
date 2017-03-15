@@ -1,0 +1,25 @@
+#!/bin/bash
+
+TARGET=$HOME/bin2
+vMINIKUBE=v0.16.0
+vKOPS=1.5.1
+vHELM=v2.1.3
+
+cd $HOME/tmp
+
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/$vMINIKUBE/minikube-linux-amd64 \
+    && chmod +x minikube \
+    && mv minikube $TARGET
+
+curl -Lo kops https://github.com/kubernetes/kops/releases/download/$vKOPS/kops-linux-amd64 \
+    && chmod +x kops \
+    && mv kops $TARGET
+
+curl -LO https://storage.googleapis.com/kubernetes-helm/helm-${vHELM}-linux-amd64.tar.gz \
+    && tar -xvzf helm-${vHELM}-linux-amd64.tar.gz \
+    && mv linux-amd64/helm $TARGET
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
+    && chmod +x kubectl \
+    && mv kubectl $TARGET
+

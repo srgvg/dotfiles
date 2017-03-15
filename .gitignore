@@ -251,24 +251,24 @@ cwallet.sso.lck
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-.idea/workspace.xml
-.idea/tasks.xml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
 
 # Sensitive or high-churn files:
-.idea/dataSources/
-.idea/dataSources.ids
-.idea/dataSources.xml
-.idea/dataSources.local.xml
-.idea/sqlDataSources.xml
-.idea/dynamic.xml
-.idea/uiDesigner.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
 
 # Gradle:
-.idea/gradle.xml
-.idea/libraries
+.idea/**/gradle.xml
+.idea/**/libraries
 
 # Mongo Explorer plugin:
-.idea/mongoSettings.xml
+.idea/**/mongoSettings.xml
 
 ## File-based project format:
 *.iws
@@ -436,6 +436,9 @@ slprj/
 
 # Session info
 octave-workspace
+
+# Simulink autosave extension
+.autosave
 
 
 ########################################
@@ -613,6 +616,36 @@ project/boot/
 
 
 ########################################
+# Stata
+########################################
+
+# .gitignore file for git projects containing Stata files
+# Commercial statistical software: http://www.stata.com
+
+# Stata dataset and output files
+*.dta
+*.gph
+*.log
+*.smcl
+*.stpr
+*.stsem
+
+# Graphic export files from Stata
+# Stata command graph export: http://www.stata.com/manuals14/g-2graphexport.pdf
+#
+# You may add graphic export files to your .gitignore. However you should be
+# aware that this will exclude all image files from this main directory
+# and subdirectories.
+# *.ps
+# *.eps
+# *.wmf
+# *.emf
+# *.pdf
+# *.png
+# *.tif
+
+
+########################################
 # SublimeText
 ########################################
 
@@ -760,24 +793,6 @@ Session.vim
 *~
 # auto-generated tag files
 tags
-
-
-########################################
-# VirtualEnv
-########################################
-
-# Virtualenv
-# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-.Python
-[Bb]in
-[Ii]nclude
-[Ll]ib
-[Ll]ib64
-[Ll]ocal
-[Ss]cripts
-pyvenv.cfg
-.venv
-pip-selfcheck.json
 
 
 ########################################

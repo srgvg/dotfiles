@@ -57,7 +57,7 @@ case $ENV in
     "download": {
 	    "directory_upgrade": true,
 	    "prompt_for_download": true,
-        "default_directory": "/tmp/tmp"
+        "default_directory": "~/tmp"
     },
     "net": {
         "network_prediction_options": 2
@@ -70,6 +70,28 @@ case $ENV in
     },
     "search": {
         "suggest_enabled": false
+	},
+  	"distribution": {
+    	"skip_first_run_ui": true,
+		"import_bookmarks": true,
+    	"import_search_engine": false,
+    	"import_history": false,
+		"import_home_page": true,
+    	"create_all_shortcuts": false,
+    	"do_not_launch_chrome": true,
+    	"make_chrome_default": false
+    	"make_chrome_default_for_user": false,
+    	"suppress_first_run_bubble": true,
+    	"do_not_create_desktop_shortcut": true,
+    	"do_not_create_quick_launch_shortcut": true,
+    	"do_not_launch_chrome": true,
+    	"do_not_register_for_update_launch": true,
+    	"suppress_first_run_default_browser_prompt": true,
+    	"system_level": true,
+    	"verbose_logging": true
+	  },
+	"sync_promo": {
+    	"show_on_first_run_allowed": false
     }
 }
 EOF
