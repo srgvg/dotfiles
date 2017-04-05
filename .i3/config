@@ -783,8 +783,10 @@ for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manuall
             instance="^(!?keepass2)"] floating enable
 assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util_pw
 assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util_pw
+assign [class="keepassxc" instance="keepassxc"]                                                     $ws_util_pw
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
 for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          layout tabbed
+for_window [class="keepassxc" instance="keepassxc"]                                                 layout tabbed
 
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
@@ -836,7 +838,7 @@ exec "google-chrome serge &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
-exec "keepass2 &"
+exec "keepassxc &"
 exec "franz &"
 exec "spotify &"
 

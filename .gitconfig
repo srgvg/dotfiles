@@ -47,7 +47,8 @@
     # squash last 2 commits, keep oldest commit message
     squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
     # squeeze new stuff into latest commit
-    squish = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
+    squish  = !"git status && git commit    --amend -C HEAD --date=\"`date`\""
+    squisha = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
 
     tags = !sh -c \"git tag | sort -V\"
     tree = log --all --graph --decorate --oneline --simplify-by-decoration

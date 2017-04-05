@@ -47,6 +47,8 @@ case $ENV in
         "enabled": false
     },
     "browser": {
+		"show_home_button" : false, 
+		"check_default_browser" : false
         "custom_chrome_frame": false,
         "enable_spellchecking": false
     },
@@ -72,6 +74,7 @@ case $ENV in
         "suggest_enabled": false
 	},
   	"distribution": {
+		"auto_launch_chrome": false,
     	"skip_first_run_ui": true,
 		"import_bookmarks": true,
     	"import_search_engine": false,
@@ -87,6 +90,9 @@ case $ENV in
     	"do_not_launch_chrome": true,
     	"do_not_register_for_update_launch": true,
     	"suppress_first_run_default_browser_prompt": true,
+		"show_welcome_page": false,
+		"skip_first_run_ui": true,
+	    "suppress_first_run_bubble": true,
     	"system_level": true,
     	"verbose_logging": true
 	  },
