@@ -1,2 +1,7 @@
 #!/bin/sh
-basename "`setbg|awk '{print $2}'`"
+
+file="`setbg|awk '{print $2}'`"
+filename=`basename "$file"`
+dirname=`dirname "$file"`
+
+echo $filename $dirname

@@ -585,7 +585,7 @@ bindsym $mod+Control+Shift+o    exec google-chrome serge --incognito
 bindsym $mod+o                  exec google-chrome
 
 # Show current Background filename
-bindsym $mod+Control+b exec --no-startup-id notify-send -u low "Current Background" `bgcurrent`
+bindsym $mod+Control+b exec --no-startup-id notify-send -u low `bgcurrent`
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
