@@ -734,6 +734,7 @@ for_window  [title="Signal" window_role="app"] layout tabbed
 
 assign      [class="^(browser-*)"] $ws_www
 for_window  [class="^(browser-*)"] layout tabbed
+for_window  [class="^(browser-*)" window_role="app"] floating disable
 
 
 for_window  [class="tempbrowser" window_role="browser"] border pixel 5, floating enable, move position mouse
@@ -796,10 +797,10 @@ assign      [title="Signal" window_role="app"]  $ws_util_chat
 
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  $ws_util_music
+assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
+for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout tabbed
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window [class="Spotify"]                                    move to workspace $ws_util_music
-for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk)"]  layout tabbed
 
 # https://worklogassistant.com
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable

@@ -14,8 +14,10 @@
 
     ff = merge --ff-only
 
+    genesis = commit --allow-empty -m Genesis
+
     # http://vstone.eu/github-pull-requests-as-seen-by-git/
-    gpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
+    fpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
 
     igd = ls-files --others -i --exclude-standard
     # http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged

@@ -12,11 +12,11 @@ launch_job() {
     echo; echo "----------------------------------------"
 }
 
-launch_job sleep 5
-launch_job autocutsel -verbose -debug -selection CLIPBOARD
+#launch_job sleep 5
 launch_job mqtt-notify.py
-#launch_job rerandr3 daemon
+launch_job autocutsel -verbose -debug -selection CLIPBOARD
 #launch_job autocutsel -verbose -debug -selection PRIMARY
+#launch_job rerandr3 daemon
 #launch_job setbg loop debian
 
 pulseaudio --check && pulseaudio --kill
@@ -24,3 +24,4 @@ pulseaudio --start
 dropbox stop; sleep 1; dropbox start
 pkill seafile-applet; sleep 1; seafile-applet &
 echo
+
