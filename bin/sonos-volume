@@ -1,0 +1,7 @@
+#!/bin/bash
+
+vol1=$(sonos volume)
+sonos volume $1
+vol2=$(sonos volume)
+notify-send "Sonos Volume" "$vol1 > $vol2" -t 300 -h int:value:$vol2 -c device -u low
+

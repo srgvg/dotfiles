@@ -609,6 +609,10 @@ bindsym $mod+Control+comma              exec --no-startup-id  ponymix decrease 5
 bindsym $mod+Control+period             exec --no-startup-id  ponymix increase 5
 bindsym $mod+Control+slash              exec --no-startup-id  ponymix toggle
 
+bindsym $mod+Control+Shift+comma        exec --no-startup-id  sonos-volume -5
+bindsym $mod+Control+Shift+period       exec --no-startup-id  sonos-volume +5
+bindsym $mod+Control+Shift+slash        exec --no-startup-id  sonos-volume
+
 bindsym XF86AudioPrev                   exec --no-startup-id  playerctl previous
 bindsym XF86AudioPlay                   exec --no-startup-id  playerctl play-pause
 bindsym XF86AudioNext                   exec --no-startup-id  playerctl next
