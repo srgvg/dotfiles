@@ -12,7 +12,6 @@ launch_job() {
     echo; echo "----------------------------------------"
 }
 
-#launch_job sleep 5
 launch_job mqtt-notify.py
 launch_job autocutsel -verbose -debug -selection CLIPBOARD
 #launch_job autocutsel -verbose -debug -selection PRIMARY
@@ -22,6 +21,10 @@ launch_job autocutsel -verbose -debug -selection CLIPBOARD
 pulseaudio --check && pulseaudio --kill
 pulseaudio --start
 dropbox stop; sleep 1; dropbox start
-pkill seafile-applet; sleep 1; seafile-applet &
 echo
 
+exit 0
+
+##############################################################################
+# archived old stuff
+#pkill seafile-applet; sleep 1; seafile-applet &

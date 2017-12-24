@@ -36,11 +36,11 @@ set $defaultborder          pixel 3
 
 # workspaces
 set $ws_www         1
-set $ws_chat        2
 set $ws_tool2       8
 set $ws_tool1       9
 set $ws_tool0       10
-set $ws_util_chat   20
+set $ws_chat        11
+set $ws_util_chat   12
 set $ws_util_pw     21
 set $ws_util_music  22
 #set $ws_
@@ -550,6 +550,7 @@ bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window
 bindsym $mod+x kill
+bindsym $mod+Shift+Control+x exec /usr/bin/xkill
 
 # quickswitch
 bindsym $mod+q exec quickswitch.py
@@ -733,8 +734,6 @@ for_window  [instance="libreoffice"]  border normal
 #assign [class="Firefox" instance="Navigator" window_role="browser"]
 
 for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
-assign      [title="Signal" window_role="app"] $ws_util_chat
-for_window  [title="Signal" window_role="app"] layout tabbed
 
 assign      [class="^(browser-*)"] $ws_www
 for_window  [class="^(browser-*)"] layout tabbed
@@ -796,8 +795,9 @@ for_window [class="keepassxc" instance="keepassxc"]                             
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 for_window  [class="(HipChat|Franz)"]           layout tabbed
-for_window  [title="Signal" window_role="app"]  floating disable,layout tabbed
 assign      [title="Signal" window_role="app"]  $ws_util_chat
+for_window  [title="Signal" window_role="app"]  floating disable
+for_window  [title="Signal" window_role="app"]  layout tabbed
 
 
 # Music
@@ -843,8 +843,10 @@ exec "google-chrome serge &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
-exec "keepassxc &"
+#exec "keepassxc &"
+exec "keepass2 &"
 exec "franz &"
+exec "signal-desktop"
 exec "spotify &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact

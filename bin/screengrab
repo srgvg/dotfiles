@@ -18,7 +18,7 @@ case $1 in
         ;;
 esac
 
-mkdir -p "${screenshotdir}"
+#mkdir -p "${screenshotdir}"
 echo /usr/bin/scrot --silent $options ${imagefile}
 # https://code.google.com/p/xmonad/issues/detail?id=476
 sleep 0.2

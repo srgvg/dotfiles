@@ -16,12 +16,12 @@ PROFILESDIR="/home/serge/.config/${browser}/profiles"
 
 ENV="${1}"
 case $ENV in
-	serge*)
+	serge*|bryxx*)
 		shift
 		class=browser-${ENV}
 		tmp=${PROFILESDIR}/${ENV}
 		;;
-	facebook)
+	facebook*)
 		shift
 		class=browser-${ENV}
 		tmp=${PROFILESDIR}/${ENV}

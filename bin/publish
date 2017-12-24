@@ -1,12 +1,27 @@
 #!/bin/bash
 
+#exec 19>/tmp/publish.log
+#BASH_XTRACEFD=19
+#set -x
+
 dropbox=$HOME/Dropbox
-publoc=$dropbox/Public
+publoc=$dropbox/Public/misc
+tmploc=$dropbox/Temp/tmp
+
+notify() {
+	echo -e "$1\n$2"
+    notify-send --category=transfer.complete \
+                --urgency=low --icon=gtk-info \
+				"$1" "$2" \
+    || echo "libnotify error"
+}
 
 
 file="${1:-`xclip -out`}"
 if [ ! -f "${file}" ]
-then	echo File  \'${file}\' not found
+then
+	notify "Dropbox Publish error" "File  \"${file}\" not found"
+
 	exit 1
 fi
 file=$(readlink -f "${file}")
@@ -14,27 +29,24 @@ file=$(readlink -f "${file}")
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
 pubfile="${publoc}/${pubfilename}"
 
-# do not copy the file to Dropbox/Public if the file is already in Dropbox
-if [[ "$file" =~ $dropbox ]]
+# do not copy the file to Dropbox/Public if the file is already in Dropbox (except tmp folder)
+if [[ "$file" =~ $dropbox ]] && ! [[ "$file" =~ $tmploc ]]
 then
 	pubfile="$file"
 else
 	cp "${file}" "${pubfile}"
 fi
+
 dropbox_puburl="$(dropbox sharelink ${pubfile})"
+[[ ${dropbox_puburl:0:4} == http ]] || notify "Dropbox Publish error" "sharelink failed" || exit 1
 
 bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
 echo -n $bitly_url | xclip -in -selection clipboard
 
-echo "'${pubfile}' <= ${dropbox_puburl} <= $bitly_url" && (
-    while	(dropbox filestatus "${pubfile}" | grep syncing)
-    do	sleep 3
-    done
-    echo
-    echo $bitly_url
-    notify-send --category=transfer.complete \
-                --urgency=low --icon=gtk-info \
-                "Dropbox file $file published" \
-                "file uploaded $bitly_url"
-    ) || echo "Dropbox error"
+while	(dropbox filestatus "${pubfile}" | grep syncing)
+do	sleep 3
+done
+[ $? -gt 0 ] && notify "Dropbox Publish error" "checking upload status"
+
+notify "Dropbox Publish" "file $file published\nuploaded to $dropbox_puburl\nshort url = $bitly_url"
 
