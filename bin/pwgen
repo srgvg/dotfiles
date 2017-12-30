@@ -9,7 +9,6 @@ case $1 in
         ;;
     '')  # no parameters
         TYPE=normal
-        PL=15
         ;;
     *)  # a number
         TYPE=normal
@@ -17,12 +16,12 @@ case $1 in
         ;;
 esac
 case $TYPE in
-    lo*)
+	low)
         [ -z $PL ] && L=15 || L=$PL
         pass=`$pwgen $L 1`
         msg="low security, $L character length"
         ;;
-    no*)
+    norm*)
         [ -z $PL ] && L=30 || L=$PL
         pass=`$pwgen -Bcn $L 1`
         msg="quite secure, $L character length"
@@ -38,11 +37,15 @@ case $TYPE in
         pass=`shuf -n$L /usr/share/dict/words | tr -d '\n' | tr -d \' `
         msg="XKCD secure, $L word length"
         ;;
+	*)
+		echo 'Not a valid type: '$TYPE
+		exit 1
 esac
 
 echo -n $pass | xclip -in -selection clipboard
 notify-send --category=transfer.complete \
             --urgency=critical --icon=gtk-info \
             "Password copied to clipboard" "$msg"
+echo ' '$pass
 echo "Password copied to clipboard ($msg)"
 

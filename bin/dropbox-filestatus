@@ -1,4 +1,0 @@
-#!/bin/bash
-
-find ~/Dropbox -type f ! -iname ".*" -exec dropbox filestatus {} \; \
-    | grep syncing | tee >(cat | wc -l)

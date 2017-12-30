@@ -602,17 +602,17 @@ bindsym $mod+n exec nmcli_dmenu
 # volume and media controls, special keys
 #
 
-bindsym XF86AudioLowerVolume            exec --no-startup-id  ponymix decrease 5
-bindsym XF86AudioRaiseVolume            exec --no-startup-id  ponymix increase 5
+bindsym XF86AudioLowerVolume            exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume -5 || ponymix decrease 5
+bindsym XF86AudioRaiseVolume            exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume +5 || ponymix increase 5
 bindsym XF86AudioMute                   exec --no-startup-id  ponymix toggle
 
-bindsym $mod+Control+comma              exec --no-startup-id  ponymix decrease 5
-bindsym $mod+Control+period             exec --no-startup-id  ponymix increase 5
+bindsym $mod+Control+comma              exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume -5 || ponymix decrease 5
+bindsym $mod+Control+period             exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume +5 || ponymix increase 5
 bindsym $mod+Control+slash              exec --no-startup-id  ponymix toggle
 
-bindsym $mod+Control+Shift+comma        exec --no-startup-id  sonos-volume -5
-bindsym $mod+Control+Shift+period       exec --no-startup-id  sonos-volume +5
-bindsym $mod+Control+Shift+slash        exec --no-startup-id  sonos-volume
+#bindsym $mod+Control+Shift+comma        exec --no-startup-id  sonos-volume -5
+#bindsym $mod+Control+Shift+period       exec --no-startup-id  sonos-volume +5
+#bindsym $mod+Control+Shift+slash        exec --no-startup-id  sonos-volume
 
 bindsym XF86AudioPrev                   exec --no-startup-id  playerctl previous
 bindsym XF86AudioPlay                   exec --no-startup-id  playerctl play-pause

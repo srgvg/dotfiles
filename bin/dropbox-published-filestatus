@@ -1,7 +1,0 @@
-#!/bin/bash
-
-for f in `find ~/Dropbox/Public -type f ! -iname ".*"`
-do
-    printf '%60s' "~${f#/home/serge} -> "
-    dropbox puburl $f
-done
