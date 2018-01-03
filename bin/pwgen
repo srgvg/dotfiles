@@ -44,7 +44,7 @@ esac
 
 echo -n $pass | xclip -in -selection clipboard
 notify-send --category=transfer.complete \
-            --urgency=critical --icon=gtk-info \
+            --urgency=low --icon=gtk-info \
             "Password copied to clipboard" "$msg"
 echo ' '$pass
 echo "Password copied to clipboard ($msg)"

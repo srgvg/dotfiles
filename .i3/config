@@ -719,7 +719,6 @@ for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]           
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
 for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable, move position mouse
 for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
-for_window [class="Keybase" instance="keybase" window_role="browser-window"]            floating enable
 #for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
 #for_window [class="Evince" instance="evince"]                                           border pixel 3
 for_window  [instance="libreoffice"]  border normal
@@ -798,6 +797,8 @@ for_window  [class="(HipChat|Franz)"]           layout tabbed
 assign      [title="Signal" window_role="app"]  $ws_util_chat
 for_window  [title="Signal" window_role="app"]  floating disable
 for_window  [title="Signal" window_role="app"]  layout tabbed
+assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
+for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed, floating disable
 
 
 # Music
@@ -833,7 +834,7 @@ exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
 exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
 #exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
-exec --no-startup-id setbg /home/serge/Pictures/Backgrounds/geek/linux/debian/debian-swirl-red.jpg
+exec --no-startup-id setbg /home/serge/Pictures/Backgrounds/default.jpg
 
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
@@ -848,6 +849,7 @@ exec "keepass2 &"
 exec "franz &"
 exec "signal-desktop"
 exec "spotify &"
+exec "KEYBASE_SYSTEMD=0 run_keybase &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "sleep 10; i3-launch-jobs"
