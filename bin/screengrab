@@ -1,35 +1,35 @@
-#!/bin/bash -x
+#!/bin/bash
 
+action="${1:-select}"
 screenshotdir="$HOME/tmp"
 imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
 
-case $1 in
-    full)
-        options="--multidisp"
-        ;;
-    screen)
-        options=""
+util="/usr/bin/maim --delay 0.2 --format=png --hidecursor --quality 7 --quiet"
+
+case ${action} in
+    select)
+        options="--select --bordersize 3 --highlight --color 0.3,0.4,0.6,0.4 "
         ;;
     window)
-        options="--focused"
+        options="--window $(xdotool getactivewindow)"
         ;;
-    select|*)
-        options="--select"
+    screen)
+		options="--geometry $(curdispcoor)"
+        ;;
+    full)
+        options=""
         ;;
 esac
+command="${util} ${options} ${imagefile}"
 
-#mkdir -p "${screenshotdir}"
-echo /usr/bin/scrot --silent $options ${imagefile}
-# https://code.google.com/p/xmonad/issues/detail?id=476
-sleep 0.2
-if /usr/bin/scrot --silent --delay 1 $options ${imagefile}
+if ${command}
 then
     notify-send --category=transfer.complete \
         --urgency=low --icon=gtk-info \
-        "Screen grabbed - $1" "saved to ${imagefile}"
+        "Screenshot ${action}" "saved to ${imagefile}"
     echo -n ${imagefile} | xclip -in -selection clipboard
 else
     notify-send --category=transfer.error \
         --urgency=critical --icon=gtk-info \
-        "Screen grab error" "$1"
+        "Screenshot failed" "${action}"
 fi
