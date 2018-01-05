@@ -1,4 +1,13 @@
 #!/bin/bash
 
-socos $1 172.31.32.197 $2
+source ~/etc/defaults
+
+if homecheck
+then
+	socos $1 "${sonos_ip}" $2
+else
+	echo "Not at Ginsys Office"
+	exit 1
+fi
+
 
