@@ -1,4 +1,9 @@
 #!/bin/bash
+set -x
+
+set -o nounset
+set -o errexit
+set -o pipefail
 
 ## Parameters
 
@@ -6,7 +11,7 @@
 setbg_delay=1800
 
 # load some defaults
-. $HOME/etc/defaults
+source "$HOME/etc/defaults"
 
 p1="$1"
 p2="$2"
@@ -51,7 +56,7 @@ checkcli() {
 
 checktarget() {
     ## check target
-    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -type d 2>/dev/null | grep ${target} 2>/dev/null | sort | head -n 1 )
+    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -type d 2>/dev/null | grep ${target} 2>/dev/null || : | sort | head -n 1 )
 
     if [ -r "${deeptarget}" ]
         then target="${deeptarget}"
@@ -77,7 +82,6 @@ pickpic() {
         set -o noglob
         # Pick random picture
         background="`find -L ${pictures} -type f -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
-        #find -L ${pictures} -iregex .*.jpg -o -iregex .*.png | sort -R > ${tmp}
         # reenable shell expansion
         set +o noglob
 
@@ -98,12 +102,41 @@ displaybg() {
 }
 
 createlockpic() {
-    # create a picture fill-resized to the primary screen for the lockscreen
-    disp_res=`xrandr | grep primary | awk '{print $4}' | sed s/\+.*//g`
-    convert "${background}" -resize ${disp_res}^ \
-                            -gravity center \
-                            -extent ${disp_res} \
-                            "${lockscreen_image}"
+	RES=()
+	RESSORT=$(while read LINE
+			do
+			    if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]
+				then
+			        W=${BASH_REMATCH[1]}
+			        H=${BASH_REMATCH[2]}
+					w=${BASH_REMATCH[3]}
+					echo $w $W $H
+			    fi
+			done <<<"$(xrandr)")
+
+	while read LINE
+	do
+	    if [[ "$LINE" =~ ([0-9]+)\ ([0-9]+)\ ([0-9]+) ]]
+		then
+	        W=${BASH_REMATCH[2]}
+			H=${BASH_REMATCH[3]}
+			RES+=("${W}x${H}")
+		fi
+	done <<<"$(echo "${RESSORT}")"
+
+	n=0
+	for res in "${RES[@]}"
+	do
+		# https://unix.stackexchange.com/questions/146773/why-bash-increment-n-0n-return-error
+		(( n++ )) || :
+		# create a picture fill-resized to each display for the lockscreen
+		convert "${background}" -resize ${res}^ \
+			                    -gravity center \
+				                -extent ${res} \
+					            "${lockscreen_image}-${n}"
+	done
+	montage ${lockscreen_image}-* -tile ${n}x1 -geometry +0+0 "${lockscreen_image}"
+	rm -f ${lockscreen_image}-*
 }
 
 trap_loop() {
