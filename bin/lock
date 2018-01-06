@@ -8,9 +8,12 @@ set -o pipefail
 # exec >> ~/.lock.log 2>&1
 
 # load some defaults
-source ~/etc/defaults
+source "$HOME/etc/defaults"
 
+i3lock_icons="$HOME/Pictures/icons/i3lock"
+i3lock_icon="${i3lock_icons}/token.png"
 lockscreen="${1:-$default_lockscreen}"
+
 MYUID="$(id -u "${USER}")"
 PIDPATH=/var/run/user/${MYUID:-1000}/i3lock
 PIDFILE=${PIDPATH}/pid
@@ -21,18 +24,55 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ## subroutines              ##
 ##############################
 
+function make_blurred() {
+	BLUR="-blur 0x5"
+
+	# take a screenshot and blur it for the lock screen
+	/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
+	convert "$screenshot_image" ${BLUR} "$lockscreen_image"
+}
+
+function annotate_lockscreen() {
+	TEXT=""
+
+	local image
+	image="${1:-$lockscreen}"
+	ICON="${i3lock_icon}"
+	# for some reason "convert -list font" returns 1
+	FONT="$( (convert -list font ||:) | awk "{ a[NR] = \$2 } /family: $(fc-match sans -f "%{family}\n")/ { print a[NR-1]; exit }")"
+
+	LOCK=()
+	while read LINE
+	do
+	    if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
+	        W=${BASH_REMATCH[1]}
+	        H=${BASH_REMATCH[2]}
+	        Xoff=${BASH_REMATCH[3]}
+	        Yoff=${BASH_REMATCH[4]}
+	        MIDXi=$((W / 2 + Xoff - 60  / 2))
+	        MIDYi=$((H / 2 + Yoff - 60  / 2))
+	        MIDXt=$((W / 2 + Xoff - 285 / 2))
+	        MIDYt=$((H / 2 + Yoff + 320 / 2))
+	        LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
+	               -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
+	               -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT" \
+	               $ICON -geometry +$MIDXi+$MIDYi -composite)
+	    fi
+	done <<<"$(xrandr)"
+	convert "$image" "${LOCK[@]}" "$image"
+}
+
 function prepare() {
 	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
 	then
 	    # we requested an Picture Background: update background lockscreen
 	    setbg lock "$lockscreen"
+		#annotate_lockscreen ${lockscreen_image}
 	elif [ "$lockscreen" = "blurred" ]
 	then
-	    # take a screenshot and blur it for the lock screen
-		/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
-	    convert "$screenshot_image" -blur 0x7 "$lockscreen_image"
+		make_blurred
+		annotate_lockscreen ${lockscreen_image}
 	fi
-
 	PLAYERCTLSTATUS="$(playerctl status)"
 }
 
