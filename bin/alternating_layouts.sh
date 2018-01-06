@@ -1,4 +1,5 @@
-#!/bin/bash -x
+#!/bin/bash
+
 while true
 do  date
     alternating_layouts.py

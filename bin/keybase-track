@@ -1,3 +1,5 @@
+#!/bin/sh
+
 echo "# track mij niet terug"
 keybase list-following | grep -v `keybase list-followers | xargs -n 1 echo -n " -e"`
 
