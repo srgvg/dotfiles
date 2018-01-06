@@ -1,33 +1,70 @@
 #!/bin/bash
 
-self=`basename $0`
-activated=`pgrep -f gtrayicon.*-mode`
-disable=""
-if [ "$1" = "stop" ]
-then
-    disable="yes"
-elif [ "$1" = "nolock" ]
-then
-    icon="/usr/share/icons/hicolor/scalable/apps/terminator-layout.svg"
-else
-    icon="/usr/share/icons/hicolor/scalable/apps/terminator.svg"
-fi
-runtray="gtrayicon --activated --deactivate-icon=${icon} --activate='/bin/true' --deactivate='${self}'"
+set -o nounset
+set -o errexit
+set -o pipefail
 
-if [ -z "${activated}" -a -z "${disable}" ]  # currently inactive and no need to disable presentation mode
-then # activate presentation mode
-    #xautolock -disable  #  disable autolock
-    if [ ! "$1" = "nolock" ] # some things to do unless nolock mode
-    then
-            killall -SIGUSR1 dunst  # disable OSD notifications
-            xset -dpms # disable dpms
-            xset s off # disable scren saver blanking
-    fi
-    eval ${runtray} &
-else  # currently a mode active, and/or make sure to stop it
-    #xautolock -enable  # re-enable autolock
-    killall -SIGUSR2 dunst  # re-enable OSD notifications
-    xset +dpms # re-enable dpms
-    xset s # re-enable screen saver blanking
-    [ "${activated}" ] && kill ${activated}
-fi
+
+function start() {
+
+	if [ -z "${ACTIVATED}" ]
+	then
+		killall -SIGUSR1 dunst  # disable OSD notifications
+		xset -dpms              # disable dpms
+		xset s off              # disable scren saver blanking
+    	eval "${RUNTRAY}" &
+	fi
+}
+
+
+function stop() {
+
+	killall -SIGUSR2 dunst  # re-enable OSD notifications
+	xset +dpms              # re-enable dpms
+	xset s                  # re-enable screen saver blanking
+	if [ -n "${ACTIVATED}" ]
+	then
+		echo "${ACTIVATED}" | xargs kill
+	fi
+}
+
+
+function toggle() {
+
+	if [ -n "${ACTIVATED}" ]
+	then
+		stop
+	else
+		start
+	fi
+}
+
+function main() {
+
+	local _self="$(basename $0)"
+	local _icon="/usr/share/icons/hicolor/scalable/apps/terminator.svg"
+
+	RUNTRAY="gtrayicon --activated --deactivate-icon=${_icon} --activate='/bin/true' --deactivate=${_self} &"
+	ACTIVATED=$(pgrep -f "gtrayicon --activated .* --activate=/bin/true --deactivate=${_self}" || :)
+
+	case "${ACTION}" in
+		start)  start ;;
+		stop)   stop ;;
+		toggle) toggle ;;
+		*)
+			echo "Unknown action: ${ACTION}" >&2
+			exit 1
+			;;
+	esac
+}
+
+
+# $1 can be one of
+# - stop 
+# - start
+# - toggle (also the default if empty
+ACTION="${1:-toggle}"
+
+main
+
+

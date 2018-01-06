@@ -1,64 +1,102 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+set -o pipefail
+
 # log this scripts full output
 # exec >> ~/.lock.log 2>&1
 
 # load some defaults
-cd ~serge
-. etc/defaults
+source ~/etc/defaults
 
 lockscreen="${1:-$default_lockscreen}"
-MYUID=$(id -u $USERNAME)
-PIDPATH=/var/run/user/$MYUID/i3lock
-mkdir -p $PIDPATH
+MYUID="$(id -u "${USER}")"
+PIDPATH=/var/run/user/${MYUID:-1000}/i3lock
+PIDFILE=${PIDPATH}/pid
+install -g serge -o serge -m 700 -d "${PIDPATH}"
 
-perform_lock() {
+
+##############################
+## subroutines              ##
+##############################
+
+function prepare() {
+	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
+	then
+	    # we requested an Picture Background: update background lockscreen
+	    setbg lock "$lockscreen"
+	elif [ "$lockscreen" = "blurred" ]
+	then
+	    # take a screenshot and blur it for the lock screen
+		/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
+	    convert "$screenshot_image" -blur 0x7 "$lockscreen_image"
+	fi
+
+	PLAYERCTLSTATUS="$(playerctl status)"
+}
+
+function setpid() {
+	PID=$$
+	echo $PID >"${PIDFILE}"
+	echo lock started with pid $PID
+}
+
+function delpid() {
+	rm -f "${PIDFILE}"
+}
+
+function pre_lock() {
+	# make sure music stops
+	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+	then
+		playerctl stop
+	fi
+
+	# make sure presentation mode is off
+	presentation-mode stop
+
+	# pause notifications (sleep because seems too soon after pres mode stop)
+	(sleep 1; killall -v -SIGUSR1 dunst) & # pause
+
+	# lock remote irssi screen
+	bin/irc lock &
+
+	setpid
+}
+
+function post_lock() {
+    # re-enable notifications when unlock happens
+    killall -v -SIGUSR2 dunst
+
+	# re-renable music if it was playing
+	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+	then
+		playerctl play
+	fi
+
+	delpid
+}
+
+function perform_lock() {
+	pre_lock
+
+	# perform the lock and exit this script
+	# see etc/root/etc/systemd/system/i3lock.service where this lock is called 'forking'
     # lock screen with a background picture
     # --nofork makes sure i3lock doesn't return until it gets unlocked
     i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
-    # then re-enable notifications when unlock happens
-    killall -v -SIGUSR2 dunst
+
+	# post lock to be run after screen is unlocked
+	post_lock
 }
 
-##############################
-## now we start doing things #
-##############################
+function main() {
+	prepare
+	perform_lock &  # goes to background as this script needs to end and handover to systemd (in case called as part of suspend)
+	# add in a bit to make sure the screen is locked before we handover to systemd suspend
+	sleep 1
+	}
 
-# prepare lockscreen image
-if [ ! "$lockscreen" = "keep" -a ! "$lockscreen" = "blurred" ]
-then
-    # update background lockscreen
-    bin/setbg lock "$lockscreen"
-elif [ "$lockscreen" = "blurred" ]
-then
-    # take a screenshot and blur it for the lock screen
-    scrot --delay 0 "$screenshot_image" \
-        --exec "convert "$screenshot_image" -blur 0x3 "$lockscreen_image
-fi
-
-# make sure music stops
-playerctl stop
-
-# make sure presentation mode is off
-bin/presentation-mode stop
-
-# pause notifications (sleep because seems too soon after pres mode stop)
-(sleep 1; killall -v -SIGUSR1 dunst) & # pause
-
-# first lock remote irssi screen
-bin/irc lock &
-
-# then perform the lock and exit this script
-# see etc/root/etc/systemd/system/i3lock.service where this lock is called
-# 'forking'
-perform_lock &
-PID=$!
-echo $PID >$PIDPATH/pid
-echo i3lock started with pid $PID
-
-mkdir -p $PIDPATH
-
-# add in a bit to make sure the screen is locked before we handover to systemd
-# suspend
-sleep 1
+main
 
