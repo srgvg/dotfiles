@@ -73,20 +73,22 @@ function prepare() {
 		make_blurred
 		annotate_lockscreen ${lockscreen_image}
 	fi
-	PLAYERCTLSTATUS="$(playerctl status)"
+	PLAYERCTLSTATUS="$(playerctl status ||:)"
 }
 
 function setpid() {
-	PID=$$
+	PID=${1:-1}
 	echo $PID >"${PIDFILE}"
 	echo lock started with pid $PID
 }
 
 function delpid() {
-	rm -f "${PIDFILE}"
+	rm -fv "${PIDFILE}"
 }
 
 function pre_lock() {
+	setpid
+
 	# make sure music stops
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
@@ -100,9 +102,7 @@ function pre_lock() {
 	(sleep 1; killall -v -SIGUSR1 dunst) & # pause
 
 	# lock remote irssi screen
-	bin/irc lock &
-
-	setpid
+	irc lock &
 }
 
 function post_lock() {
@@ -125,7 +125,9 @@ function perform_lock() {
 	# see etc/root/etc/systemd/system/i3lock.service where this lock is called 'forking'
     # lock screen with a background picture
     # --nofork makes sure i3lock doesn't return until it gets unlocked
-    i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png
+    i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
+	setpid $!
+	wait
 
 	# post lock to be run after screen is unlocked
 	post_lock
