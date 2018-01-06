@@ -46,7 +46,6 @@
     # Print absolute path of repo root directory
     root = rev-parse --show-toplevel
 
-    show-tree = log --all --graph --decorate --oneline --simplify-by-decoration
     show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
     st = status -sb
 
@@ -64,6 +63,7 @@
     up = remote update
 
     wip = commit -a -m WIP
+    pushall = !git remote | xargs -L1 git push --all
 
 
 [apply]
