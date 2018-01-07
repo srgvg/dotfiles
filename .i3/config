@@ -781,12 +781,12 @@ for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program"
 # side tools
 #
 # KeePass
-# https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title/?answer=2068#post-id-2068
-for_window  [title="(KeePass|KeePass2|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
-            instance="^(!?keepass2)"] floating enable
-assign [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]              $ws_util_pw
+# https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
+assign [class="(KeePass2|keepassxc)" instance="(keepass2|keepassxc)" title="^(?!KeePassHttp: Confirm Access|KeePassXC HTTP Confirm Access)"]              $ws_util_pw
 assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util_pw
-assign [class="keepassxc" instance="keepassxc"]                                                     $ws_util_pw
+#assign [class="keepassxc" instance="keepassxc"]                                                     $ws_util_pw
+for_window  [title="(KeePass|KeePass2|KeePassXC HTTP Confirm Access|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
+            instance="^(!?keepass2)"] floating enable
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
 for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          layout tabbed
 for_window [class="keepassxc" instance="keepassxc"]                                                 layout tabbed
@@ -844,6 +844,7 @@ exec "google-chrome serge &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
+exec "blueman-applet &"
 #exec "keepassxc &"
 exec "keepass2 &"
 exec "franz &"
