@@ -5,13 +5,9 @@ set -o errexit
 set -o pipefail
 
 ## Parameters
-
-#tmp=/tmp/background-file-list.setbg
-setbg_delay=1800
-
 # load some defaults
 source "$HOME/etc/defaults"
-
+setbg_delay=1800
 p1="${1:-}"
 p2="${2:-}"
 
@@ -33,23 +29,14 @@ checkcli() {
     then
         action="$p1"
         target="$p2"
-    else                # only one parameter
-        case "$p1" in
-            ## keep this in sync with options in main loop
-            lock|redisplay|default)
-                action="$p1"
-                if [ ! -z "$p2" ] # two parameters
-                then
-                    target="${p2}"
-                else
-                    target="${defaultbg}"
-                fi
-                ;;
-            *)
-                action='default'
-                target="$p1"
-                ;;
-        esac
+    else
+        action="$p1"
+        if [ ! -z "$p2" ] # two parameters
+        then
+            target="${p2}"
+        else
+            target="${defaultbg}"
+        fi
     fi
 }
 
@@ -92,12 +79,12 @@ pickpic() {
 
 definebg() {
     # set as default background
-    ln -nfs "${background}" "${defaultbg}"
+    ln -nfs "${background}" "${bglnk}"
 }
 
 displaybg() {
     # set the background
-    feh --no-fehbg --bg-fill ${defaultbg}
+    feh --no-fehbg --bg-fill ${bglnk}
 }
 
 createlockpic() {
@@ -156,8 +143,11 @@ loop() {
 
 showpath() {
     # show which picture is used
-    #echo -e "`date +%Y%m%d.%H%M%S`\t`readlink --canonicalize ${background}`"
-	echo "$(readlink --canonicalize ${background})"
+	file="$(readlink --canonicalize ${bglnk})"
+	filename=$(basename "$file")
+	dirname=$(dirname "$file")
+	echo $file
+	notify-send -u low "$filename" "$dirname"
 }
 
 setbg() {
@@ -180,17 +170,18 @@ main() {
     checkcli
     case ${action} in
         ## keep this in sync with options in checkcli
-        'lock')
-            lock
-            ;;
-        'redisplay') # just redisplay bg, adjusts new screen sizes
-            displaybg
-            ;;
         'default')  # default action, pick and set a background
             setbg
             ;;
+		'redisplay'|'show') # just redisplay bg, adjusts new screen sizes
+			showpath
+            displaybg
+            ;;
         'loop')
             loop
+            ;;
+        'lock')
+            lock
             ;;
         *)
             error "Unknown action \"${action}\""
