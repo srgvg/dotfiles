@@ -1,0 +1,50 @@
+ALPHA 2:
+
+  * web page
+    - better examples page
+
+  * threading/batch
+    - (rt) propose an interface for threaded batch downloads
+    - (mds) design a new progress-meter interface for threaded
+      multi-file downloads
+    - (rt) look at CacheFTPHandler and its implications for batch mode
+      and byte-ranges/reget
+
+  * progress meter stuff
+    - support for retrying a file (in a MirrorGroup, for example)
+    - failure support (done?)
+    - support for when we have less information (no sizes, etc)
+    - check compatibility with gui interfaces
+    - starting a download with some parts already read (with reget, 
+      for example)
+
+  * look at making the 'check_timestamp' reget mode work with ftp.
+    Currently, we NEVER get a timestamp back, so we can't compare.
+    We'll probably need to subclass/replace either the urllib2 FTP handler
+    or the ftplib FTP object (or both, but I doubt it).  It may or may not
+    be worth it just for this one mode of reget.  It fails safely - by
+    getting the entire file.
+
+  * cache dns lookups -- for a possible approach, see
+    https://lists.dulug.duke.edu/pipermail/yum-devel/2004-March/000136.html
+
+Misc/Maybe:
+
+  * BatchURLGrabber/BatchMirrorGroup for concurrent downloads and possibly to
+    handle forking into secure/setuid sandbox.
+
+  * Consider adding a progress_meter implementation that can be used in 
+    concurrent download situations (I have some ideas about this -mds)
+  
+  * Consider using CacheFTPHandler instead of FTPHandler in byterange.py. 
+    CacheFTPHandler reuses connections but this may lead to problems with
+    ranges. I've tested CacheFTPHandler with ranges using vsftpd as a 
+    server and everything works fine but this needs more exhaustive tests 
+    or a fallback mechanism. Also, CacheFTPHandler breaks with multiple 
+    threads.
+
+  * Consider some statistics tracking so that urlgrabber can record the 
+    speed/reliability of different servers.  This could then be used by
+    the mirror code for choosing optimal servers (slick, eh?)
+
+  * check SSL certs.  This may require PyOpenSSL.

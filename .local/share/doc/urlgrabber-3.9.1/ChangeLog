@@ -1,0 +1,246 @@
+2009-09-25  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/__init__.py: bump version to 3.9.1
+
+2009-09-25  Seth Vidal <skvidal@fedoraproject.org>
+
+	* makefile: clean up everything in make clean
+
+2009-09-25  Seth Vidal <skvidal@fedoraproject.org>
+
+	* test/runtests.py, test/test_grabber.py, test/test_keepalive.py,
+	urlgrabber/__init__.py, urlgrabber/byterange.py,
+	urlgrabber/grabber.py, urlgrabber/keepalive.py,
+	urlgrabber/mirror.py, urlgrabber/progress.py,
+	urlgrabber/sslfactory.py: cleanup all the old urlgrabber urllib code
+	that's not being used delete sslfactory and keepalive fix up the
+	unittests to match the existing code
+
+2009-09-24  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: update documentation for ssl options and
+	size/max_header_size options
+
+2009-09-23  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - fix the reget testcases (and regets in general) with the max size
+	check - make the errorcode more obvious when we go over the range -
+	obviously don't do the check if all of our max values are None (or
+	even 0 since that is a silly number for a Max)
+
+2009-09-22  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: handle endless-data problems safely:  "A
+	malicious server could cause libcurl to download an infinite amount
+	of data, potentially causing all of memory or disk to be filled.
+	Setting the CURLOPT_MAXFILESIZE_LARGE option is not sufficient to
+	guard against this.  Instead, the app should monitor the amount of
+	data received within the write or progress callback and abort once
+	the limit is reached."  had to restructure a good bit of the error
+	handling to do this but it works for both endless headers and
+	endless content.
+
+2009-09-21  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: make sure the value we get back from the
+	parse150 and other calls is converted to an int before we make it
+	'size' rhbug: #524705
+
+2009-09-02  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: make file:// url not found msgs clearer and
+	hopefully fix a couple of ctrl-c issues.
+
+2009-08-27  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: make proxy=_none_ properly disable all
+	proxies as per the docs
+
+2009-08-14  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - add full contingent of ssl options:   - client keys   - client
+	certs   - capath/cainfo   - client key passwords   - client key and
+	cert types   - verifypeer/verifyhost - add a number of common errors
+	to do_perform() - when an error is unknown, and doesn't make sense
+	report complete pycurl error code - when the filename is '' and not
+	None and we're doing a urlgrab() try to open the   file anyway
+	rather than silently swallowing the data into a StringIO and
+	discarding it.
+
+2009-08-13  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: add _to_utf8() method to pycurlfileobject
+	make sure postfield data is to_utf8'd before setting the option
+	otherwise pycurl is unhappy if the postfield data is a unicode
+	object instead of a string object. closes rh bug
+	https://bugzilla.redhat.com/show_bug.cgi?id=515797
+
+2009-08-12  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: initial pass at setting more advanced ssl
+	options. verify peer and verify host work as expected.
+
+2009-08-07  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: keep from making tmpfiles all over /tmp on
+	any local file:// urlopen() by doing it in StringIO instead of
+	mkstemp().  Sort of fixes
+	https://bugzilla.redhat.com/show_bug.cgi?id=516178
+
+2009-08-06  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - fix intrrupt handler and document why keyboardinterrupt is going
+	to be so weird in pycurl - disable signals and make sure we don't
+	handle/intercept any in the pycurl code. - set 'check_timestamp'
+	regets as NotImplemented. The work around is multiple connections.
+	it is possible but not immediately useful since, afaict, NOTHING
+	uses the check_timestamp regets.
+
+2009-08-05  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - make sure regets work when our filename is unicode - make sure we
+	are not resetting self.append = False when we don't need to
+
+2009-08-05  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - make sure we tell pycurl to get the filetime when downloading -
+	set a couple of options as 'True/False' instead of 1,0 - for
+	readability - make sure the option passed to timeout is an int - not
+	a string
+
+2009-08-04  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: missed setting the value from opts.timeout
+	- doesn't really HURT what will happen b/c if your connect takes
+	longer than 5minutes then you're SCREWED
+
+2009-08-04  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: handle timeouts more correctly (with the
+	exception) and set timeouts to be connect timeouts since libcurl
+	seems to actually honor timeouts - as opposed to urllib. closes rh
+	bug # 515497
+
+2009-07-31  Seth Vidal <skvidal@fedoraproject.org>
+
+	* ChangeLog, makefile, urlgrabber/__init__.py: changelog + release
+	date touchup
+
+2009-07-31  Seth Vidal <skvidal@fedoraproject.org>
+
+	* makefile: add a few more things to be cleaned out
+
+2009-07-31  Seth Vidal <skvidal@fedoraproject.org>
+
+	* ChangeLog: update changelog
+
+2009-07-31  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - make readlines() work for mirrorlists in yum (which probably
+	shouldn't be using it anyway) - do a do_grab() in _do_open() which
+	may or may not be a good idea - I could also make the _do_grab()
+	happen when someone attempts to hit a method beyond the file object
+	open
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - make basic posts work
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* maint/git2cl: add git2cl
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: when I first started this I hacked
+	something into URLGrabberFileObject - this reverts that hack
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* ChangeLog, maint/cvs2cl.pl, maint/usermap, test/runtests.py,
+	urlgrabber/__init__.py: - clean up some unused files - update the changelog - bump the
+	version - update the copyright in a couple of places
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* MANIFEST.in, makefile: - make makefile work again without using cvs - add makefile to
+	MANIFEST.in
+
+2009-07-30  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - make simple/most proxies work - remove unnnecessary 'have_range'
+	check for pycyurl obj
+
+2009-07-29  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: - add range support - get rid of the .part file thing - it makes
+	range-regets harder than they need to be - make sure regets behave
+
+2009-07-29  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: implement throttle/bandwidth controls in
+	pycurl tested with the progress call back - seems to work very well
+
+
+2009-07-29  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: get the content-length/size for ftp pkgs
+	too - steals parse150 from ftplib. Should work for A LOT of ftp
+	servers, but not all of them - add self.scheme for which protocol
+	we're using here.
+
+2009-07-29  James Antill <james@and.org>
+
+	* urlgrabber/byterange.py: Import fix for ftp ports in old urilib
+	code (probably worthless now, but meh)
+
+2009-07-29  James Antill <james@and.org>
+
+	* urlgrabber/progress.py: Import progress patches from Fedora.
+	These were done over a couple of years:    . cleanup UI.   . dynamic
+	terminal widths.     . deal with serial console.   . total download
+	stuff.
+
+2009-07-28  Seth Vidal <skvidal@fedoraproject.org>
+
+	* test/runtests.py, urlgrabber/grabber.py: implement
+	PyCurlFileObject. This makes the default and forklifts all the code
+	to pycurl. This is not finished but is functional for a significant
+	number of the tests. things known to be broken: - proxies - http
+	POST - non-header-based byte-ranges - certain types of read
+	operations when downloading a file to memory instead of to a
+	filename
+
+2009-05-15  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: make it use *args instead of silly if
+	statements
+
+2009-05-15  Seth Vidal <skvidal@fedoraproject.org>
+
+	* urlgrabber/grabber.py: modify urlgraberror so it has a url
+	attribute and includes the url in all error messages.
+
+2006-12-12  mstenner <mstenner>
+
+	* urlgrabber/grabber.py: more debugging code to expose options
+
+2006-12-08  mstenner <mstenner>
+
+	* scripts/urlgrabber, test/test_grabber.py, urlgrabber/grabber.py,
+	urlgrabber/keepalive.py: lots of changes... improved clarity of
+	cached objects, improved debugging and logging, more options to the
+	urlgrabber script.
+
+2006-12-07  mstenner <mstenner>
+
+	* scripts/urlgrabber, urlgrabber/grabber.py: Minor doc updates and
+	error handling in grabber.py.  Complete rewrite of the urlgrabber
+	script.
+
+2006-12-05  mstenner <mstenner>
+
+	* Minor fix to make byteranges work with some servers.  _do_grab now
+	only reads as much as it needs to, rather than reading until the
+	server sends EOF.
+
