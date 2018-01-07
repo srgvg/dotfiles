@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 set -o nounset
 set -o errexit
@@ -13,8 +12,8 @@ setbg_delay=1800
 # load some defaults
 source "$HOME/etc/defaults"
 
-p1="$1"
-p2="$2"
+p1="${1:-}"
+p2="${2:-}"
 
 
 ## Functions
@@ -157,7 +156,8 @@ loop() {
 
 showpath() {
     # show which picture is used
-    echo -e "`date +%Y%m%d.%H%M%S`\t`readlink --canonicalize ${background}`"
+    #echo -e "`date +%Y%m%d.%H%M%S`\t`readlink --canonicalize ${background}`"
+	echo "$(readlink --canonicalize ${background})"
 }
 
 setbg() {
