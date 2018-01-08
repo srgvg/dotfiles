@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ $(nmcli -t radio wifi) = 'enabled' ]
+then
+	nmcli -t radio wifi off
+else
+	nmcli -t radio wifi on
+fi
+
