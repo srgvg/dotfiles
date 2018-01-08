@@ -343,6 +343,9 @@ bindsym $mod+space focus mode_toggle
 # The scrollwheel button and a modifer over any part of the window kills the window
 bindsym --whole-window $mod+button10 kill
 
+# https://i3wm.org/docs/user-contributed/swapping-workspaces.html
+bindsym $mod+Control+s exec i3swap
+
 ##############################################################################################################################################################
 #
 # Navigation
