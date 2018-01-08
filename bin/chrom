@@ -12,7 +12,8 @@ case ${browser} in
 	*)				browser=${defaultbrowser} ;;
 esac
 
-PROFILESDIR="/home/serge/.config/${browser}/profiles"
+PROFILESDIR="$HOME/.config/${browser}/profiles"
+CACHEDIR="$HOME/.cache/google-chrome/profiles"
 
 ENV="${1}"
 case $ENV in
@@ -31,7 +32,8 @@ case $ENV in
 		class=tempbrowser
 		mkdir -p ${PROFILESDIR}
 		tmp=$(mktemp -d -p ${PROFILESDIR})
-		trap 'rm -Rf "$tmp"' EXIT
+		tmpname=${tmp#${PROFILESDIR}/}
+		trap 'rm -Rf "$tmp" "${CACHEDIR}/$tmpname"' EXIT
 		mkdir -p "$tmp"/user_data/Default
 		cat >"$tmp"/user_data/Default/Preferences <<EOF
 {
