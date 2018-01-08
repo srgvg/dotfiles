@@ -102,7 +102,7 @@ function pre_lock() {
 	(sleep 1; killall -v -SIGUSR1 dunst) & # pause
 
 	# lock remote irssi screen
-	irc lock &
+	irc lock
 }
 
 function post_lock() {
