@@ -74,6 +74,8 @@ map <silent> <F2> :set invnumber<cr>
 :command W w
 :command Q q
 
+:command NS SyntasticToggleMode
+
 " http://www.swaroopch.com/blog/bash-vim-setup/
 set scrolloff=5
 
