@@ -1,0 +1,23 @@
+#!/bin/bash
+set -x
+
+PRIMARY=$(grep ^i3.output.primary $HOME/.Xresources.d/i3 | cut -d\  -f2)
+SECONDARY=$(grep ^i3.output.secondary $HOME/.Xresources.d/i3 | cut -d\  -f2)
+PRIMARY=${PRIMARY:-eDP1}
+SECONDARY=${SECONDARY:-eDP1}
+
+CURRENT=$(i3-msg -t get_workspaces   | jq '.[] | select(.focused==true).name' | sed 's/"//g')
+
+for w in $(seq 1 14)
+do
+	i3-msg "workspace $w; move workspace to output $PRIMARY"
+done
+
+for w in $(seq 15 22)
+do
+	i3-msg "workspace $w; move workspace to output $SECONDARY"
+done
+
+i3-msg workspace 22
+i3-msg workspace $CURRENT
+

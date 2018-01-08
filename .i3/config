@@ -219,6 +219,7 @@ workspace 18    output $outsec
 workspace 19    output $outsec
 workspace 20    output $outsec
 workspace 21    output $outsec
+workspace 22    output $outsec
 
 # When a new window appears, it will be focused. The no_focus directive allows
 # preventing this from happening
@@ -567,6 +568,7 @@ bindsym $mod+Shift+c reload
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
+bindsym $mod+Control+Shift+r exec --no-startup-id i3-move-windows
 
 # Lock Screen / Suspend / Poweroff
 bindsym Pause               exec --no-startup-id $lockscreen
