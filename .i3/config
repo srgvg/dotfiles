@@ -551,9 +551,9 @@ bindsym $mod+Return exec $terminal
 bindsym $mod+Control+Return exec $terminalfl
 bindsym --whole-window $mod+button2 exec $terminalfl
 
-# kill focused window
-bindsym $mod+x kill
-bindsym $mod+Shift+Control+x exec /usr/bin/xkill
+# kill focused window except..
+bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge).*$"] kill
+bindsym $mod+Control+x kill
 
 # quickswitch
 bindsym $mod+q exec quickswitch.py
