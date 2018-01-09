@@ -493,7 +493,7 @@ bindsym $mod+Shift+Next move workspace to output right
 #
 
 # resize window (you can also use the mouse for that)
-bindsym $mod+Control+r mode "resize"
+bindsym $mod+Control+Shift+r mode "resize"
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
 
@@ -513,7 +513,7 @@ mode "resize" {
         bindsym Right resize grow width 10 px or 10 ppt
 
         # back to normal: Enter or Escape
-        bindsym $mod+Control+r mode "default"
+        bindsym $mod+Control+Shift+r mode "default"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -568,7 +568,7 @@ bindsym $mod+Shift+c reload
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
-bindsym $mod+Control+Shift+r exec --no-startup-id i3-move-windows
+bindsym $mod+Control+r exec --no-startup-id i3-move-workspaces
 
 # Lock Screen / Suspend / Poweroff
 bindsym Pause               exec --no-startup-id $lockscreen
@@ -812,7 +812,8 @@ for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed,
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout tabbed
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window [class="Spotify"]                                    move to workspace $ws_util_music
+for_window [class="Spotify"]   fullscreen
+for_window [class="Spotify"]   move to workspace $ws_util_music
 
 # https://worklogassistant.com
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
