@@ -530,10 +530,12 @@ mode "moveit" {
         bindsym Escape mode "default"
 }
 
-bindsym $mod+Shift+e mode "$mode_system"
+# exit i3 (logs you out of your X session)
+#bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $mod+Control+Shift+q mode "$mode_system"
 set $mode_system (x) exit
 mode "$mode_system" {
-    bindsym x exec --no-startup-id i3-msg exit, mode "default"
+    bindsym x exec --no-startup-id i3-msg exit
     # back to normal: Enter or Escape
     bindsym Return mode "default"
     bindsym Escape mode "default"
@@ -575,9 +577,6 @@ bindsym Pause               exec --no-startup-id $lockscreen
 bindsym $mod+l              exec --no-startup-id $lockscreen
 bindsym $mod+Pause          exec --no-startup-id $suspend
 bindsym $mod+Control+l      exec --no-startup-id $suspend
-
-# exit i3 (logs you out of your X session)
-bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # start some tools
 bindsym $mod+i exec ircwindow
