@@ -75,6 +75,7 @@ function prepare() {
 		annotate_lockscreen ${lockscreen_image}
 	fi
 	PLAYERCTLSTATUS="$(playerctl status ||:)"
+	ponymix is-muted && MUTED=yes || MUTED=no
 }
 
 function setpid() {
@@ -95,6 +96,10 @@ function pre_lock() {
 	then
 		playerctl stop
 	fi
+	if [ "${MUTED}" -eq "no" ]
+	then
+		ponymix mute
+	fi
 
 	# make sure presentation mode is off
 	presentation-mode stop
@@ -114,6 +119,11 @@ function post_lock() {
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
 		playerctl play
+		ponymix unmute
+	fi
+	if [ "${MUTED}" -eq "no" ]
+	then
+		ponymix unmute
 	fi
 
 	delpid
