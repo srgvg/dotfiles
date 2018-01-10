@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 set -o nounset
 set -o errexit
@@ -79,7 +78,7 @@ function prepare() {
 }
 
 function setpid() {
-	PID=${1:-1}
+	PID=${1:--1}
 	echo $PID >"${PIDFILE}"
 	echo lock started with pid $PID
 }
@@ -96,9 +95,9 @@ function pre_lock() {
 	then
 		playerctl stop
 	fi
-	if [ "${MUTED}" -eq "no" ]
+	if [ "${MUTED}" = "no" ]
 	then
-		ponymix mute
+		ponymix mute >/dev/null
 	fi
 
 	# make sure presentation mode is off
@@ -119,11 +118,11 @@ function post_lock() {
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
 		playerctl play
-		ponymix unmute
+		ponymix unmute >/dev/null
 	fi
-	if [ "${MUTED}" -eq "no" ]
+	if [ "${MUTED}" = "no" ]
 	then
-		ponymix unmute
+		ponymix unmute >/dev/null
 	fi
 
 	delpid
