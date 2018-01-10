@@ -709,24 +709,24 @@ for_window [title="Pages Unresponsive"] floating enable
 no_focus [window_role="pop-up"]
 
 # terminals
-for_window [window_role="floating"]     floating enable, move position mouse
-for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable, move position mouse
-for_window [class="Gnome-terminal"]     floating enable, move position mouse
+for_window [window_role="floating"]     floating enable; move position mouse
+for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable; move position mouse
+for_window [class="Gnome-terminal"]     floating enable; move position mouse
 
 
 
 # Tools
-for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
-for_window [class="Gcalctool"]                                                          floating enable, move position mouse
-for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
+for_window [window_role="SSHASKPASS"]                                                   floating enable; border pixel 5
+for_window [class="Gcalctool"]                                                          floating enable; move position mouse
+for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable; move position mouse
 for_window [class="Files" instance="small"]                                             resize set 1000 500; floating enable; move position mouse
-for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
-for_window [class="Nemo" instance="nemo" title="Plugins"]                               floating enable, move position mouse
-for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]                   floating enable, move position mouse
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable, move position mouse
-for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable, move position mouse
-for_window [title="Event Tester"]                                                       floating enable, move position mouse  # xev
-#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable, move position mouse
+for_window [class="Nautilus" instance="file_progress"]                                  floating enable; move position mouse
+for_window [class="Nemo" instance="nemo" title="Plugins"]                               floating enable; move position mouse
+for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]                   floating enable; move position mouse
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable; move position mouse
+for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable; move position mouse
+for_window [title="Event Tester"]                                                       floating enable; move position mouse  # xev
+#for_window [class="Seafile-applet" instance="seafile-applet" title="Seafile"]           floating enable; move position mouse
 #for_window [class="Evince" instance="evince"]                                           border pixel 3
 for_window  [instance="libreoffice"]  border normal
 
@@ -746,7 +746,7 @@ for_window  [class="^(browser-*)"] layout tabbed
 for_window  [class="^(browser-*)" window_role="app"] floating disable
 
 
-for_window  [class="tempbrowser" window_role="browser"] border pixel 5, floating enable, move position mouse
+for_window  [class="tempbrowser" window_role="browser"] border pixel 5; floating enable; move position mouse
 
 
 ###############################################################################
@@ -776,7 +776,7 @@ for_window [class="Remmina" instance="remmina"] layout tabbed
 
 # Teamviewer
 assign [class="Wine" instance="TeamViewer.exe"] $ws_tool0
-for_window [class="Wine" instance="TeamViewer.exe"]     floating enable, move position mouse
+for_window [class="Wine" instance="TeamViewer.exe"]     floating enable; move position mouse
 for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tabbed
 
 # Gimp
@@ -805,7 +805,7 @@ assign      [title="Signal" window_role="app"]  $ws_util_chat
 for_window  [title="Signal" window_role="app"]  floating disable
 for_window  [title="Signal" window_role="app"]  layout tabbed
 assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
-for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed, floating disable
+for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed; floating disable
 
 
 # Music
