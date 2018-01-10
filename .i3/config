@@ -582,7 +582,7 @@ bindsym $mod+Control+l      exec --no-startup-id $suspend
 bindsym $mod+i exec ircwindow
 bindsym $mod+c exec gnome-calculator
 bindsym $mod+d exec nemo
-bindsym $mod+Control+d exec nautilus
+bindsym $mod+Control+d exec nautilus --class Files --name small $HOME/tmp
 
 # start browsers
 bindsym $mod+Control+o          exec google-chrome serge
@@ -719,6 +719,7 @@ for_window [class="Gnome-terminal"]     floating enable, move position mouse
 for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
 for_window [class="Gcalctool"]                                                          floating enable, move position mouse
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable, move position mouse
+for_window [class="Files" instance="small"]                                             resize set 1000 500; floating enable; move position mouse
 for_window [class="Nautilus" instance="file_progress"]                                  floating enable, move position mouse
 for_window [class="Nemo" instance="nemo" title="Plugins"]                               floating enable, move position mouse
 for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]                   floating enable, move position mouse
