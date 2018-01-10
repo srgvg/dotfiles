@@ -35,13 +35,22 @@ def get_governor():
 
 def get_sink():
     """ Get the default sink name """
-    #p = subprocess.Popen(['ponymix', 'defaults', '|', 'grep', '-A1', 'sink', '|', 'grep', '-v', 'sink'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p = subprocess.Popen('ponymix defaults | grep -A1 sink | grep -v sink', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     sink = out.strip()
     if sink.startswith("Built-in Audio"):
         sink = ""
     return sink
+
+def get_wifi():
+    p = subprocess.Popen('nmcli -t radio wifi', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    status = out.strip()
+    if status == "enabled":
+        status = "📶"
+    else:
+        status = ""
+    return status
 
 def print_line(message):
     """ Non-buffered printing to stdout. """
@@ -77,6 +86,7 @@ if __name__ == '__main__':
         j = json.loads(line)
         # insert information into the start of the json, but could be anywhere
         # CHANGE THIS LINE TO INSERT SOMETHING ELSE
-        j.insert(-2, {'full_text' : '%s' % get_sink(), 'name' : 'gov'})
+        j.insert(-2, {'full_text' : '%s' % get_sink(), 'name' : 'sink'})
+        j.insert(13, {'full_text' : '%s' % get_wifi(), 'name' : 'wifi', 'separator' : "false" })
         # and echo back new encoded json
         print_line(prefix+json.dumps(j))
