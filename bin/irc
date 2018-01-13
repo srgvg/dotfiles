@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ~/etc/defaults
+source $HOME/etc/defaults
 
 # make sure the irssi specific control master ends, so mqtt-irssi disconnects
 on_exit() {
@@ -13,9 +13,12 @@ if [ "$1" = "lock" ]
 then
     # only lock existing open connections, so check if the CM socket is
     # available
-    ssh ${irssi_host} -O check >/dev/null 2>&1 && ssh ${irssi_host} screen -S irc -X lockscreen
+    ssh ${irssi_host} -O check >/dev/null 2>&1 && ssh ${irssi_host} screen -S irc -d -X lockscreen
+elif [ "$1" = "unlock" ]
+then
+	ssh ${irssi_host} -O check >/dev/null 2>&1 && ssh ${irssi_host} pkill -9 irclock
 else
-    trap on_exit INT TERM KILL EXIT
+    trap on_exit INT TERM EXIT
     ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
 fi
 

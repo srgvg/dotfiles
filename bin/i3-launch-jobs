@@ -1,30 +1,19 @@
 #!/bin/bash
 
-launch_job() {
-    echo
-    echo -n "Checking for \"$*\" ... "
-    if pgrep -f "$*"
-    then
-        echo Already running.
-    else
-        launch-screen i3jobs add $*
-    fi
-    echo; echo "----------------------------------------"
-}
+set -e
 
-launch_job mqtt-notify.py
-launch_job autocutsel -verbose -debug -selection CLIPBOARD
-#launch_job autocutsel -verbose -debug -selection PRIMARY
-#launch_job rerandr3 daemon
-#launch_job setbg loop debian
+source $HOME/etc/defaults
 
-pulseaudio --check && pulseaudio --kill
-pulseaudio --start
-dropbox stop; sleep 1; dropbox start
-echo
+launch_i3job mqtt-notify.py
+launch_i3job autocutsel -verbose -debug -selection CLIPBOARD
+
+#launch_i3job autocutsel -verbose -debug -selection PRIMARY
+#launch_i3job rerandr3 daemon
+#launch_i3job setbg loop debian
+#
+#pulseaudio --check && pulseaudio --kill ; pulseaudio --start
+#dropbox stop; sleep 1; dropbox start
 
 exit 0
 
 ##############################################################################
-# archived old stuff
-#pkill seafile-applet; sleep 1; seafile-applet &

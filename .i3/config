@@ -342,7 +342,7 @@ bindsym $mod+space focus mode_toggle
 # 10  scroll wheel button
 #
 # The scrollwheel button and a modifer over any part of the window kills the window
-bindsym --whole-window $mod+button10 kill
+bindsym --whole-window --release $mod+button10 kill
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
 bindsym $mod+Control+s exec i3swap
@@ -552,7 +552,7 @@ bindsym $mod+Return exec $terminal
 
 # start a floating terminal
 bindsym $mod+Control+Return exec $terminalfl
-bindsym --whole-window $mod+button2 exec $terminalfl
+#bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window except..
 bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge).*$"] kill
@@ -590,8 +590,8 @@ bindsym $mod+Control+Shift+o    exec google-chrome serge --incognito
 bindsym $mod+o                  exec google-chrome
 
 # Show current Background filename
-bindsym $mod+Control+b exec --no-startup-id notify-send -u low `bgcurrent`
-bindsym $mod+Shift+Control+b exec --no-startup-id setbg default
+bindsym $mod+Control+b exec --no-startup-id setbg show
+bindsym $mod+Shift+Control+b exec --no-startup-id setbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
@@ -601,7 +601,7 @@ bindsym $mod+Control+p exec /usr/share/system-config-printer/system-config-print
 
 # dmenu networkmanager script
 bindsym $mod+n exec nmcli_dmenu
-bindsym $mod+Control+n exec toggle-wifi
+bindsym $mod+Control+n exec nm-toggle-wifi
 
 ##############################################################################################################################################################
 #
@@ -682,7 +682,7 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 # Maar volgens mij is het omgekeerd.
 #
 #
-for_window [window_type="normal"]                                                                  border $defaultborder
+for_window [window_type="normal"]           border $defaultborder
 
 
 ###############################################################################
@@ -697,6 +697,7 @@ for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
 for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
 for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
 for_window [title="Pages Unresponsive"] floating enable
+for_window [class="feh" instance="feh"] floating enable, border none
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
 # (!) window_* seems to not take PCRE's
@@ -810,9 +811,9 @@ for_window [class="keepassxc" instance="keepassxc"]                             
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 for_window  [class="(HipChat|Franz)"]           layout tabbed
-assign      [title="Signal" window_role="app"]  $ws_util_chat
-for_window  [title="Signal" window_role="app"]  floating disable
-for_window  [title="Signal" window_role="app"]  layout tabbed
+assign      [title="Signal"]                    $ws_util_chat
+for_window  [title="Signal"]                    floating disable
+for_window  [title="Signal"]                    layout tabbed
 assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
 for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed, floating disable
 
@@ -849,7 +850,7 @@ exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
 exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
 #exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
-exec --no-startup-id setbg default
+exec --no-startup-id setbg
 
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST

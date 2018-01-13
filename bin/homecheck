@@ -2,6 +2,6 @@
 
 set -e
 
-source ~/etc/defaults
+source $HOME/etc/defaults
 ip addr sh | grep -q ${home_subnet}
 

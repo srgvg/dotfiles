@@ -1,1 +1,0 @@
-../apps/worklogassistant/worklogassistant.sh

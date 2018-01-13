@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/bash 
 
 #exec 19>/tmp/publish.log
 #BASH_XTRACEFD=19
-#set -x
+set -x
 
 dropbox=$HOME/Dropbox
 publoc=$dropbox/Public/misc
 tmploc=$dropbox/Temp/tmp
 
-notify() {
+function notify() {
 	echo
 	echo -e "$1\n\n$2"
     notify-send --category=transfer.complete \
@@ -18,37 +18,69 @@ notify() {
 	echo
 }
 
+function dropbox_file_status() {
+	local out
+	local status
+	local wait
 
-file="${1:-`xclip -selection clipboard -out`}"
+	sleep 1
+	wait=1
+	while [ $wait -eq 1 ]
+	do
+		out=$(dropbox filestatus "${pubfile}")
+		if [[ "${out}" =~ "syncing" ]]
+		then
+			status=(-1 "Syncing")
+			wait=1
+			sleep 3
+		elif [[ "${out}" =~ "File doesn\'t exist" ]]
+		then
+			status=(1 "File doesn't exist")
+			wait=0
+		elif [[ "${out}" =~ "up to date" ]]
+		then
+			status=(0 "Synced")
+			wait=0
+		else
+			status=(2 "Unknown error: ${out}")
+			wait=0
+		fi
+	done >/dev/null 2>&1
+	echo "${status[@]}"
+}
+
+
+
+file="${*:-$(xclip -selection clipboard -out)}"
 if [ ! -f "${file}" ]
 then
 	notify "Dropbox Publish error" "File  \"${file}\" not found"
 
 	exit 1
 fi
-file=$(readlink -f "${file}")
 
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
 pubfile="${publoc}/${pubfilename}"
 
-# do not copy the file to Dropbox/Public if the file is already in Dropbox (except tmp folder)
-if [[ "$file" =~ $dropbox ]] && ! [[ "$file" =~ $tmploc ]]
+# do not copy the file to Dropbox/Public if the file is already in Dropbox tmp folder
+if [[ ! "$file" =~ $tmploc ]]
 then
-	pubfile="$file"
-else
 	cp "${file}" "${pubfile}"
 fi
 
-dropbox_puburl="$(dropbox sharelink ${pubfile})"
-[[ ${dropbox_puburl:0:4} == http ]] || notify "Dropbox Publish error" "sharelink failed" || exit 1
+dropbox_puburl="$(dropbox sharelink "${pubfile}")"
+[[ ${dropbox_puburl:0:4} == http ]] || notify "Dropbox Publish error" "sharelink failed, got: ${dropbox_puburl}" || exit 1
 
-bitly_url=`bitly $dropbox_puburl | tr -d '\n'`
-echo -n $bitly_url | xclip -in -selection clipboard
+bitly_url="$(bitly "${dropbox_puburl}" | tr -d '\n')"
+echo -n "${bitly_url}" | xclip -in -selection clipboard
 
-while	(dropbox filestatus "${pubfile}" | grep syncing)
-do	sleep 3
-done
-[ $? -gt 0 ] && notify "Dropbox Publish error" "checking upload status"
+status=($(dropbox_file_status))
+if [ "${status[0]}" -eq 0 ]
+then
+	notify "Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
+else
+	notify "Dropbox Publish error" "${status[1]}"
+fi
 
-notify "Dropbox Published file $file" "uploaded to $dropbox_puburl\nshort url = $bitly_url"
+exit "${status[0]}"
 

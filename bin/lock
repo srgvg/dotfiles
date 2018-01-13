@@ -65,14 +65,13 @@ function annotate_lockscreen() {
 function prepare() {
 	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
 	then
-	    # we requested an Picture Background: update background lockscreen
+	    # we requested an Picture Background: update lockscreen with a background
 	    setbg lock "$lockscreen"
-		#annotate_lockscreen ${lockscreen_image}
 	elif [ "$lockscreen" = "blurred" ]
 	then
 		make_blurred
-		annotate_lockscreen ${lockscreen_image}
 	fi
+	annotate_lockscreen ${lockscreen_image}
 	PLAYERCTLSTATUS="$(playerctl status ||:)"
 	ponymix is-muted && MUTED=yes || MUTED=no
 }
@@ -111,6 +110,10 @@ function pre_lock() {
 }
 
 function post_lock() {
+
+	# unlock remote irssi screen
+	irc unlock || :
+
     # re-enable notifications when unlock happens
     killall -v -SIGUSR2 dunst
 

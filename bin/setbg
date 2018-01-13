@@ -7,7 +7,7 @@ set -o pipefail
 ## Parameters
 # load some defaults
 source "$HOME/etc/defaults"
-setbg_delay=1800
+setbg_delay=${setbg_delay:-1800}
 p1="${1:-}"
 p2="${2:-}"
 
@@ -15,60 +15,53 @@ p2="${2:-}"
 ## Functions
 
 error() {
-    echo "$*" >&2
+	s=${1:-}; shift
+	cli_notify critical $s $* >&2 || :
     exit 1
 }
 
-checkcli() {
-    # check cli parameters
-    if [ -z "$p1" ]     # zero parameters
-    then
-        action='default'
-        target="${defaultbg}"
-    elif [ ! -z "$p2" ] # two parameters
-    then
-        action="$p1"
-        target="$p2"
-    else
-        action="$p1"
-        if [ ! -z "$p2" ] # two parameters
-        then
-            target="${p2}"
-        else
-            target="${defaultbg}"
-        fi
-    fi
-}
-
 checktarget() {
-    ## check target
-    deeptarget=$(find $HOME/${pictures} -maxdepth 3 -name $(basename ${target}) -type d 2>/dev/null | grep ${target} 2>/dev/null || : | sort | head -n 1 )
 
-    if [ -r "${deeptarget}" ]
-        then target="${deeptarget}"
-    elif [ -r "${target}" ]
-        then :
-    elif [ -r "$HOME/${target}" ]
-        then target="$HOME/${target}"
-    elif [ -r "$HOME/${pictures}/${target}" ]
-        then target="$HOME/${pictures}/${target}"
-    else
-        error "Cannot find a target \"${target}\""
-    fi
+	# verify the kind of target we have
+	local _target
+	_target=${1:-}
+    if [ ! -r "${_target}" -o ! -f "${_target}" ]
+	then
+		if [ -r "$HOME/${_target}" ]
+		then
+				target="$HOME/${_target}"
+		elif [ -r "${pictures}/${_target}" ]
+		then
+				target="${pictures}/${_target}"
+		else
+			deeptarget=$(find ${pictures} -maxdepth 3 \
+				-name $(basename ${_target}) -type d 2>/dev/null \
+				| grep ${_target} 2>/dev/null || : | sort | head -n 1 )
+			if [ -r "${deeptarget}" ]
+				then target="${deeptarget}"
+			else
+				error "Cannot find arget ${_target}"
+			fi
+		fi
+	else
+		target=${_target}
+	fi
 }
 
 pickpic() {
+	## pick a picture
     # get picture according to target
     # target is set to a file/dir we can read
     if [ -d "${target}" ]
     then # if directory, the pick a random picture
         pictures="${target}"
-
         # disable shell expansion for the iregex
         set -o noglob
+		# disable pipefail - when head quits, find doesn't like loosing its reader
+		set +o pipefail
         # Pick random picture
         background="`find -L ${pictures} -type f -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
-        # reenable shell expansion
+        # reenable options
         set +o noglob
 
     else # a file, should be a picture
@@ -88,54 +81,67 @@ displaybg() {
 }
 
 createlockpic() {
-	RES=()
+	RES=""
 	RESSORT=$(while read LINE
 			do
-			    if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]
+				if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]
 				then
-			        W=${BASH_REMATCH[1]}
-			        H=${BASH_REMATCH[2]}
 					w=${BASH_REMATCH[3]}
-					echo $w $W $H
-			    fi
-			done <<<"$(xrandr)")
+					h=${BASH_REMATCH[4]}
+					W=${BASH_REMATCH[1]}
+					H=${BASH_REMATCH[2]}
+					RES+="${w}+${h}+${W}+${H} "
+				fi
+			done <<<"$(xrandr)" | sort -n)
 
-	while read LINE
-	do
-	    if [[ "$LINE" =~ ([0-9]+)\ ([0-9]+)\ ([0-9]+) ]]
-		then
-	        W=${BASH_REMATCH[2]}
-			H=${BASH_REMATCH[3]}
-			RES+=("${W}x${H}")
-		fi
-	done <<<"$(echo "${RESSORT}")"
+	#while read LINE
+	#do
+	#	if [[ "$LINE" =~ ([0-9]+)\ ([0-9]+)\ ([0-9]+)\ ([0-9]+) ]]
+	#	then
+	#		h=${BASH_REMATCH[2]}
+	#		W=${BASH_REMATCH[3]}
+	#		H=${BASH_REMATCH[4]}
+	#		RES+=("${W}x${H},4")
+	#	fi
+	#done <<<"$(echo "${RESSORT}")"
 
 	n=0
-	for res in "${RES[@]}"
+	RES=($RES)
+	for resloc in "${RES[@]}"
 	do
+		RESLOC=(${resloc//+/' '})
+		w=${RESLOC[0]}
+		h=${RESLOC[1]}
+		W=${RESLOC[2]}
+		H=${RESLOC[3]}
+		res="${W}x${H}"
+		ext="$(( $W + $H ))x$(( $w + $h ))"
+
 		# https://unix.stackexchange.com/questions/146773/why-bash-increment-n-0n-return-error
 		(( n++ )) || :
 		# create a picture fill-resized to each display for the lockscreen
-		convert "${background}" -resize ${res}^ \
-			                    -gravity center \
-				                -extent ${res} \
-					            "${lockscreen_image}-${n}"
+		convert "${background}" -resize ${res} \
+								-gravity center \
+								-extent ${ext} \
+								"${lockscreen_image}-${n}"
 	done
 	montage ${lockscreen_image}-* -tile ${n}x1 -geometry +0+0 "${lockscreen_image}"
 	rm -f ${lockscreen_image}-*
 }
 
 trap_loop() {
-    loop
+	echo
+    trap - SIGINT # clear the trap so we can really stop the loop here
+    sleep 0.5
 }
 
 loop() {
     while true
     do
+		echo -n "$(date +%H:%M) "
+        setbg ${target}
         # press ctrl-c to change wallpaper, or twice to exit
-        trap SIGINT
-        sleep 0.5
-        setbg
+		set +o errexit # errexit overrides trap
         trap trap_loop SIGINT
         sleep ${setbg_delay}
     done
@@ -144,49 +150,64 @@ loop() {
 showpath() {
     # show which picture is used
 	file="$(readlink --canonicalize ${bglnk})"
-	filename=$(basename "$file")
-	dirname=$(dirname "$file")
-	echo $file
-	notify-send -u low "$filename" "$dirname"
+	filename=$(basename "${file}")
+	dirname=$(dirname "${file}")
+	cli_notify low "${filename}" "${dirname}"
+	echo -e "${dirname}/${filename}\n"
 }
 
 setbg() {
-    checktarget
-    pickpic
+    checktarget $1
+	pickpic
     definebg
     displaybg
     showpath
 }
 
 lock() {
-    checktarget
-    pickpic
-    createlockpic
-    showpath
+    checktarget $1
+	pickpic
+    #createlockpic
+    ln -nfs "${background}" "${lockscreen_image}"
 }
 
 main() {
     # what parameters did we get?
-    checkcli
-    case ${action} in
-        ## keep this in sync with options in checkcli
-        'default')  # default action, pick and set a background
-            setbg
-            ;;
-		'redisplay'|'show') # just redisplay bg, adjusts new screen sizes
-			showpath
-            displaybg
-            ;;
-        'loop')
-            loop
-            ;;
-        'lock')
-            lock
-            ;;
-        *)
-            error "Unknown action \"${action}\""
-            ;;
-    esac
+	local action
+    if [ -z "$p1" ]				## ZERO PARAMETERS
+    then						# default action, pick and set a background
+        target="${defaultbg}"
+        setbg ${target}
+    elif [ -z "$p2" ]			## ONE PARAMETER
+    then						#	action without argument, or
+		case ${p1} in			#	just a target
+			'redisplay'|'show') # just redisplay bg, adjusts new screen sizes
+				showpath
+				displaybg
+				;;
+			'lock'|"loop")		# these need a parameter
+				error "setbg" "The action '${p1}' needs a parameter"
+				;;
+			*)					# must be a target
+				target="${p1}"
+				setbg "${target}"
+				;;
+		esac
+	else						## TWO PARAMERS
+        action="${p1}"			#   action with
+        target="${p2}"			#   parameter
+		case ${action} in
+			'lock')				# generate a lock screen with given target
+				lock ${target}
+				;;
+			'loop')
+				loop
+				;;
+			*)
+				error "Unknown action" "${action}"
+				;;
+			esac
+    fi
 }
 
 cd ~
