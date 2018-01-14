@@ -80,55 +80,6 @@ displaybg() {
     feh --no-fehbg --bg-fill ${bglnk}
 }
 
-createlockpic() {
-	RES=""
-	RESSORT=$(while read LINE
-			do
-				if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]
-				then
-					w=${BASH_REMATCH[3]}
-					h=${BASH_REMATCH[4]}
-					W=${BASH_REMATCH[1]}
-					H=${BASH_REMATCH[2]}
-					RES+="${w}+${h}+${W}+${H} "
-				fi
-			done <<<"$(xrandr)" | sort -n)
-
-	#while read LINE
-	#do
-	#	if [[ "$LINE" =~ ([0-9]+)\ ([0-9]+)\ ([0-9]+)\ ([0-9]+) ]]
-	#	then
-	#		h=${BASH_REMATCH[2]}
-	#		W=${BASH_REMATCH[3]}
-	#		H=${BASH_REMATCH[4]}
-	#		RES+=("${W}x${H},4")
-	#	fi
-	#done <<<"$(echo "${RESSORT}")"
-
-	n=0
-	RES=($RES)
-	for resloc in "${RES[@]}"
-	do
-		RESLOC=(${resloc//+/' '})
-		w=${RESLOC[0]}
-		h=${RESLOC[1]}
-		W=${RESLOC[2]}
-		H=${RESLOC[3]}
-		res="${W}x${H}"
-		ext="$(( $W + $H ))x$(( $w + $h ))"
-
-		# https://unix.stackexchange.com/questions/146773/why-bash-increment-n-0n-return-error
-		(( n++ )) || :
-		# create a picture fill-resized to each display for the lockscreen
-		convert "${background}" -resize ${res} \
-								-gravity center \
-								-extent ${ext} \
-								"${lockscreen_image}-${n}"
-	done
-	montage ${lockscreen_image}-* -tile ${n}x1 -geometry +0+0 "${lockscreen_image}"
-	rm -f ${lockscreen_image}-*
-}
-
 trap_loop() {
 	echo
     trap - SIGINT # clear the trap so we can really stop the loop here
@@ -167,8 +118,7 @@ setbg() {
 lock() {
     checktarget $1
 	pickpic
-    #createlockpic
-    ln -nfs "${background}" "${lockscreen_image}"
+    cp "${background}" "${lockscreen_image}"
 }
 
 main() {

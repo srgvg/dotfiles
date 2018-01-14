@@ -1,5 +1,34 @@
 #!/bin/bash
 
+# # i3lock on commputer sleep
+#   Source: https://bbs.archlinux.org/viewtopic.php?pid=1170536#p1170536 by 65kid
+#   Also: https://wiki.debian.org/ScreenLockingOnSleep
+#
+## /etc/systemd/system/i3lock.service
+
+# [Unit]
+# Description=i3lock
+# Before=sleep.target
+#
+# [Service]
+# User=serge
+# Type=notify
+# NotifyAccess=all
+# Environment=DISPLAY=:0.0
+# ExecStart=/home/serge/bin/lock
+# PIDFile=/var/run/user/1000/i3lock/pid
+#
+# [Install]
+# WantedBy=sleep.target
+#
+
+DEBUG=""
+#DEBUG=1
+if [ -n "${DEBUG}" ]
+then
+	set -x
+fi
+
 set -o nounset
 set -o errexit
 set -o pipefail
@@ -24,10 +53,23 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ## subroutines              ##
 ##############################
 
-function make_blurred() {
-	BLUR="-blur 0x5"
+function prepare() {
+	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
+	then
+		# we requested an Picture Background: update lockscreen with a background
+		setbg lock "$lockscreen"
+	elif [ "$lockscreen" = "blurred" ]
+	then
+		make_blurred
+	fi
+	annotate_lockscreen ${lockscreen_image}
+	PLAYERCTLSTATUS="$(playerctl status ||:)"
+	ponymix is-muted && MUTED=yes || MUTED=no || :
+}
 
+function make_blurred() {
 	# take a screenshot and blur it for the lock screen
+	BLUR="-blur 0x5"
 	/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
 	convert "$screenshot_image" ${BLUR} "$lockscreen_image"
 }
@@ -44,59 +86,33 @@ function annotate_lockscreen() {
 	LOCK=()
 	while read LINE
 	do
-	    if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
-	        W=${BASH_REMATCH[1]}
-	        H=${BASH_REMATCH[2]}
-	        Xoff=${BASH_REMATCH[3]}
-	        Yoff=${BASH_REMATCH[4]}
-	        MIDXi=$((W / 2 + Xoff - 60  / 2))
-	        MIDYi=$((H / 2 + Yoff - 60  / 2))
-	        MIDXt=$((W / 2 + Xoff - 285 / 2))
-	        MIDYt=$((H / 2 + Yoff + 320 / 2))
-	        LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
-	               -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
-	               -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT" \
-	               $ICON -geometry +$MIDXi+$MIDYi -composite)
-	    fi
+		if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
+			W=${BASH_REMATCH[1]}
+			H=${BASH_REMATCH[2]}
+			Xoff=${BASH_REMATCH[3]}
+			Yoff=${BASH_REMATCH[4]}
+			MIDXi=$((W / 2 + Xoff - 60  / 2))
+			MIDYi=$((H / 2 + Yoff - 60  / 2))
+			MIDXt=$((W / 2 + Xoff - 285 / 2))
+			MIDYt=$((H / 2 + Yoff + 320 / 2))
+			LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
+				   -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
+				   -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT" \
+				   $ICON -geometry +$MIDXi+$MIDYi -composite)
+		fi
 	done <<<"$(xrandr)"
 	convert "$image" "${LOCK[@]}" "$image"
 }
 
-function prepare() {
-	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
-	then
-	    # we requested an Picture Background: update lockscreen with a background
-	    setbg lock "$lockscreen"
-	elif [ "$lockscreen" = "blurred" ]
-	then
-		make_blurred
-	fi
-	annotate_lockscreen ${lockscreen_image}
-	PLAYERCTLSTATUS="$(playerctl status ||:)"
-	ponymix is-muted && MUTED=yes || MUTED=no
-}
-
-function setpid() {
-	PID=${1:--1}
-	echo $PID >"${PIDFILE}"
-	echo lock started with pid $PID
-}
-
-function delpid() {
-	rm -fv "${PIDFILE}"
-}
-
 function pre_lock() {
-	setpid
-
 	# make sure music stops
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
-		playerctl stop
+		playerctl stop || :
 	fi
 	if [ "${MUTED}" = "no" ]
 	then
-		ponymix mute >/dev/null
+		ponymix mute >/dev/null || :
 	fi
 
 	# make sure presentation mode is off
@@ -107,6 +123,25 @@ function pre_lock() {
 
 	# lock remote irssi screen
 	irc lock || :
+}
+
+function perform_lock() {
+	# start the real lock command in the background, set the PID file,
+	# then wait for the lock to end (when unlocked)
+	if [ -z "${DEBUG}" ]
+	then
+        i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
+	else
+		sleep 30 &
+	fi
+	# see etc/root/etc/systemd/system/i3lock.service where PIDFile is defined
+	local PID=$!
+	setpid $PID
+	# give i3lock a bit of time to display the image
+	sleep 1
+	# see etc/root/etc/systemd/system/i3lock.service where this service has type 'notify'
+	systemd-notify --ready --status="Locked with image $lockscreen"
+	wait
 }
 
 function post_lock() {
@@ -120,37 +155,39 @@ function post_lock() {
 	# re-renable music if it was playing
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
-		playerctl play
-		ponymix unmute >/dev/null
+		playerctl play || :
+		ponymix unmute >/dev/null || :
 	fi
 	if [ "${MUTED}" = "no" ]
 	then
-		ponymix unmute >/dev/null
+		ponymix unmute >/dev/null || :
 	fi
 
 	delpid
 }
 
-function perform_lock() {
-	pre_lock
+function setpid() {
+	PID=${1:-$$}
+	echo $PID >"${PIDFILE}"
+	echo lock started with pid $PID
+}
 
-	# perform the lock and exit this script
-	# see etc/root/etc/systemd/system/i3lock.service where this lock is called 'forking'
-    # lock screen with a background picture
-    # --nofork makes sure i3lock doesn't return until it gets unlocked
-    i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
-	setpid $!
-	wait
-
-	# post lock to be run after screen is unlocked
-	post_lock
+function delpid() {
+	rm -fv "${PIDFILE}"
 }
 
 function main() {
+	# prepare lock screen image
 	prepare
-	perform_lock &  # goes to background as this script needs to end and handover to systemd (in case called as part of suspend)
-	# add in a bit to make sure the screen is locked before we handover to systemd suspend
-	sleep 1
+
+	# prepare system before locking
+	pre_lock
+
+    # lock screen with a lock screen image picture
+	perform_lock
+
+	# post lock to be run after screen is unlocked
+	post_lock
 	}
 
 main
