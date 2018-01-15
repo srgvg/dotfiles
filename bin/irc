@@ -13,10 +13,12 @@ if [ "$1" = "lock" ]
 then
     # only lock existing open connections, so check if the CM socket is
     # available
-    ssh ${irssi_host} -O check >/dev/null 2>&1 && ssh ${irssi_host} screen -S irc -d -X lockscreen
+    ssh ${irssi_host} -O check >/dev/null 2>&1 \
+		&& ssh ${irssi_host} screen -S irc -d -X lockscreen &>/dev/null || :
 elif [ "$1" = "unlock" ]
 then
-	ssh ${irssi_host} -O check >/dev/null 2>&1 && ssh ${irssi_host} pkill -9 irclock
+	ssh ${irssi_host} -O check &>/dev/null \
+		&& ssh ${irssi_host} pkill -9 irclock &>/dev/null || :
 else
     trap on_exit INT TERM EXIT
     ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"

@@ -4,40 +4,27 @@
 #   Source: https://bbs.archlinux.org/viewtopic.php?pid=1170536#p1170536 by 65kid
 #   Also: https://wiki.debian.org/ScreenLockingOnSleep
 #
-## /etc/systemd/system/i3lock.service
-
-# [Unit]
-# Description=i3lock
-# Before=sleep.target
-#
-# [Service]
-# User=serge
-# Type=notify
-# NotifyAccess=all
-# Environment=DISPLAY=:0.0
-# ExecStart=/home/serge/bin/lock
-# PIDFile=/var/run/user/1000/i3lock/pid
-#
-# [Install]
-# WantedBy=sleep.target
-#
 
 DEBUG=""
 #DEBUG=1
-if [ -n "${DEBUG}" ]
+#DEBUG=2
+if [ -n "${DEBUG}" ] && [ $DEBUG -gt 1 ]
 then
 	set -x
 fi
+LOCKSLEEP=5
+TIMEFORMAT='%3R'
 
 set -o nounset
 set -o errexit
 set -o pipefail
 
-# log this scripts full output
-# exec >> ~/.lock.log 2>&1
-
 # load some defaults
 source "$HOME/etc/defaults"
+
+# log this scripts full output
+logfile="${lockscreen_image%.*}.log"
+exec &> >(tee "${logfile}")
 
 i3lock_icons="$HOME/Pictures/icons/i3lock"
 i3lock_icon="${i3lock_icons}/token.png"
@@ -54,27 +41,36 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ##############################
 
 function prepare() {
+	echo "Check music players and sound volume. (${SECONDS}s)"
+
+	PLAYERCTLSTATUS="$(playerctl status ||:)"
+	ponymix is-muted && MUTED=yes || MUTED=no || :
+
+	echo "Pick the right lockscreen image.(${SECONDS}s)"
 	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
 	then
-		# we requested an Picture Background: update lockscreen with a background
+		echo "Choosing a picture background. (${SECONDS}s)"
 		setbg lock "$lockscreen"
 	elif [ "$lockscreen" = "blurred" ]
 	then
 		make_blurred
+	else
+		echo "Keeping the current lockscreen. (${SECONDS}s)"
+		return
 	fi
 	annotate_lockscreen ${lockscreen_image}
-	PLAYERCTLSTATUS="$(playerctl status ||:)"
-	ponymix is-muted && MUTED=yes || MUTED=no || :
 }
 
 function make_blurred() {
 	# take a screenshot and blur it for the lock screen
+	echo "Take a screenshot and blur it. (${SECONDS}s)"
 	BLUR="-blur 0x5"
 	/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
 	convert "$screenshot_image" ${BLUR} "$lockscreen_image"
 }
 
 function annotate_lockscreen() {
+	echo "Annotate lockscreen with lock symbol and optional text. (${SECONDS}s)"
 	TEXT=""
 
 	local image
@@ -105,23 +101,28 @@ function annotate_lockscreen() {
 }
 
 function pre_lock() {
-	# make sure music stops
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
-		playerctl stop || :
+		echo "Stop any music player. (${SECONDS}s)"
+		playerctl stop || echo "Could not stop the music player. (${SECONDS}s)" >&2
 	fi
 	if [ "${MUTED}" = "no" ]
 	then
-		ponymix mute >/dev/null || :
+		echo "Mute sound. (${SECONDS}s)"
+		ponymix mute >/dev/null || echo "Could not mute the sound. (${SECONDS}s)" >&2
 	fi
 
-	# make sure presentation mode is off
+	echo "Disable presentation mode. (${SECONDS}s)"
 	presentation-mode stop
 
-	# pause notifications (sleep because seems too soon after pres mode stop)
-	(sleep 1; killall -v -SIGUSR1 dunst) & # pause
+    # sleep because seems too soon after pres mode stop
+	(
+		echo "Pause notifications. (${SECONDS}s)"
+		sleep 1
+		killall -v -SIGUSR1 dunst
+	 ) &
 
-	# lock remote irssi screen
+	echo "Lock remote irssi screen. (${SECONDS}s)"
 	irc lock || :
 }
 
@@ -130,37 +131,61 @@ function perform_lock() {
 	# then wait for the lock to end (when unlocked)
 	if [ -z "${DEBUG}" ]
 	then
+		echo "Running i3lock. (${SECONDS}s)"
         i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
 	else
-		sleep 30 &
+		echo "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
+		sleep ${LOCKSLEEP} &
 	fi
-	# see etc/root/etc/systemd/system/i3lock.service where PIDFile is defined
+
+	# get and set i3lock pid
 	local PID=$!
 	setpid $PID
+
 	# give i3lock a bit of time to display the image
 	sleep 1
-	# see etc/root/etc/systemd/system/i3lock.service where this service has type 'notify'
-	systemd-notify --ready --status="Locked with image $lockscreen"
+
+	## /etc/systemd/system/i3lock.service
+	#
+	# [Unit]
+	# Description=i3lock
+	# Before=sleep.target
+	#
+	# [Service]
+	# User=serge
+	# Type=notify
+	# NotifyAccess=all
+	# Environment=DISPLAY=:0.0
+	# ExecStart=/home/serge/bin/lock
+	# PIDFile=/var/run/user/1000/i3lock/pid
+	#
+	# [Install]
+	# WantedBy=sleep.target
+	#
+	systemd-notify --ready --status="Screen locked with image $lockscreen" &>/dev/null && \
+		echo "Notifying systemd the lock is done. (${SECONDS}s)" || :
+
 	wait
 }
 
 function post_lock() {
 
-	# unlock remote irssi screen
+	echo "Unlock remote irssi screen. (${SECONDS}s)"
 	irc unlock || :
 
-    # re-enable notifications when unlock happens
+    echo "Re-enable notifications. (${SECONDS}s)"
     killall -v -SIGUSR2 dunst
 
 	# re-renable music if it was playing
 	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 	then
-		playerctl play || :
-		ponymix unmute >/dev/null || :
+		echo "Restart music player. (${SECONDS}s)"
+		playerctl play || echo "Could not start the music player." >&2
 	fi
 	if [ "${MUTED}" = "no" ]
 	then
-		ponymix unmute >/dev/null || :
+		echo "Unmute the sounds again. (${SECONDS}s)"
+		ponymix unmute >/dev/null || echo "Could not unmute the sound." >&2
 	fi
 
 	delpid
@@ -169,7 +194,7 @@ function post_lock() {
 function setpid() {
 	PID=${1:-$$}
 	echo $PID >"${PIDFILE}"
-	echo lock started with pid $PID
+	echo "Lock process started with pid $PID, set in ${PIDFILE}. (${SECONDS}s)"
 }
 
 function delpid() {
@@ -190,5 +215,6 @@ function main() {
 	post_lock
 	}
 
+date +%Y.%m.%d-%H:%M
 main
 

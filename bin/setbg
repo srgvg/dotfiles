@@ -40,7 +40,7 @@ checktarget() {
 			if [ -r "${deeptarget}" ]
 				then target="${deeptarget}"
 			else
-				error "Cannot find arget ${_target}"
+				error "Cannot find target ${_target}"
 			fi
 		fi
 	else
