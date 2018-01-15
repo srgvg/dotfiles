@@ -32,7 +32,7 @@ set $red                    #FF0000
 set $IGNORED                #000000
 
 # window parameters
-set $defaultborder          pixel 3
+set $defaultborder          pixel 5
 
 # workspaces
 set $ws_www         1
@@ -681,8 +681,7 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 # assignments are not considered.
 # Maar volgens mij is het omgekeerd.
 #
-#
-for_window [window_type="normal"]           border $defaultborder
+#for_window [window_type="normal"]           border $defaultborder
 
 
 ###############################################################################
@@ -730,7 +729,7 @@ for_window [class="Gnome-terminal"]     floating enable
 #
 # Tools
 #
-for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 5
+for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 10
 for_window [class="Gcalctool"]                                                          floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable
 for_window [class="Nautilus" instance="file_progress"]                                  floating enable
