@@ -308,7 +308,8 @@ bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
-bindsym $mod+shift+f fullscreen toggle global
+bindsym $mod+Shift+f fullscreen toggle global
+#bindsym $mod+Control+Alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+e layout toggle split
@@ -644,9 +645,9 @@ bindsym XF86MonBrightnessDown exec --no-startup-id brightness-notify.sh down
 bindsym XF86MonBrightnessUp   exec --no-startup-id brightness-notify.sh up
 
 ## Fn-F7 XF86Display
-bindsym XF86Display exec --no-startup-id rerandr3 restore; i3-move-workspaces
-bindsym $mod+Scroll_Lock exec --no-startup-id rerandr3 restore i3-move-workspaces
-bindsym Shift+XF86Display exec --no-startup-id xdisplcd
+bindsym XF86Display exec --no-startup-id        "rerandr3 restore; sleep 3; i3-move-workspaces"
+bindsym $mod+Scroll_Lock exec --no-startup-id   "rerandr3 restore; sleep 3; i3-move-workspaces"
+bindsym Shift+XF86Display exec --no-startup-id      xdisplcd
 bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisplcd
 
 # Fn-F8 XF86WLAN
@@ -756,7 +757,7 @@ assign      [class="^(browser-)(serge|facebook)"]                               
 for_window  [class="^(browser-.*)"]                                             layout tabbed
 for_window  [class="^(browser-tmp)"]                                            floating enable
 assign      [class="^(browser-radio)"]                                          $ws_util_music
-for_window  [class="^(browser-radio)"]                                          floating disable, split h, layout tiling
+for_window  [class="^(browser-radio)"]                                          floating disable, layout tiling
 
 
 ###############################################################################
@@ -862,8 +863,7 @@ exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
 exec "blueman-applet &"
-#exec "keepassxc &"
-exec "keepass2 &"
+exec "keepassxc &"
 exec "franz &"
 exec "signal-desktop"
 exec "spotify &"
