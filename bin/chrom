@@ -118,6 +118,7 @@ case ${PROFILECLASS} in
 		SWITCHES="${SWITCHES} --disable-infobars"
 		SWITCHES="${SWITCHES} --disable-translate"
 		SWITCHES="${SWITCHES} --window-size=1200,800"
+		SWITCHES="${SWITCHES} --incognito"
 
 		_addpreferences
 		trap _cleanup EXIT
