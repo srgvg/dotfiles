@@ -752,9 +752,9 @@ for_window [class="Files" instance="small"]                                     
 
 for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
 
-for_window  [class="^(browsertmp)"]                                             floating enable
 assign      [class="^(browser-)(serge|facebook)"]                               $ws_www
 for_window  [class="^(browser-.*)"]                                             layout tabbed
+for_window  [class="^(browser-tmp)"]                                            floating enable
 assign      [class="^(browser-radio)"]                                          $ws_util_music
 for_window  [class="^(browser-radio)"]                                          floating disable, split h, layout tiling
 

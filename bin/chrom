@@ -97,7 +97,6 @@ mkdir -p "${PROFILESDIR}" "${CACHEDIR}"
 if [ -n "${1:-}" ]
 then
 	PROFILECLASS="${1}"
-	shift
 else
 	PROFILECLASS="tmp"
 fi
@@ -106,11 +105,13 @@ case ${PROFILECLASS} in
 	serge*|facebook|radio|bryxx)
 		CLASS=browser-${PROFILECLASS}
 		PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
+		shift
 		;;
 	*)
-		CLASS=browser${PROFILECLASS}
 		PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
 		PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
+		CLASS="browser-${PROFILENAME}"
+		PROFILECLASS="${PROFILENAME}"
 		CACHEPATH="${CACHEDIR}/${PROFILENAME}"
 
 		SWITCHES="${SWITCHES} --no-first-run"
@@ -139,5 +140,6 @@ fi
 
 # shellcheck disable=SC2068
 echo /usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
+# shellcheck disable=SC2068
 /usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
 
