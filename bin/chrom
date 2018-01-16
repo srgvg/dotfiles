@@ -1,129 +1,143 @@
 #!/bin/bash
 # based on https://www.uninformativ.de/blog/postings/2016-06-19/0/POSTING-en.html
-#
 
-echo $*
-defaultbrowser="google-chrome"
+set -o nounset
+set -o errexit
+set -o pipefail
 
-browser=$(basename $0)
-case ${browser} in
-	google-chrome)	:;;
-	chromium)		:;;
-	*)				browser=${defaultbrowser} ;;
-esac
 
-PROFILESDIR="$HOME/.config/${browser}/profiles"
+BROWSER="google-chrome"
+SWITCHES=""
+PROFILESDIR="$HOME/.config/${BROWSER}/profiles"
 CACHEDIR="$HOME/.cache/google-chrome/profiles"
 
-ENV="${1}"
-case $ENV in
-	serge*|bryxx*)
-		shift
-		class=browser-${ENV}
-		tmp=${PROFILESDIR}/${ENV}
-		;;
-	facebook*)
-		shift
-		class=browser-${ENV}
-		tmp=${PROFILESDIR}/${ENV}
-		#switches="${switches} https://www.facebook.com"
+function _cleanup() {
+	rm -Rf "${PROFILEPATH}" "${CACHEPATH}"
+}
+
+function _addpreferences() {
+	local=PREFERENCEDIR
+	# shellcheck disable=SC2034
+	local=PREFERENCEPATH
+	PREFERENCEDIR="${PROFILEPATH}/user_data/Default"
+	PREFERENCEPATH="${PREFERENCEDIR}/Preferences"
+
+	mkdir -p "${PREFERENCEDIR}"
+	cat >"${PREFERENCEPATH}" <<-EOF
+		{
+		  	"translate_blocked_languages": [
+		    	"en",
+		    	"nl",
+		    	"fr"
+		  	],
+		    "alternate_error_pages": {
+		        "enabled": false
+		    },
+		    "autofill": {
+		        "enabled": false
+		    },
+		    "BROWSER": {
+				"show_home_button" : false,
+				"check_default_BROWSER" : false
+		        "custom_chrome_frame": false,
+		        "enable_spellchecking": false
+		    },
+		  	"bookmark_bar": {
+		    	"show_apps_shortcut": false,
+		    	"show_on_all_tabs": false
+		  	},
+		    "download": {
+			    "directory_upgrade": true,
+			    "prompt_for_download": true,
+		        "default_directory": "~/PROFILEPATH"
+		    },
+		    "net": {
+		        "network_prediction_options": 2
+		    },
+		    "profile": {
+		        "password_manager_enabled": false
+		    },
+		    "safebrowsing": {
+		        "enabled": false
+		    },
+		    "search": {
+		        "suggest_enabled": false
+			},
+		  	"distribution": {
+				"auto_launch_chrome": false,
+		    	"skip_first_run_ui": true,
+				"import_bookmarks": true,
+		    	"import_search_engine": false,
+		    	"import_history": false,
+				"import_home_page": true,
+		    	"create_all_shortcuts": false,
+		    	"do_not_launch_chrome": true,
+		    	"make_chrome_default": false
+		    	"make_chrome_default_for_user": false,
+		    	"suppress_first_run_bubble": true,
+		    	"do_not_create_desktop_shortcut": true,
+		    	"do_not_create_quick_launch_shortcut": true,
+		    	"do_not_launch_chrome": true,
+		    	"do_not_register_for_update_launch": true,
+		    	"suppress_first_run_default_BROWSER_prompt": true,
+				"show_welcome_page": false,
+				"skip_first_run_ui": true,
+			    "suppress_first_run_bubble": true,
+		    	"system_level": true,
+		    	"verbose_logging": true
+			  },
+			"sync_promo": {
+		    	"show_on_first_run_allowed": false
+		    }
+		}
+		EOF
+}
+
+mkdir -p "${PROFILESDIR}" "${CACHEDIR}"
+if [ -n "${1:-}" ]
+then
+	PROFILECLASS="${1}"
+	shift
+else
+	PROFILECLASS="tmp"
+fi
+
+case ${PROFILECLASS} in
+	serge*|facebook|radio|bryxx)
+		CLASS=browser-${PROFILECLASS}
+		PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
 		;;
 	*)
-		class=tempbrowser
-		mkdir -p ${PROFILESDIR}
-		tmp=$(mktemp -d -p ${PROFILESDIR})
-		tmpname=${tmp#${PROFILESDIR}/}
-		trap 'rm -Rf "$tmp" "${CACHEDIR}/$tmpname"' EXIT
-		mkdir -p "$tmp"/user_data/Default
-		cat >"$tmp"/user_data/Default/Preferences <<EOF
-{
-  	"translate_blocked_languages": [
-    	"en",
-    	"nl",
-    	"fr"
-  	],
-    "alternate_error_pages": {
-        "enabled": false
-    },
-    "autofill": {
-        "enabled": false
-    },
-    "browser": {
-		"show_home_button" : false, 
-		"check_default_browser" : false
-        "custom_chrome_frame": false,
-        "enable_spellchecking": false
-    },
-  	"bookmark_bar": {
-    	"show_apps_shortcut": false,
-    	"show_on_all_tabs": false
-  	},
-    "download": {
-	    "directory_upgrade": true,
-	    "prompt_for_download": true,
-        "default_directory": "~/tmp"
-    },
-    "net": {
-        "network_prediction_options": 2
-    },
-    "profile": {
-        "password_manager_enabled": false
-    },
-    "safebrowsing": {
-        "enabled": false
-    },
-    "search": {
-        "suggest_enabled": false
-	},
-  	"distribution": {
-		"auto_launch_chrome": false,
-    	"skip_first_run_ui": true,
-		"import_bookmarks": true,
-    	"import_search_engine": false,
-    	"import_history": false,
-		"import_home_page": true,
-    	"create_all_shortcuts": false,
-    	"do_not_launch_chrome": true,
-    	"make_chrome_default": false
-    	"make_chrome_default_for_user": false,
-    	"suppress_first_run_bubble": true,
-    	"do_not_create_desktop_shortcut": true,
-    	"do_not_create_quick_launch_shortcut": true,
-    	"do_not_launch_chrome": true,
-    	"do_not_register_for_update_launch": true,
-    	"suppress_first_run_default_browser_prompt": true,
-		"show_welcome_page": false,
-		"skip_first_run_ui": true,
-	    "suppress_first_run_bubble": true,
-    	"system_level": true,
-    	"verbose_logging": true
-	  },
-	"sync_promo": {
-    	"show_on_first_run_allowed": false
-    }
-}
-EOF
-		switches="${switches} --no-first-run"
-		switches="${switches} --disable-infobars"
-		switches="${switches} --disable-translate"
-		switches="${switches} --window-size=1200,800"
+		CLASS=browser${PROFILECLASS}
+		PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
+		PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
+		CACHEPATH="${CACHEDIR}/${PROFILENAME}"
+
+		SWITCHES="${SWITCHES} --no-first-run"
+		SWITCHES="${SWITCHES} --disable-infobars"
+		SWITCHES="${SWITCHES} --disable-translate"
+		SWITCHES="${SWITCHES} --window-size=1200,800"
+
+		_addpreferences
+		trap _cleanup EXIT
 		;;
 esac
 
 
 
-args=("$@")
-echo "${args[@]}"
+ARGS=("$@")
 
-if [ ! -z "${class}" ]
+if [ -n "${CLASS}" ]
 then
-	switches="${switches} --class=${class}"
+	SWITCHES="${SWITCHES} --class=${CLASS}"
 fi
 
-if [ ! -z "${tmp}" ]
+if [ -n "${PROFILEPATH}" ]
 then
-	switches="${switches} --user-data-dir=$tmp"
+	SWITCHES="${SWITCHES} --user-data-dir=${PROFILEPATH}"
 fi
 
-/usr/bin/${browser} ${switches} "${args[@]}"
+# shellcheck disable=SC2068
+echo /usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
+/usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
 

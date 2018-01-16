@@ -752,10 +752,11 @@ for_window [class="Files" instance="small"]                                     
 
 for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
 
-assign      [class="^(browser-*)"]                          $ws_www
-for_window  [class="^(browser-*)"]                          layout tabbed
-for_window  [class="^(browser-*)" window_role="app"]        floating disable
-for_window  [class="tempbrowser" window_role="browser"]     border pixel 5, floating enable
+for_window  [class="^(browsertmp)"]                                             floating enable
+assign      [class="^(browser-)(serge|facebook)"]                               $ws_www
+for_window  [class="^(browser-.*)"]                                             layout tabbed
+assign      [class="^(browser-radio)"]                                          $ws_util_music
+for_window  [class="^(browser-radio)"]                                          floating disable, split h, layout tiling
 
 
 ###############################################################################
@@ -820,6 +821,7 @@ for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed,
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout tabbed
+
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window [class="Spotify"]   move to workspace $ws_util_music
 
