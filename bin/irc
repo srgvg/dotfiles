@@ -18,7 +18,9 @@ then
 elif [ "$1" = "unlock" ]
 then
 	ssh ${irssi_host} -O check &>/dev/null \
-		&& ssh ${irssi_host} pkill -9 irclock &>/dev/null || :
+		&& ssh ${irssi_host} pkill -9 irclock &>/dev/null ||: \
+		&& ssh ${irssi_host} screen -S irc -p 0 \
+		   -X stuff '\\n/1\\n\\n/away\\n' ||:
 else
     trap on_exit INT TERM EXIT
     ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
