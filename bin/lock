@@ -30,6 +30,8 @@ i3lock_icons="$HOME/Pictures/icons/i3lock"
 i3lock_icon="${i3lock_icons}/token.png"
 lockscreen="${1:-$default_lockscreen}"
 
+# SYSTEMDSERVICE is set to yes in the systemd service unit file
+SYSTEMDSERVICE=${SYSTEMDSERVICE:-no}
 MYUID="$(id -u "${USER}")"
 PIDPATH=/var/run/user/${MYUID:-1000}/i3lock
 PIDFILE=${PIDPATH}/pid
@@ -40,11 +42,25 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ## subroutines              ##
 ##############################
 
-function prepare() {
-	echo "Check music players and sound volume. (${SECONDS}s)"
+function systemdservice() {
+	if [ "${SYSTEMDSERVICE}" = yes ]
+	then
+		return 0
+	else
+		return 1
+	fi
+}
 
-	PLAYERCTLSTATUS="$(playerctl status ||:)"
-	ponymix is-muted && MUTED=yes || MUTED=no || :
+function prepare() {
+	if ! systemdservice
+	then # these checks don't work when ran via systemd (needs dbus)
+		echo "Check music players and sound volume. (${SECONDS}s)"
+		PLAYERCTLSTATUS="$(playerctl status ||:)"
+		ponymix is-muted && MUTED=yes || MUTED=no || :
+	else
+		PLAYERCTLSTATUS="unknown"
+		MUTED="unknown"
+	fi
 
 	echo "Pick the right lockscreen image.(${SECONDS}s)"
 	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
@@ -101,15 +117,18 @@ function annotate_lockscreen() {
 }
 
 function pre_lock() {
-	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+	if ! systemdservice
 	then
-		echo "Stop any music player. (${SECONDS}s)"
-		playerctl stop || echo "Could not stop the music player. (${SECONDS}s)" >&2
-	fi
-	if [ "${MUTED}" = "no" ]
-	then
-		echo "Mute sound. (${SECONDS}s)"
-		ponymix mute >/dev/null || echo "Could not mute the sound. (${SECONDS}s)" >&2
+		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+		then
+			echo "Stop any music player. (${SECONDS}s)"
+			playerctl stop || echo "Could not stop the music player. (${SECONDS}s)" >&2
+		fi
+		if [ "${MUTED}" = "no" ]
+		then
+			echo "Mute sound. (${SECONDS}s)"
+			ponymix mute >/dev/null || echo "Could not mute the sound. (${SECONDS}s)" >&2
+		fi
 	fi
 
 	echo "Disable presentation mode. (${SECONDS}s)"
@@ -158,6 +177,7 @@ function perform_lock() {
 	# Environment=DISPLAY=:0.0
 	# ExecStart=/home/serge/bin/lock
 	# PIDFile=/var/run/user/1000/i3lock/pid
+	# Environment=SYSTEMDSERVICE=yes
 	#
 	# [Install]
 	# WantedBy=sleep.target
@@ -176,16 +196,19 @@ function post_lock() {
     echo "Re-enable notifications. (${SECONDS}s)"
     killall -v -SIGUSR2 dunst
 
-	# re-renable music if it was playing
-	if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+	if ! systemdservice
 	then
-		echo "Restart music player. (${SECONDS}s)"
-		playerctl play || echo "Could not start the music player." >&2
-	fi
-	if [ "${MUTED}" = "no" ]
-	then
-		echo "Unmute the sounds again. (${SECONDS}s)"
-		ponymix unmute >/dev/null || echo "Could not unmute the sound." >&2
+		# re-renable music if it was playing
+		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+		then
+			echo "Restart music player. (${SECONDS}s)"
+			playerctl play || echo "Could not start the music player." >&2
+		fi
+		if [ "${MUTED}" = "no" ]
+		then
+			echo "Unmute the sounds again. (${SECONDS}s)"
+			ponymix unmute >/dev/null || echo "Could not unmute the sound." >&2
+		fi
 	fi
 
 	delpid
