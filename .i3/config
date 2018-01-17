@@ -32,7 +32,7 @@ set $red                    #FF0000
 set $IGNORED                #000000
 
 # window parameters
-set $defaultborder          pixel 5
+set $defaultborder          pixel 1
 
 # workspaces
 set $ws_www         1
@@ -51,35 +51,16 @@ set_from_resource $outsec i3.output.secondary   eDP1
 
 ##############################################################################################################################################################
 #
-### Early commands
-#
-
-# Display stuff
-exec --no-startup-id xset +dpms
-# Make sure we have a primary before launching tray icons
-#exec --no-startup-id xrandr --output eDP-1 --primary
-exec --no-startup-id rerandr3 restore
-
-# wifi disabled by default
-#exec --no-startup-id nmcli radio wifi off
-
-# disable audible bell at Xorg level
-exec --no-startup-id xset -b
-
-##############################################################################################################################################################
-#
 ## Colors, borders, layout, fonts
 #
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below. ISO 10646 = Unicode
-#font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
 # The font above is very space-efficient, that is, it looks good, sharp and
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
-#font pango:FontAwesome 8, Terminus 8
-#font pango:FontAwesome 10, Terminus 10
 font pango:Monospace 8, Terminus 8
 
 ##############################################################################################################################################################
@@ -143,7 +124,7 @@ bar {
         }
 
         id main
-        #status_command i3status
+        ## status_command i3status
         # https://github.com/ultrabug/py3status
         #status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
         status_command py3status -c ~/.i3/i3status.conf | ~/.i3/i3status_wrapper.py
@@ -229,15 +210,17 @@ no_focus [window_role="pop-up"]
 focus_follows_mouse yes
 
 # Focus on window activation
-# smart: (default) If the window requesting focus is on an active workspace, it will receive the focus. Otherwise, the urgency hint will be set.
+# smart: (default) If the window requesting focus is on an active workspace, it
+# will receive the focus. Otherwise, the urgency hint will be set.
 # urgent: The window will always be marked urgent, but the focus will not be stolen.
 # focus: The window will always be focused and not be marked urgent.
 # none: The window will neither be focused, nor be marked urgent.
 #focus_on_window_activation smart|urgent|focus|none
 focus_on_window_activation none
 
-# If activated, marks on windows are drawn in their window decoration. However, any mark starting with an underscore in its name (_)
-# will not be drawn even if this option is activated.
+# If activated, marks on windows are drawn in their window decoration. However,
+# any mark starting with an underscore in its name (_) will not be drawn even
+# if this option is activated.
 show_marks yes
 
 # Use Mouse+$mod to drag floating windows to their wanted position
@@ -309,16 +292,16 @@ bindsym $mod+v split v
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
 bindsym $mod+Shift+f fullscreen toggle global
-#bindsym $mod+Control+Alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
+#bindsym $mod+Control+$alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+e layout toggle split
-bindsym $mod+w layout tabbed
 #bindsym $mod+s layout stacking
 # Toggle between stacking/tabbed/split:
 #bindsym $mod+z layout toggle
 # Toggle between stacking/tabbed/splith/splitv:
 #bindsym $mod+w layout toggle all
+bindsym $mod+w layout tabbed
 
 # Show border or not
 bindsym $mod+b border toggle
@@ -494,8 +477,9 @@ bindsym $mod+Shift+Next move workspace to output right
 #
 
 # resize window (you can also use the mouse for that)
-bindsym $mod+Control+Shift+r mode "resize"
-mode "resize" {
+set $mode_resize Resize Window
+bindsym $mod+Control+$alt+r mode "$mode_resize"
+mode "$mode_resize" {
         # These bindings trigger as soon as you enter the resize mode
 
         # Pressing left will shrink the window’s width.
@@ -514,33 +498,46 @@ mode "resize" {
         bindsym Right resize grow width 10 px or 10 ppt
 
         # back to normal: Enter or Escape
-        bindsym $mod+Control+Shift+r mode "default"
         bindsym Return mode "default"
         bindsym Escape mode "default"
+        bindsym $mod+Control+$alt+r mode "default"
 }
 
-bindsym $mod+Control+m focus floating; mode "moveit"
-mode "moveit" {
+set $mode_moveit Move Window
+bindsym $mod+Control+$alt+m mode "$mode_moveit"
+mode "$mode_moveit" {
         bindsym Up move up          50px
         bindsym Left move left      50px
         bindsym Down move down      50px
         bindsym Right move right    50px
         # back to normal: Enter or Escape
-        bindsym Mod4+m mode "default"
         bindsym Return mode "default"
         bindsym Escape mode "default"
+        bindsym $mod+Control+$alt+m mode "default"
 }
 
-# exit i3 (logs you out of your X session)
-#bindsym $mod+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
-bindsym $mod+Control+Shift+q mode "$mode_system"
-set $mode_system (x) exit
+set $mode_system x Exit     |     [Shift]  d     [de-]activate Debugging
+bindsym $mod+Control+$alt+q mode "$mode_system"
 mode "$mode_system" {
-    bindsym x exec --no-startup-id i3-msg exit
+    bindsym x exec --no-startup-id i3-msg "exit"
+    bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
+    bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
     # back to normal: Enter or Escape
     bindsym Return mode "default"
     bindsym Escape mode "default"
+    bindsym $mod+Control+$alt+q mode "default"
 }
+
+##############################################################################################################################################################
+#
+## Scratchpad things
+#
+# Make the currently focused window a scratchpad
+bindsym $mod+Control+grave border normal, mark scratchpad, move scratchpad
+bindsym $mod+Shift+grave unmark scratchpad
+
+# Show the first scratchpad window
+bindsym $mod+grave scratchpad show
 
 ##############################################################################################################################################################
 #
@@ -567,11 +564,11 @@ bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$gi
                                     -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
-bindsym $mod+Shift+c reload
-
-# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $mod+Shift+r restart
+bindsym $mod+Shift+r reload
+# set workspaces on default screens
 bindsym $mod+Control+r exec --no-startup-id i3-move-workspaces
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Control+Shift+r restart
 
 # Lock Screen / Suspend / Poweroff
 bindsym Pause               exec --no-startup-id $lockscreen
@@ -580,10 +577,10 @@ bindsym $mod+Pause          exec --no-startup-id $suspend
 bindsym $mod+Control+l      exec --no-startup-id $suspend
 
 # start some tools
-bindsym $mod+i exec ircwindow
-bindsym $mod+c exec gnome-calculator
-bindsym $mod+d exec nemo
-bindsym $mod+Control+d exec nautilus --class Files --name small --new-window $HOME/tmp
+bindsym $mod+i          exec ircwindow
+bindsym $mod+c          exec gnome-calculator
+bindsym $mod+d          exec nemo
+bindsym $mod+$alt+d     exec nautilus --class Files --name small --new-window $HOME/tmp
 
 # start browsers
 bindsym $mod+Control+o          exec google-chrome serge
@@ -596,8 +593,8 @@ bindsym $mod+Shift+Control+b exec --no-startup-id setbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
-# Toggle Nolock mode (disable screen saver)
-#bindsym $mod+Control+p exec presentation-mode nolock
+
+# Launch Printer config
 bindsym $mod+Control+p exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
@@ -617,10 +614,6 @@ bindsym $mod+Control+comma              exec --no-startup-id  [ "$(sonos state)"
 bindsym $mod+Control+period             exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume +5 || ponymix increase 5
 bindsym $mod+Control+slash              exec --no-startup-id  ponymix toggle
 
-#bindsym $mod+Control+Shift+comma        exec --no-startup-id  sonos-volume -5
-#bindsym $mod+Control+Shift+period       exec --no-startup-id  sonos-volume +5
-#bindsym $mod+Control+Shift+slash        exec --no-startup-id  sonos-volume
-
 bindsym XF86AudioPrev                   exec --no-startup-id  playerctl previous
 bindsym XF86AudioPlay                   exec --no-startup-id  playerctl play-pause
 bindsym XF86AudioNext                   exec --no-startup-id  playerctl next
@@ -634,7 +627,7 @@ bindsym $mod+period                     exec --no-startup-id playerctl next
 bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
 
 bindsym $mod+m                          exec pavucontrol
-bindsym $mod+$alt+m                     exec --no-startup-id pa-cycle-sink
+bindsym $mod+Shift+m                    exec --no-startup-id pa-cycle-sink
 
 # Fn-F4  XF86AudioMicMute
 
@@ -680,7 +673,8 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 # Assignments are processed by i3 in the order in which they appear in the
 # config file. The first one which matches the window wins and later
 # assignments are not considered.
-# Maar volgens mij is het omgekeerd.
+#
+# !!! Maar volgens mij is het omgekeerd. !!!
 #
 #for_window [window_type="normal"]           border $defaultborder
 
@@ -695,7 +689,7 @@ for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] f
 for_window [title="chromeIPass"] floating enable
 for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
 for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
-for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
+#for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
 for_window [title="Pages Unresponsive"] floating enable
 for_window [class="feh" instance="feh"] floating enable, border none
 
@@ -740,24 +734,18 @@ for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                         
 for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable
 for_window [title="Event Tester"]                                                       floating enable  # xev
 for_window [instance="libreoffice"]                                                     border normal
-for_window [class="Files" instance="small"]                                             resize set 700 300, floating enable"
+for_window [class="Files" instance="small"]                                             floating enable, resize set 700 300
 
 
 ###############################################################################
 #
 # Browsers
 #
-#assign [class="(Chromium|chromium)" instance="chromium" window_role="browser"]
-#assign [class="(Google-chrome|google-chrome)" instance="google-chrome" window_role="browser"]
-#assign [class="Firefox" instance="Navigator" window_role="browser"]
-
-for_window  [instance="(Toplevel|Browser)" window_role="(*settings|*Options|*Preferences|pop-up|setup|About|Organizer)" ]  floating enable
-
 assign      [class="^(browser-)(serge|facebook)"]                               $ws_www
 for_window  [class="^(browser-.*)"]                                             layout tabbed
 for_window  [class="^(browser-tmp)"]                                            floating enable
 assign      [class="^(browser-radio)"]                                          $ws_util_music
-for_window  [class="^(browser-radio)"]                                          floating disable, layout tiling
+for_window  [class="^(browser-radio)"]                                          floating disable, layout splith
 
 
 ###############################################################################
@@ -801,8 +789,6 @@ for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program"
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
 assign [class="(KeePass2|keepassxc)" instance="(keepass2|keepassxc)" title="^(?!KeePassHttp: Confirm Access|KeePassXC HTTP Confirm Access)"]              $ws_util_pw
-assign [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]      $ws_util_pw
-#assign [class="keepassxc" instance="keepassxc"]                                                     $ws_util_pw
 for_window  [title="(KeePass|KeePass2|KeePassXC HTTP Confirm Access|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
             instance="^(!?keepass2)"] floating enable
 for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
@@ -821,7 +807,7 @@ for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed,
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
-for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout tabbed
+for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window [class="Spotify"]   move to workspace $ws_util_music
@@ -831,31 +817,33 @@ for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Workl
 for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
 
 
+###############################################################################
+#
+#for_window [floating] move position center
 
+###############################################################################
 #
 ## startup
 #
 # & send process to background avoids keeping the calling sh shells in memory
 
-## One-off always run jobs
-exec_always --no-startup-id "setbg redisplay"
-exec_always --no-startup-id "numlockx on"
-exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
-# http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
-exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
-                        -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
-
 ## Run at i3 initial start only
-exec --no-startup mate-polkit
+exec --no-startup-id xset +dpms
+exec --no-startup-id rerandr3 restore
+exec --not-startup-id pulseaudio --check || pulseaudio --start
+exec --no-startup-id "rfkill block bluetooth"
 exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
-#exec --no-startup-id compton &
 exec --no-startup-id xcompmgr &
 exec --no-startup-id dunst -print %
-#exec --no-startup-id xautolock -detectsleep -time 7 -locker /home/serge/bin/lock &
 exec --no-startup-id setbg
-
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
+
+# wifi disabled by default
+#exec --no-startup-id nmcli radio wifi off
+
+# disable audible bell at Xorg level
+exec --no-startup-id xset -b
 
 # Desktop Apps
 exec "google-chrome serge &"
@@ -867,9 +855,18 @@ exec "keepassxc &"
 exec "franz &"
 exec "signal-desktop"
 exec "spotify &"
+exec "dropbox start"
 exec "KEYBASE_SYSTEMD=0 run_keybase &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "sleep 10; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
+
+## One-off always run jobs
+exec_always --no-startup-id "setbg redisplay"
+exec_always --no-startup-id "numlockx on"
+exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
+# http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
+exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
+                        -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 
