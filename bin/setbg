@@ -104,7 +104,7 @@ showpath() {
 	filename=$(basename "${file}")
 	dirname=$(dirname "${file}")
 	cli_notify low "${filename}" "${dirname}"
-	echo -e "${dirname}/${filename}\n"
+	echo "${dirname}/${filename}"
 }
 
 setbg() {
