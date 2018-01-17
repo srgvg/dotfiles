@@ -24,71 +24,79 @@ function _addpreferences() {
 
 	mkdir -p "${PREFERENCEDIR}"
 	cat >"${PREFERENCEPATH}" <<-EOF
-		{
-		  	"translate_blocked_languages": [
-		    	"en",
-		    	"nl",
-		    	"fr"
-		  	],
-		    "alternate_error_pages": {
-		        "enabled": false
-		    },
-		    "autofill": {
-		        "enabled": false
-		    },
-		    "BROWSER": {
+			"spellcheck": {
+				"dictionaries": [
+					"en-US"
+				],
+				"dictionary": ""
+			},
+			"translate": {
+				"enabled": false
+			},
+				"translate_blocked_languages": [
+					"en",
+					"nl",
+					"fr"
+			],
+			"alternate_error_pages": {
+				"enabled": false
+			},
+			"autofill": {
+				"enabled": false
+			},
+			"BROWSER": {
 				"show_home_button" : false,
 				"check_default_BROWSER" : false
-		        "custom_chrome_frame": false,
-		        "enable_spellchecking": false
-		    },
-		  	"bookmark_bar": {
-		    	"show_apps_shortcut": false,
-		    	"show_on_all_tabs": false
-		  	},
-		    "download": {
-			    "directory_upgrade": true,
-			    "prompt_for_download": true,
-		        "default_directory": "~/PROFILEPATH"
-		    },
-		    "net": {
-		        "network_prediction_options": 2
-		    },
-		    "profile": {
-		        "password_manager_enabled": false
-		    },
-		    "safebrowsing": {
-		        "enabled": false
-		    },
-		    "search": {
-		        "suggest_enabled": false
+				"custom_chrome_frame": false,
+				"enable_spellchecking": false
 			},
-		  	"distribution": {
+			"bookmark_bar": {
+				"show_apps_shortcut": false,
+				"show_on_all_tabs": false
+			},
+			"download": {
+				"directory_upgrade": true,
+				"prompt_for_download": true,
+				"default_directory": "~/PROFILEPATH"
+			},
+			"net": {
+				"network_prediction_options": 2
+			},
+			"profile": {
+				"password_manager_enabled": false
+			},
+			"safebrowsing": {
+				"enabled": false
+			},
+			"search": {
+				"suggest_enabled": false
+			},
+			"distribution": {
 				"auto_launch_chrome": false,
-		    	"skip_first_run_ui": true,
+				"skip_first_run_ui": true,
 				"import_bookmarks": true,
-		    	"import_search_engine": false,
-		    	"import_history": false,
+				"import_search_engine": false,
+				"import_history": false,
 				"import_home_page": true,
-		    	"create_all_shortcuts": false,
-		    	"do_not_launch_chrome": true,
-		    	"make_chrome_default": false
-		    	"make_chrome_default_for_user": false,
-		    	"suppress_first_run_bubble": true,
-		    	"do_not_create_desktop_shortcut": true,
-		    	"do_not_create_quick_launch_shortcut": true,
-		    	"do_not_launch_chrome": true,
-		    	"do_not_register_for_update_launch": true,
-		    	"suppress_first_run_default_BROWSER_prompt": true,
+				"create_all_shortcuts": false,
+				"do_not_launch_chrome": true,
+				"make_chrome_default": false
+				"make_chrome_default_for_user": false,
+				"suppress_first_run_bubble": true,
+				"do_not_create_desktop_shortcut": true,
+				"do_not_create_quick_launch_shortcut": true,
+				"do_not_launch_chrome": true,
+				"do_not_register_for_update_launch": true,
+				"suppress_first_run_default_BROWSER_prompt": true,
 				"show_welcome_page": false,
 				"skip_first_run_ui": true,
-			    "suppress_first_run_bubble": true,
-		    	"system_level": true,
-		    	"verbose_logging": true
+				"suppress_first_run_bubble": true,
+				"system_level": true,
+				"verbose_logging": true
 			  },
 			"sync_promo": {
-		    	"show_on_first_run_allowed": false
-		    }
+				"show_on_first_run_allowed": false
+			}
 		}
 		EOF
 }
