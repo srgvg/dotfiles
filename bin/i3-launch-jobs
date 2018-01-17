@@ -4,15 +4,13 @@ set -e
 
 source $HOME/etc/defaults
 
-launch_i3job mqtt-notify.py
-launch_i3job autocutsel -verbose -debug -selection CLIPBOARD
+i3-launch-job tail -f /run/user/$UID/i3/errorlog.* ~/.lockscreen.log
+i3-launch-job mqtt-notify.py
+i3-launch-job autocutsel -verbose -debug -selection CLIPBOARD
 
-#launch_i3job autocutsel -verbose -debug -selection PRIMARY
-#launch_i3job rerandr3 daemon
-#launch_i3job setbg loop debian
-#
-#pulseaudio --check && pulseaudio --kill ; pulseaudio --start
-#dropbox stop; sleep 1; dropbox start
+#i3-launch-job autocutsel -verbose -debug -selection PRIMARY
+#i3-launch-job rerandr3 daemon
+#i3-launch-job setbg loop debian
 
 exit 0
 
