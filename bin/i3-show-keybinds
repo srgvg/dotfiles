@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for n in {a..z}
+do
+    grep -emod+ i3 | awk '{$1=""; print $0}' | sort -u | grep +$n | sed "s/^/$n /"
+    echo
+done | grep -v '^$' | less
+
