@@ -557,7 +557,7 @@ bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge).*$"] kill
 bindsym $mod+Control+x kill
 
 # quickswitch
-bindsym $mod+q exec quickswitch.py
+bindsym $mod+q exec i3-quickswitch.py
 
 # start dmenu (a program launcher)
 bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \

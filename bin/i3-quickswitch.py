@@ -1,0 +1,1 @@
+/home/serge/src/util/quickswitch-for-i3/quickswitch.py
