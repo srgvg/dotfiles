@@ -131,7 +131,7 @@ main() {
     elif [ -z "$p2" ]			## ONE PARAMETER
     then						#	action without argument, or
 		case ${p1} in			#	just a target
-			'redisplay'|'show') # just redisplay bg, adjusts new screen sizes
+			'redisplay'|'show'|'keep') # just redisplay bg, adjusts new screen sizes
 				showpath
 				displaybg
 				;;
