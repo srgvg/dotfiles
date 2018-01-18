@@ -804,17 +804,12 @@ for_window  [title="Signal"]                    layout tabbed
 assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
 for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed, floating disable
 
-
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window [class="Spotify"]   move to workspace $ws_util_music
-
-# https://worklogassistant.com
-for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          floating enable
-for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Worklog Assistant"]          sticky enable
 
 
 ###############################################################################
@@ -828,22 +823,17 @@ for_window [class="Worklog Assistant" instance="Worklog Assistant" title="^Workl
 # & send process to background avoids keeping the calling sh shells in memory
 
 ## Run at i3 initial start only
-exec --no-startup-id xset +dpms
-exec --no-startup-id rerandr3 restore
-exec --not-startup-id pulseaudio --check || pulseaudio --start
-exec --no-startup-id "rfkill block bluetooth"
-exec --no-startup /usr/lib/gvfs/gvfsd-fuse ~/.gvfs &
-exec --no-startup-id xcompmgr &
-exec --no-startup-id dunst -print %
-exec --no-startup-id setbg
 ## start with interactive bash shell as this needs ssh keys to be unlocked
-exec /usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &' ## KEEP THIS FIRST
-
-# wifi disabled by default
-#exec --no-startup-id nmcli radio wifi off
-
-# disable audible bell at Xorg level
-exec --no-startup-id xset -b
+exec "/usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+exec --no-startup-id "xset +dpms"
+exec --no-startup-id "xset -b" # disable audible bell at Xorg level
+exec --no-startup-id "nmcli radio wifi off"
+exec --no-startup-id "rfkill block bluetooth"
+exec --no-startup-id "rerandr3 restore"
+exec --no-startup-id "pulseaudio --check || pulseaudio --start"
+exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
+exec --no-startup-id "xcompmgr &"
+exec --no-startup-id "dunst -print %"
 
 # Desktop Apps
 exec "google-chrome serge &"
@@ -863,7 +853,7 @@ exec --no-startup-id "sleep 10; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
-exec_always --no-startup-id "setbg redisplay"
+exec_always --no-startup-id "setbg keep"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/

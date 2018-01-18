@@ -1,4 +1,3 @@
-source <(kubectl completion bash) 
+source <(kubectl completion bash)
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-function dbxcli() { ~/bin2/dbxcli $*; echo; }

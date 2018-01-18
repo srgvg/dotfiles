@@ -4,7 +4,7 @@ set -e
 
 source $HOME/etc/defaults
 
-i3-launch-job tail -f /run/user/$UID/i3/errorlog.* ~/.lockscreen.log
+i3-launch-job tail -f ~/.lockscreen.log $(ls -t /tmp/i3-serge.*/errorlog* | head -n 1)
 i3-launch-job mqtt-notify.py
 i3-launch-job autocutsel -verbose -debug -selection CLIPBOARD
 
