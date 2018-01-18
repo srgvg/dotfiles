@@ -535,9 +535,11 @@ mode "$mode_system" {
 # Make the currently focused window a scratchpad
 bindsym $mod+Control+grave border normal, mark scratchpad, move scratchpad
 bindsym $mod+Shift+grave unmark scratchpad
-
 # Show the first scratchpad window
 bindsym $mod+grave scratchpad show
+# quickswitch select scratchpad window
+bindsym $mod+$alt+grave exec i3-quickswitch --prompt --scratchpad
+
 
 ##############################################################################################################################################################
 #
@@ -557,7 +559,7 @@ bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge).*$"] kill
 bindsym $mod+Control+x kill
 
 # quickswitch
-bindsym $mod+q exec i3-quickswitch.py
+bindsym $mod+q exec i3-quickswitch --prompt
 
 # start dmenu (a program launcher)
 bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
