@@ -151,5 +151,5 @@ fi
 # shellcheck disable=SC2068
 echo /usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
 # shellcheck disable=SC2068
-/usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
+/usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"
 
