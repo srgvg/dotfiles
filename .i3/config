@@ -32,7 +32,7 @@ set $red                    #FF0000
 set $IGNORED                #000000
 
 # window parameters
-set $defaultborder          pixel 1
+set $defaultborder          pixel 5
 
 # workspaces
 set $ws_www         1
@@ -678,7 +678,7 @@ bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab fu
 #
 # !!! Maar volgens mij is het omgekeerd. !!!
 #
-#for_window [window_type="normal"]           border $defaultborder
+for_window [ class=".*" ]   border $defaultborder
 
 
 ###############################################################################
