@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+function rename() {
+	local file=${1:-}
+	if [ -z "${file}" ]
+	then
+	    echo "No file argument given." >&2
+	    exit 1
+	fi
+
+	filepathname=$(realpath --no-symlinks "${file}")
+	filename=$(basename "${filepathname}")
+	filepath=$(dirname "${filepathname}")
+	#filenamebase=${filename%.*}
+	filenamext=${filename##*.}
+	filepoch=$(stat -c %Y "${filepathname}")
+	filets=$(date -d @${filepoch} +%Y%m%d%H%M%S)
+
+	mv --verbose "${filepathname}" "${filepath}/${filets}.${filenamext}"
+}
+
+files=($@)
+if [ -z "${files[*]}" ]
+then
+    echo "No file argument given." >&2
+    exit 1
+fi
+
+for file in "${files[@]}"
+do
+	rename "${file}"
+done
+
