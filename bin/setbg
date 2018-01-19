@@ -98,12 +98,17 @@ loop() {
     done
 }
 
+notifypath() {
+    # show iand notify which picture is used
+	showpath
+	cli_notify low "${filename}" "${dirname}"
+}
+
 showpath() {
     # show which picture is used
 	file="$(readlink --canonicalize ${bglnk})"
 	filename=$(basename "${file}")
 	dirname=$(dirname "${file}")
-	cli_notify low "${filename}" "${dirname}"
 	echo "${dirname}/${filename}"
 }
 
@@ -131,9 +136,12 @@ main() {
     elif [ -z "$p2" ]			## ONE PARAMETER
     then						#	action without argument, or
 		case ${p1} in			#	just a target
-			'redisplay'|'show'|'keep') # just redisplay bg, adjusts new screen sizes
-				showpath
+			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
 				displaybg
+				notifypath
+				;;
+			'show')				# show current picture
+				showpath
 				;;
 			'lock'|"loop")		# these need a parameter
 				error "setbg" "The action '${p1}' needs a parameter"
