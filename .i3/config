@@ -555,7 +555,7 @@ bindsym $mod+Control+Return exec $terminalfl
 #bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window except..
-bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge).*$"] kill
+bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator).*$"] kill
 bindsym $mod+Control+x kill
 
 # quickswitch
@@ -590,8 +590,8 @@ bindsym $mod+Control+Shift+o    exec google-chrome serge --incognito
 bindsym $mod+o                  exec google-chrome
 
 # Show current Background filename
-bindsym $mod+Control+b exec --no-startup-id setbg show
-bindsym $mod+Shift+Control+b exec --no-startup-id setbg
+bindsym $mod+Control+b exec --no-startup-id setbg keep
+bindsym $mod+Shift+Control+b exec --no-startup-id setbg # default
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p exec presentation-mode
