@@ -5,33 +5,53 @@ set -o errexit
 set -o pipefail
 
 function rename() {
-	local file=${1:-}
+	local action=${1:-0}
+	local file=${2:-}
 	if [ -z "${file}" ]
 	then
-	    echo "No file argument given." >&2
-	    exit 1
+	    echo "No file argument given" >&2
+	    return 1
+	fi
+	if [ ! -r "${file}" ]
+	then
+	    echo "Cannot read $file" >&2
+	    return 1
 	fi
 
 	filepathname=$(realpath --no-symlinks "${file}")
 	filename=$(basename "${filepathname}")
 	filepath=$(dirname "${filepathname}")
-	#filenamebase=${filename%.*}
+	filenamebase=${filename%.*}
 	filenamext=${filename##*.}
 	filepoch=$(stat -c %Y "${filepathname}")
 	filets=$(date -d @${filepoch} +%Y%m%d%H%M%S)
+	if [ "${action}" -eq 0 ]
+	then
+		newpathname="${filepath}/${filets}.${filenamext}"
+	else
+		newpathname="${filepath}/${filets}-${filenamebase}.${filenamext}"
+	fi
 
-	mv --verbose "${filepathname}" "${filepath}/${filets}.${filenamext}"
+	mv --verbose "${filepathname}" "${newpathname}"
 }
 
-files=($@)
-if [ -z "${files[*]}" ]
+if [ -z "$1" ]
 then
-    echo "No file argument given." >&2
+    echo "No argument given." >&2
     exit 1
+fi
+
+if [ "$1" -eq 0 ] || [ "$1" -eq 1 ]
+then
+	action="$1"
+	files=("${@:2}")
+else
+	files=($@)
+	action=0
 fi
 
 for file in "${files[@]}"
 do
-	rename "${file}"
+	rename "${action}" "${file}"
 done
 
