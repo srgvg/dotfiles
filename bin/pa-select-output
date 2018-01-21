@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+pulseaudio --check || pulseaudio --start
+
+
+function outputs() {
+	pactl list short sinks | awk '{print $1}' | grep -v ^$ | sort -n | xargs
+}
+
+function outputsnames() {
+	for sink in $(outputs)
+	do
+		echo $sink $(sinkname $sink)
+	done
+}
+
+function defaultsink() {
+	ponymix defaults | grep sink | awk '{print $2}' | sed 's/://'
+}
+
+function sinkname() {
+	local sinknum=${1:-0}
+	pactl list sinks | grep -A3 "#$sinknum" | grep Description | cut -d: -f 2- | xargs
+}
+
+function selectsink() {
+	outputsnames | (dmenu -p "Select audio output: " -l 10 ||:) | awk '{print $1}'
+}
+
+function updatesink() {
+	local next_sink=$1
+	pacmd set-default-sink $next_sink
+	pactl list short sink-inputs | awk '{print $1}' | while read streamid
+	do
+	    pactl move-sink-input "$streamid" "$next_sink"
+	done
+}
+
+function main() {
+	updatesink $next_sink
+	notify-send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
+}
+
+previous_sink=$(defaultsink)
+previous_sink_name=$(sinkname $previous_sink)
+next_sink=$(selectsink)
+[ -z "$next_sink" ] && exit
+next_sink_name=$(sinkname $next_sink)
+
+if [ $previous_sink -eq $next_sink ]
+then
+	exit 0
+else
+	main
+fi
+
