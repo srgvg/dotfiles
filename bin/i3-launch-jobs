@@ -11,7 +11,7 @@ i3-launch-job tail -f ~/.lockscreen.log
 # 58080/tcp                  ALLOW IN    Anywhere
 # 65353/udp                  ALLOW IN    Anywhere
 # 1900/udp                   ALLOW IN    Anywhere
-i3-launch-job pulseaudio-dlna --msearch-port 65353 --port 58080
+i3-launch-job pulseaudio-dlna-d
 
 #i3-launch-job autocutsel -verbose -debug -selection PRIMARY
 #i3-launch-job rerandr3 daemon
