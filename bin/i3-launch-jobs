@@ -4,14 +4,14 @@ set -e
 
 source $HOME/etc/defaults
 
-i3-launch-job tail -f ~/.lockscreen.log $(ls -t /tmp/i3-serge.*/errorlog* | head -n 1)
 i3-launch-job mqtt-notify.py
 i3-launch-job autocutsel -verbose -debug -selection CLIPBOARD
+i3-launch-job tail -f ~/.lockscreen.log
+i3-launch-job pulseaudio-dlna
 
 #i3-launch-job autocutsel -verbose -debug -selection PRIMARY
 #i3-launch-job rerandr3 daemon
 #i3-launch-job setbg loop debian
-
 exit 0
 
 ##############################################################################

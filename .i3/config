@@ -812,6 +812,11 @@ for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music De
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window [class="Spotify"]   move to workspace $ws_util_music
 
+###############################################################################
+#
+# miscellaneous
+#
+for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 
 ###############################################################################
 #
