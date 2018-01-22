@@ -12,15 +12,20 @@ on_exit() {
 if [ "$1" = "lock" ]
 then
     # only lock existing open connections, so check if the CM socket is
-    # available
+    # available - master process can still be running, but ssh can timeout
+	# b/c no network - so we do an extra check with low timeout to avoid this
+	# script waiting for the whole big timeout when locking when no network
+	# (which happens when closing the lid)
+	# But. We still have a timemout for host resolution. Hence & backgrounded
     ssh ${irssi_host} -O check >/dev/null 2>&1 \
-		&& (   ssh ${irssi_host} screen -S irc -p 0 -X stuff '\\n/1\\n' ||: \
-		&& ssh ${irssi_host} screen -S irc -d -X lockscreen &>/dev/null ||: )
+		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/1\\n' ||: \
+		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -d -X lockscreen &>/dev/null &
 elif [ "$1" = "unlock" ]
 then
+	# same same
 	ssh ${irssi_host} -O check &>/dev/null \
-		&& ( ssh ${irssi_host} pkill -9 irclock &>/dev/null ||: \
-		&& ssh ${irssi_host} screen -S irc -p 0 -X stuff '\\n/away\\n' ||: )
+		&& ssh ${irssi_host} -o ConnectTimeout=1 pkill -9 irclock &>/dev/null ||: \
+		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/away\\n' &
 else
     trap on_exit INT TERM EXIT
     ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
