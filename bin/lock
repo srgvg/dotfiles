@@ -5,7 +5,7 @@
 #   Also: https://wiki.debian.org/ScreenLockingOnSleep
 #
 
-DEBUG=""
+DEBUG=${DEBUG:-}
 #DEBUG=1
 #DEBUG=2
 if [ -n "${DEBUG}" ] && [ $DEBUG -gt 1 ]
@@ -42,6 +42,11 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ## subroutines              ##
 ##############################
 
+function notify() {
+	TS="$(date +%Y.%m.%d-%H:%M)"
+	echo "$(date +%Y.%m.%d-%H:%M:%S) $* (${SECONDS}s)"
+}
+
 function systemdservice() {
 	if [ "${SYSTEMDSERVICE}" = yes ]
 	then
@@ -54,7 +59,7 @@ function systemdservice() {
 function prepare() {
 	if ! systemdservice
 	then # these checks don't work when ran via systemd (needs dbus)
-		echo "Check music players and sound volume. (${SECONDS}s)"
+		notify "Check music players and sound volume."
 		PLAYERCTLSTATUS="$(playerctl status ||:)"
 		ponymix is-muted && MUTED=yes || MUTED=no || :
 	else
@@ -62,16 +67,16 @@ function prepare() {
 		MUTED="unknown"
 	fi
 
-	echo "Pick the right lockscreen image.(${SECONDS}s)"
+	notify "Pick the right lockscreen image.(${SECONDS}s)"
 	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
 	then
-		echo "Choosing a picture background. (${SECONDS}s)"
+		notify "Choosing a picture background."
 		setbg lock "$lockscreen"
 	elif [ "$lockscreen" = "blurred" ]
 	then
 		make_blurred
 	else
-		echo "Keeping the current lockscreen. (${SECONDS}s)"
+		notify "Keeping the current lockscreen."
 		return
 	fi
 	annotate_lockscreen ${lockscreen_image}
@@ -79,14 +84,14 @@ function prepare() {
 
 function make_blurred() {
 	# take a screenshot and blur it for the lock screen
-	echo "Take a screenshot and blur it. (${SECONDS}s)"
+	notify "Take a screenshot and blur it."
 	BLUR="-blur 0x5"
 	/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
 	convert "$screenshot_image" ${BLUR} "$lockscreen_image"
 }
 
 function annotate_lockscreen() {
-	echo "Annotate lockscreen with lock symbol and optional text. (${SECONDS}s)"
+	notify "Annotate lockscreen with lock symbol and optional text."
 	TEXT=""
 
 	local image
@@ -121,28 +126,28 @@ function pre_lock() {
 	then
 		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 		then
-			echo "Stop any music player. (${SECONDS}s)"
-			playerctl stop || echo "Could not stop the music player. (${SECONDS}s)" >&2
+			notify "Stop any music player."
+			playerctl stop || notify "Could not stop the music player." >&2
 		fi
 		if [ "${MUTED}" = "no" ]
 		then
-			echo "Mute sound. (${SECONDS}s)"
-			ponymix mute >/dev/null || echo "Could not mute the sound. (${SECONDS}s)" >&2
+			notify "Mute sound."
+			ponymix mute >/dev/null || notify "Could not mute the sound." >&2
 		fi
 	fi
 
-	echo "Disable presentation mode. (${SECONDS}s)"
+	notify "Disable presentation mode."
 	presentation-mode stop
 
     # sleep because seems too soon after pres mode stop
 	(
-		echo "Pause notifications. (${SECONDS}s)"
 		sleep 1
+		notify "Pause notifications."
 		killall -v -SIGUSR1 dunst
 	 ) &
 
-	echo "Lock remote irssi screen. (${SECONDS}s)"
-	irc lock || :
+	notify "Lock remote irssi screen."
+	irc lock ||:
 }
 
 function perform_lock() {
@@ -150,10 +155,10 @@ function perform_lock() {
 	# then wait for the lock to end (when unlocked)
 	if [ -z "${DEBUG}" ]
 	then
-		echo "Running i3lock. (${SECONDS}s)"
+		notify "Running i3lock."
         i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
 	else
-		echo "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
+		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
 		sleep ${LOCKSLEEP} &
 	fi
 
@@ -183,17 +188,17 @@ function perform_lock() {
 	# WantedBy=sleep.target
 	#
 	systemd-notify --ready --status="Screen locked with image $lockscreen" &>/dev/null && \
-		echo "Notifying systemd the lock is done. (${SECONDS}s)" || :
+		notify "Notifying systemd the lock is done." || :
 
 	wait
 }
 
 function post_lock() {
 
-	echo "Unlock remote irssi screen. (${SECONDS}s)"
-	irc unlock || :
+	notify "Unlock remote irssi screen."
+	(irc unlock ||:) &  # too many issues with ssh timeouts
 
-    echo "Re-enable notifications. (${SECONDS}s)"
+    notify "Re-enable notifications."
     killall -v -SIGUSR2 dunst
 
 	if ! systemdservice
@@ -201,13 +206,13 @@ function post_lock() {
 		# re-renable music if it was playing
 		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 		then
-			echo "Restart music player. (${SECONDS}s)"
-			playerctl play || echo "Could not start the music player." >&2
+			notify "Restart music player."
+			playerctl play || notify "Could not start the music player." >&2
 		fi
 		if [ "${MUTED}" = "no" ]
 		then
-			echo "Unmute the sounds again. (${SECONDS}s)"
-			ponymix unmute >/dev/null || echo "Could not unmute the sound." >&2
+			notify "Unmute the sounds again."
+			ponymix unmute >/dev/null || notify "Could not unmute the sound." >&2
 		fi
 	fi
 
@@ -217,11 +222,12 @@ function post_lock() {
 function setpid() {
 	PID=${1:-$$}
 	echo $PID >"${PIDFILE}"
-	echo "Lock process started with pid $PID, set in ${PIDFILE}. (${SECONDS}s)"
+	notify "Lock process started with pid $PID, set in ${PIDFILE}."
 }
 
 function delpid() {
-	rm -fv "${PIDFILE}"
+	notify "Removing PID file ${PIDFILE}."
+	rm -f "${PIDFILE}"
 }
 
 function main() {
@@ -238,6 +244,6 @@ function main() {
 	post_lock
 	}
 
-date +%Y.%m.%d-%H:%M
+notify Lock service started
 main
 
