@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # switch to the IRC window, or start it
-wmctrl -a IRC || \
+wmctrl -a IRCWINDOW || \
 /usr/bin/terminator \
             --geometry 800x600 \
-            --title IRC \
+            --title IRCWINDOW \
             --role irc \
             --command "bash -ci irc" &
 			# bash -i : must be "interactive" to load bashrc stuff, that loads keychain stuff
+
