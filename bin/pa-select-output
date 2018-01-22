@@ -40,21 +40,15 @@ function updatesink() {
 	done
 }
 
-function main() {
-	updatesink $next_sink
-	notify-send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
-}
-
 previous_sink=$(defaultsink)
 previous_sink_name=$(sinkname $previous_sink)
 next_sink=$(selectsink)
 [ -z "$next_sink" ] && exit
 next_sink_name=$(sinkname $next_sink)
 
-if [ $previous_sink -eq $next_sink ]
+updatesink $next_sink
+if [ $previous_sink -ne $next_sink ]
 then
-	exit 0
-else
-	main
+	notify-send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
 fi
 
