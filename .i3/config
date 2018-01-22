@@ -840,7 +840,6 @@ exec --no-startup-id "rerandr3 restore"
 exec --no-startup-id "pulseaudio --check || pulseaudio --start"
 exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
 exec --no-startup-id "xcompmgr &"
-exec --no-startup-id "dunst -print %"
 
 # Desktop Apps
 exec "google-chrome serge &"
