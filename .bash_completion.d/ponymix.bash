@@ -1,1 +1,0 @@
-/home/serge/src/util/ponymix/bash-completion
