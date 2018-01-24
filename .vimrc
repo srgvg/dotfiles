@@ -396,3 +396,6 @@ vnoremap <C-j> :m '>+1<CR>gv=gv
 vnoremap <C-k> :m '<-2<CR>gv=gv
 
 
+" keep at the end to overrule stuff in plugins
+" set conceallevel=0              " Do not hide syntax characters (e.g. Markdown.)
+let g:indentLine_conceallevel = 0 " see .vim/bundle/indentLine/README.md

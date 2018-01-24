@@ -5,7 +5,7 @@ set -e
 source $HOME/etc/defaults
 
 i3-launch-job mqtt-notify.py
-i3-launch-job autocutsel -verbose -debug -selection CLIPBOARD
+i3-launch-job autocutsel -verbose -selection CLIPBOARD
 i3-launch-job tail -f ~/.lockscreen.log
 
 # 58080/tcp                  ALLOW IN    Anywhere
@@ -13,7 +13,7 @@ i3-launch-job tail -f ~/.lockscreen.log
 # 1900/udp                   ALLOW IN    Anywhere
 i3-launch-job pulseaudio-dlna-d
 
-#i3-launch-job autocutsel -verbose -debug -selection PRIMARY
+#i3-launch-job autocutsel -verbose -selection PRIMARY
 #i3-launch-job rerandr3 daemon
 #i3-launch-job setbg loop debian
 exit 0

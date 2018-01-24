@@ -1,1 +1,10 @@
-/home/serge/Applications/franz/Franz
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+franz="$HOME/Dropbox/Applications/franz-5.0.0-beta.15-x86_64.AppImage"
+
+"${franz}" $*
+
