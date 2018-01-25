@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/bash -x
 # based on https://www.uninformativ.de/blog/postings/2016-06-19/0/POSTING-en.html
+# vim :set ts=4 sw=4 sts=4 et :
 
 set -o nounset
 set -o errexit
@@ -13,6 +14,22 @@ CACHEDIR="$HOME/.cache/google-chrome/profiles"
 
 function _cleanup() {
 	rm -Rf "${PROFILEPATH}" "${CACHEPATH}"
+}
+
+function _set_tmp() {
+	PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
+	PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
+	CLASS="browser-${PROFILENAME}"
+	PROFILECLASS="${PROFILENAME}"
+	CACHEPATH="${CACHEDIR}/${PROFILENAME}"
+
+	SWITCHES="${SWITCHES} --no-first-run"
+	SWITCHES="${SWITCHES} --disable-infobars"
+	SWITCHES="${SWITCHES} --disable-translate"
+	SWITCHES="${SWITCHES} --window-size=1200,800"
+	SWITCHES="${SWITCHES} --incognito"
+
+	_addpreferences
 }
 
 function _addpreferences() {
@@ -101,13 +118,37 @@ function _addpreferences() {
 		EOF
 }
 
+function _query_parameter() {
+	local QUERY=""
+	for p in $*
+	do
+		if [ -z "${QUERY}" ]
+		then
+			QUERY="${p}"
+		else
+			QUERY="${QUERY}+${p}"
+		fi
+	done
+	echo ${QUERY}
+}
+
+
+
 mkdir -p "${PROFILESDIR}" "${CACHEDIR}"
-if [ -n "${1:-}" ]
-then
-	PROFILECLASS="${1}"
-else
-	PROFILECLASS="tmp"
-fi
+myname=$(basename $0)
+case ${myname} in
+	i|g)
+		PROFILECLASS=${myname}
+		;;
+	*)
+		if [ -n "${1:-}" ]
+		then
+			PROFILECLASS="${1}"
+		else
+			PROFILECLASS="tmp"
+		fi
+		;;
+esac
 
 CLASS=browser-${PROFILECLASS}
 PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
@@ -116,20 +157,24 @@ case ${PROFILECLASS} in
 	facebook*)			shift;;
 	radio)				shift;;
 	bryxx)				shift;;
+	g)	# google search
+		[ $PROFILECLASS != $myname ] && shift
+		URL="https://www.google.com/search?q"
+		QUERY=$(_query_parameter $*)
+		shift $#
+		_set_tmp
+		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
+		;;
+	i)	# google image search
+		[ $PROFILECLASS != $myname ] && shift
+		URL="https://www.google.com/search?as_st=y&tbs=isz%3Alt%2Cislt%3A2mp&tbm=isch&source=hp&biw=1920&bih=973&ei=k1VfWu2jKYjKkwXJorDoDQ&q"
+		QUERY=$(_query_parameter $*)
+		shift $#
+		_set_tmp
+		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
+		;;
 	*)
-		PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
-		PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
-		CLASS="browser-${PROFILENAME}"
-		PROFILECLASS="${PROFILENAME}"
-		CACHEPATH="${CACHEDIR}/${PROFILENAME}"
-
-		SWITCHES="${SWITCHES} --no-first-run"
-		SWITCHES="${SWITCHES} --disable-infobars"
-		SWITCHES="${SWITCHES} --disable-translate"
-		SWITCHES="${SWITCHES} --window-size=1200,800"
-		SWITCHES="${SWITCHES} --incognito"
-
-		_addpreferences
+		_set_tmp
 		trap _cleanup EXIT
 		;;
 esac
@@ -140,12 +185,12 @@ ARGS=("$@")
 
 if [ -n "${CLASS}" ]
 then
-	SWITCHES="${SWITCHES} --class=${CLASS}"
+	SWITCHES="--class=${CLASS} ${SWITCHES}"
 fi
 
 if [ -n "${PROFILEPATH}" ]
 then
-	SWITCHES="${SWITCHES} --user-data-dir=${PROFILEPATH}"
+	SWITCHES="--user-data-dir=${PROFILEPATH} ${SWITCHES}"
 fi
 
 # shellcheck disable=SC2068
