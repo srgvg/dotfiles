@@ -57,7 +57,7 @@ set visualbell                  " visual beep
 set scrolloff=5                 " keep at least 5 lines above/below cursor
 set ruler                       " show the line number on bar
 
-
+set modelines=1
 
 " Better copy & paste
 " When you want to paste large blocks of code into vim, press F2 before you

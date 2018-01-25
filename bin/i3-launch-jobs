@@ -6,7 +6,7 @@ source $HOME/etc/defaults
 
 i3-launch-job mqtt-notify.py
 i3-launch-job autocutsel -verbose -selection CLIPBOARD
-i3-launch-job tail -f ~/.lockscreen.log
+i3-launch-job tail -follow --verbose ~/.lockscreen.log
 
 # 58080/tcp                  ALLOW IN    Anywhere
 # 65353/udp                  ALLOW IN    Anywhere

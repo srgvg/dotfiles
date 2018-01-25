@@ -784,6 +784,10 @@ for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts
 assign      [class="Gimp" instance="gimp"] $ws_tool2
 for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program" window_role="gimp-image-window"] layout tabbed
 
+# Pycharm
+for_window  [class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
+
+
 ###############################################################################
 #
 # side tools

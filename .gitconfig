@@ -38,7 +38,7 @@
     ls = ls-files
     ls-untracked = ls-files --others
 
-    myinfo = ! echo && git remote -v && echo && git branch --color=always --all -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom -n 3 && echo
+    myinfo = ! echo && git remote -v && echo && git branch --color=always --all -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
 
     # Prune deletes any local branch which has been deleted from the remote.
     prune = fetch --prune
