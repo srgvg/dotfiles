@@ -5,4 +5,4 @@ if [ $(basename $0) = terminator-floating ]
 then
 	COMMAND="$COMMAND --role floating"
 fi
-exec $COMMAND --working-directory="${PWD}" $*
+exec $COMMAND --working-directory="$(xcwd)" $*
