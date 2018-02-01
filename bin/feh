@@ -1,6 +1,11 @@
 #!/bin/bash
 
 source $HOME/etc/defaults
-i="${1:-$pictures}"; shift
-/usr/bin/feh --image-bg black --geometry 1080x610 --recursive "${i}" $*
+target="${1:-$pictures}"
+shift
+if [ -f "${target}" ]
+then
+	target="--start-at ${target} $(dirname ${target})"
+fi
+/usr/bin/feh --image-bg black --geometry 1080x610 ${target} $*
 
