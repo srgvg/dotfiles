@@ -295,12 +295,13 @@ bindsym $mod+Shift+f fullscreen toggle global
 #bindsym $mod+Control+$alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+e layout toggle split
 #bindsym $mod+s layout stacking
 # Toggle between stacking/tabbed/split:
 #bindsym $mod+z layout toggle
 # Toggle between stacking/tabbed/splith/splitv:
 #bindsym $mod+w layout toggle all
+# my settings
+bindsym $mod+e layout toggle splith splitv
 bindsym $mod+w layout tabbed
 
 # Show border or not
@@ -420,8 +421,8 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab focus right
-bindsym $mod+Shift+Tab focus left
+bindsym $mod+Tab        exec --no-startup-id i3-cycle right
+bindsym $mod+Shift+Tab  exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -629,7 +630,7 @@ bindsym $mod+period                     exec --no-startup-id playerctl next
 bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
 
 bindsym $mod+m                          exec pavucontrol
-bindsym $mod+Shift+m                    exec --no-startup-id pa-select-output
+bindsym $mod+Control+m                    exec --no-startup-id pa-select-output
 
 # Fn-F4  XF86AudioMicMute
 
@@ -755,7 +756,6 @@ for_window  [class="^(browser-radio)"]                                          
 # chat
 #
 assign      [window_role="irc"]                 $ws_chat
-for_window  [window_role="irc"]                 layout tabbed
 
 for_window  [class="Skype"]                     floating enable
 
@@ -765,24 +765,20 @@ for_window  [class="Skype"]                     floating enable
 #
 # Virtualbox
 assign [class="(VirtualBox|Virt-manager)"]     $ws_tool2
-for_window [class="(VirtualBox|Virt-manager)"] layout tabbed
 
 # Wireshark
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
-for_window [class="Wireshark" instance="wireshark"] layout tabbed
 
 # Remote Desktop Client
 assign [class="Remmina" instance="remmina"]     $ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
 
 # Teamviewer
-assign [class="Wine" instance="TeamViewer.exe"] $ws_tool0
-for_window [class="Wine" instance="TeamViewer.exe"]     floating enable
-for_window [class="Wine" instance="TeamViewer.exe" title="!(Computers & Contacts|TeamViewer)"] layout tabbed
+#assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
+for_window [class="TeamViewer" instance="TeamViewer"]     floating enable
 
 # Gimp
 assign      [class="Gimp" instance="gimp"] $ws_tool2
-for_window  [class="Gimp" instance="gimp" title="GNU Image Manipulation Program" window_role="gimp-image-window"] layout tabbed
 
 # Pycharm
 for_window  [class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
@@ -794,20 +790,14 @@ for_window  [class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] flo
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign [class="(KeePass2|keepassxc)" instance="(keepass2|keepassxc)" title="^(?!KeePassHttp: Confirm Access|KeePassXC HTTP Confirm Access)"]              $ws_util_pw
-for_window  [title="(KeePass|KeePass2|KeePassXC HTTP Confirm Access|Open Database File|Select key file manually|Plugins|Edit Group)" class="^(?!KeePass2)" \
-            instance="^(!?keepass2)"] floating enable
-for_window [title="(KeePass|KeePass2|Open Database File|Select key file manually|?!KeePassHttp:)"]  layout tabbed
-for_window [class="KeePass2" instance="keepass2" title="^(?!KeePassHttp: Confirm Access)"]          layout tabbed
-for_window [class="keepassxc" instance="keepassxc"]                                                 layout tabbed
+assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]              $ws_util_pw
 
 # chat
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 assign      [title="Signal"]                    $ws_util_chat
 for_window  [title="Signal"]                    floating disable
-for_window  [title="Signal"]                    layout tabbed
 assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
-for_window  [class="Keybase" instance="keybase" title="Keybase"]  layout tabbed, floating disable
+for_window  [class="Keybase" instance="keybase" title="Keybase"]  floating disable
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
