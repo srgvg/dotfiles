@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ ! "$1" = "do" ]
+then
+	echo "run \`$(basename $0) do\` to delete:"
+	echo
+else
+	delete="-delete"
+fi
+
+find . -name '*.pyc' $delete
+find . -name '__pycache__' $delete
+

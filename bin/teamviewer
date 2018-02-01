@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if $(/usr/bin/teamviewer daemon status | grep -q "teamviewerd.service; enabled;")
+then
+	title="Disable systemd teamviewerd.service"
+	body="sudo systemctl disable teamviewerd.service"
+	echo "$title: $body"
+	notify-send -u critical "$title" "$body"
+	exit 1
+elif [ -n "$1" ]
+then
+	/usr/bin/teamviewer $*
+else
+	/usr/bin/teamviewer daemon disable
+	/usr/bin/teamviewer daemon start
+	/usr/bin/teamviewer
+	/usr/bin/teamviewer daemon stop
+fi
+
