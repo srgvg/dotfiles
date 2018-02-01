@@ -1,0 +1,798 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "DOCUMENTATION" "1" "February 2018" "" ""
+.
+.SH "Table Of Contents"
+.
+.IP "" 0
+\fIIntroduction\fR
+.
+.IP "" 0
+\fICommand Line Arguments\fR
+.
+.IP "" 0
+\fIKey Bindings\fR
+.
+.IP "\(bu" 4
+\fIMovement\fR
+.
+.IP "\(bu" 4
+\fISearch\fR
+.
+.IP "\(bu" 4
+\fIView Navigation\fR
+.
+.IP "\(bu" 4
+\fIGeneral\fR
+.
+.IP "\(bu" 4
+\fIView Specific Bindings\fR
+.
+.IP "" 0
+\fIConfiguration\fR
+.
+.IP "\(bu" 4
+\fIset\fR
+.
+.IP "\(bu" 4
+\fItheme\fR
+.
+.IP "\(bu" 4
+\fImap\fR
+.
+.IP "\(bu" 4
+\fIq\fR
+.
+.IP "\(bu" 4
+\fIaddtab\fR
+.
+.IP "\(bu" 4
+\fIrmtab\fR
+.
+.IP "\(bu" 4
+\fIaddview\fR
+.
+.IP "\(bu" 4
+\fIvsplit\fR
+.
+.IP "\(bu" 4
+\fIhsplit\fR
+.
+.IP "\(bu" 4
+\fIsplit\fR
+.
+.IP "" 0
+
+.
+.IP "" 0
+\fIFilter Query Language\fR
+.
+.IP "" 0
+.
+.SH "Introduction"
+GRV \- Git Repository Viewer \- is a TUI capable of displaying Git Repository data\. It provides a way to view refs, branches and diffs using vi like key bindings\.
+.
+.P
+GRV is comprised of two main tabs
+.
+.IP "\(bu" 4
+\fBHistory View\fR \- This tab is composed of:
+.
+.IP "\(bu" 4
+\fBRef View\fR \- Lists branches and tags\.
+.
+.IP "\(bu" 4
+\fBCommit View\fR \- Lists commits for the selected ref\.
+.
+.IP "\(bu" 4
+\fBDiff View\fR \- Displays the diff for the selected commit\.
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBStatus View\fR \- This tab is composed of:
+.
+.IP "\(bu" 4
+\fBGit Status View\fR \- Displays the status of the repository
+.
+.IP "\(bu" 4
+\fBDiff View\fR \- Displays the diff of any selected modified files
+.
+.IP "" 0
+
+.
+.IP "" 0
+.
+.SH "Command Line Arguments"
+GRV accepts the following command line arguments:
+.
+.IP "" 4
+.
+.nf
+
+\-logFile string
+        Log file path (default "grv\.log")
+\-logLevel string
+        Logging level [NONE|PANIC|FATAL|ERROR|WARN|INFO|DEBUG] (default "NONE")
+\-repoFilePath string
+        Repository file path (default "\.")
+\-version
+        Print version
+.
+.fi
+.
+.IP "" 0
+.
+.SH "Key Bindings"
+The key bindings below are common to all views in GRV:
+.
+.SS "Movement"
+.
+.nf
+
+k       or <Up>         Move up one line
+j       or <Down>       Move down one line
+l       or <Right>      Scroll right
+h       or <Left>       Scroll left
+<C\-b>   or <PageUp>     Move one page up
+<C\-f>   or <PageDown>   Move one page down
+gg                      Move to first line
+G                       Move to last line
+zz                      Center view
+.
+.fi
+.
+.SS "Search"
+.
+.nf
+
+/                       Search forwards
+?                       Search backwards
+n                       Move to next search match
+N                       Move to last search match
+.
+.fi
+.
+.SS "View Navigation"
+.
+.nf
+
+<Tab>   or <C\-w>w       Move to next view
+<S\-Tab> or <C\-w>W       Move to previous view
+f       or <C\-w>o       Toggle current view full screen
+<C\-w>t                  Toggle views layout
+gt                      Move to next tab
+gT                      Move to previous tab
+q                       Close view (or close tab if empty)
+.
+.fi
+.
+.SS "General"
+.
+.nf
+
+<Enter>                 Select item (opens listener view if none exists)
+:                       GRV Command prompt
+<C\-z>                   Suspend GRV
+.
+.fi
+.
+.SS "View Specific Bindings"
+Ref View specific key bindings:
+.
+.IP "" 4
+.
+.nf
+
+<Enter>                 Select ref and load commits
+<C\-q>                   Add ref filter
+<C\-r>                   Remove ref filter
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Commit View specific key bindings:
+.
+.IP "" 4
+.
+.nf
+
+<C\-q>                   Add commit filter
+<C\-r>                   Remove commit filter
+.
+.fi
+.
+.IP "" 0
+.
+.SH "Configuration"
+The behaviour of GRV can be customised through the use of commands specified in a configuration file\. GRV will look for the following configuration files on start up:
+.
+.IP "\(bu" 4
+\fB$XDG_CONFIG_HOME/grv/grvrc\fR
+.
+.IP "\(bu" 4
+\fB$HOME/\.config/grv/grvrc\fR
+.
+.IP "" 0
+.
+.P
+GRV will attempt to process the first file which exists\. Commands can also be specified within GRV using the command prompt \fB:\fR
+.
+.P
+GRV supports configuration commands, some of which operate on views\. When a view argument is required it will be one of the following values:
+.
+.IP "" 4
+.
+.nf
+
+CommitView
+DiffView
+GitStatusView
+HistoryView
+RefView
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Below are the set of configuration commands supported:
+.
+.SS "set"
+The set command allows configuration variables to be set\. It has the form:
+.
+.IP "" 4
+.
+.nf
+
+set variable value
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Configuration variables available in GRV are:
+.
+.IP "" 4
+.
+.nf
+
+ Variable | Type   | Description
+ \-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+ tabwidth | int    | Tab character screen width (minimum value: 1)
+ theme    | string | The currently active theme
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to set the tab width to tab width to 4 and the currently active theme to "mytheme":
+.
+.IP "" 4
+.
+.nf
+
+set tabwidth 4
+set theme mytheme
+.
+.fi
+.
+.IP "" 0
+.
+.SS "theme"
+The theme command allows a custom theme to be defined\. This theme can then be activated using the theme config variable described above\. The form of the theme command is:
+.
+.IP "" 4
+.
+.nf
+
+theme \-\-name [ThemeName] \-\-component [ComponentId] \-\-bgcolor [BackgroundColor] \-\-fgcolor [ForegroundColor]
+.
+.fi
+.
+.IP "" 0
+.
+.IP "\(bu" 4
+ThemeName: The name of the theme to be created/updated\.
+.
+.IP "\(bu" 4
+ComponentId: The Id of the screen component (the part of the display to change)\.
+.
+.IP "\(bu" 4
+BackgroundColor: The background color\.
+.
+.IP "\(bu" 4
+ForegroundColor: The foreground color\.
+.
+.IP "" 0
+.
+.P
+Using a sequence of theme commands it is possible to define a theme\. For example, to define a new theme "mytheme" and set it as the active theme:
+.
+.IP "" 4
+.
+.nf
+
+theme \-\-name mytheme \-\-component CommitView\.Date      \-\-bgcolor None \-\-fgcolor Red
+theme \-\-name mytheme \-\-component RefView\.Tag          \-\-bgcolor Blue \-\-fgcolor 36
+theme \-\-name mytheme \-\-component StatusBarView\.Normal \-\-bgcolor None \-\-fgcolor f14a98
+set theme mytheme
+.
+.fi
+.
+.IP "" 0
+.
+.P
+GRV supports 256 colors (when available)\. Provided colors will be mapped to the nearest available color\. The allowed color values are:
+.
+.P
+\fBSystem Colors\fR \fBNone Black Red Green Yellow Blue Magenta Cyan White\fR
+.
+.P
+\fBTerminal Color Numbers\fR \fB0 \- 255\fR
+.
+.P
+\fBHex Colors\fR \fB000000 \- ffffff\fR
+.
+.P
+The set of screen components that can be customised is:
+.
+.IP "" 4
+.
+.nf
+
+All\.Default
+All\.SearchMatch
+All\.ActiveViewSelectedRow
+All\.InactiveViewSelectedRow
+
+MainView\.ActiveView
+MainView\.NormalView
+
+RefView\.Title
+RefView\.Footer
+RefView\.LocalBranchesHeader
+RefView\.RemoteBranchesHeader
+RefView\.LocalBranch
+RefView\.Head
+RefView\.RemoteBranch
+RefView\.TagsHeader
+RefView\.Tag
+
+CommitView\.Title
+CommitView\.Footer
+CommitView\.ShortOid
+CommitView\.Date
+CommitView\.Author
+CommitView\.Summary
+CommitView\.Tag
+CommitView\.LocalBranch
+CommitView\.RemoteBranch
+
+DiffView\.Title
+DiffView\.Footer
+DiffView\.Normal
+DiffView\.CommitAuthor
+DiffView\.CommitAuthorDate
+DiffView\.CommitCommitter
+DiffView\.CommitCommitterDate
+DiffView\.CommitSummary
+DiffView\.StatsFile
+DiffView\.GitDiffHeader
+DiffView\.GitDiffExtendedHeader
+DiffView\.UnifiedDiffHeader
+DiffView\.HunkStart
+DiffView\.HunkHeader
+DiffView\.AddedLine
+DiffView\.RemovedLine
+
+GitStatusView\.StagedTitle
+GitStatusView\.UnstagedTitle
+GitStatusView\.UntrackedTitle
+GitStatusView\.ConflictedTitle
+GitStatusView\.StagedFile
+GitStatusView\.UnstagedFile
+GitStatusView\.UntrackedFile
+GitStatusView\.ConflictedFile
+
+StatusBarView\.Normal
+
+HelpBarView\.Special
+HelpBarView\.Normal
+
+ErrorView\.Title
+ErrorView\.Footer
+ErrorView\.Errors
+.
+.fi
+.
+.IP "" 0
+.
+.SS "map"
+The map command allows a key sequence to be mapped to an action or another key sequence for a specified view\. The form of the map command is:
+.
+.IP "" 4
+.
+.nf
+
+map view fromkeys tokeys
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to map the key \'a\' to the keys \'gg\' in the Ref View:
+.
+.IP "" 4
+.
+.nf
+
+map RefView a gg
+.
+.fi
+.
+.IP "" 0
+.
+.P
+When pressing \'a\' in the Ref View, the first line would then become the selected line, as \'gg\' moves the cursor to the first line\.
+.
+.P
+All is a valid view argument when a binding should apply to all views\.
+.
+.P
+GRV also has a text representation of actions that are independent of key bindings\. For example, the following commands can be used to make the \fB<Up>\fR key move a line down and the \fB<Down>\fR key move a line up:
+.
+.IP "" 4
+.
+.nf
+
+map All <Up>   <grv\-next\-line>
+map All <Down> <grv\-prev\-line>
+.
+.fi
+.
+.IP "" 0
+.
+.P
+The set of actions available is:
+.
+.IP "" 4
+.
+.nf
+
+<grv\-nop>
+<grv\-exit>
+<grv\-suspend>
+<grv\-prompt>
+<grv\-search\-prompt>
+<grv\-reverse\-search\-prompt>
+<grv\-filter\-prompt>
+<grv\-search>
+<grv\-reverse\-search>
+<grv\-search\-find\-next>
+<grv\-search\-find\-prev>
+<grv\-clear\-search>
+<grv\-next\-line>
+<grv\-prev\-line>
+<grv\-next\-page>
+<grv\-prev\-page>
+<grv\-scroll\-right>
+<grv\-scroll\-left>
+<grv\-first\-line>
+<grv\-last\-line>
+<grv\-select>
+<grv\-next\-view>
+<grv\-prev\-view>
+<grv\-full\-screen\-view>
+<grv\-toggle\-view\-layout>
+<grv\-center\-view>
+<grv\-next\-tab>
+<grv\-prev\-tab>
+<grv\-remove\-tab>
+<grv\-remove\-view>
+.
+.fi
+.
+.IP "" 0
+.
+.SS "q"
+The quit command is used to exit GRV and can be used with the following keys:
+.
+.IP "" 4
+.
+.nf
+
+:q<Enter>
+.
+.fi
+.
+.IP "" 0
+.
+.SS "addtab"
+The addtab command creates a new named empty tab and switches to this new tab\. The format of the command is:
+.
+.IP "" 4
+.
+.nf
+
+addtab tabname
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to add a new tab titled "mycustomtab" the following command can be used:
+.
+.IP "" 4
+.
+.nf
+
+addtab mycustomtab
+.
+.fi
+.
+.IP "" 0
+.
+.SS "rmtab"
+The rmtab removes the currently active tab\. If the tab removed is the last tab then GRV will exit\.
+.
+.SS "addview"
+The addview command allows a view to be added to the currently active tab\. The form of the command is:
+.
+.IP "" 4
+.
+.nf
+
+addview view viewargs\.\.\.
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Each view accepts a different set of arguments\. This is described in the table below:
+.
+.IP "" 4
+.
+.nf
+
+ View          | Args
+ \-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-
+ CommitView    | ref or oid
+ DiffView      | oid
+ GitStatusView | none
+ RefView       | none
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Examples usages for each view are given below:
+.
+.IP "" 4
+.
+.nf
+
+addview CommitView origin/master
+addview DiffView 4882ca9044661b49a26ae03ceb1be3a70d00c6a2
+addview GitStatusView
+addview RefView
+.
+.fi
+.
+.IP "" 0
+.
+.SS "vsplit"
+The vsplit command creates a vertical split between the currently selected view and the view specified in the command\. The form of the command is:
+.
+.IP "" 4
+.
+.nf
+
+vsplit view viewargs\.\.\.
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to create a vertical split between the currently selected view and a CommitView displaying commits for master:
+.
+.IP "" 4
+.
+.nf
+
+vsplit CommitView master
+.
+.fi
+.
+.IP "" 0
+.
+.SS "hsplit"
+The hsplit command creates a horizontal split between the currently selected view and the view specified in the command\. The form of the command is:
+.
+.IP "" 4
+.
+.nf
+
+hsplit view viewargs\.\.\.
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to create a horizontal split between the currently selected view and a RefView:
+.
+.IP "" 4
+.
+.nf
+
+hsplit RefView
+.
+.fi
+.
+.IP "" 0
+.
+.SS "split"
+The split command is similar to the vsplit and hsplit commands\. It creates either a new vsplit or hsplit determined by the current dimensions of the active view\. The form of the command is:
+.
+.IP "" 4
+.
+.nf
+
+split view viewargs\.\.\.
+.
+.fi
+.
+.IP "" 0
+.
+.SH "Filter Query Language"
+GRV has a built in query language which can be used to filter the content of the Ref and Commit views\. All queries resolve to boolean values which are tested against each item listed in the view\. A query is composed of at least one comparison:
+.
+.IP "" 4
+.
+.nf
+
+field CMP value
+.
+.fi
+.
+.IP "" 0
+.
+.P
+CMP can be any of the following comparison operators, which are case\-insensitive:
+.
+.IP "" 4
+.
+.nf
+
+=, !=, >, >=, <, <=, GLOB, REGEXP
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Value is one of the following types:
+.
+.IP "" 4
+.
+.nf
+
+string          (e\.g\. "test")
+number          (e\.g\. 123 or 123\.0)
+date            (e\.g\. "2017\-09\-05 10:05:25" or "2017\-09\-05")
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Field is specific to the view that is being filtered\. For example, to filter commits to those whose commit messages start with "Bug Fix:":
+.
+.IP "" 4
+.
+.nf
+
+summary GLOB "Bug Fix:*"
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Or equivalently:
+.
+.IP "" 4
+.
+.nf
+
+summary REGEXP "^Bug Fix:\.*"
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For more inforation about the supported GLOB syntax see: \fIhttps://github\.com/gobwas/glob\fR
+.
+.P
+For more information about the supported regex syntax see: \fIhttps://golang\.org/s/re2syntax\fR
+.
+.P
+Comparisons can be composed together using the following logical operators, which are case\-insensitive:
+.
+.IP "" 4
+.
+.nf
+
+AND, OR, NOT
+.
+.fi
+.
+.IP "" 0
+.
+.P
+For example, to filter commits to those authored by John Smith or Jane Roe in September 2017, ignoring merge commits:
+.
+.IP "" 4
+.
+.nf
+
+authordate >= "2017\-09\-01" AND authordate < "2017\-10\-01" AND (authorname = "John Smith" OR authorname = "Jane Roe") AND parentcount < 2
+.
+.fi
+.
+.IP "" 0
+.
+.P
+As shown above, expressions can be grouped using parentheses\.
+.
+.P
+The list of (case\-insensitive) fields that can be used in the Commit View is:
+.
+.IP "" 4
+.
+.nf
+
+ Field          | Type
+ \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-
+ authordate     | date
+ authoremail    | string
+ authorname     | string
+ committerdate  | date
+ committeremail | string
+ committername  | string
+ id             | string
+ parentcount    | number
+ summary        | string
+.
+.fi
+.
+.IP "" 0
+.
+.P
+The list of (case\-insensitive) fields that can be used in the Ref View is:
+.
+.IP "" 4
+.
+.nf
+
+ Field | Type
+ \-\-\-\-\-\-+\-\-\-\-\-\-\-
+ name  | string
+.
+.fi
+.
+.IP "" 0
+
