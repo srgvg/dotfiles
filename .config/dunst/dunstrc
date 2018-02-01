@@ -17,7 +17,7 @@
     # <tt> Monospace font
     #
     # If markup is not allowed, those tags will be stripped out of the message.
-    allow_markup = yes
+    markup = full
 
     # The format of the message. Possible variables are:
     #   %a  appname
@@ -38,7 +38,7 @@
 
     # alignment of message text.
     # Possible values are "left", "center" and "right"
-    alignment = left
+    alignment = right
 
     # The frequency with wich text that is longer than the notification
     # window allows bounces back and forth.
@@ -68,7 +68,8 @@
     # right side of the screen.  Y is measured from the top and down respectevly.
     # The width can be negative. In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
-    geometry = "500x10-12+35"
+    #geometry = "500x10-12+35"
+    geometry = "300x10-32+55"
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
@@ -133,7 +134,6 @@
     # browser for opening urls in context menu
     browser = /usr/bin/sensible-browser
 
-[frame]
     width = 0
     color = "#aaaaaa"
 
