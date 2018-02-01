@@ -1,6 +1,7 @@
 #!/bin/bash
 
 args="$*"
+FORMAT="${FORMAT:-bash}"
 
 execute_commands()
 {
@@ -23,12 +24,12 @@ fi
 
 if [ -z "${args}" ]
 then
-	paste_url=`/usr/bin/pastebinit | tr -d '\n'`
+	paste_url=$(/usr/bin/pastebinit -f $FORMAT | tr -d '\n')
 else
     output=`execute_commands 2>&1`
     echo -e "$output"
     echo
-    paste_url=`echo "$output" | /usr/bin/pastebinit`
+	paste_url=$(echo "$output" | /usr/bin/pastebinit -f $FORMAT)
 fi
 
 sleep 1
@@ -38,5 +39,5 @@ echo $link
 echo $link | tr -d '\n' | xclip -in -selection clipboard
 notify-send --category=transfer.complete \
             --urgency=low --icon=gtk-info \
-            "Command pasted" "$link"
+            "Command pasted at $link" "$paste_url"
 
