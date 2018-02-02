@@ -5,7 +5,8 @@ target="${1:-$pictures}"
 shift
 if [ -f "${target}" ]
 then
-	target="--start-at ${target} $(dirname ${target})"
+	targetdir=$(dirname "${target}")
+	targetoption="--start-at"
 fi
-/usr/bin/feh --image-bg black --geometry 1080x610 ${target} $*
+/usr/bin/feh --image-bg black --geometry 1080x610 ${targetoption} "${target}" "${targetdir}" $*
 
