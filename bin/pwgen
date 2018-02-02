@@ -3,7 +3,7 @@
 pwgen='/usr/bin/pwgen -N1'
 case $1 in
     # http://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
-    *[!0-9]*)  # it's not a number 
+    *[!0-9]*)  # it's not a number
         TYPE=$1
         PL=$2
         ;;
@@ -42,10 +42,14 @@ case $TYPE in
 		exit 1
 esac
 
-echo -n $pass | xclip -in -selection clipboard
-notify-send --category=transfer.complete \
+# formerly using xclip - gives trouble when this script is redirected to not stdout
+echo -n $pass | xsel --clipboard --input 
+if [ -t 1 ]
+then
+	notify-send --category=transfer.complete \
             --urgency=low --icon=gtk-info \
             "Password copied to clipboard" "$msg"
-echo ' '$pass
-echo "Password copied to clipboard ($msg)"
+	echo "$msg:" >&2
+fi
+echo $pass
 
