@@ -28,18 +28,18 @@ Active=true
 
 # The name to show in the menu, locale supported with standard desktop spec.
 # **** REQUIRED ****
-Name=Share via Dropbox
+Name=Restrict PDF usage
 
 # Tool tip, locale supported (Appears in the status bar)
-Comment=The file %f will be shared via Dropbox
+Comment=A new restricted PDF file (only printing allowed) will be created from %f
 
 # What to run.  Enclose in < > to run an executable that resides in the actions folder.
 # **** REQUIRED ****
 #Exec=gedit %F
-Exec=<publish %P/%f>
+Exec=<pdfrestrict %P/%f>
 
 # Icon name to use in the menu - must be a theme icon name
-Icon-Name=dropbox
+Icon-Name=evince
 
 # Gtk Stock ID to use for the icon.  Note if both Icon-name and Stock-Id are
 # defined, the Stock-Id takes precedence.
@@ -59,7 +59,7 @@ Selection=s
 # Individual specific extensions can be a semicolon-terminated list
 # Extensions are NOT case sensitive.  jpg will match JPG, jPg, jpg, etc..
 # **** EITHER EXTENSIONS OR MIMETYPES IS REQUIRED *****
-Extensions=nodirs
+Extensions=pdf;PDF
 
 # What mime-types to display on - this is an array, end with a semicolon
 # **** EITHER EXTENSIONS OR MIMETYPES IS REQUIRED *****

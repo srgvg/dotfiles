@@ -1,0 +1,19 @@
+#!/bin/bash
+
+file=${1:-}
+if [ -r "${file}" ]
+then
+	pdfout="${2:-${file%.*}-restricted.pdf}"
+	pdfout="${pdfout%.*}.pdf"
+	pw="$(pwgen normal 200 2>/dev/null)"
+
+	pdftk "${file}" output "${pdfout}" encrypt_128bit owner_pw "${pw}" allow printing
+
+	echo "Converted ${file} to restricted pdf"
+	echo "${pdfout}"
+else
+	echo "No filename to convert was given" >&2
+	exit 1
+fi
+
+
