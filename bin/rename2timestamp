@@ -9,13 +9,15 @@ function rename() {
 	local file=${2:-}
 	if [ -z "${file}" ]
 	then
-	    echo "No file argument given" >&2
-	    return 1
+		cat >&2 <<- EOF
+			No file argument given
+			EOF
+		return 1
 	fi
 	if [ ! -r "${file}" ]
 	then
-	    echo "Cannot read $file" >&2
-	    return 1
+		echo "Cannot read $file" >&2
+		return 1
 	fi
 
 	filepathname=$(realpath --no-symlinks "${file}")
@@ -35,19 +37,29 @@ function rename() {
 	mv --verbose "${filepathname}" "${newpathname}"
 }
 
-if [ -z "$1" ]
+action="${1:-}"
+if [ -z "${action}" ]
 then
-    echo "No argument given." >&2
+	cat >&2 <<- EOF
+		No file argument given
+
+		$(basename $0) [optional action: 0 or 1] filenames..
+
+		.   option 0 : just rename the file to timestamp.ext
+		.              this is also the default when action is omitted
+		.   option 1 : prepend a timestamp to tyhe current filename ts-timestamp.ext
+
+		EOF
     exit 1
 fi
 
-if [ "$1" -eq 0 ] || [ "$1" -eq 1 ]
+if [ "${action}" = 0 ] || [ "${action}" = 1 ]
 then
 	action="$1"
 	files=("${@:2}")
 else
 	files=($@)
-	action=0
+	action=0 # default just rename to timestamp
 fi
 
 for file in "${files[@]}"
