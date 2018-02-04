@@ -1,21 +1,34 @@
 #!/bin/bash
-
+#set -x
 set -e
-
 source $HOME/etc/defaults
 
-i3-launch-job mqtt-notify.py
-i3-launch-job autocutsel -verbose -selection CLIPBOARD
-i3-launch-job tail -follow --verbose ~/.lockscreen.log
+# list of jobs to execute in screen
+## filter comments and empty lines
+JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
+	mqtt-notify.py
+	autocutsel -verbose -selection CLIPBOARD
+	#autocutsel -verbose -selection PRIMARY
+	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
+	tail --follow --verbose $HOME/.lockscreen.log  # kaka
+	#setbg loop debian
+	#rerandr3 daemon
+EOF
+)
 
-# 58080/tcp                  ALLOW IN    Anywhere
-# 65353/udp                  ALLOW IN    Anywhere
-# 1900/udp                   ALLOW IN    Anywhere
-i3-launch-job pulseaudio-dlna-d
+# check if this is a fresh start, whether there's already an i3jobs screen
+if (screen -list | grep -q i3jobs)
+then
+	PAUSE="0"
+else
+	# wait a bit more after the first job to allow screen to start up
+	PAUSE="2"
+fi
 
-#i3-launch-job autocutsel -verbose -selection PRIMARY
-#i3-launch-job rerandr3 daemon
-#i3-launch-job setbg loop debian
-exit 0
+# launch the jobs
+echo "$JOBS" | while read -r line
+do
+	i3-launch-job $line
+	sleep $PAUSE
+done
 
-##############################################################################
