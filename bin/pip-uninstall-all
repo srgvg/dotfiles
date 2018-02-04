@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if type pyenv >/dev/null 2>&1 && pyenv virtualenvs | grep -q '^*'
+then
+	if [ "$1" = "DO" ]
+	then
+		pip freeze | xargs -n1 pip uninstall -y --verbose
+	else
+		pip freeze | xargs -n1 echo pip uninstall -y
+	fi
+else
+	cat <<- EOF
+
+	Warning!
+
+	You seem to be running without an active pyenv virtualenv.
+	This would remove all system or user pip packages.
+
+	Aborting.
+	EOF
+	exit 1
+fi
