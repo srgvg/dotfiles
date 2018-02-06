@@ -39,8 +39,8 @@ set $ws_www         1
 set $ws_tool2       8
 set $ws_tool1       9
 set $ws_tool0       10
-set $ws_chat        11
-set $ws_util_chat   12
+set $ws_util_chat   11
+set $ws_chat        12
 set $ws_util_pw     21
 set $ws_util_music  22
 #set $ws_
@@ -827,8 +827,8 @@ for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floati
 exec "/usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
-exec --no-startup-id "nmcli radio wifi off"
-exec --no-startup-id "rfkill block bluetooth"
+exec --no-startup-id "nmcli radio wifi off" # disable wifi
+exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
 exec --no-startup-id "rerandr3 restore"
 exec --no-startup-id "pulseaudio --check || pulseaudio --start"
 exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
@@ -839,10 +839,8 @@ exec "google-chrome serge &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
-exec "blueman-applet &"
 exec "keepassxc &"
 exec "franz &"
-exec "signal-desktop"
 exec "spotify &"
 exec "dropbox start"
 exec "KEYBASE_SYSTEMD=0 run_keybase &"
