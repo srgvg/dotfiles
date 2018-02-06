@@ -24,7 +24,7 @@ function defaultsink() {
 
 function sinkname() {
 	local sinknum=${1:-0}
-	pactl list sinks | grep -A3 "#$sinknum" | grep Description | cut -d: -f 2- | xargs
+	pactl list sinks | grep -A3 "#${sinknum}$" | grep Description | cut -d: -f 2- | xargs
 }
 
 function selectsink() {
