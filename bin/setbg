@@ -77,7 +77,7 @@ definebg() {
 
 displaybg() {
     # set the background
-    feh --no-fehbg --bg-fill ${bglnk}
+    /usr/bin/feh --no-fehbg --bg-fill ${bglnk}
 }
 
 trap_loop() {
