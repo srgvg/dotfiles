@@ -27,14 +27,20 @@ function rename() {
 	filenamext=${filename##*.}
 	filepoch=$(stat -c %Y "${filepathname}")
 	filets=$(date -d @${filepoch} +%Y%m%d%H%M%S)
-	if [ "${action}" -eq 0 ]
+	if [ "${action}" -eq 1 ]
+	then
+		newpathname="${filepath}/${filets}-${filenamebase}.${filenamext}"
+	elif [ "${action}" -eq 2 ]
 	then
 		newpathname="${filepath}/${filets}.${filenamext}"
 	else
-		newpathname="${filepath}/${filets}-${filenamebase}.${filenamext}"
+		cat >&2 <<- EOF
+			Non-act action given, in rename function. Don't know what to do.
+			EOF
+			return 1
 	fi
 
-	mv --verbose "${filepathname}" "${newpathname}"
+	$DEBUG mv --verbose "${filepathname}" "${newpathname}"
 }
 
 action="${1:-}"
@@ -45,21 +51,37 @@ then
 
 		$(basename $0) [optional action: 0 or 1] filenames..
 
-		.   option 0 : just rename the file to timestamp.ext
-		.              this is also the default when action is omitted
-		.   option 1 : prepend a timestamp to tyhe current filename ts-timestamp.ext
+			option 0:  don't act, just show what would happen
+				   01   action 1 by default (or option 01)
+				   02   for action 2, issue option 02
+					   this is also the default when action is omitted
+		    option 1 : prepend a timestamp to the current filename timestamp-filename.ext
+		    option 2 : just rename the file to timestamp.ext
 
 		EOF
     exit 1
 fi
 
-if [ "${action}" = 0 ] || [ "${action}" = 1 ]
+DEBUG="echo"
+if [ "${action}" = 1 ] || [ "${action}" = 2 ]
 then
 	action="$1"
 	files=("${@:2}")
+	DEBUG=""
+elif [ "${action}" = 0 ] || [ "${action}" = 01 ]
+then
+	DEBUG="echo"
+	action=1
+	files=("${@:2}")
+elif [ "${action}" = 02 ]
+then
+	DEBUG="echo"
+	action=2
+	files=("${@:2}")
 else
+	DEBUG="echo"
+	action=1
 	files=($@)
-	action=0 # default just rename to timestamp
 fi
 
 for file in "${files[@]}"
