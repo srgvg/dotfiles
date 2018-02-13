@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 _PID=$(pgrep --full /usr/bin/xcompmgr) && [ $_PID ] && /bin/kill -9 $_PID
 /usr/bin/xcompmgr -c -f -F -I0.2 -O0.2 -D30 &

@@ -745,7 +745,7 @@ for_window [class="Files" instance="small"]                                     
 #
 # Browsers
 #
-assign      [class="^(browser-)(serge|facebook)"]                               $ws_www
+assign      [class="^(browser-)(serge|facebook)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
 for_window  [class="^(browser-tmp)"]                                            floating enable
 assign      [class="^(browser-radio)"]                                          $ws_util_music
 for_window  [class="^(browser-radio)"]                                          floating disable, layout splith
