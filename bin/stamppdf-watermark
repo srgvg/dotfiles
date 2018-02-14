@@ -1,0 +1,30 @@
+#!/bin/bash
+
+wmdir="$HOME/Templates/watermarks"
+
+if [ ! -e "$(which ps2pdf)" ]
+then	echo "ps2pdf not installed"
+        exit
+fi
+
+type="$1"
+input="$2"
+basedir="$(dirname "${input}")"
+filename="$(basename "${input}")"
+output="${basedir}/${filename%.*}.${type}.pdf"
+types="$(find $wmdir/*.pdf | sed -e "s@$wmdir/\(.*\).pdf@\1@")"
+
+if	[ -z "${input}" ] || \
+	! ( echo ${types} | grep -q "${type}" ) || \
+	[ ! "${input##*.}" = "pdf" ] || [ ! "${input##*.}" = "PDF" ]
+then # no two parameters, first is n ot a valid type, or second is not a pdf
+    echo "Usage: $0 <type> input.pdf"
+	echo "where <type> is one of"
+	echo "$types"
+    exit
+fi
+
+
+pdftk $input stamp "${wmdir}/${type}.pdf" output "${output}"
+
+
