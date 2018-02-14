@@ -8,12 +8,12 @@ SECONDARY=${SECONDARY:-eDP1}
 
 CURRENT=$(i3-msg -t get_workspaces   | jq '.[] | select(.focused==true).name' | sed 's/"//g')
 
-for w in $(seq 1 14)
+for w in $(grep ^workspace\   $HOME/.i3/config | grep outpri | awk '{print $2}')
 do
 	i3-msg "workspace $w; move workspace to output $PRIMARY"
 done
 
-for w in $(seq 15 22)
+for w in $(grep ^workspace\   $HOME/.i3/config | grep outsec | awk '{print $2}')
 do
 	i3-msg "workspace $w; move workspace to output $SECONDARY"
 done

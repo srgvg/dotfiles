@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
 
@@ -12,7 +12,7 @@
 # with the output of `xprop`,
 # reported upstream: https://bugs.freedesktop.org/show_bug.cgi?id=66807
 
-PROGNAME=`basename "$0"`
+PROGNAME=$(basename "$0")
 
 # Check for xwininfo and xprop
 for cmd in xwininfo xprop; do
@@ -22,14 +22,14 @@ for cmd in xwininfo xprop; do
     fi
 done
 
-match_int='[0-9][0-9]*'
-match_string='".*"'
-match_qstring='"[^"\\]*(\\.[^"\\]*)*"' # NOTE: Adds 1 backreference
+function get_window_criteria() {
+	local match_int='[0-9][0-9]*'
+	local match_string='".*"'
+	local match_qstring='"[^"\\]*(\\.[^"\\]*)*"' # NOTE: Adds 1 backreference
 
-echo
-{
+	{
     # Run xwininfo, get window id
-    window_id=`xwininfo -int | sed -nre "s/^xwininfo: Window id: ($match_int) .*$/\1/p"`
+	window_id=$(xwininfo -int | sed -nre "s/^xwininfo: Window id: ($match_int) .*$/\1/p")
     echo "id=$window_id"
 
     # Run xprop, transform its output into i3 criteria. Handle fallback to
@@ -41,5 +41,12 @@ echo
             -e "/^WM_NAME\(STRING\) = ($match_string)$/{s//title=\1/; h}" \
             -e "/^_NET_WM_NAME\(UTF8_STRING\) = ($match_qstring)$/{s//title=\1/; h}" \
             -e '${g; p}'
-} | sort | tr "\n" " " | sed -r 's/^(.*) $/[\1]\n/'
+	} | sort | tr "\n" " " | sed -r 's/^(.*) $/[\1]\n/'
+}
+
+text=$(get_window_criteria)
+notify-send -u low "WINDOW PROPERTIES" "${text}"
 echo
+echo "${text}"
+echo
+

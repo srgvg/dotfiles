@@ -39,15 +39,40 @@ set $ws_www         1
 set $ws_tool2       8
 set $ws_tool1       9
 set $ws_tool0       10
-set $ws_util_chat   11
-set $ws_chat        12
-set $ws_util_pw     21
-set $ws_util_music  22
+set $ws_chat        11
+set $ws_util_chat   12
+set $ws_util_pw     13
+set $ws_util_music  14
 #set $ws_
 
 # Xresources settings
 set_from_resource $outpri i3.output.primary     eDP1
 set_from_resource $outsec i3.output.secondary   eDP1
+
+# Automatically putting workspaces on specific screens
+#workspace 0     output $outpri
+workspace 1     output $outpri
+workspace 2     output $outpri
+workspace 3     output $outpri
+workspace 4     output $outpri
+workspace 5     output $outpri
+workspace 6     output $outpri
+workspace 7     output $outpri
+workspace 8     output $outpri
+workspace 9     output $outpri
+workspace 10    output $outpri
+workspace 11    output $outpri
+workspace 12    output $outpri
+workspace 13    output $outpri
+workspace 14    output $outsec
+workspace 15    output $outpri
+workspace 16    output $outpri
+workspace 17    output $outpri
+workspace 18    output $outpri
+workspace 19    output $outsec
+workspace 20    output $outsec
+workspace 21    output $outsec
+workspace 22    output $outsec
 
 ##############################################################################################################################################################
 #
@@ -176,31 +201,6 @@ bar {
 #
 ## workspace and window properties
 #
-
-# Automatically putting workspaces on specific screens
-#workspace 0     output $outpri
-workspace 1     output $outpri
-workspace 2     output $outpri
-workspace 3     output $outpri
-workspace 4     output $outpri
-workspace 5     output $outpri
-workspace 6     output $outpri
-workspace 7     output $outpri
-workspace 8     output $outpri
-workspace 9     output $outpri
-workspace 10    output $outpri
-workspace 11    output $outpri
-workspace 12    output $outpri
-workspace 13    output $outpri
-workspace 14    output $outpri
-workspace 15    output $outsec
-workspace 16    output $outsec
-workspace 17    output $outsec
-workspace 18    output $outsec
-workspace 19    output $outsec
-workspace 20    output $outsec
-workspace 21    output $outsec
-workspace 22    output $outsec
 
 # When a new window appears, it will be focused. The no_focus directive allows
 # preventing this from happening
@@ -421,8 +421,10 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab        exec --no-startup-id i3-cycle right
-bindsym $mod+Shift+Tab  exec --no-startup-id i3-cycle left
+bindsym $mod+Tab                focus right
+bindsym $mod+Shift+Tab          focus left
+bindsym $mod+$alt+Tab           exec --no-startup-id i3-cycle right
+bindsym $mod+$alt+Shift+Tab     exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -796,8 +798,8 @@ assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm
 assign      [class="(HipChat|Franz)"]           $ws_util_chat
 assign      [title="Signal"]                    $ws_util_chat
 for_window  [title="Signal"]                    floating disable
-assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
-for_window  [class="Keybase" instance="keybase" title="Keybase"]  floating disable
+#assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
+for_window  [class="Keybase" instance="keybase" title="Keybase"]  floating enable #disable
 
 # Music
 assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
@@ -832,7 +834,7 @@ exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
 exec --no-startup-id "rerandr3 restore"
 exec --no-startup-id "pulseaudio --check || pulseaudio --start"
 exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
-exec --no-startup-id "xcompmgr &"
+exec_always --no-startup-id "xcompmgr &"
 
 # Desktop Apps
 exec "google-chrome serge &"
@@ -840,10 +842,8 @@ exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
 exec "keepassxc &"
-exec "franz &"
 exec "spotify &"
 exec "dropbox start"
-exec "KEYBASE_SYSTEMD=0 run_keybase &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "sleep 10; i3-launch-jobs"

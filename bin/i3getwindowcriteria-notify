@@ -1,7 +1,0 @@
-#!/bin/sh
-
-txt="$(bin/i3getwindowcriteria)"
-echo
-echo "${txt}"
-echo
-notify-send -u low "WINDOW PROPERTIES" "${txt}"
