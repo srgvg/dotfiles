@@ -741,6 +741,7 @@ for_window [class="Gnome-control-center" instance="gnome-control-center"]       
 for_window [title="Event Tester"]                                                       floating enable  # xev
 for_window [instance="libreoffice"]                                                     border normal
 for_window [class="Files" instance="small"]                                             floating enable, resize set 700 300
+for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]                   floating enable
 
 
 ###############################################################################
@@ -844,6 +845,7 @@ exec "system-config-printer-applet &"
 exec "keepassxc &"
 exec "spotify &"
 exec "dropbox start"
+exec "alarm-clock-applet --hidden &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "sleep 10; i3-launch-jobs"
