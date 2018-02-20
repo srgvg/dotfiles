@@ -5,13 +5,9 @@
 #   Also: https://wiki.debian.org/ScreenLockingOnSleep
 #
 
-DEBUG=${DEBUG:-}
+DEBUG=${DEBUG:-0}
 #DEBUG=1
 #DEBUG=2
-if [ -n "${DEBUG}" ] && [ $DEBUG -gt 1 ]
-then
-	set -x
-fi
 LOCKSLEEP=5
 TIMEFORMAT='%3R'
 
@@ -21,10 +17,19 @@ set -o pipefail
 
 # load some defaults
 source "$HOME/etc/defaults"
+ANNOTATETEXT="${lockscreen_annotatetext:-}"
 
 # log this scripts full output
 logfile="${lockscreen_image%.*}.log"
-exec &> >(tee "${logfile}")
+if [ $DEBUG -eq 0 ]
+then
+	exec &> >(tee "${logfile}")
+fi
+
+if [ $DEBUG -gt 1 ]
+then
+	set -x
+fi
 
 i3lock_icons="$HOME/Pictures/icons/i3lock"
 i3lock_icon="${i3lock_icons}/token.png"
@@ -45,6 +50,18 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 function notify() {
 	TS="$(date +%Y.%m.%d-%H:%M)"
 	echo "$(date +%Y.%m.%d-%H:%M:%S) $* (${SECONDS}s)"
+}
+
+function _time2() {
+	time $*
+}
+function _time() {
+	all="$*"
+	info=$1
+	[ $DEBUG -gt 1 ] && set +x
+	duration="$(_time2 ${all} 2>&1)"
+	[ $DEBUG -gt 1 ] && set -x
+	notify "Execution of $info took $duration"
 }
 
 function systemdservice() {
@@ -79,6 +96,7 @@ function prepare() {
 		notify "Keeping the current lockscreen."
 		return
 	fi
+
 	annotate_lockscreen ${lockscreen_image}
 }
 
@@ -86,13 +104,14 @@ function make_blurred() {
 	# take a screenshot and blur it for the lock screen
 	notify "Take a screenshot and blur it."
 	BLUR="-blur 0x5"
-	/usr/bin/maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
-	convert "$screenshot_image" ${BLUR} "$lockscreen_image"
+	_time maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
+	_time convert "$screenshot_image" ${BLUR} "$lockscreen_image"
 }
 
 function annotate_lockscreen() {
+	[ -z "${ANNOTATETEXT}" ] && return
+	TEXT="${ANNOTATETEXT}"
 	notify "Annotate lockscreen with lock symbol and optional text."
-	TEXT=""
 
 	local image
 	image="${1:-$lockscreen}"
@@ -118,7 +137,7 @@ function annotate_lockscreen() {
 				   $ICON -geometry +$MIDXi+$MIDYi -composite)
 		fi
 	done <<<"$(xrandr)"
-	convert "$image" "${LOCK[@]}" "$image"
+	_time convert "$image" "${LOCK[@]}" "$image"
 }
 
 function pre_lock() {
@@ -143,7 +162,7 @@ function pre_lock() {
 	(
 		sleep 1
 		notify "Pause notifications."
-		killall -v -SIGUSR1 dunst
+		notify "$(killall -v -SIGUSR1 dunst 2>&1)"
 	 ) &
 
 	notify "Lock remote irssi screen."
@@ -153,13 +172,13 @@ function pre_lock() {
 function perform_lock() {
 	# start the real lock command in the background, set the PID file,
 	# then wait for the lock to end (when unlocked)
-	if [ -z "${DEBUG}" ]
+	if [ ${DEBUG} -eq 0 ]
 	then
 		notify "Running i3lock."
-        i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
+        _time i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
 	else
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
-		sleep ${LOCKSLEEP} &
+		_time sleep ${LOCKSLEEP} &
 	fi
 
 	# get and set i3lock pid
@@ -199,7 +218,7 @@ function post_lock() {
 	(irc unlock ||:) &  # too many issues with ssh timeouts
 
     notify "Re-enable notifications."
-    killall -v -SIGUSR2 dunst
+	notify "$(killall -v -SIGUSR2 dunst 2>&1)"
 
 	if ! systemdservice
 	then
