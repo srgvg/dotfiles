@@ -1,8 +1,9 @@
 [global_config]
+  broadcast_default = off
   close_button_on_tab = False
   custom_url_handler = /home/serge/bin/chrom
   dbus = False
-  enabled_plugins = InactivityWatch, TestPlugin, ActivityWatch, TerminalShot, APTURLHandler, Logger
+  enabled_plugins = InactivityWatch, ActivityWatch
   focus = mouse
   geometry_hinting = True
   handle_size = 1
@@ -17,10 +18,44 @@
   broadcast_all = None
   broadcast_group = None
   broadcast_off = None
+  close_term = None
+  close_window = None
+  cycle_next = None
+  cycle_prev = None
+  edit_tab_title = None
+  edit_terminal_title = None
   edit_window_title = None
-  go_next = <Primary><Shift>n
+  go_down = None
+  go_left = None
+  go_next = None
+  go_prev = None
+  go_right = None
+  go_up = None
+  group_all = None
+  group_tab = None
+  help = None
   hide_window = None
-  new_window = <Primary><Shift>n
+  insert_number = None
+  insert_padded = None
+  layout_launcher = None
+  move_tab_left = None
+  move_tab_right = None
+  new_terminator = None
+  new_window = None
+  reset = None
+  reset_clear = None
+  resize_down = None
+  resize_left = None
+  resize_right = None
+  resize_up = None
+  rotate_ccw = None
+  rotate_cw = None
+  scaled_zoom = None
+  split_horiz = None
+  split_vert = None
+  toggle_zoom = None
+  ungroup_all = None
+  ungroup_tab = None
 [layouts]
   [[default]]
     [[[child1]]]
@@ -38,7 +73,9 @@
     background_darkness = 0.7
     background_type = transparent
     copy_on_selection = True
-    cursor_color = "#ffffff"
+    cursor_blink = False
+    cursor_color = "#babdb6"
+    cursor_color_fg = False
     font = AT&T 4425 Bold 11
     foreground_color = "#ffffff"
     scrollback_infinite = True
@@ -46,3 +83,4 @@
     show_titlebar = False
     urgent_bell = True
     visible_bell = True
+    word_chars = "-./%&#_"

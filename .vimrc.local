@@ -1,3 +1,4 @@
+" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker spell:
 " Automatic reloading of .vimrc
 autocmd! bufwritepost .vimrc source %
 
@@ -6,19 +7,22 @@ colorscheme ir_black
 
 " disable spellcheck
 set nospell
+
 " enable/disable pastemode in insert mode
 set pastetoggle=<F2>
+
+" disable folding
+set nofoldenable
+
 " enable/disable linenumbers in normal mode
 map <silent> <F2> :set invnumber<cr>
+
 " F7 in command mode removes trailing whitespace
 :nnoremap <silent> <F7> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl<CR>
 
 " makes middle-click pasting x selection work
 set mouse-=a
 
-" keep at the end to overrule stuff in plugins
-" set conceallevel=0              " Do not hide syntax characters (e.g. Markdown.)
-let g:indentLine_conceallevel = 0 " see .vim/bundle/indentLine/README.md
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
