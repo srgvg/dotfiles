@@ -1,233 +1,235 @@
-# vim :set ts=4 sw=4 sts=4 et :
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 
 [alias]
 
-    authors-current = !git ls-files | xargs -n1 git blame --line-porcelain  | sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
-    authors = shortlog -sne
+	authors-current = !git ls-files | xargs -n1 git blame --line-porcelain	| sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
+	authors = shortlog -sne
 
-    br = branch
+	br = branch
 
-    changed = whatchanged --stat
-    ci = commit -vv
-    co = checkout
+	changed = whatchanged --stat
+	ci = commit -vv
+	co = checkout
 
-    df = diff
-    dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
+	df = diff
+	dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
 
-    genesis = commit --allow-empty -m Genesis
+	genesis = commit --allow-empty -m Genesis
 
-    ff = merge --ff-only
-    find-deleted-commit = ! git fsck --no-reflog | awk '/dangling commit/ {print $3}' 2>/dev/null
-    # http://vstone.eu/github-pull-requests-as-seen-by-git/
-    fpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
+	ff = merge --ff-only
+	find-deleted-commit = ! git fsck --no-reflog | awk '/dangling commit/ {print $3}' 2>/dev/null
+	# http://vstone.eu/github-pull-requests-as-seen-by-git/
+	fpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
 
-    igd = ls-files --others -i --exclude-standard
-    # http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
-    ignored = !git ls-files -v | grep "^[[:lower:]]"
-    ignore = update-index assume-unchanged
-    unignore = update-index --no-assume-unchanged
+	igd = ls-files --others -i --exclude-standard
+	# http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
+	ignored = !git ls-files -v | grep "^[[:lower:]]"
+	ignore = update-index assume-unchanged
+	unignore = update-index --no-assume-unchanged
 
-    # http://tschuermans.be/2016/03/git-compare-log-develop/
-    # A small git alias which can be used to list all commits which are
-    # different to the master (or an optionally named) branch.
-    logcompare = "!f() { git log --oneline --decorate ${1:-master}..$(git rev-parse --abbrev-ref HEAD); }; f"
+	# http://tschuermans.be/2016/03/git-compare-log-develop/
+	# A small git alias which can be used to list all commits which are
+	# different to the master (or an optionally named) branch.
+	logcompare = "!f() { git log --oneline --decorate ${1:-master}..$(git rev-parse --abbrev-ref HEAD); }; f"
 
-    lol =  log --graph --decorate --abbrev-commit       --pretty=custom --date=short
-    lola = log --graph --decorate --abbrev-commit --all --pretty=custom --date=short
-    lold = log --graph --decorate --abbrev-commit --all --pretty=custom
-    ls = ls-files
-    ls-untracked = ls-files --others
+	lol =  log --graph --decorate --abbrev-commit		--pretty=custom --date=short
+	lola = log --graph --decorate --abbrev-commit --all --pretty=custom --date=short
+	lold = log --graph --decorate --abbrev-commit --all --pretty=custom
+	ls = ls-files
+	ls-untracked = ls-files --others
 
-    myinfo = ! echo && git remote -v && echo && git branch --color=always --all -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
+	myinfo = ! echo && git remote -v && echo && git branch --color=always --all -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
 
-    # Prune deletes any local branch which has been deleted from the remote.
-    prune = fetch --prune
+	# Prune deletes any local branch which has been deleted from the remote.
+	prune = fetch --prune
 
-    rm-deleted = ! git rm $(git ls-files --deleted)
-    rm-untracked = ! rm -v $(git ls-files --others)
+	rm-deleted = ! git rm $(git ls-files --deleted)
+	rm-untracked = ! rm -v $(git ls-files --others)
 
-    # Print absolute path of repo root directory
-    root = rev-parse --show-toplevel
+	# Print absolute path of repo root directory
+	root = rev-parse --show-toplevel
 
-    show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
-    st = status -sb
+	show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
+	st = status -sb
 
-    stash-all = stash save --include-untracked
+	stash-all = stash save --include-untracked
 
-    # squash last 2 commits, keep oldest commit message
-    squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
-    # squeeze new stuff into latest commit
-    squish  = !"git status && git commit    --amend -C HEAD --date=\"`date`\""
-    squisha = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
+	# squash last 2 commits, keep oldest commit message
+	squash2 = !"GIT_EDITOR=\"sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'\" git rebase -i HEAD~2"
+	# squeeze new stuff into latest commit
+	squish	= !"git status && git commit	--amend -C HEAD --date=\"`date`\""
+	squisha = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
 
-    tags = !sh -c \"git tag | sort -V\"
-    tree = log --all --graph --decorate --oneline --simplify-by-decoration
+	tags = !sh -c \"git tag | sort -V\"
+	tree = log --all --graph --decorate --oneline --simplify-by-decoration
 
-    up = remote update
+	up = remote update
 
-    wip = commit -a -m WIP
-    pushall = !git remote | xargs -L1 git push --all
+	wip = commit -a -m WIP
+	pushall = !git remote | xargs -L1 git push --all
 
 
 [apply]
 
-    whitespace = fix
+	whitespace = fix
 
 
 [branch]
 
-    autosetupmerge = true
-    autosetuprebase = always
+	autosetupmerge = true
+	autosetuprebase = always
 
 
 [color]
 
-    branch = auto
-    diff = auto
-    interactive = auto
-    status = auto
-    ui = true
+	branch = auto
+	diff = auto
+	interactive = auto
+	status = auto
+	ui = true
 
 
 [color "branch"]
 
-    current = yellow reverse
-    local = yellow
-    remote = green
+	current = yellow reverse
+	local = yellow
+	remote = green
 
 
 [color "diff"]
 
-    meta = yellow bold
-    frag = magenta bold
-    old = red bold
-    new = green bold
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
 
 
 [color "status"]
 
-    added = yellow
-    changed = green
-    untracked = cyan
+	added = yellow
+	changed = green
+	untracked = cyan
 
 
 [commit]
 
-    gpgsign = true
+	gpgsign = true
 
 
 [core]
 
-    autocrlf = false
-    editor = vim
-    excludesFile = ~/.gitignore
-    whitespace = trailing-space,space-before-tab
-    quotepath = false
+	autocrlf = false
+	editor = vim
+	excludesFile = ~/.gitignore
+	whitespace = trailing-space,space-before-tab
+	quotepath = false
 
 
 [diff]
 
-    tool = icdiff
-    renames = copies
+	tool = icdiff
+	renames = copies
 
 
 [difftool]
 
-    prompt = false
+	prompt = false
 
 
 [difftool "icdiff"]
 
-    cmd = icdiff --line-numbers $LOCAL $REMOTE
+	cmd = icdiff --line-numbers $LOCAL $REMOTE
 
 
 [fetch]
 
-    prune = false
-    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
-    fsckobjects = true
+	prune = false
+	# https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+	fsckobjects = false
 
 
 [github]
 
-    user = srvg
+	user = srvg
 
 
 [gitreview]
 
-    username = svg
+	username = svg
 
 
 [gpg]
 
-    #program = gpg
+	#program = gpg
 
 
 [include]
 
-    path = ~/.gitconfig.d/git-repo
+	path = ~/.gitconfig.d/git-repo
 
 
 [merge]
 
-    conflictstyle = diff3
+	conflictstyle = diff3
 
 
 [pretty]
 
-    onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
-    custom = %C(bold blue)%h%C(reset) %C(bold green)%ad%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
+	onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
+	custom = %C(bold blue)%h%C(reset) %C(bold green)%ad%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
 
 
 [push]
 
-    # git push will by default push all branches that have the same name on the remote
-    # to limit this behavior to just the current branch, set this configuration option:
-    default = tracking
-    #default = matching
+	# git push will by default push all branches that have the same name on the remote
+	# to limit this behavior to just the current branch, set this configuration option:
+	default = tracking
+	#default = matching
 
-    # Instead of manually pushing new tags with --follow-tags, you always send
-    # your local tags up along with a git push.
-    followTags = true
+	# Instead of manually pushing new tags with --follow-tags, you always send
+	# your local tags up along with a git push.
+	followTags = true
 
 
 [receive]
 
-    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
-    fsckobjects = true
+	# https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+	fsckobjects = true
 
 
 [sendemail]
 
-    smtpserver = smtp.gmail.com
-    smtpserverport = 587
-    smtpencryption = tls
-    smtpuser = serge@vanginderachter.be
+	smtpserver = smtp.gmail.com
+	smtpserverport = 587
+	smtpencryption = tls
+	smtpuser = serge@vanginderachter.be
 
 
 [status]
 
-    relativePaths = true
-    showUntrackedFiles = all
-    submodulesummary = true
+	relativePaths = true
+	showUntrackedFiles = all
+	submodulesummary = true
 
 
 [svn]
 
-    # push empty directory removals back to svn as directory deletes
-    rmdir = true
+	# push empty directory removals back to svn as directory deletes
+	rmdir = true
 
 
 [transfer]
 
-    # https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
-    fsckobjects = true
+	# https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
+	fsckobjects = true
 
 
 [user]
 
-    name = Serge van Ginderachter
-    email = serge@vanginderachter.be
-    signingkey = D08FC082B8E46E8E
+	name = Serge van Ginderachter
+	email = serge@vanginderachter.be
+	signingkey = D08FC082B8E46E8E
 
 
