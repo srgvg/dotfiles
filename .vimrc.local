@@ -1,9 +1,9 @@
-" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker spell:
+" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker nospell:
 " Automatic reloading of .vimrc
 autocmd! bufwritepost .vimrc source %
 
 " spf13
-colorscheme ir_black
+colorscheme molokai_dark
 
 " disable spellcheck
 set nospell
@@ -22,6 +22,23 @@ map <silent> <F2> :set invnumber<cr>
 
 " makes middle-click pasting x selection work
 set mouse-=a
+
+" Tagbar
+nmap <F8> :TagbarToggle<CR>
+
+" neovim pipenv integration
+let g:python_host_prog=expand('~/.pyenv/versions/neovim2/bin/python')
+let g:python3_host_prog=expand('~/.pyenv/versions/neovim3/bin/python')
+
+
+" underline cursorline
+highlight CursorLine gui=underline cterm=underline
+
+
+" deoplete
+" https://github.com/Shougo/deoplete.nvim/issues/432
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

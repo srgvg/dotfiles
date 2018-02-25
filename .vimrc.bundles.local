@@ -1,1 +1,46 @@
-" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker spell:
+" vim: set sw=4 ts=4 sts=4 et tw=78 foldmarker={,} foldlevel=0 foldmethod=marker nospell:
+
+UnBundle 'majutsushi/tagbar'
+
+
+" remove neocomplete in favour of deoplete https://github.com/Shougo/deoplete.nvim
+UnBundle 'Shougo/neocomplete.vim.git'
+
+if has('nvim')
+  Bundle 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+else
+  Bundle 'Shougo/deoplete.nvim'
+  Bundle 'roxma/nvim-yarp'
+  Bundle 'roxma/vim-hug-neovim-rpc'
+endif
+let g:deoplete#enable_at_startup = 1
+
+
+
+" https://github.com/spf13/spf13-vim/issues/1053
+UnBundle 'amirh/HTML-AutoCloseTag'
+UnBundle 'heracek/HTML-AutoClose'
+
+" corrupt repo's
+UnBundle 'matchit.zip'
+UnBundle 'pythoncomplete'
+
+" vim-devicons https://github.com/ryanoasis/vim-devicons
+Bundle 'ryanoasis/vim-devicons'
+
+" material design colors
+Bundle 'hzchirs/vim-material'
+
+" deoplete
+Bundle 'davidhalter/jedi'
+Bundle 'zchee/deoplete-jedi'
+Bundle 'zchee/deoplete-go'
+Bundle 'Shougo/neopairs.vim'
+Bundle 'Shougo/neco-syntax'
+Bundle 'Shougo/neosnippet.vim'
+Bundle 'Shougo/neosnippet-snippets'
+
+
+" editorconfig
+Bundle 'editorconfig/editorconfig-vim'
+
