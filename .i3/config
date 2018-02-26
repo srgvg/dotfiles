@@ -631,8 +631,8 @@ bindsym $mod+comma                      exec --no-startup-id playerctl previous
 bindsym $mod+period                     exec --no-startup-id playerctl next
 bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
 
-bindsym $mod+m                          exec pavucontrol
-bindsym $mod+Control+m                    exec --no-startup-id pa-select-output
+bindsym $mod+m                          exec --no-startup-id pa-select-output
+bindsym $mod+Control+m                  exec pavucontrol
 
 # Fn-F4  XF86AudioMicMute
 
