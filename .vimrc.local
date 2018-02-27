@@ -41,6 +41,17 @@ inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 
+" toggle wrapping
+:function ToggleWrap()
+: if (&wrap == 1)
+:   set nowrap
+: else
+:   set wrap
+: endif
+:endfunction
+map <F9> :call ToggleWrap()<CR>
+map! <F9> ^[:call ToggleWrap()<CR>
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
