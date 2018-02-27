@@ -82,7 +82,7 @@ function prepare() {
 	then # these checks don't work when ran via systemd (needs dbus)
 		notify "Check music players and sound volume."
 		PLAYERCTLSTATUS="$(playerctl status ||:)"
-		ponymix is-muted && MUTED=yes || MUTED=no || :
+		i3-volume is-muted && MUTED=yes || MUTED=no || :
 	else
 		PLAYERCTLSTATUS="unknown"
 		MUTED="unknown"
@@ -147,15 +147,15 @@ function annotate_lockscreen() {
 function pre_lock() {
 	if ! systemdservice
 	then
+		if [ "${MUTED}" = "no" ]
+		then
+			notify "Mute sound."
+			i3-volume mute >/dev/null || notify "Could not mute the sound." >&2
+		fi
 		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 		then
 			notify "Stop any music player."
 			playerctl stop || notify "Could not stop the music player." >&2
-		fi
-		if [ "${MUTED}" = "no" ]
-		then
-			notify "Mute sound."
-			ponymix mute >/dev/null || notify "Could not mute the sound." >&2
 		fi
 	fi
 
@@ -235,7 +235,7 @@ function post_lock() {
 		if [ "${MUTED}" = "no" ]
 		then
 			notify "Unmute the sounds again."
-			ponymix unmute >/dev/null || notify "Could not unmute the sound." >&2
+			i3-volume unmute >/dev/null || notify "Could not unmute the sound." >&2
 		fi
 	fi
 

@@ -35,11 +35,32 @@ def get_governor():
 
 def get_sink():
     """ Get the default sink name """
-    p = subprocess.Popen('ponymix defaults | grep -A1 sink | grep -v sink', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
+    p = subprocess.Popen('pa-default long', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, _ = p.communicate()
     sink = out.strip()
     if sink.startswith("Built-in Audio"):
         sink = ""
+
+    p = subprocess.Popen('sonos state', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, _ = p.communicate()
+    sonosstatus = out.strip()
+    sonosplaying = sonosstatus == "PLAYING"
+    if sonosplaying:
+        sonossink = "Office Sonos"
+        p = subprocess.Popen('sonos volume', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, _ = p.communicate()
+        sonosvolume = out.strip()
+        if int(sonosvolume) > 0:
+            sinkvolume = " 🔊" + sonosvolume + "%"
+        else:
+            sinkvolume = " 🔇"
+
+        sonossink = sonossink + sinkvolume
+        if sink == "":
+            sink = sonossink
+        else:
+            sink = sonossink + ' ■ ' + sink
+
     return sink
 
 def get_wifi():

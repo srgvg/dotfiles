@@ -1,0 +1,178 @@
+#!/bin/bash
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o xtrace
+set -o nounset
+set -o errexit
+set -o pipefail
+
+action=${1:-toggle}
+
+sonos_volume_cache="$HOME/.cache/sonos-volume"
+step=5
+
+function sonos_state() {
+	echo -n "$(sonos state)"
+}
+
+function sonos_playing() {
+	if [ "$(sonos state)" = "PLAYING" ]
+	then
+		return 0
+	else
+		return 1
+	fi
+}
+
+function sonos_dlna() {
+	if [ "$(pa-default short)" = "officesonosplay3mediarenderer_dlna" ]
+	then
+		return 0
+	else
+		return 1
+	fi
+}
+
+function sonos_save_volume() {
+	sonos volume > "${sonos_volume_cache}"
+}
+
+function sonos_get_volume() {
+	if [ ! -e "${sonos_volume_cache}" ]
+	then
+		sonos_save_volume
+	fi
+	echo -n "$(cat "${sonos_volume_cache}")"
+}
+
+function sonos_is_muted() {
+	if [ "$(sonos volume)" -eq 0 ]
+	then
+		return 0
+	else
+		return 1
+	fi
+}
+
+function sonos_mute() {
+	if ! sonos_is_muted
+	then
+		# sonos is not muted, save current volume and set it to 0
+		sonos_save_volume
+		currentvolume=$(sonos volume)
+		sonos volume -${currentvolume}
+	fi
+}
+
+function sonos_unmute() {
+	if sonos_is_muted
+	then
+		# sonos is muted, restore previous volume
+		lastvolume=$(sonos_get_volume)
+		if [ "${lastvolume}" -eq 0 ]
+		then
+		›   # current AND cached volume are 0
+		›   # let's just set some default
+		›   lastvolume=15
+		fi
+		sonos volume +${lastvolume}
+	fi
+}
+
+function sonos_toggle() {
+	local lastvolume
+	if sonos_is_muted
+	then
+		sonos_unmute
+	else
+		sonos_mute
+	fi
+}
+
+function volume() {
+	local device="${1}"
+	local action="${2}"
+	echo device "'$(pa-default short)'" action "'${action}'"
+	case "${action}" in
+		up)
+			case "${device}" in
+				sonos)
+					sonos-volume +${step}
+					;;
+				pa)
+					ponymix increase ${step}
+					;;
+			esac
+			;;
+		down)
+			case "${device}" in
+				sonos)
+					sonos-volume -${step}
+					;;
+				pa)
+					ponymix decrease ${step}
+					;;
+			esac
+			;;
+		is-muted)
+			case "${device}" in
+				sonos)
+					sonos_is_muted
+					;;
+				pa)
+					ponymix is-muted
+					;;
+			esac
+			;;
+		mute)
+			case "${device}" in
+				sonos)
+					sonos_mute
+					;;
+				pa)
+					ponymix mute
+					;;
+			esac
+			;;
+		unmute)
+			case "${device}" in
+				sonos)
+					sonos_unmute
+					;;
+				pa)
+					ponymix unmute
+					;;
+			esac
+			;;
+		toggle)
+			case "${device}" in
+				sonos)
+					sonos_toggle
+					;;
+				pa)
+					ponymix toggle
+					;;
+			esac
+			;;
+		*)
+			{
+				echo "Invalid action '${action}'" >&2
+				exit 1
+			}
+	esac
+}
+
+if sonos_playing && ! sonos_dlna
+# if sonos is playing but not via pulse-audio
+then
+	# change sonos directly
+	device="sonos"
+else
+	# change pulseaudio
+	device="pa"
+fi
+
+volume "${device}" "${action}"
+

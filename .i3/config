@@ -152,7 +152,7 @@ bar {
         ## status_command i3status
         # https://github.com/ultrabug/py3status
         #status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
-        status_command py3status -c ~/.i3/i3status.conf | ~/.i3/i3status_wrapper.py
+        status_command py3status | ~/.i3/i3status_wrapper.py
 
         # tray_output <none|primary|output>
         tray_output primary
@@ -611,17 +611,17 @@ bindsym $mod+Control+n exec nm-toggle-wifi
 # volume and media controls, special keys
 #
 
-bindsym XF86AudioLowerVolume            exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume -5 || ponymix decrease 5
-bindsym XF86AudioRaiseVolume            exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume +5 || ponymix increase 5
-bindsym XF86AudioMute                   exec --no-startup-id  ponymix toggle
+bindsym XF86AudioLowerVolume            exec --no-startup-id i3-volume down
+bindsym XF86AudioRaiseVolume            exec --no-startup-id i3-volume up
+bindsym XF86AudioMute                   exec --no-startup-id i3-volume toggle
 
-bindsym $mod+Control+comma              exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume -5 || ponymix decrease 5
-bindsym $mod+Control+period             exec --no-startup-id  [ "$(sonos state)" = PLAYING ] && sonos-volume +5 || ponymix increase 5
-bindsym $mod+Control+slash              exec --no-startup-id  ponymix toggle
+bindsym $mod+Control+comma              exec --no-startup-id i3-volume down
+bindsym $mod+Control+period             exec --no-startup-id i3-volume up
+bindsym $mod+Control+slash              exec --no-startup-id i3-volume toggle
 
-bindsym XF86AudioPrev                   exec --no-startup-id  playerctl previous
-bindsym XF86AudioPlay                   exec --no-startup-id  playerctl play-pause
-bindsym XF86AudioNext                   exec --no-startup-id  playerctl next
+bindsym XF86AudioPrev                   exec --no-startup-id playerctl previous
+bindsym XF86AudioPlay                   exec --no-startup-id playerctl play-pause
+bindsym XF86AudioNext                   exec --no-startup-id playerctl next
 
 bindsym Control+XF86AudioLowerVolume    exec --no-startup-id playerctl previous
 bindsym Control+XF86AudioRaiseVolume    exec --no-startup-id playerctl next
@@ -663,6 +663,7 @@ bindsym --release Control+Print               exec --no-startup-id screengrab sc
 bindsym --release Control+XF86Search          exec --no-startup-id screengrab screen
 bindsym --release Shift+Control+Print         exec --no-startup-id screengrab full
 bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab full
+bindsym $mod+Print                            exec --no-startup-id publish
 
 # Fn-F11 XF86LaunchA
 # Fn-F12 XF86Explorer
