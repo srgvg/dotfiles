@@ -187,7 +187,6 @@ class Api(object):
         if ('ERROR' in data or data['statusCode'] == 'ERROR' or
             data['errorCode'] == 500):
             raise BitlyError(data['errorMessage'])
-        print data
         for key in data['results']:
             if type(data['results']) is dict and type(data['results'][key]) is dict:
                 if 'statusCode' in data['results'][key] and data['results'][key]['statusCode'] == 'ERROR':
