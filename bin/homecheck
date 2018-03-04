@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -e
-
-source $HOME/etc/defaults
-ip addr sh | grep -q ${home_subnet}
-

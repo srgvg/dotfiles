@@ -40,6 +40,21 @@ highlight CursorLine gui=underline cterm=underline
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
+" http://vim.wikia.com/wiki/Make_Vim_completion_popup_menu_work_just_like_in_an_IDE
+" variation on the CR line from previous link: added <C-e> to it
+"inoremap <expr> <CR>       pumvisible() ? "\<C-y>\<C-e>" : "\<CR>"
+" default as per previous link
+inoremap <expr> <Down>     pumvisible() ? "\<C-n>" : "\<Down>"
+inoremap <expr> <Up>       pumvisible() ? "\<C-p>" : "\<Up>"
+inoremap <expr> <PageDown> pumvisible() ? "\<PageDown>\<C-p>\<C-n>" : "\<PageDown>"
+inoremap <expr> <PageUp>   pumvisible() ? "\<PageUp>\<C-p>\<C-n>" : "\<PageUp>"
+
+" <CR>: close popup and save indent.
+" https://github.com/Shougo/deoplete.nvim/issues/83
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return deoplete#mappings#smart_close_popup() . "\<CR>"
+endfunction
 
 " toggle wrapping
 :function ToggleWrap()
@@ -51,6 +66,29 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 :endfunction
 map <F9> :call ToggleWrap()<CR>
 map! <F9> ^[:call ToggleWrap()<CR>
+
+let NERDTreeQuitOnOpen=0
+nmap <silent> <C-D> :NERDTreeToggle<CR>
+
+" You can't just ":unmap <F1>" because Vim would complain that no such mapping exists.
+" You could still access the help system via :help command or the gvim menu.
+:nmap <F1> :echo<CR>
+:imap <F1> <C-o>:echo<CR>
+
+
+" syntastic
+let g:syntastic_check_on_open = 1
+
+
+" http://vim.wikia.com/wiki/Identify_the_syntax_highlighting_group_used_at_the_cursor
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+
+" disable this plugin - it does something funky with bash if then else
+" https://github.com/luochen1990/rainbow/issues/95
+let g:rainbow_active = 0
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

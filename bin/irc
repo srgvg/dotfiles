@@ -1,15 +1,26 @@
 #!/bin/bash
 
-source $HOME/etc/defaults
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# load some defaults
+source "$HOME/bin/common.bash"
+check_debug_logging
 
 # make sure the irssi specific control master ends, so mqtt-irssi disconnects
 on_exit() {
     # stop the control master
-    ssh ${irssi_host} -O exit
+    ssh ${IRC_HOST} -O exit
 }
 
-
-if [ "$1" = "lock" ]
+action="${1:-}"
+if [ "${action}" = "lock" ]
 then
     # only lock existing open connections, so check if the CM socket is
     # available - master process can still be running, but ssh can timeout
@@ -17,17 +28,17 @@ then
 	# script waiting for the whole big timeout when locking when no network
 	# (which happens when closing the lid)
 	# But. We still have a timemout for host resolution. Hence & backgrounded
-    ssh ${irssi_host} -O check >/dev/null 2>&1 \
-		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/1\\n' ||: \
-		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -d -X lockscreen &>/dev/null &
-elif [ "$1" = "unlock" ]
+    ssh ${IRC_HOST} -O check >/dev/null 2>&1 \
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/1\\n' ||: \
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -d -X lockscreen &>/dev/null &
+elif [ "${action}" = "unlock" ]
 then
 	# same same
-	ssh ${irssi_host} -O check &>/dev/null \
-		&& ssh ${irssi_host} -o ConnectTimeout=1 pkill -9 irclock &>/dev/null ||: \
-		&& ssh ${irssi_host} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/away\\n' &
+	ssh ${IRC_HOST} -O check &>/dev/null \
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 pkill -9 irclock &>/dev/null ||: \
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/away\\n' &
 else
     trap on_exit INT TERM EXIT
-    ssh ${irssi_host} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
+    ssh ${IRC_HOST} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
 fi
 

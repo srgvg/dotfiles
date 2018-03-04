@@ -1,22 +1,21 @@
-#!/bin/bash 
+#!/bin/bash
 
-#exec 19>/tmp/publish.log
-#BASH_XTRACEFD=19
-#set -x
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
 
 dropbox=$HOME/Dropbox
 publoc=$dropbox/Public/misc
 tmploc=$dropbox/Temp/tmp
-
-function notify() {
-	echo
-	echo -e "$1\n\n$2"
-    notify-send --category=transfer.complete \
-                --urgency=low --icon=gtk-info \
-				"$1" "$2" \
-    || echo "libnotify error"
-	echo
-}
 
 function dropbox_file_status() {
 	local out
@@ -54,8 +53,7 @@ function dropbox_file_status() {
 file="${*:-$(xclip -selection clipboard -out)}"
 if [ ! -f "${file}" ]
 then
-	notify "Dropbox Publish error" "File  \"${file}\" not found"
-
+	notify_libnotify critical "Dropbox Publish error" "File  \"${file}\" not found"
 	exit 1
 fi
 
@@ -65,22 +63,29 @@ pubfile="${publoc}/${pubfilename}"
 # do not copy the file to Dropbox/Public if the file is already in Dropbox tmp folder
 if [[ ! "$file" =~ $tmploc ]]
 then
+	notify_debug "Copying ${file} to ${pubfile}"
 	cp "${file}" "${pubfile}"
 fi
 
 dropbox_puburl="$(dropbox sharelink "${pubfile}")"
-[[ ${dropbox_puburl:0:4} == http ]] || notify "Dropbox Publish error" "sharelink failed, got: ${dropbox_puburl}" || exit 1
+notify_debug "shared on ${dropbox_puburl}"
+if ! [[ ${dropbox_puburl:0:4} == http ]]
+then
+	notify_libnotify critical "Dropbox Publish error" "sharelink failed, got: ${dropbox_puburl}"
+	exit 1
+fi
 
 bitly_url="$(bitly "${dropbox_puburl}" | tr -d '\n')"
+notify_debug "Got ${bitly_url} from Bitly"
 echo -n "${bitly_url}" | xclip -in -selection clipboard
 
 status=($(dropbox_file_status))
 if [ "${status[0]}" -eq 0 ]
 then
-	notify "Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
+	notify_libnotify normal "Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
+	notify					"Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
 else
-	notify "Dropbox Publish error" "${status[1]}"
+	notify					"Dropbox Publish error" "${status[1]}"
 fi
 
 exit "${status[0]}"
-

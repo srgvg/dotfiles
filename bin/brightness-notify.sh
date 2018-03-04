@@ -1,4 +1,18 @@
-#!/bin/sh
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 
 case $1 in
 	"up")
@@ -16,8 +30,8 @@ case $1 in
 		;;
 esac
 
-brightness=`xbacklight -get`
+brightness=$(xbacklight -get)
 brightness=$(printf "%.0f" ${brightness})
 
-notify-send "Brightness" "$brightness" -t 300 -i xfpm-brightness-lcd -h int:value:$brightness -c device -u low
+notify-send "Brightness" "$brightness" -t 800 -i xfpm-brightness-lcd -h int:value:$brightness -c device -u low
 

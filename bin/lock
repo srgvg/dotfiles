@@ -9,35 +9,22 @@
 #   Also: https://wiki.debian.org/ScreenLockingOnSleep
 #
 
-DEBUG=${DEBUG:-0}
-#DEBUG=1
-#DEBUG=2
-LOCKSLEEP=5
-TIMEFORMAT='%3R'
-
 set -o nounset
 set -o errexit
 set -o pipefail
 
-# load some defaults
-source "$HOME/etc/defaults"
-ANNOTATETEXT="${lockscreen_annotatetext:-}"
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+# always log
+DEBUG=${DEBUG:-1}
+check_debug_logging
 
-# log this scripts full output
-logfile="${lockscreen_image%.*}.log"
-if [ $DEBUG -eq 0 ]
-then
-	exec &> >(tee "${logfile}")
-fi
-
-if [ $DEBUG -gt 1 ]
-then
-	set -x
-fi
-
-i3lock_icons="$HOME/Pictures/icons/i3lock"
-i3lock_icon="${i3lock_icons}/token.png"
-lockscreen="${1:-$default_lockscreen}"
+I3LOCK_ANNOTATETEXT="${LOCK_ANNOTATETEXT:-}"
+I3LOCK_ICONS="${LOCK_ICONS:-$HOME/Pictures/icons/i3lock}"
+I3LOCK_ICON="${LOCK_ICON:-$I3LOCK_ICONS/token.png}"
+LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
+LOCKSCREEN="${1:-${LOCK_DEFAULT_LOCKSCREEN}}"
+LOCKSLEEP=5
 
 # SYSTEMDSERVICE is set to yes in the systemd service unit file
 SYSTEMDSERVICE=${SYSTEMDSERVICE:-no}
@@ -51,22 +38,6 @@ install -g serge -o serge -m 700 -d "${PIDPATH}"
 ## subroutines              ##
 ##############################
 
-function notify() {
-	TS="$(date +%Y.%m.%d-%H:%M)"
-	echo "$(date +%Y.%m.%d-%H:%M:%S) $* (${SECONDS}s)"
-}
-
-function _time2() {
-	time $*
-}
-function _time() {
-	all="$*"
-	info=$1
-	[ $DEBUG -gt 1 ] && set +x
-	duration="$(_time2 ${all} 2>&1)"
-	[ $DEBUG -gt 1 ] && set -x
-	notify "Execution of $info took $duration"
-}
 
 function systemdservice() {
 	if [ "${SYSTEMDSERVICE}" = yes ]
@@ -89,42 +60,48 @@ function prepare() {
 	fi
 
 	notify "Pick the right lockscreen image.(${SECONDS}s)"
-	if [ ! "$lockscreen" = "keep" ] && [ ! "$lockscreen" = "blurred" ]
+	if [ ! "$LOCKSCREEN" = "keep" ] && [ ! "$LOCKSCREEN" = "blurred" ]
 	then
 		notify "Choosing a picture background."
-		setbg lock "$lockscreen"
-	elif [ "$lockscreen" = "blurred" ]
+		setbg lock "$LOCKSCREEN"
+		notify "Converting single picture to multi-display"
+		xrandr-background "${LOCK_SCREEN_IMAGE}" "${LOCK_SCREEN_IMAGE}"
+		annotate_lockscreen
+	elif [ "$LOCKSCREEN" = "blurred" ]
 	then
 		make_blurred
+		annotate_lockscreen
 	else
 		notify "Keeping the current lockscreen."
 		return
 	fi
 
-	annotate_lockscreen ${lockscreen_image}
 }
 
 function make_blurred() {
 	# take a screenshot and blur it for the lock screen
 	notify "Take a screenshot and blur it."
 	BLUR="-blur 0x5"
-	_time maim --format=png --hidecursor --quality 7 --quiet "$screenshot_image"
-	_time convert "$screenshot_image" ${BLUR} "$lockscreen_image"
+
+	# take screenshot
+	time2 maim --format=png --hidecursor --quality 7 --quiet "${LOCK_SCREENSHOT_IMAGE}"
+
+	# blur screenshot
+	time2 convert "${LOCK_SCREENSHOT_IMAGE}" ${BLUR} "${LOCK_SCREEN_IMAGE}"
 }
 
 function annotate_lockscreen() {
-	[ -z "${ANNOTATETEXT}" ] && return
-	TEXT="${ANNOTATETEXT}"
 	notify "Annotate lockscreen with lock symbol and optional text."
 
-	local image
-	image="${1:-$lockscreen}"
-	ICON="${i3lock_icon}"
+	TEXT="${I3LOCK_ANNOTATETEXT}"
+	ICON="${I3LOCK_ICON}"
+
 	# for some reason "convert -list font" returns 1
 	FONT="$( (convert -list font ||:) | awk "{ a[NR] = \$2 } /family: $(fc-match sans -f "%{family}\n")/ { print a[NR-1]; exit }")"
 
+	# calculate position for lock symbol and text
 	LOCK=()
-	while read LINE
+	while read -r LINE
 	do
 		if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
 			W=${BASH_REMATCH[1]}
@@ -133,15 +110,18 @@ function annotate_lockscreen() {
 			Yoff=${BASH_REMATCH[4]}
 			MIDXi=$((W / 2 + Xoff - 60  / 2))
 			MIDYi=$((H / 2 + Yoff - 60  / 2))
-			MIDXt=$((W / 2 + Xoff - 285 / 2))
-			MIDYt=$((H / 2 + Yoff + 320 / 2))
-			LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
+			if [ -n "${TEXT}" ]
+			then
+				MIDXt=$((W / 2 + Xoff - 285 / 2))
+				MIDYt=$((H / 2 + Yoff + 320 / 2))
+				LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
 				   -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
-				   -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT" \
-				   $ICON -geometry +$MIDXi+$MIDYi -composite)
+				   -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT")
+			fi
+			LOCK+=($ICON -geometry +$MIDXi+$MIDYi -composite)
 		fi
 	done <<<"$(xrandr)"
-	_time convert "$image" "${LOCK[@]}" "$image"
+	time2 convert "${LOCK_SCREEN_IMAGE}" "${LOCK[@]}" "${LOCK_SCREEN_IMAGE}"
 }
 
 function pre_lock() {
@@ -176,13 +156,13 @@ function pre_lock() {
 function perform_lock() {
 	# start the real lock command in the background, set the PID file,
 	# then wait for the lock to end (when unlocked)
-	if [ ${DEBUG} -eq 0 ]
+	if ifdebug3
 	then
-		notify "Running i3lock."
-        _time i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image ~/.lockscreen.png &
-	else
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
-		_time sleep ${LOCKSLEEP} &
+		time2 sleep ${LOCKSLEEP} &
+	else
+		notify "Running i3lock."
+		time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" &
 	fi
 
 	# get and set i3lock pid
@@ -210,8 +190,11 @@ function perform_lock() {
 	# [Install]
 	# WantedBy=sleep.target
 	#
-	systemd-notify --ready --status="Screen locked with image $lockscreen" &>/dev/null && \
-		notify "Notifying systemd the lock is done." || :
+	if systemdservice
+	then
+		systemd-notify --ready --status="Screen locked with image $LOCKSCREEN" &>/dev/null
+		notify "Notifying systemd the lock is done."
+	fi
 
 	wait
 }

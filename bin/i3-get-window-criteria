@@ -1,8 +1,12 @@
 #!/bin/bash
 
-# source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 
 # i3-get-window-criteria - Get criteria for use with i3 config commands
+
+# source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
 
 # To use, run this script, then click on a window.
 # Output is in the format: [<name>=<value> <name>=<value> ...]
@@ -12,13 +16,21 @@
 # with the output of `xprop`,
 # reported upstream: https://bugs.freedesktop.org/show_bug.cgi?id=66807
 
-PROGNAME=$(basename "$0")
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 
 # Check for xwininfo and xprop
 for cmd in xwininfo xprop; do
-    if ! which $cmd > /dev/null 2>&1; then
-        echo "$PROGNAME: $cmd: command not found" >&2
-        exit 1
+    if ! which $cmd > /dev/null 2>&1
+    then
+        errexit "$cmd: command not found"
     fi
 done
 
@@ -45,8 +57,8 @@ function get_window_criteria() {
 }
 
 text=$(get_window_criteria)
-notify-send -u low "WINDOW PROPERTIES" "${text}"
+notify_libnotify low "WINDOW PROPERTIES" "${text}"
+
 echo
 echo "${text}"
 echo
-

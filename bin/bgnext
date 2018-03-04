@@ -9,12 +9,8 @@ set -o errexit
 set -o pipefail
 
 
-# shellcheck disable=SC1090
+# load some defaults
 source "$HOME/bin/common.bash"
 check_debug_logging
 
-vol1=$(sonos volume)
-sonos volume $1
-vol2=$(sonos volume)
-notify_send "Sonos Volume" "$vol1 > $vol2" -t 300 -h int:value:$vol2 -c device -u low
-
+pkill -SIGINT --parent $(pgrep --full "setbg loop" | head -n 1)

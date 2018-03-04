@@ -1,8 +1,20 @@
 #!/bin/bash
 
-source $HOME/etc/defaults
-if      ssh ${irssi_host} -O check >/dev/null 2>&1
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# load some defaults
+source "$HOME/bin/common.bash"
+check_debug_logging
+
+if      ssh ${IRC_HOST} -O check >/dev/null 2>&1
 then
-        ionice rsync -av ${irssi_host}:/home/serge/logs/irssi/ /home/serge/logs/irssi/
+        ionice rsync -av ${IRC_HOST}:/home/serge/logs/irssi/ /home/serge/logs/irssi/
 fi
 

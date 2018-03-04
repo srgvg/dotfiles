@@ -1,6 +1,0 @@
-#!/bin/sh
-
-f=$(curl -s http://xkcd.com/) 
-echo "$f"|awk '/<img src="http:\/\/imgs\.xkcd\.com\/comics\/.*?" title=.*/{gsub(/^.*title=.|".*?$/,"");print}'
-display $(echo "$f"|grep -Po '(?<=")http://imgs.xkcd.com/comics/[^"]+(png|jpg)') 
-

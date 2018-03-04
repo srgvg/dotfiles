@@ -1,11 +1,19 @@
 #!/bin/bash
-# based on https://www.uninformativ.de/blog/postings/2016-06-19/0/POSTING-en.html
-# vim :set ts=4 sw=4 sts=4 et :
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 
 set -o nounset
 set -o errexit
 set -o pipefail
 
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
+# based on https://www.uninformativ.de/blog/postings/2016-06-19/0/POSTING-en.html
 
 BROWSER="google-chrome"
 SWITCHES=""

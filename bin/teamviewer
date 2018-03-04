@@ -1,19 +1,36 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
+function stop_teamviewer() {
+	/usr/bin/teamviewer daemon stop
+}
+
 if $(/usr/bin/teamviewer daemon status | grep -q "teamviewerd.service; enabled;")
 then
 	title="Disable systemd teamviewerd.service"
 	body="sudo systemctl disable teamviewerd.service"
 	echo "$title: $body"
-	notify-send -u critical "$title" "$body"
+	notify_libnotify critical "$title" "$body"
 	exit 1
 elif [ -n "$1" ]
 then
 	/usr/bin/teamviewer $*
 else
 	/usr/bin/teamviewer daemon disable
+	trap stop_teamviewer EXIT SIGINT
 	/usr/bin/teamviewer daemon start
 	/usr/bin/teamviewer
 	/usr/bin/teamviewer daemon stop
 fi
-

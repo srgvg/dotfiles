@@ -1,3 +1,6 @@
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 ##############################################################################################################################################################
 #
 # i3 config file (v4)
@@ -14,65 +17,65 @@
 #
 ### Basic settings
 #
-set $mod            Mod4
-set $alt            Mod1
-set $terminal       terminator
-set $terminalfl     terminator-floating
-set $lockscreen     /home/serge/bin/lock
-set $suspend        systemctl suspend
+set $mod			Mod4
+set $Alt			Mod1
+set $terminal		terminator
+set $terminalfl		terminator-floating
+set $lockscreen		/home/serge/bin/lock
+set $suspend		systemctl suspend
 
 # color defines
-set $dark                   #000000
-set $light                  #FFFFFF
-set $grey                   #777777
-set $grey2                  #555555
-set $focus                  #2890FF
-set $ginsys                 #1D396A
-set $red                    #FF0000
-set $IGNORED                #000000
+set $dark			#000000
+set $light			#FFFFFF
+set $grey			#777777
+set $grey2			#555555
+set $focus			#2890FF
+set $ginsys			#1D396A
+set $red			#FF0000
+set $IGNORED		#000000
 
 # window parameters
-set $defaultborder          pixel 5
+set $defaultborder	pixel 5
 
 # workspaces
-set $ws_www         1
-set $ws_tool2       8
-set $ws_tool1       9
-set $ws_tool0       10
-set $ws_chat        11
-set $ws_util_chat   12
-set $ws_util_pw     13
-set $ws_util_music  14
+set $ws_www			1
+set $ws_tool2		8
+set $ws_tool1		9
+set $ws_tool0		10
+set $ws_chat		11
+set $ws_util_chat	12
+set $ws_util_pw		13
+set $ws_util_music	14
 #set $ws_
 
 # Xresources settings
-set_from_resource $outpri i3.output.primary     eDP1
-set_from_resource $outsec i3.output.secondary   eDP1
+set_from_resource $outpri i3.output.primary		eDP1
+set_from_resource $outsec i3.output.secondary	eDP1
 
 # Automatically putting workspaces on specific screens
-#workspace 0     output $outpri
-workspace 1     output $outpri
-workspace 2     output $outpri
-workspace 3     output $outpri
-workspace 4     output $outpri
-workspace 5     output $outpri
-workspace 6     output $outpri
-workspace 7     output $outpri
-workspace 8     output $outpri
-workspace 9     output $outpri
-workspace 10    output $outpri
-workspace 11    output $outpri
-workspace 12    output $outpri
-workspace 13    output $outpri
-workspace 14    output $outsec
-workspace 15    output $outpri
-workspace 16    output $outpri
-workspace 17    output $outpri
-workspace 18    output $outpri
-workspace 19    output $outsec
-workspace 20    output $outsec
-workspace 21    output $outsec
-workspace 22    output $outsec
+#workspace 0	 output $outpri
+workspace 1		output $outpri
+workspace 2		output $outpri
+workspace 3		output $outpri
+workspace 4		output $outpri
+workspace 5		output $outpri
+workspace 6		output $outpri
+workspace 7		output $outpri
+workspace 8		output $outpri
+workspace 9		output $outpri
+workspace 10	output $outpri
+workspace 11	output $outpri
+workspace 12	output $outpri
+workspace 13	output $outpri
+workspace 14	output $outsec
+workspace 15	output $outpri
+workspace 16	output $outpri
+workspace 17	output $outpri
+workspace 18	output $outpri
+workspace 19	output $outsec
+workspace 20	output $outsec
+workspace 21	output $outsec
+workspace 22	output $outsec
 
 ##############################################################################################################################################################
 #
@@ -96,104 +99,104 @@ font pango:Monospace 8, Terminus 8
 # border colour is the color for the 2 horizontal lines of the titlebar; the
 # border of the whole container is the same as the background of the title bar!
 #
-## client windows       border              background          text                indicator (indicates vertical or horizontal split)
+## client windows		border				background			text				indicator (indicates vertical or horizontal split)
 #
 # A client which is not the focused one of its container.
-client.unfocused        $dark               $grey2              $light              $dark
+client.unfocused		$dark				$grey2				$light				$dark
 
 # A client currently focused in its container, but does not have focus now.
-client.focused_inactive $grey               $grey2              $light              $dark
+client.focused_inactive $grey				$grey2				$light				$dark
 
 # A client which currently has the focus.
-client.focused          $focus              $focus              $dark               $ginsys
+client.focused			$focus				$focus				$dark				$ginsys
 
 # A client which has its urgency hint activated.
-client.urgent           $red                $red                $light              $red
+client.urgent			$red				$red				$light				$red
 
 #Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder      $IGNORED            $dark               $dark               $IGNORED
+client.placeholder		$IGNORED			$dark				$dark				$IGNORED
 
 ##############################################################################################################################################################
 #
 # status bar
 #
 bar {
-        colors {
+		colors {
 
-            # Text color to be used for the separator.
-            separator           $ginsys
+			# Text color to be used for the separator.
+			separator			$ginsys
 
-            # Text color to be used for the statusline.
-            statusline          $light
+			# Text color to be used for the statusline.
+			statusline			$light
 
-            # Background color of the bar.
-            background          $dark
+			# Background color of the bar.
+			background			$dark
 
 
-            ## type             border              background      text
+			## type				border				background		text
 
-            # workspace button when the workspace does not have focus and is not
-            # active (visible) on any output. This will be the case for most workspaces.
-            inactive_workspace  $dark               $dark           $grey
+			# workspace button when the workspace does not have focus and is not
+			# active (visible) on any output. This will be the case for most workspaces.
+			inactive_workspace	$dark				$dark			$grey
 
-            # Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
-            # another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-            active_workspace    $grey               $dark           $grey
+			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+			active_workspace	$grey				$dark			$grey
 
-            # color for a workspace button when the workspace has focus.
-            focused_workspace   $light              $ginsys         $light
+			# color for a workspace button when the workspace has focus.
+			focused_workspace	$light				$ginsys			$light
 
-            # Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-            urgent_workspace    $red                $dark          $red
+			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+			urgent_workspace	$red				$dark		   $red
 
-        }
+		}
 
-        id main
-        ## status_command i3status
-        # https://github.com/ultrabug/py3status
-        #status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
-        status_command py3status | ~/.i3/i3status_wrapper.py
+		id main
+		## status_command i3status
+		# https://github.com/ultrabug/py3status
+		#status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
+		status_command py3status | ~/.i3/i3status_wrapper.py
 
-        # tray_output <none|primary|output>
-        tray_output primary
+		# tray_output <none|primary|output>
+		tray_output primary
 
-        # By default, a padding of 2 pixels is used for the upper, lower and
-        # right-hand side of the tray area and between the individual icons.
-        # tray_padding <px> [px]
-        tray_padding 0
+		# By default, a padding of 2 pixels is used for the upper, lower and
+		# right-hand side of the tray area and between the individual icons.
+		# tray_padding <px> [px]
+		tray_padding 0
 
-        # custom symbol to be used for the separator as opposed to the
-        # vertical, one pixel thick separator.
-        # separator_symbol <symbol>
-        separator_symbol "■" # unicode ctrl+shift+25a0
+		# custom symbol to be used for the separator as opposed to the
+		# vertical, one pixel thick separator.
+		# separator_symbol <symbol>
+		separator_symbol "■" # unicode ctrl+shift+25a0
 
-        # position <top|bottom>
-        position top
+		# position <top|bottom>
+		position top
 
-        # mode <dock|hide|invisible>
-        mode dock
+		# mode <dock|hide|invisible>
+		mode dock
 
-        # hidden_state <hide|show>
-        hidden_state hide
+		# hidden_state <hide|show>
+		hidden_state hide
 
-        # modifier <Modifier>
-        modifier $mod
+		# modifier <Modifier>
+		modifier $mod
 
-        # font <font>
-        #  the order in which fonts are “declared” for use in i3bar actually
-        #  matters. The first font in the list shall be the one containing
-        #  icons, the latter the one for plain text
-        #font pango:FontAwesome 8, Terminus 8
-        font pango:FontAwesome 10, Terminus 10
+		# font <font>
+		#  the order in which fonts are “declared” for use in i3bar actually
+		#  matters. The first font in the list shall be the one containing
+		#  icons, the latter the one for plain text
+		#font pango:FontAwesome 8, Terminus 8
+		font pango:FontAwesome 10, Terminus 10
 
-        # workspace_buttons <yes|no>
-        workspace_buttons yes
+		# workspace_buttons <yes|no>
+		workspace_buttons yes
 
-        # binding_mode_indicator <yes|no>
-        # Specifies whether the current binding mode indicator should be shown
-        # or not. This is useful if you want to hide the workspace buttons but
-        # still be able to see the current binding mode indicator.
-        binding_mode_indicator yes
+		# binding_mode_indicator <yes|no>
+		# Specifies whether the current binding mode indicator should be shown
+		# or not. This is useful if you want to hide the workspace buttons but
+		# still be able to see the current binding mode indicator.
+		binding_mode_indicator yes
 
 }
 
@@ -277,8 +280,8 @@ hide_edge_borders smart
 #
 
 # new window default border <normal|1pixel|none|pixel> :
-new_window  $defaultborder
-new_float   $defaultborder
+new_window	$defaultborder
+new_float	$defaultborder
 
 ##############################################################################################################################################################
 #
@@ -292,7 +295,7 @@ bindsym $mod+v split v
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
 bindsym $mod+Shift+f fullscreen toggle global
-#bindsym $mod+Control+$alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
+#bindsym $mod+Control+$Alt+f [con_id="__focused__"] exec --no-startup-id "sleep 0.5; xdotool key F11 --window $(xdotool getactivewindow)", fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
 #bindsym $mod+s layout stacking
@@ -326,8 +329,8 @@ bindsym $mod+space focus mode_toggle
 # 9 - forward
 # 10  scroll wheel button
 #
-# The scrollwheel button and a modifer over any part of the window kills the window
-bindsym --whole-window --release $mod+button10 kill
+bindsym --whole-window button10						exec --no-startup-id bgnext
+
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
 bindsym $mod+Control+s exec i3swap
@@ -421,10 +424,10 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab                focus right
-bindsym $mod+Shift+Tab          focus left
-bindsym $mod+$alt+Tab           exec --no-startup-id i3-cycle right
-bindsym $mod+$alt+Shift+Tab     exec --no-startup-id i3-cycle left
+bindsym $mod+Tab				focus right
+bindsym $mod+Shift+Tab			focus left
+bindsym $mod+$Alt+Tab			exec --no-startup-id i3-cycle right
+bindsym $mod+$Alt+Shift+Tab		exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -481,54 +484,54 @@ bindsym $mod+Shift+Next move workspace to output right
 
 # resize window (you can also use the mouse for that)
 set $mode_resize Resize Window
-bindsym $mod+Control+$alt+r mode "$mode_resize"
+bindsym $mod+Control+$Alt+r mode "$mode_resize"
 mode "$mode_resize" {
-        # These bindings trigger as soon as you enter the resize mode
+		# These bindings trigger as soon as you enter the resize mode
 
-        # Pressing left will shrink the window’s width.
-        # Pressing right will grow the window’s width.
-        # Pressing up will shrink the window’s height.
-        # Pressing down will grow the window’s height.
-        bindsym j resize shrink width 10 px or 10 ppt
-        bindsym k resize grow height 10 px or 10 ppt
-        bindsym l resize shrink height 10 px or 10 ppt
-        bindsym semicolon resize grow width 10 px or 10 ppt
+		# Pressing left will shrink the window’s width.
+		# Pressing right will grow the window’s width.
+		# Pressing up will shrink the window’s height.
+		# Pressing down will grow the window’s height.
+		bindsym j resize shrink width 10 px or 10 ppt
+		bindsym k resize grow height 10 px or 10 ppt
+		bindsym l resize shrink height 10 px or 10 ppt
+		bindsym semicolon resize grow width 10 px or 10 ppt
 
-        # same bindings, but for the arrow keys
-        bindsym Left resize shrink width 10 px or 10 ppt
-        bindsym Down resize grow height 10 px or 10 ppt
-        bindsym Up resize shrink height 10 px or 10 ppt
-        bindsym Right resize grow width 10 px or 10 ppt
+		# same bindings, but for the arrow keys
+		bindsym Left resize shrink width 10 px or 10 ppt
+		bindsym Down resize grow height 10 px or 10 ppt
+		bindsym Up resize shrink height 10 px or 10 ppt
+		bindsym Right resize grow width 10 px or 10 ppt
 
-        # back to normal: Enter or Escape
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-        bindsym $mod+Control+$alt+r mode "default"
+		# back to normal: Enter or Escape
+		bindsym Return mode "default"
+		bindsym Escape mode "default"
+		bindsym $mod+Control+$Alt+r mode "default"
 }
 
 set $mode_moveit Move Window
-bindsym $mod+Control+$alt+m mode "$mode_moveit"
+bindsym $mod+Control+$Alt+m mode "$mode_moveit"
 mode "$mode_moveit" {
-        bindsym Up move up          50px
-        bindsym Left move left      50px
-        bindsym Down move down      50px
-        bindsym Right move right    50px
-        # back to normal: Enter or Escape
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-        bindsym $mod+Control+$alt+m mode "default"
+		bindsym Up move up			50px
+		bindsym Left move left		50px
+		bindsym Down move down		50px
+		bindsym Right move right	50px
+		# back to normal: Enter or Escape
+		bindsym Return mode "default"
+		bindsym Escape mode "default"
+		bindsym $mod+Control+$Alt+m mode "default"
 }
 
-set $mode_system x Exit     |     [Shift]  d     [de-]activate Debugging
-bindsym $mod+Control+$alt+q mode "$mode_system"
+set $mode_system x Exit		|	  [Shift]  d	 [de-]activate Debugging
+bindsym $mod+Control+$Alt+q mode "$mode_system"
 mode "$mode_system" {
-    bindsym x exec --no-startup-id i3-msg "exit"
-    bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
-    bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
-    # back to normal: Enter or Escape
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
-    bindsym $mod+Control+$alt+q mode "default"
+	bindsym x exec --no-startup-id i3-msg "exit"
+	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
+	bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
+	# back to normal: Enter or Escape
+	bindsym Return mode "default"
+	bindsym Escape mode "default"
+	bindsym $mod+Control+$Alt+q mode "default"
 }
 
 ##############################################################################################################################################################
@@ -541,7 +544,7 @@ bindsym $mod+Shift+grave unmark scratchpad
 # Show the first scratchpad window
 bindsym $mod+grave scratchpad show
 # quickswitch select scratchpad window
-bindsym $mod+$alt+grave exec i3-quickswitch --prompt --scratchpad
+bindsym $mod+$Alt+grave exec i3-quickswitch --prompt --scratchpad
 
 
 ##############################################################################################################################################################
@@ -551,119 +554,122 @@ bindsym $mod+$alt+grave exec i3-quickswitch --prompt --scratchpad
 # xmodmap -pke
 
 # start a terminal
-bindsym $mod+Return exec $terminal
+bindsym $mod+Return				exec $terminal
 
 # start a floating terminal
-bindsym $mod+Control+Return exec $terminalfl
+bindsym $mod+Control+Return		exec $terminalfl
 #bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window except..
-bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator).*$"] kill
-bindsym $mod+Control+x kill
+bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator).*$"]	kill
+bindsym $mod+$Alt+x				kill
 
 # quickswitch
-bindsym $mod+q exec i3-quickswitch --prompt
+bindsym $mod+q					exec i3-quickswitch --prompt
 
 # start dmenu (a program launcher)
-bindsym $mod+r exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
-                                    -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+bindsym $mod+r					exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
+									-fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
-bindsym $mod+Shift+r reload
+bindsym $mod+Shift+r			reload
+
 # set workspaces on default screens
-bindsym $mod+Control+r exec --no-startup-id i3-move-workspaces
+bindsym $mod+Control+r			exec --no-startup-id i3-move-workspaces
+
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $mod+Control+Shift+r restart
+bindsym $mod+Control+Shift+r	restart
 
 # Lock Screen / Suspend / Poweroff
-bindsym Pause               exec --no-startup-id $lockscreen
-bindsym $mod+l              exec --no-startup-id $lockscreen
-bindsym $mod+Pause          exec --no-startup-id $suspend
-bindsym $mod+Control+l      exec --no-startup-id $suspend
+bindsym Pause					exec --no-startup-id $lockscreen
+bindsym $mod+l					exec --no-startup-id $lockscreen
+bindsym $mod+Pause				exec --no-startup-id $suspend
+bindsym $mod+Control+l			exec --no-startup-id $suspend
 
 # start some tools
-bindsym $mod+i          exec ircwindow
-bindsym $mod+c          exec gnome-calculator
-bindsym $mod+d          exec nemo
-bindsym $mod+$alt+d     exec nautilus --class Files --name small --new-window $HOME/tmp
+bindsym $mod+i					exec ircwindow
+bindsym $mod+c					exec gnome-calculator
+bindsym $mod+d					exec nemo
+bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HOME/tmp
 
 # start browsers
-bindsym $mod+Control+o          exec google-chrome serge
-bindsym $mod+Control+Shift+o    exec google-chrome serge --incognito
-bindsym $mod+o                  exec google-chrome
+bindsym $mod+Control+o			exec google-chrome serge
+bindsym $mod+Control+Shift+o	exec google-chrome serge --incognito
+bindsym $mod+o					exec google-chrome
 
 # Show current Background filename
-bindsym $mod+Control+b exec --no-startup-id setbg keep
-bindsym $mod+Shift+Control+b exec --no-startup-id setbg # default
+bindsym $mod+Control+b			exec --no-startup-id setbg keep
+bindsym $mod+$Alt+b				exec --no-startup-id bgnext
+bindsym $mod+Shift+Control+b	exec --no-startup-id setbg # default
 
 # Toggle Presentation mode (disable screen saver and notifications)
-bindsym $mod+p exec presentation-mode
+bindsym $mod+p					exec presentation-mode
 
 # Launch Printer config
-bindsym $mod+Control+p exec /usr/share/system-config-printer/system-config-printer.py
+bindsym $mod+Control+p			exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
-bindsym $mod+n exec nmcli_dmenu
-bindsym $mod+Control+n exec nm-toggle-wifi
+bindsym $mod+n					exec nmcli_dmenu
+bindsym $mod+Control+n			exec nm-toggle-wifi
 
 ##############################################################################################################################################################
 #
 # volume and media controls, special keys
 #
 
-bindsym XF86AudioLowerVolume            exec --no-startup-id i3-volume down
-bindsym XF86AudioRaiseVolume            exec --no-startup-id i3-volume up
-bindsym XF86AudioMute                   exec --no-startup-id i3-volume toggle
+bindsym XF86AudioLowerVolume			exec --no-startup-id i3-volume down
+bindsym XF86AudioRaiseVolume			exec --no-startup-id i3-volume up
+bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
 
-bindsym $mod+Control+comma              exec --no-startup-id i3-volume down
-bindsym $mod+Control+period             exec --no-startup-id i3-volume up
-bindsym $mod+Control+slash              exec --no-startup-id i3-volume toggle
+bindsym $mod+Control+comma				exec --no-startup-id i3-volume down
+bindsym $mod+Control+period				exec --no-startup-id i3-volume up
+bindsym $mod+Control+slash				exec --no-startup-id i3-volume toggle
 
-bindsym XF86AudioPrev                   exec --no-startup-id playerctl previous
-bindsym XF86AudioPlay                   exec --no-startup-id playerctl play-pause
-bindsym XF86AudioNext                   exec --no-startup-id playerctl next
+bindsym XF86AudioPrev					exec --no-startup-id playerctl previous
+bindsym XF86AudioPlay					exec --no-startup-id playerctl play-pause
+bindsym XF86AudioNext					exec --no-startup-id playerctl next
 
-bindsym Control+XF86AudioLowerVolume    exec --no-startup-id playerctl previous
-bindsym Control+XF86AudioRaiseVolume    exec --no-startup-id playerctl next
-bindsym Control+XF86AudioMute           exec --no-startup-id playerctl play-pause
+bindsym Control+XF86AudioLowerVolume	exec --no-startup-id playerctl previous
+bindsym Control+XF86AudioRaiseVolume	exec --no-startup-id playerctl next
+bindsym Control+XF86AudioMute			exec --no-startup-id playerctl play-pause
 
-bindsym $mod+comma                      exec --no-startup-id playerctl previous
-bindsym $mod+period                     exec --no-startup-id playerctl next
-bindsym $mod+slash                      exec --no-startup-id playerctl play-pause
+bindsym $mod+comma						exec --no-startup-id playerctl previous
+bindsym $mod+period						exec --no-startup-id playerctl next
+bindsym $mod+slash						exec --no-startup-id playerctl play-pause
 
-bindsym $mod+m                          exec --no-startup-id pa-select-output
-bindsym $mod+Control+m                  exec pavucontrol
+bindsym $mod+m							exec --no-startup-id pa-select-output
+bindsym $mod+Control+m					exec pavucontrol
 
 # Fn-F4  XF86AudioMicMute
 
 # Fn-F5  XF86MonBrightnessDown
-bindsym XF86MonBrightnessDown exec --no-startup-id brightness-notify.sh down
+bindsym XF86MonBrightnessDown			exec --no-startup-id brightness-notify.sh down
 
 # Fn-F6  XF86MonBrightnessUp
-bindsym XF86MonBrightnessUp   exec --no-startup-id brightness-notify.sh up
+bindsym XF86MonBrightnessUp				exec --no-startup-id brightness-notify.sh up
 
 ## Fn-F7 XF86Display
-bindsym XF86Display exec --no-startup-id        "rerandr3 restore; sleep 3; i3-move-workspaces"
-bindsym $mod+Scroll_Lock exec --no-startup-id   "rerandr3 restore; sleep 3; i3-move-workspaces"
-bindsym Shift+XF86Display exec --no-startup-id      xdisplcd
-bindsym $mod+Shift+Scroll_Lock exec --no-startup-id xdisplcd
+bindsym XF86Display						exec --no-startup-id "rerandr3 restore; sleep 3; i3-move-workspaces"
+bindsym $mod+Scroll_Lock				exec --no-startup-id "rerandr3 restore; sleep 3; i3-move-workspaces"
+bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
+bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
 
 # Fn-F8 XF86WLAN
-#bindsym XF86WLAN exec --no-startup-id nm-toggle-wifi
+#bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
 
 # Fn-F9  XF86Tools
 
 # Fn-F10 XF86Search
 # Screenshot
-bindsym --release Print                       exec --no-startup-id screengrab select
-bindsym --release XF86Search                  exec --no-startup-id screengrab select
-bindsym --release Shift+Print                 exec --no-startup-id screengrab window
-bindsym --release Shift+XF86Search            exec --no-startup-id screengrab window
-bindsym --release Control+Print               exec --no-startup-id screengrab screen
-bindsym --release Control+XF86Search          exec --no-startup-id screengrab screen
-bindsym --release Shift+Control+Print         exec --no-startup-id screengrab full
-bindsym --release Shift+Control+XF86Search    exec --no-startup-id screengrab full
-bindsym $mod+Print                            exec --no-startup-id publish
+bindsym Print							exec --no-startup-id screengrab select
+bindsym XF86Search						exec --no-startup-id screengrab select
+bindsym Shift+Print						exec --no-startup-id screengrab window
+bindsym Shift+XF86Search				exec --no-startup-id screengrab window
+bindsym Control+Print					exec --no-startup-id screengrab screen
+bindsym Control+XF86Search				exec --no-startup-id screengrab screen
+bindsym Shift+Control+Print				exec --no-startup-id screengrab full
+bindsym Shift+Control+XF86Search		exec --no-startup-id screengrab full
+bindsym $mod+Print						exec --no-startup-id publish
 
 # Fn-F11 XF86LaunchA
 # Fn-F12 XF86Explorer
@@ -682,7 +688,7 @@ bindsym $mod+Print                            exec --no-startup-id publish
 #
 # !!! Maar volgens mij is het omgekeerd. !!!
 #
-for_window [ class=".*" ]   border $defaultborder
+for_window [ class=".*" ]	border $defaultborder
 
 
 ###############################################################################
@@ -723,69 +729,69 @@ no_focus [window_role="pop-up"]
 #
 # terminals
 #
-for_window [window_role="floating"]     floating enable
-for_window [class="Terminator" instance="terminator" title="Terminator Preferences"] floating enable
-for_window [class="Gnome-terminal"]     floating enable
+for_window [window_role="floating"]														floating enable
+for_window [class="Terminator" instance="terminator" title="Terminator Preferences"]	floating enable
+for_window [class="Gnome-terminal"]														floating enable
 
 ###############################################################################
 #
 # Tools
 #
-for_window [window_role="SSHASKPASS"]                                                   floating enable, border pixel 10
-for_window [class="Gcalctool"]                                                          floating enable
-for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]             floating enable
-for_window [class="Nautilus" instance="file_progress"]                                  floating enable
-for_window [class="Nemo" instance="nemo" title="Plugins"]                               floating enable
-for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]                   floating enable
-for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]                                 floating enable
-for_window [class="Gnome-control-center" instance="gnome-control-center"]               floating enable
-for_window [title="Event Tester"]                                                       floating enable  # xev
-for_window [instance="libreoffice"]                                                     border normal
-for_window [class="Files" instance="small"]                                             floating enable, resize set 700 300
-for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]                   floating enable
+for_window [window_role="SSHASKPASS"]													floating enable, border pixel 10
+for_window [class="Gcalctool"]															floating enable
+for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]				floating enable
+for_window [class="Nautilus" instance="file_progress"]									floating enable
+for_window [class="Nemo" instance="nemo" title="Plugins"]								floating enable
+for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
+for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]									floating enable
+for_window [class="Gnome-control-center" instance="gnome-control-center"]				floating enable
+for_window [title="Event Tester"]														floating enable # xev
+for_window [instance="libreoffice"]														border normal
+for_window [class="Files" instance="small"]												floating enable, resize set 700 300
+for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
 
 
 ###############################################################################
 #
 # Browsers
 #
-assign      [class="^(browser-)(serge|facebook)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
-for_window  [class="^(browser-tmp)"]                                            floating enable
-assign      [class="^(browser-radio)"]                                          $ws_util_music
-for_window  [class="^(browser-radio)"]                                          floating disable, layout splith
+assign		[class="^(browser-)(serge|facebook)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
+for_window	[class="^(browser-tmp)"]													floating enable
+assign		[class="^(browser-radio)"]													$ws_util_music
+for_window	[class="^(browser-radio)"]													floating disable, layout splith
 
 
 ###############################################################################
 #
 # chat
 #
-assign      [window_role="irc"]                 $ws_chat
+assign		[window_role="irc"]					$ws_chat
 
-for_window  [class="Skype"]                     floating enable
+for_window	[class="Skype"]						floating enable
 
 ###############################################################################
 #
 # large screen tools
 #
 # Virtualbox
-assign [class="(VirtualBox|Virt-manager)"]     $ws_tool2
+assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
 
 # Wireshark
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Remote Desktop Client
-assign [class="Remmina" instance="remmina"]     $ws_tool0
+assign [class="Remmina" instance="remmina"]		$ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
 
 # Teamviewer
 #assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
-for_window [class="TeamViewer" instance="TeamViewer"]     floating enable
+for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 
 # Gimp
-assign      [class="Gimp" instance="gimp"] $ws_tool2
+assign		[class="Gimp" instance="gimp"] $ws_tool2
 
 # Pycharm
-for_window  [class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
+for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
 
 
 ###############################################################################
@@ -794,17 +800,17 @@ for_window  [class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] flo
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]              $ws_util_pw
+assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]				$ws_util_pw
 
 # chat
-assign      [class="(HipChat|Franz)"]           $ws_util_chat
-assign      [title="Signal"]                    $ws_util_chat
-for_window  [title="Signal"]                    floating disable
-#assign      [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
-for_window  [class="Keybase" instance="keybase" title="Keybase"]  floating enable #disable
+assign		[class="(HipChat|Franz)"]			$ws_util_chat
+assign		[title="Signal"]					$ws_util_chat
+for_window	[title="Signal"]					floating disable
+#assign		 [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
+for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable #disable
 
 # Music
-assign     [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
+assign	   [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
 for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
@@ -859,5 +865,5 @@ exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
-                        -option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
+						-option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard
 

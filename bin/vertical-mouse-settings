@@ -1,12 +1,21 @@
-#!/bin/sh
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
 
 ###############################################################################
 #
 ## Configure Vertical Mouse
-#                                                                    1 2 3 4 5 6 7 8 9 10 11
-#xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
-xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
-xinput set-button-map 'SONiX Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
 #
 ## mouse buttons
 #  info for xinput set-button-map
@@ -15,7 +24,11 @@ xinput set-button-map 'SONiX Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
 #
 ## http://wiki.birth-online.de/know-how/hardware/evoluent-verticalmouse
 ## http://wiki.birth-online.de/know-how/software/linux/remapping-mousebuttons
-#
-###############################################################################
-#
 
+
+
+#                                                                    1 2 3 4 5 6 7 8 9 10 11
+#xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 3' 1 9 2 4 5 6 7 3 8 10 11
+xinput set-button-map 'Kingsis Peripherals Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
+xinput set-button-map 'SONiX Evoluent VerticalMouse 4' 1 2 3 4 5 6 7 9 10 8 11
+#

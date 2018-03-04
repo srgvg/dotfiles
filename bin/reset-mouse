@@ -1,3 +1,6 @@
 #!/bin/bash -x
-sudo modprobe -v -r usbhid
+sudo modprobe -v -r usbhid hid_generic hid
+sleep 3
+sudo modprobe -v    hid
 sudo modprobe -v    usbhid
+sudo modprobe -v    hid_generic

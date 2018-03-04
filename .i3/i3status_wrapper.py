@@ -41,14 +41,12 @@ def get_sink():
     if sink.startswith("Built-in Audio"):
         sink = ""
 
-    p = subprocess.Popen('sonos state', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('sonos volume', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, _ = p.communicate()
     sonosstatus = out.strip()
     sonosplaying = sonosstatus == "PLAYING"
-    if sonosplaying:
+    if p.returncode == 0:
         sonossink = "Office Sonos"
-        p = subprocess.Popen('sonos volume', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, _ = p.communicate()
         sonosvolume = out.strip()
         if int(sonosvolume) > 0:
             sinkvolume = " 🔊" + sonosvolume + "%"
@@ -62,6 +60,7 @@ def get_sink():
             sink = sonossink + ' ■ ' + sink
 
     return sink
+
 
 def get_wifi():
     p = subprocess.Popen('nmcli -t radio wifi', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

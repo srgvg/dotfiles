@@ -1,13 +1,22 @@
 #!/bin/bash
 
-source $HOME/etc/defaults
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 
-if homecheck
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
+if checksonos
 then
-	socos $1 "${sonos_ip}" $2
+    socos $1 "${HOME_LAN_SONOS_IP}" $2
 else
-	echo "Not at Ginsys Office"
-	exit 1
+    echo "Sonos not online"
+    exit 1
 fi
-
-

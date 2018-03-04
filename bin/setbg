@@ -1,51 +1,57 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
 set -o nounset
 set -o errexit
 set -o pipefail
 
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 ## Parameters
-# load some defaults
-source "$HOME/etc/defaults"
-setbg_delay=${setbg_delay:-1800}
+SETBG_BACKGROUND="${SETBG_BACKGROUND:-$HOME/.background.png}"
+SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default.jpg}"
+SETBG_LOOP_DELAY="${SETBG_LOOP_DELAY:-900}"
+LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
 p1="${1:-}"
 p2="${2:-}"
 
 
 ## Functions
 
-error() {
-	s=${1:-}; shift
-	cli_notify critical $s $* >&2 || :
-    exit 1
-}
-
 checktarget() {
 
 	# verify the kind of target we have
 	local _target
 	_target=${1:-}
-    if [ ! -r "${_target}" -o ! -f "${_target}" ]
+    notify_debug "Verifying target '${_target}'"
+    if [ ! -r "${_target}" ] || [ ! -f "${_target}" ]
 	then
 		if [ -r "$HOME/${_target}" ]
 		then
 				target="$HOME/${_target}"
-		elif [ -r "${pictures}/${_target}" ]
+		elif [ -r "${BACKGROUND_PICTURES}/${_target}" ]
 		then
-				target="${pictures}/${_target}"
+				target="${BACKGROUND_PICTURES}/${_target}"
 		else
-			deeptarget=$(find ${pictures} -maxdepth 3 \
+			deeptarget=$(find ${BACKGROUND_PICTURES} -maxdepth 3 \
 				-name $(basename ${_target}) -type d 2>/dev/null \
 				| grep ${_target} 2>/dev/null || : | sort | head -n 1 )
 			if [ -r "${deeptarget}" ]
 				then target="${deeptarget}"
 			else
-				error "Cannot find target ${_target}"
+				notify_error "setbg: cannot find target ${_target}"
 			fi
 		fi
 	else
 		target=${_target}
 	fi
+    notify_debug "Resolved target '${_target}' to '${target}'"
 }
 
 pickpic() {
@@ -60,33 +66,39 @@ pickpic() {
 		# disable pipefail - when head quits, find doesn't like loosing its reader
 		set +o pipefail
         # Pick random picture
-        background="`find -L ${pictures} -type f -iregex .*.jpg -o -iregex .*.png | sort -R | head -n 1`"
+        background="$(find -L ${pictures} -type f -iregex '.*.jpg' \
+            -o -iregex '.*.png' | sort -R | head -n 1)"
         # reenable options
         set +o noglob
 
     else # a file, should be a picture
         background="${target}"
     fi
-    background=`readlink -e "${background}"`
+    background=$(readlink -e "${background}")
+    notify_debug "Selecting background '${background}'"
 }
 
 definebg() {
     # set as default background
-    ln -nfs "${background}" "${bglnk}"
+    ln -nfs "${background}" "${SETBG_BACKGROUND}"
+    notify_debug "Symlinked '${SETBG_BACKGROUND}' -> '${background}'"
 }
 
 displaybg() {
     # set the background
-    /usr/bin/feh --no-fehbg --bg-fill ${bglnk}
+    /usr/bin/feh --no-fehbg --bg-fill ${SETBG_BACKGROUND}
+    notify_debug "Set the background"
 }
 
 trap_loop() {
 	echo
+    notify_debug "Set the next background..."
     trap - SIGINT # clear the trap so we can really stop the loop here
     sleep 0.5
 }
 
 loop() {
+    notify_debug "Starting setbg in loop mode"
     while true
     do
 		echo -n "$(date +%H:%M) "
@@ -94,22 +106,23 @@ loop() {
         # press ctrl-c to change wallpaper, or twice to exit
 		set +o errexit # errexit overrides trap
         trap trap_loop SIGINT
-        sleep ${setbg_delay}
+        sleep ${SETBG_LOOP_DELAY}
     done
-}
-
-notifypath() {
-    # show iand notify which picture is used
-	showpath
-	cli_notify low "${filename}" "${dirname}"
 }
 
 showpath() {
     # show which picture is used
-	file="$(readlink --canonicalize ${bglnk})"
+    notify_debug "Show which picture is used"
+	file="$(readlink --canonicalize ${SETBG_BACKGROUND})"
 	filename=$(basename "${file}")
 	dirname=$(dirname "${file}")
 	echo "${dirname}/${filename}"
+}
+
+notifypath() {
+    # show and notify which picture is used
+	showpath
+	notify_libnotify low "${filename}" "${dirname}"
 }
 
 setbg() {
@@ -123,7 +136,8 @@ setbg() {
 lock() {
     checktarget $1
 	pickpic
-    cp "${background}" "${lockscreen_image}"
+	rm -f "${LOCK_SCREEN_IMAGE}"
+	cp --dereference "$(realpath --canonicalize-existing ${background})" "${LOCK_SCREEN_IMAGE}"
 }
 
 main() {
@@ -131,7 +145,7 @@ main() {
 	local action
     if [ -z "$p1" ]				## ZERO PARAMETERS
     then						# default action, pick and set a background
-        target="${defaultbg}"
+        target="${SETBG_DEFAULT_BACKGROUND}"
         setbg ${target}
     elif [ -z "$p2" ]			## ONE PARAMETER
     then						#	action without argument, or
@@ -144,7 +158,7 @@ main() {
 				showpath
 				;;
 			'lock'|"loop")		# these need a parameter
-				error "setbg" "The action '${p1}' needs a parameter"
+				notify_error "setbg: The action '${p1}' needs a parameter"
 				;;
 			*)					# must be a target
 				target="${p1}"
@@ -162,7 +176,7 @@ main() {
 				loop
 				;;
 			*)
-				error "Unknown action" "${action}"
+				notify_error "setbg: Unknown action: ${action}"
 				;;
 			esac
     fi

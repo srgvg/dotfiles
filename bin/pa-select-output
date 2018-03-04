@@ -1,8 +1,17 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
 set -o nounset
 set -o errexit
 set -o pipefail
+
+
+# load some defaults
+source "$HOME/bin/common.bash"
+check_debug_logging
 
 pulseaudio --check || pulseaudio --start
 
@@ -36,19 +45,34 @@ function updatesink() {
 	pacmd set-default-sink $next_sink
 	pactl list short sink-inputs | awk '{print $1}' | while read streamid
 	do
-	    pactl move-sink-input "$streamid" "$next_sink"
+		pactl move-sink-input "$streamid" "$next_sink"
 	done
 }
 
-previous_sink=$(defaultsink)
-previous_sink_name=$(sinkname $previous_sink)
-next_sink=$(selectsink)
-[ -z "$next_sink" ] && exit
-next_sink_name=$(sinkname $next_sink)
+function main() {
+	local action=${1:-}
 
-updatesink $next_sink
-if [ $previous_sink -ne $next_sink ]
-then
-	notify-send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
-fi
+	# reset pulseaudio-dlna-d to let him clean up old dlna devices
+	#pkill -SIGINT --parent $(pgrep --full "bin/pulseaudio-dlna-d" | head -n 1)
 
+	previous_sink=$(defaultsink)
+	previous_sink_name=$(sinkname $previous_sink)
+
+	if [ "${action}" = "builtin" ]
+	then
+		next_sink="$(pa-default builtin)"
+		next_sink_name="${PA_SINK_DEFAULT_NAME}"
+	else
+		next_sink=$(selectsink)
+		[ -z "$next_sink" ] && exit
+		next_sink_name=$(sinkname $next_sink)
+	fi
+
+	if [ ! "${previous_sink}" -eq "${next_sink}" ]
+	then
+		updatesink $next_sink
+		notify_send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
+	fi
+}
+
+main ${1:-}

@@ -1,19 +1,30 @@
 #!/bin/bash
-#set -x
-set -e
-source $HOME/etc/defaults
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
 
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 	mqtt-notify.py
-	dbus-monitor interface=org.freedesktop.Notifications
 	autocutsel -verbose -selection CLIPBOARD
-	#autocutsel -verbose -selection PRIMARY
 	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
-	tail --follow --verbose $HOME/.lockscreen.log  # kaka
-	#setbg loop debian
+	tail --follow --verbose $HOME/logs/scripts/bin_lock.log
+	setbg loop linux
+
 	#rerandr3 daemon
+	#autocutsel -verbose -selection PRIMARY
+	#dbus-monitor interface=org.freedesktop.Notifications
 EOF
 )
 

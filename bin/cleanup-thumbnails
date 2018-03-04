@@ -1,3 +1,0 @@
-#!/bin/sh
-#set -x
-find $HOME/.thumbnails/ -maxdepth 2 -type f -atime +30  -exec echo rm -f '{}' \;

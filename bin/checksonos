@@ -9,12 +9,20 @@ set -o errexit
 set -o pipefail
 
 
-# shellcheck disable=SC1090
+# load some defaults
 source "$HOME/bin/common.bash"
 check_debug_logging
 
-vol1=$(sonos volume)
-sonos volume $1
-vol2=$(sonos volume)
-notify_send "Sonos Volume" "$vol1 > $vol2" -t 300 -h int:value:$vol2 -c device -u low
-
+if checkhomeip
+then
+	if netcat -z -w 1 ${HOME_LAN_SONOS_IP} 1443
+	then
+		exit 0
+	else
+		echo "Timeout connecting to HOME_LAN_SONOS"
+		exit 1
+	fi
+else
+	echo "Not at Ginsys Office"
+	exit 1
+fi

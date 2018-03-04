@@ -1,21 +1,22 @@
 #!/bin/bash
+
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
-set -o xtrace
 set -o nounset
 set -o errexit
 set -o pipefail
 
+
+# load some defaults
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 action=${1:-toggle}
-
-sonos_volume_cache="$HOME/.cache/sonos-volume"
+SONOS_VOLUME_CACHE="${SONOS_VOLUME_CACHE:=$HOME/.cache/sonos-volume}"
 step=5
-
-function sonos_state() {
-	echo -n "$(sonos state)"
-}
 
 function sonos_playing() {
 	if [ "$(sonos state)" = "PLAYING" ]
@@ -36,15 +37,15 @@ function sonos_dlna() {
 }
 
 function sonos_save_volume() {
-	sonos volume > "${sonos_volume_cache}"
+	sonos volume > "${SONOS_VOLUME_CACHE}"
 }
 
 function sonos_get_volume() {
-	if [ ! -e "${sonos_volume_cache}" ]
+	if [ ! -e "${SONOS_VOLUME_CACHE}" ]
 	then
 		sonos_save_volume
 	fi
-	echo -n "$(cat "${sonos_volume_cache}")"
+	echo -n "$(cat "${SONOS_VOLUME_CACHE}")"
 }
 
 function sonos_is_muted() {
@@ -94,7 +95,7 @@ function sonos_toggle() {
 function volume() {
 	local device="${1}"
 	local action="${2}"
-	echo device "'$(pa-default short)'" action "'${action}'"
+	notify_debug device "'$(pa-default short)'" action "'${action}'"
 	case "${action}" in
 		up)
 			case "${device}" in

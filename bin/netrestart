@@ -1,7 +1,0 @@
-#!/bin/bash
-
-sudo modprobe -r iwlwifi
-sudo modprobe iwlwifi
-#sudo killall wpa_supplicant
-sudo /usr/sbin/service network-manager restart
-pgrep nm-applet || nm-applet &

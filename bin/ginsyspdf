@@ -1,14 +1,27 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 SOURCE="$1"
 TITLE="$2"
 SUBTITLE="$3"
 
 MAKETITLEPDF=titlepdf
 
-if [ ! -x $(which pdftk) ] 
-	then 
-		echo "pdftk not installed" 
+if [ ! -x $(which pdftk) ]
+	then
+		echo "pdftk not installed"
 	fi
 
 if [ -z "$SOURCE" ]
@@ -50,7 +63,7 @@ pdftk $TITLEPAGE background $FRONTPAGETEMPLATE output $GINSYSTITLEPAGE
 pdftk $GINSYSTITLEPAGE $TEMP cat output $TEMP2
 
 #set pdf meta info and security
-cat <<EOF | pdftk $TEMP2 update_info - output $OUTPUT 
+cat <<EOF | pdftk $TEMP2 update_info - output $OUTPUT
 InfoKey: Title
 InfoValue: $TITLE
 InfoKey: Subject
@@ -62,11 +75,11 @@ InfoValue: Ginsys, $(date +%Y%m%d), $SOURCE, $TITLE, $SUBTITLE
 EOF
 
 #cleanup
-if [ ! -n $TEMP ] 
+if [ ! -n $TEMP ]
 	then
 		rm $TEMP
 	fi
-if [ ! -n $TEMP2 ] 
+if [ ! -n $TEMP2 ]
 	then
 		rm $TEMP2
 	fi

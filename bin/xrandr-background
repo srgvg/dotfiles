@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
+# first parameter is the file to convert
+IMAGE=${1:-}
+if [ -z "${IMAGE}" ]
+then
+	errexit "missing image argument"
+elif [ ! -r "${IMAGE}"  ]
+then
+	errexit "cannot read ${IMAGE}"
+fi
+
+# second, optional parameter is the new image filename
+IMAGE_NEW=${2:-}
+IMAGE="$(realpath --no-symlinks "${IMAGE}")"
+IMAGE_PATH="$(dirname "${IMAGE}")"
+if [ -z "${IMAGE_NEW}" ]
+then
+	IMAGE_NAME="$(basename "${IMAGE}")"
+	IMAGE_NAME_BASE="${IMAGE_NAME%.*}"
+	#IMAGE_NAME_EXT="${IMAGE_NAME##*.}"
+	IMAGE_NEW="${IMAGE_PATH}/${IMAGE_NAME_BASE}-xrandr.png"
+else
+	# check new image filename extension
+	IMAGE_NEW_EXT=${IMAGE_NEW##*.}
+	if [ ! "${IMAGE_NEW_EXT}" = "png" ]
+	then
+		IMAGE_NEW_BASE=${IMAGE_NEW%.*}
+		IMAGE_NEW="${IMAGE_NEW_BASE}.png"
+		notify_debug "The passed new image filename has extension '${IMAGE_NEW_EXT}'; converting to '${IMAGE_NEW}'"
+	fi
+
+	# if new image name has no path, prepending the path from original IMAGE
+	if [ "${IMAGE_NEW}" = "$(basename "${IMAGE_NEW}")" ]
+	then
+		IMAGE_NEW="${IMAGE_PATH}/${IMAGE_NEW}"
+	fi
+
+	#canonicalize
+	IMAGE_NEW="$(realpath --canonicalize-missing --logical "${IMAGE_NEW}")"
+	notify_debug "New generated xrandr image will be located at '${IMAGE_NEW}'"
+fi
+
+#NUMBER_OF_DISPLAYS="$(xrandr | grep -c '^.* connected.*x.*+.*+')"
+IMG=${IMAGE}
+CONVERT=(time2 convert)
+while read -r LINE
+do
+	if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
+		W=${BASH_REMATCH[1]}
+		H=${BASH_REMATCH[2]}
+		X=${BASH_REMATCH[3]}
+		Y=${BASH_REMATCH[4]}
+
+		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
+		CONVERT+=(-page ${W}x${H}+${X}+${Y} '\(' $IMG -resize ${W}x${H}^)
+		CONVERT+=(-gravity center -extent ${W}x${H} '\)')
+
+		if [ "${IMG}" != "+clone" ]
+		then
+			# first instance should be the image, next use +clone
+			IMG="+clone"
+		fi
+	fi
+done <<<"$(xrandr)"
+CONVERT+=(-layers merge -transparent white ${IMAGE_NEW})
+
+notify_debug "${CONVERT[@]}"
+eval "${CONVERT[@]}"
+notify "Created multidisplay file at ${IMAGE_NEW}"

@@ -1,11 +1,24 @@
 #!/bin/bash
 
-action="${1:-select}"
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 screenshotdir="$HOME/tmp"
 imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
-
 util="/usr/bin/maim --delay 0.2 --format=png --hidecursor --quality 7 --quiet"
 
+action="${1:-select}"
+notify_debug "Got action ${action}"
 case ${action} in
     select)
         options="--select --bordersize 3 --highlight --color 0.3,0.4,0.6,0.4 "
@@ -14,22 +27,23 @@ case ${action} in
         options="--window $(xdotool getactivewindow)"
         ;;
     screen)
-		options="--geometry $(curdispcoor)"
+		options="--geometry $(curdispcoor 2>/dev/null)"
         ;;
     full)
         options=""
         ;;
+	*)
+		errexit "Unknown action ${action}"
+		;;
 esac
-command="${util} ${options} ${imagefile}"
+grabcommand="${util} ${options} ${imagefile}"
+notify_debug "executing ${grabcommand}"
 
-if ${command}
+ifdebug3 && grabcommand="echo ${grabcommand}"
+if ${grabcommand}
 then
-    notify-send --category=transfer.complete \
-        --urgency=low --icon=gtk-info \
-        "Screenshot ${action}" "saved to ${imagefile}"
+	notify_libnotify low "Screenshot ${action}" "saved to ${imagefile}"
     echo -n ${imagefile} | xclip -in -selection clipboard
 else
-    notify-send --category=transfer.error \
-        --urgency=critical --icon=gtk-info \
-        "Screenshot failed" "${action}"
+	notify_libnotify critical "Screenshot failed" "${action}"
 fi

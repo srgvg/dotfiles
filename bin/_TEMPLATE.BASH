@@ -13,14 +13,3 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 check_debug_logging
 
-target="${1:-$HOME/Pictures}"
-target="$(readlink -e "${target}")"
-shift
-
-if [ -f "${target}" ]
-then
-	targetdir=$(dirname "${target}")
-	targetoption="--start-at"
-fi
-
-/usr/bin/feh --image-bg black --geometry 1080x610 ${targetoption} "${target}" "${targetdir}" $*

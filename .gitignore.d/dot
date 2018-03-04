@@ -3,6 +3,7 @@
 
 # include specific files or dirs
 # dir needs trailing slash to include subfiles
+!/.adobe
 !/.autorandr
 !/.bash_completion.d/
 !/.bash_logout
@@ -41,6 +42,12 @@
 !/.vimrc*
 !/.vim/
 /.vim/bundle/
-.vim/.netrwhist
+/.vim/.netrwhist
 !/bin/
+!/etc/defaults
 !/lib/
+
+
+# keep last to be sure to be ignored
+__pycache__
+*.pyc
