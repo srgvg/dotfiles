@@ -1,9 +1,22 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+check_debug_logging
+
 
 function rename() {
 	file="$1"
-	if [ ! -f "$file" ] 
+	if [ ! -f "$file" ]
 	then
 		echo "File '$file' does not exist?"
 		exit 1
@@ -20,4 +33,9 @@ then
 else
 	echo=echo
 fi
-rename "$1"
+
+files=($@)
+for file in "${files[@]}"
+do
+	rename "${file}"
+done

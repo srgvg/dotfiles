@@ -13,9 +13,13 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 check_debug_logging
 
+
 function rename() {
-	local action=${1:-0}
-	local file=${2:-}
+	# rename $mvcp $action $files ...
+	local mvcp=${1:-echo mv}
+	local action=${2:-0}
+	local file=${3:-}
+
 	if [ -z "${file}" ]
 	then
 		cat >&2 <<- EOF
@@ -44,57 +48,71 @@ function rename() {
 		newpathname="${filepath}/${filets}.${filenamext}"
 	else
 		cat >&2 <<- EOF
-			Non-act action given, in rename function. Don't know what to do.
+			Bad action given, in rename function. Don't know what to do.
 			EOF
-			return 1
+		return 1
 	fi
 
-	$DEBUG mv --verbose "${filepathname}" "${newpathname}"
+	if ifdebug3
+	then
+		notify_debug $mvcp --verbose "${filepathname}" "${newpathname}"
+	else
+		$mvcp --verbose "${filepathname}" "${newpathname}"
+	fi
 }
 
-action="${1:-}"
-if [ -z "${action}" ]
-then
-	cat >&2 <<- EOF
-		No file argument given
 
-		$(basename $0) [optional action: 0 or 1] filenames..
+param1="${1:-}"
+case ${param1} in
+	"")
+		cat >&2 <<- EOF
+			No file argument given
 
-			option 0:  don't act, just show what would happen
-				   01   action 1 by default (or option 01)
-				   02   for action 2, issue option 02
-					   this is also the default when action is omitted
-		    option 1 : prepend a timestamp to the current filename timestamp-filename.ext
-		    option 2 : just rename the file to timestamp.ext
+			$(basename $0) [-c|--copy] [optional action: 0 or 1] filenames..
 
-		EOF
-    exit 1
-fi
+				-c, --copy : copy the file with the new name instead of renaming it
 
-DEBUG="echo"
-if [ "${action}" = 1 ] || [ "${action}" = 2 ]
-then
-	action="$1"
-	files=("${@:2}")
-	DEBUG=""
-elif [ "${action}" = 0 ] || [ "${action}" = 01 ]
-then
-	DEBUG="echo"
-	action=1
-	files=("${@:2}")
-elif [ "${action}" = 02 ]
-then
-	DEBUG="echo"
-	action=2
-	files=("${@:2}")
-else
-	DEBUG="echo"
-	action=1
-	files=($@)
-fi
+				option 1 : prepend a timestamp to the current filename timestamp-filename.ext
+				option 2 : just rename the file to timestamp.ext
+
+				prepend '0' ('01', '02') for no-act mode, showing what would happen
+							this is also the default when action is omitted
+			EOF
+    	exit 1
+		;;
+	"-c"|"--copy")
+		mvcp="cp"
+		shift
+		;;
+	*)
+		mvcp="mv"
+		;;
+esac
+
+action="${1:-0}"
+case ${action} in
+	"1"|"2")
+		action="${1}"
+		shift
+		;;
+	"0"|"01")
+		mvcp="echo ${mvcp}"
+		action=1
+		shift
+		;;
+	"02")
+		mvcp="echo ${mvcp}"
+		action=2
+		shift
+		;;
+	*)
+		mvcp="echo ${mvcp}"
+		action=1
+		;;
+esac
+files=($@)
 
 for file in "${files[@]}"
 do
-	rename "${action}" "${file}"
+	rename "${mvcp}" "${action}" "${file}"
 done
-
