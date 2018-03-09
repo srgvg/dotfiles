@@ -13,5 +13,11 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 check_debug_logging
 
+if [ "${1:-}" = "rm" ]
+then
+	rm="--delete"
+fi
 # shellcheck disable=SC2046
-git tag $(date +%Y%m%d)
+cmd="git tag ${rm:-} $(date +%Y%m%d)"
+notify "${cmd}"
+${cmd}
