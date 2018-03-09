@@ -62,7 +62,7 @@
 	squish	= !"git status && git commit	--amend -C HEAD --date=\"`date`\""
 	squisha = !"git status && git commit -a --amend -C HEAD --date=\"`date`\""
 
-	tags = !sh -c \"git tag | sort -V\"
+	tags = "!git for-each-ref --sort=taggerdate --format '%(tag)%09%(taggerdate:raw)%09%(*authorname)%09' refs/tags | awk '{print $1\"\t\t\"strftime(\"%F  %H:%M\", $2)\"\t\"$4\" \"$5\"  \t\t\"$6\" \"$7\" \"$8\" \"$9\" \"$10}' | column -t"
 	tree = log --all --graph --decorate --oneline --simplify-by-decoration
 
 	up = remote update
