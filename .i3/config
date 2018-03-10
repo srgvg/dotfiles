@@ -705,6 +705,9 @@ for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Tople
 for_window [title="Pages Unresponsive"] floating enable
 for_window [class="feh" instance="feh"] floating enable, border none
 for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"] resize set 700 700
+for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
+for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
+for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
 # (!) window_* seems to not take PCRE's
@@ -820,7 +823,6 @@ for_window [class="Spotify"]   move to workspace $ws_util_music
 #
 # miscellaneous
 #
-for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 
 ###############################################################################
 #
