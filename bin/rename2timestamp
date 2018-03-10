@@ -67,15 +67,15 @@ case ${param1} in
 		cat >&2 <<- EOF
 			No file argument given
 
-			$(basename $0) [-c|--copy] [optional action: 0 or 1] filenames..
+			$(basename $0) [-c|--copy] [optional action: (0)1 or (0)2] filenames..
 
-				-c, --copy : copy the file with the new name instead of renaming it
-
-				option 1 : prepend a timestamp to the current filename timestamp-filename.ext
-				option 2 : just rename the file to timestamp.ext
-
-				prepend '0' ('01', '02') for no-act mode, showing what would happen
-							this is also the default when action is omitted
+			.	-c, --copy : copy the file with the new name instead of renaming it
+			.
+			.	option 1 : prepend a timestamp to the current filename timestamp-filename.ext
+			.	option 2 : just rename the file to timestamp.ext
+			.
+			.	prepend '0' ('01', '02') for no-act mode, showing what would happen
+			.				this is also the default when action is omitted
 			EOF
     	exit 1
 		;;
