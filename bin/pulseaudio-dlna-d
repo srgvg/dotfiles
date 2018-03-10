@@ -11,7 +11,6 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 pulseaudio_dlna_opts="--msearch-port 65353 --port 58080 --auto-reconnect"
 if [ -n "${DEBUG:-}" ]

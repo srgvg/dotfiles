@@ -11,6 +11,5 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 route -v -n | grep ^0.0.0.0 | awk '{print $2}'

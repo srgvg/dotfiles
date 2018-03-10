@@ -11,6 +11,5 @@ set -o pipefail
 
 # load some defaults
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 pkill -SIGINT --parent $(pgrep --full "setbg loop" | head -n 1)

@@ -11,6 +11,5 @@ set -o pipefail
 
 # load some defaults
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 ip addr sh | grep -q ${HOME_LAN_SUBNET}

@@ -11,7 +11,6 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 FILENAME=$(date +%Y%m%d-%H%M)-combined.pdf
 pdftk $1 burst output page-%02d-a.pdf

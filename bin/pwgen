@@ -11,7 +11,6 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 pwgen='/usr/bin/pwgen -N1'
 
@@ -20,46 +19,53 @@ case ${1:-} in
     *[0-9]*)  # it's a number
         TYPE=normal
         PL=$1
+		notify_debug "requested length ${PL}"
         ;;
     *[!0-9]*)  # it's not a number
         TYPE=$1
         PL=${2:-}
+		notify_debug "requested type ${TYPE} and optionally a password length"
         ;;
     *)  # no parameters
+		notify_debug "requested default options"
         TYPE=normal
         ;;
 esac
 
 case $TYPE in
 	low)
-        [ -z $PL ] && L=15 || L=$PL
+        L=${PL:-15}
 		pass=$($pwgen $L 1)
-        msg="low security, $L character length"
+		msg="type $TYPE with character length $L"
+		notify_debug "${msg}"
         ;;
     norm*)
-        [ -z $PL ] && L=30 || L=$PL
+        L=${PL:-30}
 		pass=$($pwgen -Bcn $L 1)
-        msg="quite secure, $L character length"
+		msg="type $TYPE with length $L"
+		notify_debug "${msg}"
         ;;
     hi*)
-        [ -z $PL ] && L=50 || L=$PL
+        L=${PL:-50}
 		pass=$($pwgen -cnys $L 1)
-        msg="very secure, $L character length"
+		msg="type $TYPE with character length $L"
+		notify_debug "${msg}"
         ;;
     xkcd)
         [ -z $PL ] && L=4 || L=$PL
         # http://xkcd.com/936/
 		pass=$(shuf -n$L /usr/share/dict/words | tr -d '\n' | tr -d \')
-        msg="XKCD secure, $L word length"
+		msg="type $TYPE with word length $L"
+		notify_debug "${msg}"
         ;;
 	*)
-		echo 'Not a valid type: '$TYPE
+		errexit "Not a valid type: $TYPE"
 		exit 1
 esac
 
 # formerly using xclip - gives trouble when this script is redirected to not stdout
 echo -n $pass | xsel --clipboard --input
-notify_libnotify low "Password copied to clipboard" "$msg"
-
-echo $pass
-
+notify_libnotify low "Password copied to clipboard" "${msg}"
+ifinteractive && {	echo
+					echo " ${pass}"
+					}

@@ -38,7 +38,8 @@ export DEBUG
 
 # colors
 # these colors must be used with `echo -e`
-if [[ $- == *i* ]]
+# if interactive shell
+if tty --silent
 then
     # interactive shell
     echo_black="\033[0;30m"
@@ -49,6 +50,8 @@ then
     echo_purple="\033[0;35m"
     echo_cyan="\033[0;36m"
     echo_white="\033[0;37;1m"
+    echo_lightgray="\033[0;37m"
+    echo_gray="\033[0;90m"
     echo_orange="\033[0;91m"
 
     echo_bold_black="\033[30;1m"
@@ -93,6 +96,8 @@ else
     echo_purple=""
     echo_cyan=""
     echo_white=""
+    echo_lightgray=""
+    echo_gray=""
     echo_orange=""
 
     echo_bold_black=""
@@ -128,3 +133,7 @@ else
     echo_normal=""
     echo_reset_color=""
 fi
+
+function get_colors() {
+    grep echo_ "$0" | sed 's/\s*\(echo_.*\)=.*/\1/' | sort -u
+}

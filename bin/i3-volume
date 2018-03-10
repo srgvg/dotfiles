@@ -12,7 +12,6 @@ set -o pipefail
 # load some defaults
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 action=${1:-toggle}
 SONOS_VOLUME_CACHE="${SONOS_VOLUME_CACHE:=$HOME/.cache/sonos-volume}"

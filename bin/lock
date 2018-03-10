@@ -17,7 +17,6 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 # always log
 DEBUG=${DEBUG:-1}
-check_debug_logging
 
 I3LOCK_ANNOTATETEXT="${LOCK_ANNOTATETEXT:-}"
 I3LOCK_ICONS="${LOCK_ICONS:-$HOME/Pictures/icons/i3lock}"
@@ -156,7 +155,7 @@ function pre_lock() {
 function perform_lock() {
 	# start the real lock command in the background, set the PID file,
 	# then wait for the lock to end (when unlocked)
-	if ifdebug3
+	if ifdebug1
 	then
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
 		time2 sleep ${LOCKSLEEP} &
@@ -250,6 +249,6 @@ function main() {
 	post_lock
 	}
 
-notify Lock service started
+notify "Lock service started"
 main
 

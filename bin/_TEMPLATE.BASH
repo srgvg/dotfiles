@@ -8,8 +8,8 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
+
+###############################################################################
 

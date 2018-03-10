@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+# Figure out if the parent repo has changed and make a commit with the
+# commit message that was passed in
+STATUS=$(git status --porcelain --ignore-submodules | wc -l)
+if [[ $STATUS -ne 0 ]]
+then
+  echo "🤓  ${GREEN}UPDATING PARENT REPO${NORMAL}"
+  git add .
+  if git commit -am "$1"
+  then
+errexit "Failed to commit"
+  fi
+fi
+
+# Now go to each submodule and update those with the same commit message
+SUBMODULES=($(git submodule | awk '{print $2}'))
+SUBMODULES_UPDATED=0
+for SUBMODULE in "${SUBMODULES[@]}"; do
+  pushd $SUBMODULE > /dev/null
+  STATUS=$(git status --porcelain | wc -l)
+  if [[ $STATUS -ne 0 ]]; then
+    echo "🤓  ${GREEN}UPDATING SUBMODULE:${WHITE} ${SUBMODULE}${NORMAL}"
+    git add .
+    if git commit -am "$1"
+    then
+      exit 1;
+    fi
+    SUBMODULES_UPDATED=1
+    git pull --rebase && git status --short --branch && git push
+  fi
+  popd > /dev/null
+done
+
+# When submodules are updated, we need to commit that as well
+if [[ $SUBMODULES_UPDATED -eq 1 ]]; then
+  echo "🤓  ${GREEN}UPDATING SUBMODULES${NORMAL}"
+  git add .
+  git commit -am "Updated submodules"
+fi
+
+# Push everything
+echo "🤓  ${GREEN}UPDATING EVERYTHING${NORMAL}"
+git status --short --branch && git push
+
+# check if something's added in the index
+#git status --short --ignore-submodules=dirty | grep ^M  | wc -l
