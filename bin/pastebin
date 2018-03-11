@@ -47,4 +47,4 @@ link=$(bitly $paste_url | tr -d '\n')
 echo $link
 
 echo $link | tr -d '\n' | xclip -in -selection clipboard
-notify_libnotify low "Command pasted at $link" "$paste_url"
+notify_desktop low "Command pasted at $link" "$paste_url"

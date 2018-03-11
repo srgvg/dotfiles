@@ -54,35 +54,40 @@ function time2() {
 	notify "Execution of ${info} took ${duration}s."
 }
 
-function check_debug_logging() {
-	if ifdebug1
+function _check_debug_logging() {
+	if ifdebug1 || [ -n "${FORCE_DEBUG_LOGGING:-}" ]
 	then
 		# log this scripts full output
 		LOGFILE="$(readlink -f "$0" | sed -e 's@/home/serge/@@' \
 					-e 's@/@_@g' -e 's@ @@g').log"
 		LOGFILE="$LOGS_PATH/${LOGFILE}"
-		exec &> >(tee "${LOGFILE}")
+		exec &> >(tee >(sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" >"${LOGFILE}"))
+
 		if ifdebug3
 		then
-			# shellcheck disable=SC2154
-			notify "Setting debug level 3" "red"
+			COLOR_DEBUG="red"
 			set -o xtrace
 			set -o verbose
+			local thisfile="${BASH_SOURCE[0]}"
+			notify_debug "List of available functions in ${thisfile}: $(grep '^function' "${thisfile}" |
+				awk '{print $2}' | grep -v '^_' | sort | xargs)" "${COLOR_DEBUG}"
 		elif ifdebug2
 		then
-			# shellcheck disable=SC2154
-			notify "Setting debug level 2" "orange"
+			COLOR_DEBUG="orange"
 			set -o xtrace
 			set -o functrace
 		else
-			# shellcheck disable=SC2154
-			notify "Setting debug level 1" "blue"
+			COLOR_DEBUG="purple"
 		fi
+		# shellcheck disable=SC2154
+		notify_debug "DEBUG LEVEL ${DEBUG} IN ${FUNCNAME[*]} FROM ${BASH_SOURCE[*]}" "${COLOR_DEBUG}"
 	fi
 }
 
 
-function notify_stdout() {
+function _notify_stdout() {
+	# private function
+
 	local message="$1"
 
 	local color="${2-lightgrey}"
@@ -95,10 +100,11 @@ function notify_stdout() {
 	echo -e "${echo_color}$(timestamp) ${message} (${SECONDS}s)${echo_normal}" >&1
 }
 
-function notify_stderr() {
-	local message="$1"
+function _notify_stderr() {
+	# private function
 
-	local color="${2-orange}"
+	local message="${1}"
+	local color="${2}"
 	local colorvar
 	local echo_color
 	colorvar="echo_${color}"
@@ -109,35 +115,27 @@ function notify_stderr() {
 }
 
 function notify() {
-	local message="$1"
-
+	local message="${1}"
 	local color="${2:-lightgray}"
-	local colorvar
-	local echo_color
-	colorvar="echo_${color}"
-	echo_color="${!colorvar}"
-
-	notify_stdout "${message}" "${color}"
+	_notify_stdout "${message}" "${color}"
 }
 
 function notify_debug() {
 	if ifdebug1
 	then
-		local message="$1"
-
-		local color="${2-purple}"
-		local colorvar
-		local echo_color
-		colorvar="echo_${color}"
-		echo_color="${!colorvar}"
-
-		notify_stderr "${message}" "${color}"
+		local message="${1}"
+		local color="${2:-lightgray}"
+		_notify_stderr "${message}" "${color}"
 	fi
 }
 
-function _notify_libnotify() {
+function _notify_desktop() {
 	# private function, do not call directly
-	# called via notify_libnotify or notify_libnotify_debug
+	# called via notify_desktop or notify_desktop_debug
+
+	local numparam=4
+	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
+
 	local urgency
 	local summary
 	local body
@@ -159,13 +157,13 @@ function _notify_libnotify() {
 	case ${debug} in
 		"DEBUG")
 			NOTIFY="notify_debug"
-			color="purple"
+			color="${COLOR_DEBUG}"
 			;;
 		"NODEBUG")
 			NOTIFY="notify"
 			;;
 		*)
-			errexit "Wrong debug parameter for _notify_libnotify. Need DEBUG"\
+			errexit "Wrong debug parameter for _notify_desktop. Need DEBUG"\
 					"NODEBUG, got ''${debug}''."
 			;;
 	esac
@@ -181,7 +179,7 @@ function _notify_libnotify() {
 			NOGUI=0
 			;;
 		*)
-			errexit "First parameter should be one of '[low|normal|critical]'"
+			errexit "First parameter should be one of '[low|normal|critical|NOGUI]'"
 			;;
 	esac
 
@@ -195,25 +193,20 @@ function _notify_libnotify() {
 	fi
 }
 
-function notify_libnotify() {
-	_notify_libnotify NODEBUG "$@"
+function notify_desktop() {
+	local numparam=3
+	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
+	_notify_desktop NODEBUG "$@"
 }
 
-function notify_libnotify_debug() {
-	_notify_libnotify DEBUG "$@"
+function notify_desktop_debug() {
+	local numparam=3
+	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
+	_notify_desktop DEBUG "$@"
 }
 
 function notify_error() {
 	local message=${1:-}
-	local NOGUI
-
-	if [ "${1-}" = "NOGUI" ]
-	then
-		shift
-		NOGUI=0
-	else
-		NOGUI=1
-	fi
 
 	if [ -z "${message}" ]
 	then
@@ -221,25 +214,34 @@ function notify_error() {
 	else
 		message="Error: $*"
 	fi
-
-	if [ "${NOGUI}" -eq 0 ] # true
-	then
-		notify "${message}" "red"
-	else
-		notify_libnotify critical ERROR "${message}"
-	fi
+	notify "${message}"
 }
 
-function errexit() {
+function notify_error_desktop() {
 	local message=${1:-}
+
 	if [ -z "${message}" ]
 	then
 		message="UNDEFINED ERROR"
 	else
-		message="$*"
+		message="Error: $*"
 	fi
-	notify_error "ERROR: ${message}"
+	notify_desktop critical ERROR "${message}"
+}
+
+function errexit() {
+	local message=${1:-}
+
+	notify_error "${message}"
 	exit 1
 }
 
-check_debug_logging
+function errexit_desktop() {
+	local message=${1:-}
+
+	notify_error_desktop "${message}"
+	exit 1
+}
+
+
+_check_debug_logging

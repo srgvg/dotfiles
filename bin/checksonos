@@ -18,10 +18,8 @@ then
 	then
 		exit 0
 	else
-		echo "Timeout connecting to HOME_LAN_SONOS"
-		exit 1
+		errexit "Timeout connecting to HOME_LAN_SONOS"
 	fi
 else
-	echo "Not at Ginsys Office"
-	exit 1
+	errexit "Not at Ginsys Office"
 fi

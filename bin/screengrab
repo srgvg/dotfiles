@@ -41,8 +41,8 @@ notify_debug "executing ${grabcommand}"
 ifdebug3 && grabcommand="echo ${grabcommand}"
 if ${grabcommand}
 then
-	notify_libnotify low "Screenshot ${action}" "saved to ${imagefile}"
+	notify_desktop low "Screenshot ${action}" "saved to ${imagefile}"
     echo -n ${imagefile} | xclip -in -selection clipboard
 else
-	notify_libnotify critical "Screenshot failed" "${action}"
+	notify_desktop critical "Screenshot failed" "${action}"
 fi

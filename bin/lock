@@ -13,10 +13,12 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+# always log
+# shellcheck disable=SC2034
+[ "${DEBUG:-0}" -eq 0 ] && FORCE_DEBUG_LOGGING="TRUE"
+
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-# always log
-DEBUG=${DEBUG:-1}
 
 I3LOCK_ANNOTATETEXT="${LOCK_ANNOTATETEXT:-}"
 I3LOCK_ICONS="${LOCK_ICONS:-$HOME/Pictures/icons/i3lock}"

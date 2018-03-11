@@ -14,8 +14,7 @@ source "$HOME/bin/common.bash"
 
 if checksonos
 then
-    socos $1 "${HOME_LAN_SONOS_IP}" $2
+    socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-}
 else
-    echo "Sonos not online"
-    exit 1
+    errexit "Sonos not online"
 fi

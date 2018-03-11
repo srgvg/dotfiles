@@ -56,7 +56,7 @@ function get_window_criteria() {
 }
 
 text=$(get_window_criteria)
-notify_libnotify low "WINDOW PROPERTIES" "${text}"
+notify_desktop low "WINDOW PROPERTIES" "${text}"
 
 echo
 echo "${text}"

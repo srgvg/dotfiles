@@ -21,7 +21,7 @@ then
 	title="Disable systemd teamviewerd.service"
 	body="sudo systemctl disable teamviewerd.service"
 	echo "$title: $body"
-	notify_libnotify critical "$title" "$body"
+	notify_desktop critical "$title" "$body"
 	exit 1
 elif [ -n "$1" ]
 then

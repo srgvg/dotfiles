@@ -121,7 +121,7 @@ showpath() {
 notifypath() {
     # show and notify which picture is used
 	showpath
-	notify_libnotify low "${filename}" "${dirname}"
+	notify_desktop low "${filename}" "${dirname}"
 }
 
 setbg() {

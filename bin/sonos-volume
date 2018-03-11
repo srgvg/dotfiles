@@ -14,6 +14,7 @@ source "$HOME/bin/common.bash"
 
 vol1=$(sonos volume)
 sonos volume $1
+
 vol2=$(sonos volume)
-notify_send "Sonos Volume" "$vol1 > $vol2" -t 300 -h int:value:$vol2 -c device -u low
+notify_desktop low "Sonos Volume" "$vol1 > $vol2"
 
