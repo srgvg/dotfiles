@@ -46,6 +46,10 @@ set $ws_chat		11
 set $ws_util_chat	12
 set $ws_util_pw		13
 set $ws_util_music	14
+set $ws_util_logs	22
+set $ws_util_music	14
+set $ws_util_logs   22
+
 #set $ws_
 
 # Xresources settings
@@ -813,11 +817,13 @@ for_window	[title="Signal"]					floating disable
 for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable #disable
 
 # Music
-assign	   [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
-for_window [class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
+assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
+for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window [class="Spotify"]   move to workspace $ws_util_music
+for_window	[class="Spotify"]					move to workspace $ws_util_music
+
+assign		[window_role="i3jobs"]				$ws_util_logs
 
 ###############################################################################
 #

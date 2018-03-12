@@ -26,9 +26,9 @@ fi
 
 if ifdebug1
 then
-	notify_debug "$COMMAND $*"
-	$COMMAND $*
+	notify_debug "$COMMAND"
+	$COMMAND
 	notify_debug "finished with rc $?"
 else
-	exec $COMMAND $*
+	exec $COMMAND
 fi
