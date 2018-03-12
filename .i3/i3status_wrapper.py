@@ -28,24 +28,27 @@ import sys
 import json
 import subprocess
 
+
 def get_governor():
     """ Get the current governor for cpu0, assuming all CPUs use the same. """
     with open('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor') as fp:
         return fp.readlines()[0].strip()
 
+
 def get_sink():
     """ Get the default sink name """
-    p = subprocess.Popen('pa-default long', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('pa-default long', shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, _ = p.communicate()
     sink = out.strip()
     if sink.startswith("Built-in Audio"):
         sink = ""
 
-    p = subprocess.Popen('sonos volume', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('sonos state', shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, _ = p.communicate()
     sonosstatus = out.strip()
-    sonosplaying = sonosstatus == "PLAYING"
-    if p.returncode == 0:
+    if sonosstatus == "PLAYING":
         sonossink = "Office Sonos"
         sonosvolume = out.strip()
         if int(sonosvolume) > 0:
@@ -63,7 +66,8 @@ def get_sink():
 
 
 def get_wifi():
-    p = subprocess.Popen('nmcli -t radio wifi', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('nmcli -t radio wifi', shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     status = out.strip()
     if status == "enabled":
@@ -72,10 +76,12 @@ def get_wifi():
         status = ""
     return status
 
+
 def print_line(message):
     """ Non-buffered printing to stdout. """
     sys.stdout.write(message + '\n')
     sys.stdout.flush()
+
 
 def read_line():
     """ Interrupted respecting reader for stdin. """
@@ -89,6 +95,7 @@ def read_line():
     # exit on ctrl-c
     except KeyboardInterrupt:
         sys.exit()
+
 
 if __name__ == '__main__':
     # Skip the first line which contains the version header.
@@ -106,7 +113,8 @@ if __name__ == '__main__':
         j = json.loads(line)
         # insert information into the start of the json, but could be anywhere
         # CHANGE THIS LINE TO INSERT SOMETHING ELSE
-        j.insert(-2, {'full_text' : '%s' % get_sink(), 'name' : 'sink'})
-        j.insert(13, {'full_text' : '%s' % get_wifi(), 'name' : 'wifi', 'separator' : "false" })
+        j.insert(-2, {'full_text': '%s' % get_sink(), 'name': 'sink'})
+        j.insert(13, {'full_text': '%s' % get_wifi(), 'name': 'wifi',
+                      'separator': "false"})
         # and echo back new encoded json
         print_line(prefix+json.dumps(j))
