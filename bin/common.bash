@@ -214,7 +214,7 @@ function notify_error() {
 	else
 		message="Error: $*"
 	fi
-	notify "${message}"
+	notify "${message}" "red"
 }
 
 function notify_error_desktop() {
@@ -232,13 +232,14 @@ function notify_error_desktop() {
 function errexit() {
 	local message=${1:-}
 
-	notify_error "${message}"
+	notify_error "${message}" >&2
 	exit 1
 }
 
 function errexit_desktop() {
 	local message=${1:-}
 
+	errexit "${message}"
 	notify_error_desktop "${message}"
 	exit 1
 }
