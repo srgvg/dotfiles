@@ -12,9 +12,18 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+if [ -z "${1:-}" ]
+then
+	errexit "missing action parameter(s)"
+fi
+
 if checksonos
 then
-    socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-}
+	error=$(socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-} 2>&1)
+	if [[ "${error}" =~ "Unknown command" ]]
+	then
+		errexit "Unknown command '${1}'"
+	fi
 else
     errexit "Sonos not online"
 fi
