@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # This script is a fork of
 # http://fabian-affolter.ch/blog/mqtt-and-desktop-notifications/
@@ -19,7 +19,8 @@ import socket
 import os
 
 app_name = 'mqtt-notify'
-mqtt_client_name = app_name + '-' + socket.gethostname() + '-' + str(os.getpid())
+mqtt_client_name = (app_name + '-' + socket.gethostname() + '-'
+                    + str(os.getpid()))
 broker = '127.0.0.1'
 port = 1883
 topic = 'irssi'

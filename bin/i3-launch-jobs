@@ -18,7 +18,6 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 	mqtt-notify.py
 	autocutsel -verbose -selection CLIPBOARD
 	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
-	tail --follow --verbose $HOME/logs/scripts/bin_lock.log
 	setbg loop linux
 
 	#rerandr3 daemon
@@ -36,6 +35,8 @@ else
 	PAUSE="2"
 fi
 
+# make sure we replace an existing setbg loop
+pkill -9 -f "setbg loop"
 # launch the jobs
 echo "$JOBS" | while read -r line
 do
