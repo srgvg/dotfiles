@@ -88,7 +88,7 @@ function _check_debug_logging() {
 function _notify_stdout() {
 	# private function
 
-	local message="$1"
+	local message="${1:-}"
 
 	local color="${2-lightgrey}"
 	local colorvar
@@ -103,8 +103,8 @@ function _notify_stdout() {
 function _notify_stderr() {
 	# private function
 
-	local message="${1}"
-	local color="${2}"
+	local message="${1:-UNKNOWN ERROR}"
+	local color="${2:-red}"
 	local colorvar
 	local echo_color
 	colorvar="echo_${color}"
@@ -115,7 +115,7 @@ function _notify_stderr() {
 }
 
 function notify() {
-	local message="${1}"
+	local message="${1:-}"
 	local color="${2:-lightgray}"
 	_notify_stdout "${message}" "${color}"
 }
@@ -123,7 +123,7 @@ function notify() {
 function notify_debug() {
 	if ifdebug1
 	then
-		local message="${1}"
+		local message="${1:-}"
 		local color="${2:-lightgray}"
 		_notify_stderr "${message}" "${color}"
 	fi
