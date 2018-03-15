@@ -80,7 +80,7 @@ function _check_debug_logging() {
 			COLOR_DEBUG="purple"
 		fi
 		# shellcheck disable=SC2154
-		notify_debug "DEBUG LEVEL ${DEBUG} IN ${FUNCNAME[*]} FROM ${BASH_SOURCE[*]}" "${COLOR_DEBUG}"
+		notify_debug "DEBUG LEVEL ${DEBUG} FROM ${BASH_SOURCE[*]}" "${COLOR_DEBUG}"
 	fi
 }
 
