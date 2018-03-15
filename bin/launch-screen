@@ -13,9 +13,13 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 session_exists() {
-    if (screen -list | grep "\.$sname" > /dev/null)
-    then    return 0
-    else    return 1
+    if (screen -list | grep -q "\.$sname" >/dev/null 2>&1)
+    then
+		notify_debug "session $sname exists"
+		return 0
+    else
+		notify_debug "session $sname does not exist"
+		return 1
     fi
     }
 
@@ -27,43 +31,43 @@ not_empty() {
     }
 
 check_options() {
-	if [ -x "$(which "$3" 2>/dev/null)" ]
-    then  # command starts at third parameter,
-          # first is session name, second a special commandoption
+	if [ -x "$(which ${3:-} 2>/dev/null)" ]
+    then
+		notify_debug "command starts at third parameter, first is session name, second a special command option"
         sname="$1"
         shift # name is gone
         cmd="$1"
         shift # cmd is gone
         command="$*"
 
-	elif [ -x "$(which "$2" 2>/dev/null)" ]
-    then  # command starts at second parameter, first is session name
+	elif [ -x "$(which ${2:-} 2>/dev/null)" ]
+    then
+		notify_debug "command starts at second parameter, first is session name"
         cmd="_start_or_attach"
         sname="$1"
         shift # name is gone
         command="$*"
 
-	elif [ -x "$(which "$1" 2>/dev/null)" ]
-    then  # command starts at first parameter
+	elif [ -x "$(which ${1:-} 2>/dev/null)" ]
+    then
+		notify_debug "command starts at first parameter, basecommand as sessionname"
         cmd="_start_or_attach"
         sname="$1"
         command="$*"
 
-    else # no command, just reattach
-        if [ $# -eq 0 ] || [ $# -ge 3 ]
+    else
+		notify_debug "no executable command found"
+		command=""
+        if [ $# -eq 1 ]
         then
-            exit 1
-        elif [ $# -eq 1 ]
-        then
+			notify_debug "1 parameter given, assuming session name"
             sname="$1"
             cmd="_start_or_attach"
-        elif [ $# -eq 2 ]
-        then
-            sname="$1"
-            cmd="$2"
-        fi
-    fi
-	wname="$(echo $command | sed -e 's/-//g' -e 's/\s/_/g')"
+		else
+			exerror "we don't know what to do"
+		fi
+	fi
+	wname="$(echo ${command:-} | sed -e 's/-//g' -e 's/\s/_/g')"
     }
 
 build_screen_options() {
@@ -71,16 +75,16 @@ build_screen_options() {
         _start_or_attach)
             if session_exists
             then # attach
-                echo "attach to screen session $sname"
+                notify_debug "attach to screen session $sname"
                 options="-Rx $sname"
                 command=""
             else # start new
+                notify_debug "start new screen session $sname"
                 if not_empty $command
                 then
-                    echo "start new screen session $sname"
-                    options="-S $sname -t $wname -d -m"
-                else # will fail
-                    options=""
+					options="-S $sname -X screen -t $wname"
+                else
+                    errexit "no existing session and no command given"
                 fi
             fi
             ;;
@@ -89,12 +93,11 @@ build_screen_options() {
             then
                 if session_exists
                 then # add new window and command
-                    echo "add new command to session $sname"
-                    options="-S $sname -X screen -t $wname"
+                    notify_debug "add new command to session $sname"
                 else # start new
-                    echo "start new screen session $sname"
-                    options="-S $sname -t $wname -d -m"
+                    notify_debug "start new screen session $sname"
                 fi
+                options="-S $sname -X screen -t $wname"
             else
                 options=""
             fi
@@ -110,22 +113,31 @@ build_screen_options() {
     esac
     }
 
+init_screen() {
+    if ! session_exists && [ ${cmd} = "add" ]
+	then
+		notify_debug "initializing new screen session $sname"
+		# create session window zeroe with sleep command - this would
+		# remain visible in the process list
+		screen -S $sname -t init -d -m sleep 30
+		# give some time to init
+		sleep 1
+	fi
+	}
 execute_screen() {
-    if [ "$options" = "-S $sname -X screen -t $wname" ]
-    then    echo "Wait a bit to add a screen"
-            sleep 1s   # $[ ( $RANDOM % 3 )  + 1 ]s
-    fi
-    echo Executing: screen $options $command
+	init_screen
+    notify_debug "Executing: screen $options $command"
     screen $options $command
     }
 
 main() {
     if not_empty "$@"
-    then
+	then
+		notify_debug "launching with parameters '$*'"
         check_options "$@"
         build_screen_options "$@"
-        if [ ! -z "$options$command" ]
-        then
+        if [ -n "$options$command" ]
+		then
             execute_screen
         else
             echo "no command given"

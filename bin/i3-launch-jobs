@@ -26,6 +26,15 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 EOF
 )
 
+_job=${*:-}
+if [ -n "${_job}" ]
+then
+	notify_debug "Replacing default job list with '${_job}'"
+	JOBS="${_job}"
+fi
+
+I3SCREENPID=$(pgrep -f "SCREEN -S i3jobs" 2>/dev/null || echo 0)
+
 function i3-launch-job() {
     if [ -z "$*" ]
     then
@@ -33,7 +42,7 @@ function i3-launch-job() {
         return
     fi
     notify "Checking for \"$*\" ... "
-	if _pid=$(pgrep -f "$*" | xargs)
+	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" | xargs)
     then
 		notify "              ... already running (${_pid})"
     else
@@ -43,32 +52,23 @@ function i3-launch-job() {
     fi
 }
 
-# check if this is a fresh start, whether there's already an i3jobs screen
-if (screen -list | grep -q i3jobs)
-then
-	PAUSE="0"
-else
-	# wait a bit more after the first job to allow screen to start up
-	PAUSE="2"
-fi
-
 # launch the jobs
 echo "$JOBS" | while read -r line
 do
 	# make sure we replace an existing setbg loop
 	if [[ $line =~ "setbg loop" ]]
 	then
-		if _pid=$(pgrep -f "setbg loop")
+		if _pid=$(pgrep -P ${I3SCREENPID} -f "setbg loop")
 		then
 			kill -9 ${_pid}
 			notify_debug "Killed existing setbg loop (${_pid})"
 		fi
 	fi
 	i3-launch-job $line
-	sleep $PAUSE
 done
 
 if ! pgrep -f "screen -D -r i3jobs" >/dev/null
 then
-	/usr/bin/terminator --role i3jobs --execute screen -D -r i3jobs
+	# to background in case this script is run interactively
+	/usr/bin/terminator --role i3jobs --execute screen -D -r i3jobs &
 fi
