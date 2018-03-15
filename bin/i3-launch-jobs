@@ -26,6 +26,23 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 EOF
 )
 
+function i3-launch-job() {
+    if [ -z "$*" ]
+    then
+        notify_error "Nothing to launch"
+        return
+    fi
+    notify "Checking for \"$*\" ... "
+	if _pid=$(pgrep -f "$*" | xargs)
+    then
+		notify "              ... already running (${_pid})"
+    else
+        notify "              ... starting"
+        # shellcheck disable=SC2048
+		launch-screen i3jobs add $* | sed -e 's/^/ -   /'
+    fi
+}
+
 # check if this is a fresh start, whether there's already an i3jobs screen
 if (screen -list | grep -q i3jobs)
 then
@@ -35,11 +52,18 @@ else
 	PAUSE="2"
 fi
 
-# make sure we replace an existing setbg loop
-pkill -9 -f "setbg loop" ||:
 # launch the jobs
 echo "$JOBS" | while read -r line
 do
+	# make sure we replace an existing setbg loop
+	if [[ $line =~ "setbg loop" ]]
+	then
+		if _pid=$(pgrep -f "setbg loop")
+		then
+			kill -9 ${_pid}
+			notify_debug "Killed existing setbg loop (${_pid})"
+		fi
+	fi
 	i3-launch-job $line
 	sleep $PAUSE
 done

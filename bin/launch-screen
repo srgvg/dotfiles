@@ -27,7 +27,7 @@ not_empty() {
     }
 
 check_options() {
-    if [ -x "`which "$3" 2>/dev/null`" ]
+	if [ -x "$(which "$3" 2>/dev/null)" ]
     then  # command starts at third parameter,
           # first is session name, second a special commandoption
         sname="$1"
@@ -36,21 +36,21 @@ check_options() {
         shift # cmd is gone
         command="$*"
 
-    elif [ -x "`which "$2" 2>/dev/null`" ]
+	elif [ -x "$(which "$2" 2>/dev/null)" ]
     then  # command starts at second parameter, first is session name
         cmd="_start_or_attach"
         sname="$1"
         shift # name is gone
         command="$*"
 
-    elif [ -x "`which "$1" 2>/dev/null`" ]
+	elif [ -x "$(which "$1" 2>/dev/null)" ]
     then  # command starts at first parameter
         cmd="_start_or_attach"
         sname="$1"
         command="$*"
 
     else # no command, just reattach
-        if [ $# -eq 0 -o $# -ge 3 ]
+        if [ $# -eq 0 ] || [ $# -ge 3 ]
         then
             exit 1
         elif [ $# -eq 1 ]
@@ -63,7 +63,7 @@ check_options() {
             cmd="$2"
         fi
     fi
-    wname=`echo $command | sed -e 's/-//g' -e 's/\s/_/g'`
+	wname="$(echo $command | sed -e 's/-//g' -e 's/\s/_/g')"
     }
 
 build_screen_options() {
@@ -120,10 +120,10 @@ execute_screen() {
     }
 
 main() {
-    if not_empty $*
+    if not_empty "$@"
     then
-        check_options $*
-        build_screen_options $*
+        check_options "$@"
+        build_screen_options "$@"
         if [ ! -z "$options$command" ]
         then
             execute_screen
@@ -136,4 +136,4 @@ main() {
     screen -list
     }
 
-main $*
+main "$@"
