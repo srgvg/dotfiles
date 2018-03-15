@@ -1,22 +1,45 @@
 #!/bin/bash
-set -x
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
 
 PRIMARY=$(grep ^i3.output.primary $HOME/.Xresources.d/i3 | cut -d\  -f2)
 SECONDARY=$(grep ^i3.output.secondary $HOME/.Xresources.d/i3 | cut -d\  -f2)
 PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-eDP1}
 
-CURRENT=$(i3-msg -t get_workspaces   | jq '.[] | select(.focused==true).name' | sed 's/"//g')
+CURRENT=$(i3-msg -t get_workspaces   | jq '.[] |
+            select(.focused==true).name' | sed 's/"//g')
 
-for w in $(grep ^workspace\   $HOME/.i3/config | grep outpri | awk '{print $2}')
-do
-	i3-msg "workspace $w; move workspace to output $PRIMARY"
-done
+PRIMARIES=$(grep ^workspace\   $HOME/.i3/config |
+            grep outpri | awk '{print $2}')
+SECONDARIES=$(grep ^workspace\   $HOME/.i3/config |
+            grep outsec | awk '{print $2}')
 
-for w in $(grep ^workspace\   $HOME/.i3/config | grep outsec | awk '{print $2}')
-do
-	i3-msg "workspace $w; move workspace to output $SECONDARY"
-done
+if [ -n "${PRIMARIES}" ]
+then
+    for w in ${PRIMARIES}
+    do
+        _debug=$(i3-msg "workspace $w; move workspace to output $PRIMARY")
+        notify_debug "Moving workspace $w to output $PRIMARY ** ${_debug}"
+    done
+fi
 
-i3-msg workspace $CURRENT
+if [ -n "${PRIMARIES}" ]
+then
+    for w in ${SECONDARIES}
+    do
+        _debug=$(i3-msg "workspace $w; move workspace to output $SECONDARY")
+        notify_debug "Moving workspace $w to output $SECONDARY ** ${_debug}"
+    done
+fi
 
+i3-msg workspace $CURRENT >/dev/null
