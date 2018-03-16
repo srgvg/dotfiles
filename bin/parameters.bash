@@ -31,9 +31,6 @@ SETBG_LOOP_DELAY=300
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"
 
-# export these where child processes need the original setting
-# debug is often set interactively, so we want subprocesses to be debugged too
-export DEBUG
 
 
 # colors

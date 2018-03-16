@@ -14,15 +14,19 @@ source "$HOME/bin/common.bash"
 
 if [ -z "${1:-}" ]
 then
-	errexit "missing action parameter(s)"
+	socos unknown 2>&1 | grep -v unknown
+	exit 1
 fi
 
 if checksonos
 then
-	error=$(socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-} 2>&1)
-	if [[ "${error}" =~ "Unknown command" ]]
+	_out=$(socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-} 2>&1)
+	if [[ "${_out}" =~ "Unknown command" ]]
 	then
-		errexit "Unknown command '${1}'"
+		echo "${_out}"
+		exit 1
+	else
+		echo "${_out}"
 	fi
 else
     errexit "Sonos not online"

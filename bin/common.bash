@@ -67,7 +67,10 @@ function _check_debug_logging() {
 		then
 			COLOR_DEBUG="red"
 			set -o xtrace
+			set -o functrace
 			set -o verbose
+			# automatically debug subprocesses too
+			export DEBUG
 			local thisfile="${BASH_SOURCE[0]}"
 			notify_debug "List of available functions in ${thisfile}: $(grep '^function' "${thisfile}" |
 				awk '{print $2}' | grep -v '^_' | sort | xargs)" "${COLOR_DEBUG}"
@@ -76,7 +79,7 @@ function _check_debug_logging() {
 			COLOR_DEBUG="orange"
 			set -o xtrace
 			set -o functrace
-		else
+		else #ifdebug1
 			COLOR_DEBUG="purple"
 		fi
 		# shellcheck disable=SC2154

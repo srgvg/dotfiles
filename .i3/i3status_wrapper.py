@@ -50,6 +50,9 @@ def get_sink():
     sonosstatus = out.strip()
     if sonosstatus == "PLAYING":
         sonossink = "Office Sonos"
+        p = subprocess.Popen('sonos volume', shell=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, _ = p.communicate()
         sonosvolume = out.strip()
         if int(sonosvolume) > 0:
             sinkvolume = " 🔊" + sonosvolume + "%"

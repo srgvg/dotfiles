@@ -99,7 +99,7 @@ function volume() {
 		up)
 			case "${device}" in
 				sonos)
-					sonos-volume +${step}
+					sonos volume +${step}
 					;;
 				pa)
 					ponymix increase ${step}
@@ -109,7 +109,7 @@ function volume() {
 		down)
 			case "${device}" in
 				sonos)
-					sonos-volume -${step}
+					sonos volume -${step}
 					;;
 				pa)
 					ponymix decrease ${step}
@@ -175,4 +175,3 @@ else
 fi
 
 volume "${device}" "${action}"
-
