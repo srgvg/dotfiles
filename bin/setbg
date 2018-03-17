@@ -151,10 +151,9 @@ main() {
 		case ${p1} in			#	just a target
 			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
 				displaybg
-				notifypath
 				;;
-			'show')				# show current picture
-				showpath
+			'show')				# show current picture path
+				notifypath
 				;;
 			'lock'|"loop")		# these need a parameter
 				notify_error "setbg: The action '${p1}' needs a parameter"

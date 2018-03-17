@@ -600,7 +600,7 @@ bindsym $mod+Control+Shift+o	exec google-chrome serge --incognito
 bindsym $mod+o					exec google-chrome
 
 # Show current Background filename
-bindsym $mod+Control+b			exec --no-startup-id setbg keep
+bindsym $mod+Control+b			exec --no-startup-id setbg show
 bindsym $mod+$Alt+b				exec --no-startup-id bgnext
 bindsym $mod+Control+$Alt+b		exec --no-startup-id setbg
 
@@ -866,7 +866,7 @@ exec --no-startup-id "sleep 10; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
-exec_always --no-startup-id "setbg keep"
+exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
