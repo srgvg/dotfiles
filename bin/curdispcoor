@@ -15,29 +15,35 @@ source "$HOME/bin/common.bash"
 # based on https://superuser.com/a/603618
 
 ## Get screen info
-screen1=($(xrandr | grep -w connected  | awk -F'[ +x]' '{print $4,$5,$6,$7}' | head -n 1))
-screen2=($(xrandr | grep -w connected  | awk -F'[ +x]' '{print $4,$5,$6,$7}' | tail -n 1))
+screen1=($(xrandr | grep -w connected | sed 's/primary //' |
+			awk -F'[ +x]' '{print $3,$4,$5,$6}' | head -n 1))
+screen2=($(xrandr | grep -w connected | sed 's/primary //' |
+			awk -F'[ +x]' '{print $3,$4,$5,$6}' | tail -n 1))
 
 ## Figure out which screen is to the right of which
 if [ ${screen1[3]} -eq 0  ]
 then
-	right=(${screen2[@]});
-	left=(${screen1[@]});
+	left=(${screen2[@]})
+	right=(${screen1[@]})
 else
-	right=(${screen1[@]});
-	left=(${screen2[@]});
+	left=(${screen1[@]})
+	right=(${screen2[@]})
 fi
-notify_debug "left screen ${left[@]}"
-notify_debug "right screen ${right[@]}"
+_left="${left[@]}"
+_right="${right[@]}"
+notify_debug "left screen ${_left}"
+notify_debug "right screen ${_right}"
 
 ## Get window position
 pos=$(xwininfo -id $(xdotool getactivewindow 2>/dev/null) |
 	grep "Absolute upper-left X" |
 	awk '{print $NF}')
+notify_debug "Active window is on X position $pos"
 
 ## Which screen is this window displayed in? If $pos
-## is greater than the offset of the rightmost screen,
+## is greater than the offset of the right screen,
 ## then the window is on the right hand one
+notify_debug "Right window is on X position ${right[2]}"
 if [ "$pos" -gt "${right[2]}" ]
 then
 	display=(${right[@]})
