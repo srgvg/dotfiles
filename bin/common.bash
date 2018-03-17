@@ -91,16 +91,19 @@ function _check_debug_logging() {
 function _notify_stdout() {
 	# private function
 
-	local message="${1:-}"
+	if ifinteractive
+	then
+		local message="${1:-}"
 
-	local color="${2-lightgrey}"
-	local colorvar
-	local echo_color
-	colorvar="echo_${color}"
-	echo_color="${!colorvar}"
+		local color="${2:-white}"
+		local colorvar
+		local echo_color
+		colorvar="echo_${color}"
+		echo_color="${!colorvar}"
 
-	# shellcheck disable=SC2154
-	echo -e "${echo_color}$(timestamp) ${message} (${SECONDS}s)${echo_normal}" >&1
+		# shellcheck disable=SC2154
+		echo -e "${echo_color}$(timestamp) ${message} (${SECONDS}s)${echo_normal}" >&1
+	fi
 }
 
 function _notify_stderr() {
@@ -132,82 +135,6 @@ function notify_debug() {
 	fi
 }
 
-function _notify_desktop() {
-	# private function, do not call directly
-	# called via notify_desktop or notify_desktop_debug
-
-	local numparam=4
-	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
-
-	local urgency
-	local summary
-	local body
-
-	local color
-	local NOGUI=1 # means false, same logic as rc
-
-	if [ "$#" -eq 0 ]
-	then
-		errexit "Illegal number of parameters: " \
-				"need '[low|normal|critical]' 'summary' 'body'"
-	fi
-
-	debug=${1}; shift
-	urgency=${1:-"low"}; shift
-	summary=${1:-"ERROR"}; shift
-	body=${*:-"UNDEFINED"}
-
-	case ${debug} in
-		"DEBUG")
-			NOTIFY="notify_debug"
-			color="${COLOR_DEBUG}"
-			;;
-		"NODEBUG")
-			NOTIFY="notify"
-			;;
-		*)
-			errexit "Wrong debug parameter for _notify_desktop. Need DEBUG"\
-					"NODEBUG, got ''${debug}''."
-			;;
-	esac
-
-	color="${color:-lightgray}"
-	case $urgency in
-		"low"|"normal")
-			;;
-		"critical")
-			color="red"
-			;;
-		""|"nogui"|NOGUI)
-			NOGUI=0
-			;;
-		*)
-			errexit "First parameter should be one of '[low|normal|critical|NOGUI]'"
-			;;
-	esac
-
-	if [ "${NOGUI}" -eq 0 ] # true
-	then
-		${NOTIFY} "${summary} - ${body}" "${color}"
-	else
-		${NOTIFY} "${summary}: ${body}" "${color}"
-		notify-send --urgency="${urgency}" --icon=gtk-info \
-					"${summary}" "${body}" || :
-	fi
-}
-
-function notify_desktop() {
-	local numparam=3
-	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
-	_notify_desktop NODEBUG "$@"
-}
-
-function notify_desktop_debug() {
-	local numparam=3
-	[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
-	_notify_desktop DEBUG "$@"
-}
-
 function notify_error() {
 	local message=${1:-}
 
@@ -217,19 +144,7 @@ function notify_error() {
 	else
 		message="Error: $*"
 	fi
-	notify "${message}" "red"
-}
-
-function notify_error_desktop() {
-	local message=${1:-}
-
-	if [ -z "${message}" ]
-	then
-		message="UNDEFINED ERROR"
-	else
-		message="Error: $*"
-	fi
-	notify_desktop critical ERROR "${message}"
+	_notify_stderr "${message}" "red"
 }
 
 function errexit() {
@@ -239,12 +154,64 @@ function errexit() {
 	exit 1
 }
 
+function notify_desktop() {
+	if ! ifinteractive
+	then
+		local numparam=3
+		[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
+
+		local urgency
+		local summary
+		local body
+		local color
+
+		urgency=${1}
+		summary=${2}
+		body=${3}
+
+		case $urgency in
+			"low")
+				color="lightgray"
+				;;
+			"normal")
+				color="white"
+				;;
+			"critical")
+				color="red"
+				;;
+			*)
+				errexit "First parameter should be one of '[low|normal|critical]'"
+				;;
+		esac
+
+		notify-send --urgency="${urgency}" --icon=gtk-info \
+					"${summary}" "${body}" || :
+	fi
+}
+
+function notify2() {
+	local message="${1:-}"
+	notify "${message}"
+	notify_desktop normal "${BASH_SOURCE[0]}" "${message}"
+}
+
+function notify_error_desktop() {
+	local message=${1:-}
+
+	if [ -z "${message}" ]
+	then
+		message="UNDEFINED ERROR"
+	else
+		message="$*"
+	fi
+	notify_desktop critical ERROR "${message}"
+}
+
 function errexit_desktop() {
 	local message=${1:-}
 
-	errexit "${message}"
 	notify_error_desktop "${message}"
-	exit 1
+	errexit "${message}"
 }
 
 

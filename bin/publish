@@ -52,8 +52,7 @@ function dropbox_file_status() {
 file="${*:-$(xclip -selection clipboard -out)}"
 if [ ! -f "${file}" ]
 then
-	notify_desktop critical "Dropbox Publish error" "File  \"${file}\" not found"
-	exit 1
+	errexit "Dropbox Publish error \nFile not found \n \"${file}\""
 fi
 
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
@@ -70,8 +69,7 @@ dropbox_puburl="$(dropbox sharelink "${pubfile}")"
 notify_debug "shared on ${dropbox_puburl}"
 if ! [[ ${dropbox_puburl:0:4} == http ]]
 then
-	notify_desktop critical "Dropbox Publish error" "sharelink failed, got: ${dropbox_puburl}"
-	exit 1
+	errexit "Dropbox Publish error \nsharelink failed, got: \n${dropbox_puburl}"
 fi
 
 bitly_url="$(bitly "${dropbox_puburl}" | tr -d '\n')"
@@ -81,10 +79,9 @@ echo -n "${bitly_url}" | xclip -in -selection clipboard
 status=($(dropbox_file_status))
 if [ "${status[0]}" -eq 0 ]
 then
-	notify_desktop normal "Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
-	notify					"Dropbox Published file $file" "uploaded to $dropbox_puburl\n\nshort url = $bitly_url"
+	notify2 "Dropbox Published file $file \nuploaded to $dropbox_puburl\n\nshort url = $bitly_url"
 else
-	notify					"Dropbox Publish error" "${status[1]}"
+	notify_error "Dropbox Publish error" "${status[1]}"
 fi
 
 exit "${status[0]}"

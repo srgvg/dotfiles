@@ -23,9 +23,8 @@ if $(/usr/bin/teamviewer daemon status |
 then
 	title="Disable systemd teamviewerd.service"
 	body="sudo systemctl disable teamviewerd.service"
-	echo "$title: $body"
-	notify_desktop critical "$title" "$body"
-	exit 1
+	errmsg="$title: \n$body"
+	errexit "${errmsg}"
 elif [ -n "${1:-}" ]
 then
 	# shellcheck disable=SC2048
@@ -33,11 +32,15 @@ then
 else
 	notify_debug "disabling auto start of teamviewer"
 	/usr/bin/teamviewer daemon disable
+
 	trap stop_teamviewer EXIT SIGINT
+
 	notify_debug "starting the teamviewer daemon"
 	/usr/bin/teamviewer daemon start
+
 	notify_debug "launching teamviewer"
 	/usr/bin/teamviewer
+
 	notify_debug "stopping the teamviewer daemon"
 	/usr/bin/teamviewer daemon stop
 fi
