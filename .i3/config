@@ -45,6 +45,8 @@ set $ws_tool0		10
 set $ws_chat		11
 set $ws_util_chat	12
 set $ws_util_pw		13
+set $ws_util_chat2	14
+set $ws_util_pw		13
 set $ws_util_music	21
 set $ws_util_logs	22
 
@@ -806,13 +808,14 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
 assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]				$ws_util_pw
+for_window	[title="KeePassXC-Browser"] floating enable
 
 # chat
 assign		[class="(HipChat|Franz)"]			$ws_util_chat
 assign		[title="Signal"]					$ws_util_chat
 for_window	[title="Signal"]					floating disable
-#assign		 [class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat
-for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable #disable
+assign		[class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat2
+for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating disable
 
 # Music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
