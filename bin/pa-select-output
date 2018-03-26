@@ -16,12 +16,13 @@ pulseaudio --check || pulseaudio --start
 
 
 function outputs() {
-	outputs=$(pactl list short sinks | awk '{print $1}' |
-				grep -v ^$ | sort -n | xargs)
+	outputs="$(pactl list short sinks | awk '{print $1}' |
+				grep -v ^$ | sort -n | xargs) "
 	current_sink=$(defaultsink)
 	# make the current default sink the first in the list, whilst keeping tyhe
 	# list circular sorted
-	echo "${current_sink} ${outputs#*${current_sink}} ${outputs%${current_sink}*}"
+	notify_debug "${current_sink}@@${outputs#*${current_sink} }@@${outputs%${current_sink} *}"
+	echo "${current_sink} ${outputs#*${current_sink} } ${outputs%${current_sink} *}"
 }
 
 function outputsnames() {
