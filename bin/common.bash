@@ -192,7 +192,7 @@ function notify_desktop() {
 function notify2() {
 	local message="${1:-}"
 	notify "${message}"
-	notify_desktop normal "${BASH_SOURCE[0]}" "${message}"
+	notify_desktop normal "${BASH_SOURCE[1]}" "${message}"
 }
 
 function notify_error_desktop() {
