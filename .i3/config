@@ -45,10 +45,11 @@ set $ws_tool0		10
 set $ws_chat		11
 set $ws_util_chat	12
 set $ws_util_pw		13
-set $ws_util_chat2	14
+set $ws_util_chat2	12
 set $ws_util_pw		13
-set $ws_util_music	21
-set $ws_util_logs	22
+set $ws_util_fw		20
+set $ws_util_logs	21
+set $ws_util_music	22
 
 #set $ws_
 
@@ -757,6 +758,8 @@ for_window [instance="libreoffice"]														border normal
 for_window [class="Files" instance="small"]												floating enable, resize set 700 300
 for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
 
+for_window [class="Gufw.py" instance="gufw.py" title="Firewall$"]						floating disable
+assign [class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util_fw
 
 ###############################################################################
 #
@@ -863,6 +866,7 @@ exec "franz &"
 exec "spotify &"
 exec "dropbox start"
 exec "alarm-clock-applet --hidden &"
+exec "gufw &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "sleep 10; i3-launch-jobs"
