@@ -127,6 +127,7 @@ function _addpreferences() {
 
 function _query_parameter() {
 	local QUERY=""
+	# shellcheck disable=SC2048
 	for p in $*
 	do
 		if [ -z "${QUERY}" ]
@@ -160,6 +161,7 @@ esac
 CLASS=browser-${PROFILECLASS}
 PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
 case ${PROFILECLASS} in
+	google*)			shift;;
 	serge*)				shift;;
 	facebook*)			shift;;
 	radio)				shift;;
@@ -167,6 +169,7 @@ case ${PROFILECLASS} in
 	g)	# google search
 		[ $PROFILECLASS != $myname ] && shift
 		URL="https://www.google.com/search?q"
+		# shellcheck disable=SC2048
 		QUERY=$(_query_parameter $*)
 		shift $#
 		_set_tmp
@@ -175,6 +178,7 @@ case ${PROFILECLASS} in
 	i)	# google image search
 		[ $PROFILECLASS != $myname ] && shift
 		URL="https://www.google.com/search?as_st=y&tbs=isz%3Alt%2Cislt%3A2mp&tbm=isch&source=hp&biw=1920&bih=973&ei=k1VfWu2jKYjKkwXJorDoDQ&q"
+		# shellcheck disable=SC2048
 		QUERY=$(_query_parameter $*)
 		shift $#
 		_set_tmp
