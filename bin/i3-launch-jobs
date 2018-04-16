@@ -18,7 +18,7 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 	mqtt-notify.py
 	autocutsel -verbose -selection CLIPBOARD
 	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
-	setbg loop linux
+	setbg default
 
 	#rerandr3 daemon
 	#autocutsel -verbose -selection PRIMARY
@@ -67,8 +67,9 @@ do
 	i3-launch-job $line
 done
 
+notify_debug "Check if there is an attached screen"
 if ! pgrep -f "screen -D -r i3jobs" >/dev/null
 then
-	# to background in case this script is run interactively
-	/usr/bin/terminator --role i3jobs --execute screen -D -r i3jobs &
+	notify "start a terminal and attach"
+	/usr/bin/terminator --role i3jobs --execute screen -D -r i3jobs & >/dev/null 2>&1
 fi
