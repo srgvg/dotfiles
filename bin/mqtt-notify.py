@@ -17,13 +17,14 @@ import dbus
 import paho.mqtt.client as paho
 import socket
 import os
+import json
 
 app_name = 'mqtt-notify'
 mqtt_client_name = (app_name + '-' + socket.gethostname() + '-'
                     + str(os.getpid()))
 broker = '127.0.0.1'
 port = 1883
-topic = 'irssi'
+topic = 'weechat'
 qos = 2
 
 
@@ -47,12 +48,43 @@ def on_disconnect(client, userdata, rc):
 
 
 def on_message(client, userdata, msg):
-    ''' Send a notification after a new message has arrived'''
-    message = msg.payload.split('\n')
-    summary = message[0]
-    body = '\n'.join(message[1:])
-    print timestamp(), summary, body
-    notify(summary=summary, body=body)
+    ''' Send a notification after a new message has arrived
+        json as per weechat mqtt_notify.py script
+        {
+        "sender": "KirkMcDonald", "tags": "irc_privmsg,notify_message,prefix_nick_230,nick_KirkMcDonald,host_~Kirk@python/site-packages/KirkMcDonald,log1",
+        "buffer": "#python", "timestamp": "1522091241", "displayed": 1, "highlight": 0, "message": "phinxy: That is strange.", "data": ""
+        }
+
+        {
+        "sender": "MichaelRigart_ggl", "tags": "irc_privmsg,notify_private,prefix_nick_230,nick_MichaelRigart_ggl,host_michael@netronix.be,log1",
+        "buffer": "MichaelRigart_ggl", "timestamp": "1522091293", "displayed": 1, "highlight": 0, "message": "wb", "data": "private"
+        }
+
+        {
+        "sender": "gobelin", "tags": "irc_privmsg,notify_message,prefix_nick_250,nick_gobelin,host_~gobelin@minecraft.ginsys.net,log1",
+        "buffer": "#ginsys", "timestamp": "1522307767", "displayed": 1, "highlight": 0, "message": "test michael@netronix.be", "data": ""
+        }
+
+        {
+        "sender": "freenode:gobelin", "tags": "irc_privmsg,notify_private,prefix_nick_250,nick_gobelin,host_~gobelin@minecraft.ginsys.net,log1",
+        "buffer": "highmon", "timestamp": "1522308236", "displayed": 1, "highlight": 0, "message": "[gobelin] hi", "data": "private"
+        }
+
+    '''
+
+    message = json.loads(msg.payload)
+
+    if (message['buffer'] != 'highmon' and
+            message['displayed'] == 1 and (
+            message['highlight'] == 1 or
+            message['data'] == 'private' or
+            'notify_private' in message['tags'])):
+        summary = message['sender']
+        body = '%s (%s)' % (message['message'], message['buffer'])
+        print timestamp(), summary, body
+        notify(summary=summary, body=body)
+    #else:
+    #    print timestamp(), message
 
 
 def notify(summary, body):

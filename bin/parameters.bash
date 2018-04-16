@@ -9,7 +9,7 @@ BACKGROUND_PICTURES="$HOME/Pictures/Backgrounds"
 
 DEBUG="${DEBUG:-0}"
 
-IRC_HOST="irssi_host"
+IRC_HOST="irchost"
 
 PA_SINK_DEFAULT_NAME="Built-in Audio Analog Stereo"
 
@@ -26,7 +26,7 @@ HOME_LAN_SONOS_IP="172.31.32.197"
 HOME_LAN_SUBNET="172.31.32"
 
 SETBG_BACKGROUND="$HOME/.background.png"
-SETBG_DEFAULT_BACKGROUND="${BACKGROUND_PICTURES}/default.jpg"
+SETBG_DEFAULT_BACKGROUND="${BACKGROUND_PICTURES}/default" # no trailing slash if dir
 SETBG_LOOP_DELAY=300
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"

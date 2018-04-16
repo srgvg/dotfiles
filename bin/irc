@@ -12,6 +12,8 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+WEECHAT_FILEAWAY='/home/serge/.weechat/fileaway.available'
+
 # make sure the irssi specific control master ends, so mqtt-irssi disconnects
 on_exit() {
     # stop the control master
@@ -28,16 +30,15 @@ then
 	# (which happens when closing the lid)
 	# But. We still have a timemout for host resolution. Hence & backgrounded
     ssh ${IRC_HOST} -O check >/dev/null 2>&1 \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/1\\n' ||: \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -d -X lockscreen &>/dev/null &
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 "rm -fv $WEECHAT_FILEAWAY"
 elif [ "${action}" = "unlock" ]
 then
 	# same same
 	ssh ${IRC_HOST} -O check &>/dev/null \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 pkill -9 irclock &>/dev/null ||: \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 screen -S irc -p 0 -X stuff '\\n/away\\n' &
+		&& ssh ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
 else
     trap on_exit INT TERM EXIT
-    ssh ${IRC_HOST} -t "export LOCKPRG=~/bin/irclock; ~/bin/launch-screen irc irssi"
+	ssh ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
+    ssh ${IRC_HOST} -t "tmux new-session -A -s irc weechat"
 fi
 

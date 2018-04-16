@@ -1,0 +1,73 @@
+# https://gist.github.com/pascalpoitras/8406501
+
+/mouse disable
+/secure passphrase $foo
+/secure set freenode_svg $foo
+
+/set irc.server_default.nicks svg
+/set irc.server_default.ssl_verify on
+/set irc.server_default.capabilities "account-notify,away-notify,cap-notify,multi-prefix,server-time,znc.in/self-message"
+
+/server add freenode chat.freenode.net/6697 -ssl -autoconnect
+/set irc.server.freenode.sasl_password "${sec.data.freenode_svg}"
+/set irc.server.freenode.sasl_username "svg"
+/set irc.server.freenode.sasl_password "svg/freenode:${sec.data.freenode_svg}"
+/set irc.server.freenode.command_delay 5
+
+/set weechat.plugin.autoload "*,!lua,!tcl,!fifo,!xfer,!guile,!javascript"
+
+
+
+
+
+/set aspell.check.default_dict en
+/set aspell.check.suggestions 3
+/set aspell.color.suggestion *green
+/aspell enable
+
+/trigger add setdict signal *,irc_in2_join
+/trigger set setdict conditions "${nick} == ${info:irc_nick,${server}} && ${channel} =~ [.-](fr|nl)$ && ${aspell.dict.irc.${server}.${channel}} =="
+/trigger set setdict regex "/.*[.-](fr|it|es)$/${re:1}/"
+/trigger set setdict command "/set aspell.dict.irc.${server}.${channel} ${tg_signal_data}"
+
+
+
+
+
+/set irc.look.server_buffer independent
+/set buflist.format.buffer "${format_number}${indent}${eval:${format_name}}${format_hotlist} ${color:31}${buffer.local_variables.filter}${buffer.local_variables.buflist}"
+/set buflist.format.buffer_current ${if:${type}==server?${color:*white,31}:${color:*white}}${hide:>,${buffer[last_gui_buffer].number}} ${indent}${if:${type}==server&&${info:irc_server_isupport_value,${name},NETWORK}?${info:irc_server_isupport_value,${name},NETWORK}:${name}} ${color:31}${buffer.local_variables.filter}${buffer.local_variables.buflist}
+/set buflist.format.hotlist " ${color:239}${hotlist}${color:239}"
+/set buflist.format.hotlist_highlight "${color:163}"
+/set buflist.format.hotlist_message "${color:229}"
+/set buflist.format.hotlist_private "${color:121}"
+/set buflist.format.name "${if:${type}==server?${color:white}:${color_hotlist}}${if:${type}==server||${type}==channel||${type}==private?${if:${cutscr:8,+,${name}}!=${name}?${cutscr:8,${color:${weechat.color.chat_prefix_more}}+,${if:${type}==server&&${info:irc_server_isupport_value,${name},NETWORK}?${info:irc_server_isupport_value,${name},NETWORK}:${name}}}:${cutscr:8, ,${if:${type}==server&&${info:irc_server_isupport_value,${name},NETWORK}?${info:irc_server_isupport_value,${name},NETWORK}                              :${name}                              }}}:${name}}"
+/set buflist.format.number "${if:${type}==server?${color:black,31}:${color:239}}${number}${if:${number_displayed}?.: }"
+/set weechat.bar.buflist.size 18
+/set weechat.bar.buflist.size_max 18
+
+
+
+
+
+/bar del title
+/bar add activetitle window top 1 0 buffer_title
+/set weechat.bar.activetitle.priority 500
+/set weechat.bar.activetitle.conditions "${active}"
+/set weechat.bar.activetitle.color_fg white
+/set weechat.bar.activetitle.color_bg 31
+/set weechat.bar.activetitle.separator on
+
+
+
+
+# Bar input
+/bar add rootinput root bottom 1 0 [buffer_name]+[input_prompt]+(away),[input_search],[input_paste],input_text
+/set weechat.bar.rootinput.color_bg black
+/set weechat.bar.rootinput.priority 1000
+/bar del input
+/bar set rootinput name input
+# Note: the built-in input bar is of type window. I prefer a input bar of type root which means it will be outside any window. At this time, you can't change the type of a bar. So we delete the status bar and create a new one.
+
+/set weechat.look.highlight
+

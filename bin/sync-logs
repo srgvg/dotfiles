@@ -9,11 +9,17 @@ set -o errexit
 set -o pipefail
 
 
-# load some defaults
+# shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+ARG=""
+if ifdebug1
+then
+	ARG="-v"
+fi
 if      ssh ${IRC_HOST} -O check >/dev/null 2>&1
 then
-        ionice rsync -av ${IRC_HOST}:/home/serge/logs/irssi/ /home/serge/logs/irssi/
+		ionice rsync $ARG -a ${IRC_HOST}:/home/serge/.weechat/ $HOME/.weechat/ --exclude=logs/ --delete
+        ionice rsync $ARG -a ${IRC_HOST}:$HOME/.weechat/logs/ $HOME/logs/weechat/ --delete
 fi
 
