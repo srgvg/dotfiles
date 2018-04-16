@@ -32,5 +32,5 @@ esac
 brightness=$(xbacklight -get)
 brightness=$(printf "%.0f" ${brightness})
 
-notify-send "Brightness" "$brightness" -t 800 -i xfpm-brightness-lcd -h int:value:$brightness -c device -u low
+notify-send "Brightness" "$brightness" -t 1200 -i xfpm-brightness-lcd -h int:value:$brightness -c device -u low
 
