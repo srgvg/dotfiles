@@ -26,6 +26,13 @@ function ifdebug3() {
 	[ "${DEBUG}" -ge 3 ]
 }
 
+function set_xtrace() {
+	if ifdebug2
+	then
+		set -o xtrace
+	fi
+}
+
 function ifinteractive() {
 	tty --silent
 }
@@ -66,7 +73,6 @@ function _check_debug_logging() {
 		if ifdebug3
 		then
 			COLOR_DEBUG="red"
-			set -o xtrace
 			set -o functrace
 			set -o verbose
 			# automatically debug subprocesses too
@@ -76,34 +82,31 @@ function _check_debug_logging() {
 				awk '{print $2}' | grep -v '^_' | sort | xargs)" "${COLOR_DEBUG}"
 		elif ifdebug2
 		then
-			COLOR_DEBUG="orange"
-			set -o xtrace
+			COLOR_DEBUG="yellow"
 			set -o functrace
 		else #ifdebug1
-			COLOR_DEBUG="purple"
+			COLOR_DEBUG="green"
 		fi
 		# shellcheck disable=SC2154
 		notify_debug "DEBUG LEVEL ${DEBUG} FROM ${BASH_SOURCE[*]}" "${COLOR_DEBUG}"
 	fi
+	set_xtrace
 }
 
 
 function _notify_stdout() {
 	# private function
 
-	if ifinteractive
-	then
-		local message="${1:-}"
+	local message="${1:-}"
 
-		local color="${2:-white}"
-		local colorvar
-		local echo_color
-		colorvar="echo_${color}"
-		echo_color="${!colorvar}"
+	local color="${2:-white}"
+	local colorvar
+	local echo_color
+	colorvar="echo_${color}"
+	echo_color="${!colorvar}"
 
-		# shellcheck disable=SC2154
-		echo -e "${echo_color}$(timestamp) ${message} (${SECONDS}s)${echo_normal}" >&1
-	fi
+	# shellcheck disable=SC2154
+	echo -e "${echo_color}$(timestamp) ${message} (${SECONDS}s)${echo_normal}" >&1
 }
 
 function _notify_stderr() {
@@ -121,21 +124,26 @@ function _notify_stderr() {
 }
 
 function notify() {
+	{ set +x; } 2>/dev/null
 	local message="${1:-}"
 	local color="${2:-lightgray}"
 	_notify_stdout "${message}" "${color}"
+	set_xtrace
 }
 
 function notify_debug() {
+	{ set +x; } 2>/dev/null
 	if ifdebug1
 	then
 		local message="${1:-}"
-		local color="${2:-lightgray}"
+		local color="${COLOR_DEBUG:-lightgray}"
 		_notify_stderr "${message}" "${color}"
 	fi
+	set_xtrace
 }
 
 function notify_error() {
+	{ set +x; } 2>/dev/null
 	local message=${1:-}
 
 	if [ -z "${message}" ]
@@ -145,9 +153,11 @@ function notify_error() {
 		message="Error: $*"
 	fi
 	_notify_stderr "${message}" "red"
+	set_xtrace
 }
 
 function errexit() {
+	{ set +x; } 2>/dev/null
 	local message=${1:-}
 
 	notify_error "${message}" >&2
@@ -155,6 +165,7 @@ function errexit() {
 }
 
 function notify_desktop() {
+	{ set +x; } 2>/dev/null
 	if ! ifinteractive
 	then
 		local numparam=3
@@ -187,15 +198,18 @@ function notify_desktop() {
 		notify-send --urgency="${urgency}" --icon=gtk-info \
 					"${summary}" "${body}" || :
 	fi
+	set_xtrace
 }
 
 function notify2() {
+	{ set +x; } 2>/dev/null
 	local message="${1:-}"
 	notify "${message}"
 	notify_desktop normal "${BASH_SOURCE[1]}" "${message}"
 }
 
 function notify_error_desktop() {
+	{ set +x; } 2>/dev/null
 	local message=${1:-}
 
 	if [ -z "${message}" ]
@@ -208,6 +222,7 @@ function notify_error_desktop() {
 }
 
 function errexit_desktop() {
+	{ set +x; } 2>/dev/null
 	local message=${1:-}
 
 	notify_error_desktop "${message}"
