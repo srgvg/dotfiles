@@ -13,7 +13,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-action=${1:-toggle}
+action=${1:-}
 SONOS_VOLUME_CACHE="${SONOS_VOLUME_CACHE:=$HOME/.cache/sonos-volume}"
 step=5
 
