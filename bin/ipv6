@@ -10,7 +10,7 @@ set -o pipefail
 
 
 # shellcheck disable=SC1090
-source "$HOME/bin/common.bash"
+#source "$HOME/bin/common.bash"
 
 [ `id -u` -eq 0 ] || exec sudo $0 $*
 
