@@ -26,16 +26,18 @@ set $suspend		systemctl suspend
 
 # color defines
 set $dark			#000000
+set $darkgrey		#444444
+set $lightgrey		#BBBBBB
 set $light			#FFFFFF
-set $grey			#777777
-set $grey2			#555555
-set $focus			#2890FF
-set $ginsys			#1D396A
+
 set $red			#FF0000
+set $ginsys			#1D396A
+
 set $IGNORED		#000000
 
 # window parameters
-set $defaultborder	pixel 5
+set $defaultborder	pixel 4
+set $noborder		pixel 0
 
 # workspaces
 set $ws_www			1
@@ -43,13 +45,9 @@ set $ws_tool2		8
 set $ws_tool1		9
 set $ws_tool0		10
 set $ws_chat		11
-set $ws_util_chat	12
-set $ws_util_pw		13
-set $ws_util_chat2	12
-set $ws_util_pw		13
-set $ws_util_fw		20
-set $ws_util_logs	21
-set $ws_util_music	22
+set $ws_logs		20
+set $ws_util    	21
+set $ws_music		22
 
 #set $ws_
 
@@ -94,32 +92,33 @@ workspace 22	output $outsec
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
-font pango:Monospace 8, Terminus 8
+font pango:FontAwesome Solid 10, Monospace 10
 
 ##############################################################################################################################################################
 #
 ## Client Container Colors
 #
 
-# border colour is the color for the 2 horizontal lines of the titlebar; the
-# border of the whole container is the same as the background of the title bar!
+# !! border colour is the color for the 2 horizontal lines of the titlebar; the
+# !! border of the whole container is the same as the background of the title bar
+# The cleanest is to keep border and background the same
 #
 ## client windows		border				background			text				indicator (indicates vertical or horizontal split)
 #
 # A client which is not the focused one of its container.
-client.unfocused		$dark				$grey2				$light				$dark
+client.unfocused		$dark				$dark				$lightgray			$dark
 
 # A client currently focused in its container, but does not have focus now.
-client.focused_inactive $grey				$grey2				$light				$dark
+client.focused_inactive $dark				$dark				$lightgrey			$dark
 
 # A client which currently has the focus.
-client.focused			$focus				$focus				$dark				$ginsys
+client.focused			$lightgrey			$lightgrey			$dark				$lightgrey
 
 # A client which has its urgency hint activated.
 client.urgent			$red				$red				$light				$red
 
 #Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder		$IGNORED			$dark				$dark				$IGNORED
+client.placeholder		$IGNORED			$dark				$lightgrey			$IGNORED
 
 ##############################################################################################################################################################
 #
@@ -129,7 +128,7 @@ bar {
 		colors {
 
 			# Text color to be used for the separator.
-			separator			$ginsys
+			separator			$light
 
 			# Text color to be used for the statusline.
 			statusline			$light
@@ -142,25 +141,24 @@ bar {
 
 			# workspace button when the workspace does not have focus and is not
 			# active (visible) on any output. This will be the case for most workspaces.
-			inactive_workspace	$dark				$dark			$grey
+			inactive_workspace	$dark				$dark			$lightgrey
 
 			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
 			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-			active_workspace	$grey				$dark			$grey
+			active_workspace	$lightgrey			$darkgray		$lightgrey
 
 			# color for a workspace button when the workspace has focus.
-			focused_workspace	$light				$ginsys			$light
+			focused_workspace	$light				$darkgray		$light
 
 			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-			urgent_workspace	$red				$dark		   $red
+			urgent_workspace	$red				$dark			$red
 
 		}
 
 		id main
-		## status_command i3status
-		# https://github.com/ultrabug/py3status
-		#status_command py3status -c ~/.i3/i3status.conf -d -l /home/serge/.log/pystatus.log
-		status_command py3status | ~/.i3/i3status_wrapper.py
+		## status_command
+		#status_command py3status | ~/.i3/i3status_wrapper.py
+		status_command		~/.i3/i3pystatusconf.py
 
 		# tray_output <none|primary|output>
 		tray_output primary
@@ -168,12 +166,12 @@ bar {
 		# By default, a padding of 2 pixels is used for the upper, lower and
 		# right-hand side of the tray area and between the individual icons.
 		# tray_padding <px> [px]
-		tray_padding 0
+		tray_padding 1
 
 		# custom symbol to be used for the separator as opposed to the
 		# vertical, one pixel thick separator.
 		# separator_symbol <symbol>
-		separator_symbol "■" # unicode ctrl+shift+25a0
+		separator_symbol "⸱" # unicode 2e31
 
 		# position <top|bottom>
 		position top
@@ -191,8 +189,7 @@ bar {
 		#  the order in which fonts are “declared” for use in i3bar actually
 		#  matters. The first font in the list shall be the one containing
 		#  icons, the latter the one for plain text
-		#font pango:FontAwesome 8, Terminus 8
-		font pango:FontAwesome 10, Terminus 10
+		font pango:FontAwesome Solid 10, Terminus 10
 
 		# workspace_buttons <yes|no>
 		workspace_buttons yes
@@ -202,7 +199,6 @@ bar {
 		# or not. This is useful if you want to hide the workspace buttons but
 		# still be able to see the current binding mode indicator.
 		binding_mode_indicator yes
-
 }
 
 ##############################################################################################################################################################
@@ -527,10 +523,10 @@ mode "$mode_moveit" {
 		bindsym $mod+Control+$Alt+m mode "default"
 }
 
-set $mode_system x Exit		|	  [Shift]  d	 [de-]activate Debugging
+set $mode_system x Exit | [Shift] d [de-]activate Debugging
 bindsym $mod+Control+$Alt+q mode "$mode_system"
 mode "$mode_system" {
-	bindsym x exec --no-startup-id i3-msg "exit"
+	bindsym x exec --no-startup-id i3-msg "quit"
 	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
 	bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
 	# back to normal: Enter or Escape
@@ -573,8 +569,8 @@ bindsym $mod+$Alt+x				kill
 bindsym $mod+q					exec i3-quickswitch --prompt
 
 # start dmenu (a program launcher)
-bindsym $mod+r					exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
-									-fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+#bindsym $mod+r					exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
+bindsym $mod+r					exec dmenu_run -i -p "Command:" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
 
 # reload the configuration file
 bindsym $mod+Shift+r			reload
@@ -598,9 +594,10 @@ bindsym $mod+d					exec nemo
 bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HOME/tmp
 
 # start browsers
-bindsym $mod+Control+o			exec google-chrome serge
-bindsym $mod+Control+Shift+o	exec google-chrome serge --incognito
-bindsym $mod+o					exec google-chrome
+bindsym $mod+Control+o			exec chrom serge
+bindsym $mod+Control+Shift+o	exec chrom google
+bindsym $mod+o					exec chrom
+bindsym $mod+Shift+o			exec chrom TMP
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
@@ -693,7 +690,9 @@ bindsym $mod+Print						exec --no-startup-id publish
 #
 # !!! Maar volgens mij is het omgekeerd. !!!
 #
-for_window [ class=".*" ]	border $defaultborder
+#for_window [ class=".*" ]	border $defaultborder
+#for_window [ con_id="__focused__" ] border $defaultborder
+#for_window [ con_id="(?!__focused__)" ] border $noborder
 
 
 ###############################################################################
@@ -708,7 +707,7 @@ for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
 for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
 #for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
 for_window [title="Pages Unresponsive"] floating enable
-for_window [class="feh" instance="feh"] floating enable, border none
+for_window [class="feh" instance="feh"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"] resize set 700 700
 for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
@@ -745,10 +744,11 @@ for_window [class="Gnome-terminal"]														floating enable
 #
 # Tools
 #
-for_window [window_role="SSHASKPASS"]													floating enable, border pixel 10
+for_window [window_role="SSHASKPASS"]													floating enable, border pixel 5
 for_window [class="Gcalctool"]															floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]				floating enable
-for_window [class="Nautilus" instance="file_progress"]									floating enable
+#for_window [class="Nautilus" instance="file_progress"]									floating enable
+for_window [class="Nautilus" ]															floating enable
 for_window [class="Nemo" instance="nemo" title="Plugins"]								floating enable
 for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]									floating enable
@@ -757,17 +757,19 @@ for_window [title="Event Tester"]														floating enable # xev
 for_window [instance="libreoffice"]														border normal
 for_window [class="Files" instance="small"]												floating enable, resize set 700 300
 for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
+for_window [class="flameshot" instance="flameshot"]										floating enable
 
-for_window [class="Gufw.py" instance="gufw.py" title="Firewall$"]						floating disable
-assign [class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util_fw
+for_window [class="Gufw.py" instance="gufw.py" title="Firewall$"]						floating disable,
+assign [class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
 
 ###############################################################################
 #
 # Browsers
 #
-assign		[class="^(browser-)(serge|facebook)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
+assign		[class="^(browser-)(serge|google)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
+for_window	[class="^(browser-)(serge|google)"]											layout tabbed
 for_window	[class="^(browser-tmp)"]													floating enable
-assign		[class="^(browser-radio)"]													$ws_util_music
+assign		[class="^(browser-radio)"]													$ws_music
 for_window	[class="^(browser-radio)"]													floating disable, layout splith
 
 
@@ -810,24 +812,22 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]				$ws_util_pw
-for_window	[title="KeePassXC-Browser"] floating enable
+assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]				$ws_util
+for_window  [class="keepassxc" instance="keepassxc"] resize set 70ppt 100ppt
+for_window	[title="KeePassXC-Browser"] floating enables
 
 # chat
-assign		[class="(HipChat|Franz)"]			$ws_util_chat
-assign		[title="Signal"]					$ws_util_chat
-for_window	[title="Signal"]					floating disable
-assign		[class="Keybase" instance="keybase" title="Keybase"]  $ws_util_chat2
-for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating disable
+#assign		[class="Keybase" instance="keybase" title="Keybase"]  $ws_util
+for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable
 
 # Music
-assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_util_music
+assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_music
 for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window	[class="Spotify"]					move to workspace $ws_util_music
+for_window	[class="Spotify"]					move to workspace $ws_music
 
-assign		[window_role="i3jobs"]				$ws_util_logs
+assign		[window_role="i3jobs"]				$ws_logs
 
 ###############################################################################
 #
@@ -857,15 +857,15 @@ exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
 exec_always --no-startup-id "xcompmgr &"
 
 # Desktop Apps
-exec "google-chrome serge &"
+exec "chrom serge & chrom google &"
 exec "pasystray &"
 exec "nm-applet &"
 exec "system-config-printer-applet &"
 exec "keepassxc &"
-exec "franz &"
+exec "run_keybase &"
 exec "spotify &"
 exec "dropbox start"
-exec "alarm-clock-applet --hidden &"
+#exec "alarm-clock-applet --hidden &"
 exec "gufw &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
