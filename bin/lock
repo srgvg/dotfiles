@@ -15,7 +15,8 @@ set -o pipefail
 
 # always log
 # shellcheck disable=SC2034
-[ "${DEBUG:-0}" -eq 0 ] && FORCE_DEBUG_LOGGING="TRUE"
+[ -z "${SYSTEMDSERVICE:-}" ] && [ "${DEBUG:-0}" -eq 0 ] &&
+	FORCE_DEBUG_LOGGING="TRUE"
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -151,13 +152,13 @@ function pre_lock() {
 	 ) &
 
 	notify "Lock remote irssi screen."
-	irc lock ||:
+	(irc lock ||:)&
 }
 
 function perform_lock() {
 	# start the real lock command in the background, set the PID file,
 	# then wait for the lock to end (when unlocked)
-	if ifdebug1
+	if ifdebug2
 	then
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
 		time2 sleep ${LOCKSLEEP} &
@@ -228,6 +229,7 @@ function post_lock() {
 
 function setpid() {
 	PID=${1:-$$}
+	mkdir -p ${PIDPATH}
 	echo $PID >"${PIDFILE}"
 	notify "Lock process started with pid $PID, set in ${PIDFILE}."
 }

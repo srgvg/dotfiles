@@ -20,7 +20,7 @@ action="${1:-select}"
 notify_debug "Got action '${action}'"
 case ${action} in
     select)
-        options="--select --bordersize 3 --highlight --color 0.3,0.4,0.6,0.4 "
+        options="--select --bordersize 3 --highlight --color 0.3,0.4,0.6,0.4"
         ;;
     window)
         options="--window $(xdotool getactivewindow 2>/dev/null)"
@@ -38,11 +38,14 @@ esac
 grabcommand="${util} ${options} ${imagefile}"
 notify_debug "executing ${grabcommand}"
 
-ifdebug3 && grabcommand="echo ${grabcommand}"
+if ifdebug3
+then
+	grabcommand="echo ${grabcommand}"
+fi
 if ${grabcommand}
 then
 	notify2 "Screenshot ${action} saved to ${imagefile}"
-    echo -n ${imagefile} | xclip -in -selection clipboard
+	echo -n ${imagefile} | xclip -in -selection clipboard
 else
 	errexit "Screenshot ${action} failed"
 fi

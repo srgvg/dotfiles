@@ -14,7 +14,7 @@ source "$HOME/bin/common.bash"
 
 ## Parameters
 SETBG_BACKGROUND="${SETBG_BACKGROUND:-$HOME/.background.png}"
-SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default.jpg}"
+SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default}" # no trailing slash!
 SETBG_LOOP_DELAY="${SETBG_LOOP_DELAY:-900}"
 LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
 p1="${1:-}"
@@ -121,7 +121,7 @@ showpath() {
 notifypath() {
     # show and notify which picture is used
 	showpath
-	notify_desktop low "${filename}" "${dirname}"
+	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}/${filename}"
 }
 
 setbg() {
