@@ -24,10 +24,13 @@ function _cleanup() {
 }
 
 function _set_tmp() {
+	NOFLOAT=""
+	[ "${PROFILECLASS}" = "TMP" ] && NOFLOAT=1
 	PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
 	PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
 	CLASS="browser-${PROFILENAME}"
 	PROFILECLASS="${PROFILENAME}"
+	[ -n "${NOFLOAT}" ] && PROFILECLASS="${PROFILECLASS/tmp/TMP}"
 	CACHEPATH="${CACHEDIR}/${PROFILENAME}"
 
 	SWITCHES="${SWITCHES} --no-first-run"
@@ -158,14 +161,11 @@ case ${myname} in
 		;;
 esac
 
-CLASS=browser-${PROFILECLASS}
 PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
 case ${PROFILECLASS} in
-	google*)			shift;;
-	serge*)				shift;;
-	facebook*)			shift;;
+	serge)				shift;;
+	google)				shift;;
 	radio)				shift;;
-	bryxx)				shift;;
 	g)	# google search
 		[ $PROFILECLASS != $myname ] && shift
 		URL="https://www.google.com/search?q"
@@ -184,13 +184,20 @@ case ${PROFILECLASS} in
 		_set_tmp
 		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
 		;;
+	TMP) # special option to have a temp session as tiling window
+		set -x
+		PROFILECLASS="TMP"
+		shift
+		_set_tmp
+		trap _cleanup EXIT
+		;;
 	*)
 		_set_tmp
 		trap _cleanup EXIT
 		;;
 esac
 
-
+CLASS=browser-${PROFILECLASS}
 
 ARGS=("$@")
 
