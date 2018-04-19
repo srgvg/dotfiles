@@ -621,10 +621,14 @@ bindsym $mod+Control+n			exec nm-toggle-wifi
 
 bindsym XF86AudioLowerVolume			exec --no-startup-id i3-volume down
 bindsym XF86AudioRaiseVolume			exec --no-startup-id i3-volume up
+bindsym Shift+XF86AudioLowerVolume		exec --no-startup-id sonos volume -10
+bindsym Shift+XF86AudioRaiseVolume		exec --no-startup-id sonos volume +10
 bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
 
 bindsym $mod+Control+comma				exec --no-startup-id i3-volume down
 bindsym $mod+Control+period				exec --no-startup-id i3-volume up
+bindsym $mod+Shift+Control+comma		exec --no-startup-id sonos volume -10
+bindsym $mod+Shift+Control+period		exec --no-startup-id sonos volume +10
 bindsym $mod+Control+slash				exec --no-startup-id i3-volume toggle
 
 bindsym XF86AudioPrev					exec --no-startup-id playerctl previous
