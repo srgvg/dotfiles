@@ -20,7 +20,7 @@ status.register("shell",
                 ignore_empty_stdout=True,
                 color=COLIN,
                 command="i3pystatus-commands wifi",
-                interval=3)
+                interval=2)
 
 status.register("keyboard_locks",
                 color=COLIN,
@@ -31,7 +31,8 @@ status.register("keyboard_locks",
 status.register("backlight",
                 color=COLIN,
                 transforms={'percentage': lambda cdict: round((cdict["brightness"] / cdict["max_brightness"]) * 10)},
-                format=" {percentage}",)
+                format=" {percentage}",
+                interval=2)
 
 status.register("clock",
                 color=COLIN,
@@ -74,20 +75,20 @@ status.register("battery",
                 status={"DIS": "",
                         "CHR": "",
                         "FULL": "",},
-                full_color=COLHW,
-                charging_color="#ff7700",)
+                charging_color="#ff7700",
+                full_color=COLHW,)
 
 status.register("temp",
                 color=COLHW,
                 format=" {temp}°C")
 
+status.register("cpu_freq",
+                color=COLHW,
+                format="{avgg}GHz")
+
 status.register("load",
                 color=COLHW,
                 format=" {avg1} {avg5} {avg15} {tasks}")
-
-status.register("cpu_freq",
-                color=COLHW,
-                format=" {avgg}GHz")
 
 status.register("disk",
                 color=COLHW,
