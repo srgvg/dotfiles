@@ -212,11 +212,11 @@ function post_lock() {
 	if ! systemdservice
 	then
 		# re-renable music if it was playing
-		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
-		then
-			notify "Restart music player."
-			playerctl play || notify "Could not start the music player." >&2
-		fi
+		#if [ "${PLAYERCTLSTATUS}" = "Playing" ]
+		#then
+		#	notify "Restart music player."
+		#	playerctl play || notify "Could not start the music player." >&2
+		#fi
 		if [ "${MUTED}" = "no" ]
 		then
 			notify "Unmute the sounds again."

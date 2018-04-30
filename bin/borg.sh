@@ -9,6 +9,7 @@ REPOSITORY=rsync.net:minos
 command=${1:-list}
 shift
 
-echo borg $command --remote-path /usr/local/bin/borg1/borg1 ${*:-$REPOSITORY}
-borg $command --remote-path /usr/local/bin/borg1/borg1 ${*:-$REPOSITORY}
+set -x
+borg $command ---info --debug  -remote-path /usr/local/bin/borg1/borg1 ${*:-$REPOSITORY}
+set +x
 
