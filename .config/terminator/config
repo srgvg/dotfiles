@@ -70,17 +70,19 @@
 [profiles]
   [[default]]
     audible_bell = True
-    background_darkness = 0.6
+    background_darkness = 0.7
     background_type = transparent
     copy_on_selection = True
     cursor_blink = False
     cursor_color = "#babdb6"
     cursor_color_fg = False
-    font = AT&T 4425 Bold 11
+    # https://fontlibrary.org/en/font/fantasque-sans-mono
+    font = FantasqueSansMono NF 13
     foreground_color = "#ffffff"
     scrollback_infinite = True
     scrollbar_position = hidden
     show_titlebar = False
     urgent_bell = True
+    use_system_font = False
     visible_bell = True
     word_chars = "-./%&#_"
