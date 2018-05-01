@@ -32,15 +32,17 @@ for key, val in DEFAULT_OPTIONS.items():
     if not w.config_is_set_plugin(key):
         w.config_set_plugin(key, val)
 
-w.hook_print("", "notify_message", "", 1, "on_msg", "")
+w.hook_print("", "notify_message", "", 1, "on_msg", "message")
 w.hook_print("", "notify_private", "", 1, "on_msg", "private")
-w.hook_print("", "notify_highlight", "", 1, "on_msg", "")  # Not sure if needed
+w.hook_print("", "notify_highlight", "", 1, "on_msg", "highlight")  # Not sure if needed
 
 
 def on_msg(*a):
     keys = ['data', 'buffer', 'timestamp', 'tags', 'displayed', 'highlight',
             'sender', 'message']
     msg = dict(zip(keys, a))
+    msg['buffer_long'] = w.buffer_get_string(msg['buffer'], 'name')
+    msg['buffer_full'] = w.buffer_get_string(msg['buffer'], 'full_name')
     msg['buffer'] = w.buffer_get_string(msg['buffer'], 'short_name')
 
     cli = mqtt.Client()
