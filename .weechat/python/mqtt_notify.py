@@ -71,13 +71,19 @@ def mqtt_on_connect(client, userdata, flags, rc):
     if rc == 0:
         weechat.prnt('', 'mqtt_notify: connected successfully')
     else:
-        weechat.prnt('', 'mqtt_notify: failed connecting - return code %s' % rc)
+        weechat.prnt(
+            '',
+            'mqtt_notify: failed connecting - return code %s' %
+            rc)
 
 
 def mqtt_on_disconnect(client, userdata, rc):
 
     if rc != 0:
-        weechat.prnt('', 'mqtt_notify: unexpected disconnection - return code %s' % rc)
+        weechat.prnt(
+            '',
+            'mqtt_notify: unexpected disconnection - return code %s' %
+            rc)
     else:
         weechat.prnt('', 'mqtt_notify: disconnected')
 

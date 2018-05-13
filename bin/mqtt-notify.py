@@ -25,8 +25,11 @@ else:
     DEBUG = False
 
 app_name = 'mqtt-notify'
-mqtt_client_name = (app_name + '-' + socket.gethostname() + '-'
-                    + str(os.getpid()))
+if DEBUG:
+    mqtt_client_name = (app_name + '-' + socket.gethostname() + '-'
+                        + str(os.getpid()))
+else:
+    mqtt_client_name = (app_name + '-' + socket.gethostname())
 broker = '127.0.0.1'
 port = 1883
 topic = 'weechat'
@@ -54,9 +57,9 @@ def on_connect(client, userdata, flags, rc):
         # Subscribe to topic 'test'
         client.subscribe(topic, qos)
     else:
-        msg = '%s Failed connecinting to %s:%s as %s' % (timestamp(), # NOQA
-                                                         broker, port,
-                                                         mqtt_client_name)
+        msg = '%s Failed connecting to %s:%s as %s' % (timestamp(), # NOQA
+                                                       broker, port,
+                                                       mqtt_client_name)
         if DEBUG:
             print '{"message": %s}' % msg
         else:
@@ -89,9 +92,9 @@ def on_message(client, userdata, msg):
     if not blacklisted and displayed and (highlighted or private):
         message['X-notified'] = True
 
-        summary = '%s ( %s on %s)' % (message['sender'],
-                                      message['buffer_short'],
-                                      message['server'])
+        summary = '%s (%s on %s)' % (message['sender'],
+                                     message['buffer_short'],
+                                     message['server'])
         body = '%s (%s)' % (message['message'], message['local_time'])
 
         # NOTIFY
