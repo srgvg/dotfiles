@@ -121,7 +121,8 @@ showpath() {
 notifypath() {
     # show and notify which picture is used
 	showpath
-	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}/${filename}"
+	dirname=$(dirname "${file}" | sed s@/home/serge/Dropbox/Media/Pictures/@@)
+	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}\n\n${filename}"
 }
 
 setbg() {

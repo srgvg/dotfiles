@@ -9,6 +9,11 @@ PATH=$HOME/bin:$PATH
 source $HOME/bin/parameters.bash
 source $HOME/.bash_it/custom/functions.bash
 
+# make sure DEBUG is not exported
+# it is when called 'DEBUG=1 foo.sh'
+_DEBUG="${DEBUG:-0}" ; unset DEBUG
+DEBUG="${_DEBUG}"    ; unset _DEBUG
+
 function timestamp() {
 	date +%Y%m%d-%H%M
 }
@@ -75,8 +80,6 @@ function _check_debug_logging() {
 			COLOR_DEBUG="red"
 			set -o functrace
 			set -o verbose
-			# automatically debug subprocesses too
-			export DEBUG
 			local thisfile="${BASH_SOURCE[0]}"
 			notify_debug "List of available functions in ${thisfile}: $(grep '^function' "${thisfile}" |
 				awk '{print $2}' | grep -v '^_' | sort | xargs)" "${COLOR_DEBUG}"
@@ -89,8 +92,8 @@ function _check_debug_logging() {
 		fi
 		# shellcheck disable=SC2154
 		notify_debug "DEBUG LEVEL ${DEBUG} FROM ${BASH_SOURCE[*]}" "${COLOR_DEBUG}"
+		# set_xtrace already executed at the end of notify_debug
 	fi
-	set_xtrace
 }
 
 

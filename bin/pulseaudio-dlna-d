@@ -13,7 +13,7 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 pulseaudio_dlna_opts="--msearch-port 65353 --port 58080 --auto-reconnect"
-if [ -n "${DEBUG:-}" ]
+if ifdebug1
 then
 	pulseaudio_dlna_opts="--debug $pulseaudio_dlna_opts"
 fi

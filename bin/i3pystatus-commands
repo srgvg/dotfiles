@@ -28,9 +28,9 @@ case ${1:-} in
 		then
 			if [ "${output}" -gt 0 ]
 			then
-				output="🔊${output}% ⸱Sonos"
+				output="Sonos🔊${output}%"
 			else [ "${output}" -eq 0 ]
-				output="🚫 ⸱Sonos"
+				output="Sonos🚫"
 			fi
 		fi
 

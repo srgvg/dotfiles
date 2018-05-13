@@ -165,8 +165,8 @@ function volume() {
 	esac
 }
 
-if sonos_playing && ! sonos_dlna
-# if sonos is playing but not via pulse-audio
+if sonos_playing	# && ! sonos_dlna
+					# if sonos is playing but not via pulse-audio
 then
 	# change sonos directly
 	device="sonos"

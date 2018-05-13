@@ -11,27 +11,31 @@ COLIN = "#FFFFFF"
 status = Status()
 
 status.register("online",
+                hints = {"separator": False, "separator_block_width": 0},
                 format_online="",
                 color=COLAU,
                 format_offline="",
                 color_offline="#ff0000")
 
 status.register("shell",
+                hints = {"separator": False, "separator_block_width": 0},
                 ignore_empty_stdout=True,
                 color=COLIN,
                 command="i3pystatus-commands wifi",
                 interval=2)
 
 status.register("keyboard_locks",
+                hints = {"separator": False, "separator_block_width": 0},
                 color=COLIN,
                 format="{num}",
                 num_off="",
                 num_on="",)
 
 status.register("backlight",
+                hints = {"separator": False, "separator_block_width": 2},
                 color=COLIN,
                 transforms={'percentage': lambda cdict: round((cdict["brightness"] / cdict["max_brightness"]) * 10)},
-                format=" {percentage}",
+                format="{percentage}",
                 interval=2)
 
 status.register("clock",
@@ -43,12 +47,6 @@ status.register("updates",
                 color_working="#FF0000",
                 backends=[aptget.AptGet()])
 
-status.register("shell",
-                ignore_empty_stdout=True,
-                color=COLAU,
-                command="i3pystatus-commands audio_current_sink",
-                interval=3)
-
 status.register("pulseaudio",
                 sink=None,
                 color_unmuted=COLAU,
@@ -56,16 +54,23 @@ status.register("pulseaudio",
                 format="🔊 {volume}%",
                 format_muted="🚫",)
 
-status.register("now_playing",
+status.register("shell",
+                hints = {"separator": False, "separator_block_width": 5},
+                ignore_empty_stdout=True,
                 color=COLAU,
-                format="[🎶{status} {title} ({artist})]",
-                status={'pause': '', 'stop': '', 'play': ''},)
+                command="i3pystatus-commands audio_current_sink",
+                interval=3)
 
 status.register("shell",
                 ignore_empty_stdout=True,
                 color=COLAU,
                 command="i3pystatus-commands audio_sonos_volume",
                 interval=1)
+
+status.register("now_playing",
+                color=COLAU,
+                format="[🎶{status} {title} ({artist})]",
+                status={'pause': '', 'stop': '', 'play': ''},)
 
 status.register("battery",
                 format=" {percentage:.0f}% {consumption:.1f}W {remaining:%E%hh:%Mm} {status}",
