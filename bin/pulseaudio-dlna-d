@@ -22,6 +22,8 @@ trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
     trap - SIGINT
     sleep 1
+	pulseaudio --kill
+	pulseaudio --start
     echo
 }
 

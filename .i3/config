@@ -832,6 +832,8 @@ for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music De
 for_window	[class="Spotify"]					move to workspace $ws_music
 
 assign		[window_role="i3jobs"]				$ws_logs
+for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
+for_window  [class="Dnssec-trigger-panel"] floating enable
 
 ###############################################################################
 #

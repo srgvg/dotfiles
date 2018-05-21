@@ -15,14 +15,15 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
-	dmesg -Tw
 	mqtt-notify.py
+	dmesg -Tw
+	dnssec-trigger-control results
 	autocutsel -verbose -selection CLIPBOARD
 	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
+	dbus-monitor interface=org.freedesktop.Notifications
 
 	#rerandr3 daemon
 	#autocutsel -verbose -selection PRIMARY
-	#dbus-monitor interface=org.freedesktop.Notifications
 EOF
 )
 

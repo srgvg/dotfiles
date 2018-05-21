@@ -145,6 +145,7 @@ main() {
 	local action
     if [ -z "$p1" ]				## ZERO PARAMETERS
     then						# default action, pick and set a background
+		$HOME/bin/loop					# stop any background loop
         target="${SETBG_DEFAULT_BACKGROUND}"
         setbg ${target}
     elif [ -z "$p2" ]			## ONE PARAMETER
