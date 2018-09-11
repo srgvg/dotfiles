@@ -11,13 +11,12 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-PRIMARY=$(grep ^i3.output.primary $HOME/.Xresources.d/i3 | cut -d\  -f2)
-SECONDARY=$(grep ^i3.output.secondary $HOME/.Xresources.d/i3 | cut -d\  -f2)
+PRIMARY=$( (grep ^i3.output.primary $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+SECONDARY=$( (grep ^i3.output.secondary $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-eDP1}
 
-CURRENT=$(i3-msg -t get_workspaces   | jq '.[] |
-            select(.focused==true).name' | sed 's/"//g')
+CURRENT=$(i3-msg -t get_workspaces   | jq '.[] | select(.focused==true).name' | sed 's/"//g')
 
 PRIMARIES=$(grep ^workspace\   $HOME/.i3/config |
             grep outpri | awk '{print $2}')
@@ -28,16 +27,16 @@ if [ -n "${PRIMARIES}" ]
 then
     for w in ${PRIMARIES}
     do
-        _debug=$(i3-msg "workspace $w; move workspace to output $PRIMARY")
+        _debug=$(i3-msg "workspace $w; move workspace to output $PRIMARY" 2>&1)
         notify_debug "Moving workspace $w to output $PRIMARY ** ${_debug}"
     done
 fi
 
-if [ -n "${PRIMARIES}" ]
+if [ -n "${SECONDARIES}" ]
 then
     for w in ${SECONDARIES}
     do
-        _debug=$(i3-msg "workspace $w; move workspace to output $SECONDARY")
+        _debug=$(i3-msg "workspace $w; move workspace to output $SECONDARY" 2>&1)
         notify_debug "Moving workspace $w to output $SECONDARY ** ${_debug}"
     done
 fi

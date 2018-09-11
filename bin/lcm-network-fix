@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+DEBUG=2
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+if ! sudo true
+then
+	notify-send -u critical "$0" "Script needs to SUDO, please run interactively"
+	exit 1
+fi
+
+if ! nmcli device show enp0s31f6 | grep -q LAN-LCM
+then
+	nmcli connection up LAN-LCM
+fi
+
+if dnssec-trigger-control status | grep -q insecure_mode
+then
+	dnssec-trigger-control reprobe
+fi
+
+sudo /usr/libexec/dnssec-trigger-script --cleanup ||:
+dnssec-trigger-control submit $(nmcli d show enp0s31f6 | grep IP4.DNS | cut -d: -f2 | xargs)
+
+dnssec-trigger-control status
+dnssec-trigger-control hotspot_signon
+
+nmcli d show enp0s31f6 | grep IP4.DNS | cut -d: -f2 | sed 's/^\s*/nameserver /' | sudo tee /etc/resolv.conf

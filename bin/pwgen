@@ -33,15 +33,15 @@ case ${1:-} in
 esac
 
 case $TYPE in
-	low)
+	lo*)
         L=${PL:-15}
-		pass=$($pwgen $L 1)
+		pass=$($pwgen -Bv $L 1)
 		msg="type $TYPE with character length $L"
 		notify_debug "${msg}"
         ;;
-    norm*)
+    no*)
         L=${PL:-30}
-		pass=$($pwgen -Bcn $L 1)
+		pass=$($pwgen -cny $L 1)
 		msg="type $TYPE with length $L"
 		notify_debug "${msg}"
         ;;

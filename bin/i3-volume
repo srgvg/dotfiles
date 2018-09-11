@@ -95,7 +95,6 @@ function sonos_toggle() {
 function volume() {
 	local device="${1}"
 	local action="${2}"
-	notify_debug "device '$(pa-default short)' action '${action}'"
 	case "${action}" in
 		up)
 			case "${device}" in
@@ -160,6 +159,8 @@ function volume() {
 		*)
 			{
 				echo "Invalid action '${action}'" >&2
+				echo "Valid actions are:"
+				echo "up down is-muted mute unmute toggle"
 				exit 1
 			}
 	esac
@@ -173,6 +174,7 @@ then
 else
 	# change pulseaudio
 	device="pa"
+	notify_debug "device '$(pa-default short)' action '${action}'"
 fi
 
 volume "${device}" "${action}"

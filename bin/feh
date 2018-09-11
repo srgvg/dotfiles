@@ -12,14 +12,29 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-target="${1:-$HOME/Pictures}"
+if [ -n "${1:-}" ]
+then
+	target="$1"
+	shift
+else
+	target="${$HOME/Pictures}"
+fi
 target="$(readlink -e "${target}")"
-shift
 
+options=()
+options+=(--borderless)
+options+=(--image-bg black)
+options+=(--geometry 1080x610)
+options+=(--auto-zoom)
+options+=(--scale-down)
+options+=(--draw-filename)
+options+=(--draw-tinted)
+options2=""
 if [ -f "${target}" ]
 then
-	targetdir=$(dirname "${target}")
-	targetoption="--start-at"
+	options+=(--start-at)
+	options2="${target}"
+	target=$(dirname "${target}")
 fi
 
-/usr/bin/feh --image-bg black --geometry 1080x610 ${targetoption} "${target}" "${targetdir}" $*
+/usr/bin/feh ${options[@]} "${options2}" "${target}" $*

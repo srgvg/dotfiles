@@ -109,6 +109,10 @@ loop() {
     done
 }
 
+loopnext() {
+	pkill -SIGINT --parent $(pgrep --full "setbg loop" | head -n 1)
+}
+
 showpath() {
     # show which picture is used
     notify_debug "Show which picture is used"
@@ -157,8 +161,11 @@ main() {
 			'show')				# show current picture path
 				notifypath
 				;;
-			'lock'|"loop")		# these need a parameter
+			'lock'|'loop')		# these need a parameter
 				notify_error "setbg: The action '${p1}' needs a parameter"
+				;;
+			'next')
+				loopnext
 				;;
 			*)					# must be a target
 				target="${p1}"

@@ -146,6 +146,3 @@ if import_ok:
                        weechat.config_get_plugin("mqtt_message_data"))
     weechat.hook_print("", "notify_private", "", 1, "weechat_on_msg_cb",
                        weechat.config_get_plugin("mqtt_private_data"))
-
-else:
-    sys.exit(1)

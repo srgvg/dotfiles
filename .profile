@@ -16,22 +16,3 @@ if [ -n "$BASH_VERSION" ]; then
     fi
 fi
 
-# set PATH so it includes user's bin if it exists
-if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
-fi
-# set PATH so it includes user's private sbin if it exists
-if [ -d "$HOME/sbin" ] ; then
-    PATH="$HOME/sbin:$PATH"
-fi
-# set PATH so it includes user's extra bin2 if it exists
-if [ -d "$HOME/bin2" ] ; then
-    PATH="$HOME/bin2:$PATH"
-fi
-
-
-
-export LANGUAGE="en_US:en"
-export LC_MESSAGES="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
-export LC_COLLATE="en_US.UTF-8"

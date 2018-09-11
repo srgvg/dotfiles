@@ -12,9 +12,10 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-dropbox=$HOME/Dropbox
+dropbox=$HOME/Dropbox/ginsys
 publoc=$dropbox/Public/misc
-tmploc=$dropbox/Temp/tmp
+publoc2=/dbox/Dropbox/${publoc/$dropbox}
+dropboxcmd="dropbox2 ginsys"
 
 function dropbox_file_status() {
 	local out
@@ -25,7 +26,7 @@ function dropbox_file_status() {
 	wait=1
 	while [ $wait -eq 1 ]
 	do
-		out=$(dropbox filestatus "${pubfile}")
+		out=$(${dropboxcmd} filestatus "${pubfile2}")
 		if [[ "${out}" =~ "syncing" ]]
 		then
 			status=(-1 "Syncing")
@@ -57,15 +58,16 @@ fi
 
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
 pubfile="${publoc}/${pubfilename}"
+pubfile2="${publoc2}/${pubfilename}"
 
-# do not copy the file to Dropbox/Public if the file is already in Dropbox tmp folder
-if [[ ! "$file" =~ $tmploc ]]
+# do not copy the file to Dropbox/Public if the file is already in Dropbox folder
+if [[ ! "$file" =~ "$dropbox" ]]
 then
 	notify_debug "Copying ${file} to ${pubfile}"
 	cp "${file}" "${pubfile}"
 fi
 
-dropbox_puburl="$(dropbox sharelink "${pubfile}")"
+dropbox_puburl="$(${dropboxcmd} sharelink "${pubfile2}" | tr -d '\r')"
 notify_debug "shared on ${dropbox_puburl}"
 if ! [[ ${dropbox_puburl:0:4} == http ]]
 then

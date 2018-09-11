@@ -1,7 +1,7 @@
-# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t; max_line_length: 119
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # i3 config file (v4)
 #
@@ -9,11 +9,11 @@
 #
 # Comments start with a # and can only be used at the beginning of a line.
 #
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # i3 --moreversion
 #
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ### Basic settings
 #
@@ -26,14 +26,16 @@ set $suspend		systemctl suspend
 
 # color defines
 set $dark			#000000
-set $darkgrey		#444444
-set $lightgrey		#BBBBBB
 set $light			#FFFFFF
-
+set $lessdark		#444444
+set $lesslight		#999999
 set $red			#FF0000
 set $ginsys			#1D396A
-
 set $IGNORED		#000000
+
+# custom overrides
+set $focus  		#66AAFF
+
 
 # window parameters
 set $defaultborder	pixel 4
@@ -80,7 +82,7 @@ workspace 20	output $outsec
 workspace 21	output $outsec
 workspace 22	output $outsec
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## Colors, borders, layout, fonts
 #
@@ -94,7 +96,7 @@ workspace 22	output $outsec
 # chose a FreeType font, such as:
 font pango:FontAwesome Solid 10, Monospace 10
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## Client Container Colors
 #
@@ -106,21 +108,21 @@ font pango:FontAwesome Solid 10, Monospace 10
 ## client windows		border				background			text				indicator (indicates vertical or horizontal split)
 #
 # A client which is not the focused one of its container.
-client.unfocused		$dark				$dark				$lightgray			$dark
+client.unfocused		$dark				$dark				$lesslight			$dark
 
 # A client currently focused in its container, but does not have focus now.
-client.focused_inactive $dark				$dark				$lightgrey			$dark
+client.focused_inactive $lessdark			$lessdark			$lesslight			$dark
 
 # A client which currently has the focus.
-client.focused			$lightgrey			$lightgrey			$dark				$lightgrey
+client.focused			$focus				$focus				$light				$lesslight
 
 # A client which has its urgency hint activated.
 client.urgent			$red				$red				$light				$red
 
 #Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder		$IGNORED			$dark				$lightgrey			$IGNORED
+client.placeholder		$IGNORED			$dark				$lesslight			$IGNORED
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # status bar
 #
@@ -141,14 +143,14 @@ bar {
 
 			# workspace button when the workspace does not have focus and is not
 			# active (visible) on any output. This will be the case for most workspaces.
-			inactive_workspace	$dark				$dark			$lightgrey
+			inactive_workspace	$dark   			$dark			$lesslight
 
 			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
 			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-			active_workspace	$lightgrey			$darkgray		$lightgrey
+			active_workspace	$lesslight				$dark			$lesslight
 
 			# color for a workspace button when the workspace has focus.
-			focused_workspace	$light				$darkgray		$light
+			focused_workspace	$focus				$dark			$focus
 
 			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
 			urgent_workspace	$red				$dark			$red
@@ -201,7 +203,7 @@ bar {
 		binding_mode_indicator yes
 }
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## workspace and window properties
 #
@@ -275,7 +277,7 @@ hide_edge_borders smart
 # behavior described above.
 #mouse_warping output|none
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## Client default rules, seems to be put after the assignments & rules
 #
@@ -284,7 +286,7 @@ hide_edge_borders smart
 new_window	$defaultborder
 new_float	$defaultborder
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # Window management
 #
@@ -330,13 +332,13 @@ bindsym $mod+space focus mode_toggle
 # 9 - forward
 # 10  scroll wheel button
 #
-bindsym --whole-window button10						exec --no-startup-id bgnext
+bindsym --whole-window button10						exec --no-startup-id setbg next
 
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
 bindsym $mod+Control+s exec i3swap
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # Navigation
 #
@@ -425,10 +427,8 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab				focus right
-bindsym $mod+Shift+Tab			focus left
-bindsym $mod+$Alt+Tab			exec --no-startup-id i3-cycle right
-bindsym $mod+$Alt+Shift+Tab		exec --no-startup-id i3-cycle left
+bindsym $mod+Tab				exec --no-startup-id i3-cycle right
+bindsym $mod+Shift+Tab			exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -478,7 +478,7 @@ bindsym $mod+Control+Next move container to output right
 bindsym $mod+Shift+Prior move workspace to output left
 bindsym $mod+Shift+Next move workspace to output right
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ### Special Modes
 #
@@ -535,7 +535,7 @@ mode "$mode_system" {
 	bindsym $mod+Control+$Alt+q mode "default"
 }
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## Scratchpad things
 #
@@ -548,7 +548,7 @@ bindsym $mod+grave scratchpad show
 bindsym $mod+$Alt+grave exec i3-quickswitch --prompt --scratchpad
 
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 ## Key command assignments & application launchers
 #
@@ -596,12 +596,12 @@ bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HO
 # start browsers
 bindsym $mod+Control+o			exec chrom serge
 bindsym $mod+Control+Shift+o	exec chrom google
-bindsym $mod+o					exec chrom
-bindsym $mod+Shift+o			exec chrom TMP
+bindsym $mod+o					exec chrom /dev/null
+bindsym $mod+Shift+o			exec chrom TMP /dev/null
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
-bindsym $mod+$Alt+b				exec --no-startup-id bgnext
+bindsym $mod+$Alt+b				exec --no-startup-id setbg next
 bindsym $mod+Control+$Alt+b		exec --no-startup-id setbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
@@ -614,7 +614,11 @@ bindsym $mod+Control+p			exec /usr/share/system-config-printer/system-config-pri
 bindsym $mod+n					exec nmcli_dmenu
 bindsym $mod+Control+n			exec nm-toggle-wifi
 
-##############################################################################################################################################################
+
+# custom shit
+bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705883544.remmina
+
+#######################################################################################################################
 #
 # volume and media controls, special keys
 #
@@ -661,7 +665,7 @@ bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
 
 # Fn-F8 XF86WLAN
-#bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
+bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
 
 # Fn-F9  XF86Tools
 
@@ -681,7 +685,7 @@ bindsym $mod+Print						exec --no-startup-id publish
 # Fn-F12 XF86Explorer
 
 
-##############################################################################################################################################################
+#######################################################################################################################
 #
 # When using multiple commands, separate them by using a , (a comma) instead of a semicolon. Criteria apply only until the next semicolon,
 # so if you use a semicolon to separate commands, only the first one will be executed for the matched window(s).
@@ -699,7 +703,7 @@ bindsym $mod+Print						exec --no-startup-id publish
 #for_window [ con_id="(?!__focused__)" ] border $noborder
 
 
-###############################################################################
+#######################################################################################################################
 #
 # various rules
 #
@@ -730,13 +734,13 @@ for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculat
 #for_window [window_type="tooltip"]
 #for_window [window_type="notification"]
 
-###############################################################################
+#######################################################################################################################
 #
 # Don’t focus window upon opening
 #
 no_focus [window_role="pop-up"]
 
-###############################################################################
+#######################################################################################################################
 #
 # terminals
 #
@@ -744,10 +748,11 @@ for_window [window_role="floating"]														floating enable
 for_window [class="Terminator" instance="terminator" title="Terminator Preferences"]	floating enable
 for_window [class="Gnome-terminal"]														floating enable
 
-###############################################################################
+#######################################################################################################################
 #
 # Tools
 #
+assign [window_role="SSHASKPASS"]														$ws_www
 for_window [window_role="SSHASKPASS"]													floating enable, border pixel 5
 for_window [class="Gcalctool"]															floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]				floating enable
@@ -763,10 +768,7 @@ for_window [class="Files" instance="small"]												floating enable, resize s
 for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
 for_window [class="flameshot" instance="flameshot"]										floating enable
 
-for_window [class="Gufw.py" instance="gufw.py" title="Firewall$"]						floating disable,
-assign [class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
-
-###############################################################################
+#######################################################################################################################
 #
 # Browsers
 #
@@ -775,9 +777,10 @@ for_window	[class="^(browser-)(serge|google)"]											layout tabbed
 for_window	[class="^(browser-tmp)"]													floating enable
 assign		[class="^(browser-radio)"]													$ws_music
 for_window	[class="^(browser-radio)"]													floating disable, layout splith
+for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" window_role="About"] floating_enable
 
 
-###############################################################################
+#######################################################################################################################
 #
 # chat
 #
@@ -785,7 +788,7 @@ assign		[window_role="irc"]					$ws_chat
 
 for_window	[class="Skype"]						floating enable
 
-###############################################################################
+#######################################################################################################################
 #
 # large screen tools
 #
@@ -796,6 +799,7 @@ assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Remote Desktop Client
+assign [class="Remmina" instance="remmina" title="cmc.be"] 12
 assign [class="Remmina" instance="remmina"]		$ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
 
@@ -810,15 +814,20 @@ assign		[class="Gimp" instance="gimp"] $ws_tool2
 for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
 
 
-###############################################################################
+#######################################################################################################################
 #
 # side tools
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign [class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]				$ws_util
-for_window  [class="keepassxc" instance="keepassxc"] resize set 70ppt 100ppt
-for_window	[title="KeePassXC-Browser"] floating enables
+assign		[class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]	$ws_util
+for_window	[class="keepassxc" instance="keepassxc"]										layout tabbed
+for_window  [class="keepassxc" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
+for_window	[title="KeePassXC-Browser"]														floating enable
+
+for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout tabbed
+assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
+
 
 # chat
 #assign		[class="Keybase" instance="keybase" title="Keybase"]  $ws_util
@@ -835,16 +844,16 @@ assign		[window_role="i3jobs"]				$ws_logs
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
 
-###############################################################################
+#######################################################################################################################
 #
 # miscellaneous
 #
 
-###############################################################################
+#######################################################################################################################
 #
 #for_window [floating] move position center
 
-###############################################################################
+#######################################################################################################################
 #
 ## startup
 #
@@ -870,11 +879,14 @@ exec "system-config-printer-applet &"
 exec "keepassxc &"
 exec "run_keybase &"
 exec "spotify &"
-exec "dropbox start"
+exec "nextcloud-client &"
+#exec "dropbox start"
 #exec "alarm-clock-applet --hidden &"
 exec "gufw &"
+exec "dnssec-trigger-panel &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
+exec --no-startup-id "setbg default"
 exec --no-startup-id "sleep 10; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 

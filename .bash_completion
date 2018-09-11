@@ -1,0 +1,5 @@
+shopt -s nullglob
+for bcfile in ~/.bash_completion.d/* ; do
+  source $bcfile
+done
+shopt -u nullglob

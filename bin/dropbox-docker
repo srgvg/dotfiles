@@ -1,0 +1,19 @@
+#!/bin/sh -x
+docker run -d --restart=always -e DBOX_UID=1000 -e DBOX_GID=1000 --net="host" \
+	-v /home/serge/Dropbox/bryxx:/dbox/Dropbox \
+	-v /home/serge/Dropbox/.dropbox-bryxx:/dbox/.dropbox \
+	--name dropbox-bryxx \
+	janeczku/dropbox
+
+docker run -d --restart=always -e DBOX_UID=1000 -e DBOX_GID=1000 --net="host" \
+	-v /home/serge/Dropbox/svg:/dbox/Dropbox \
+	-v /home/serge/Dropbox/.dropbox-svg:/dbox/.dropbox \
+	--name dropbox-svg \
+	janeczku/dropbox
+
+docker run -d --restart=always -e DBOX_UID=1000 -e DBOX_GID=1000 --net="host" \
+	-v /home/serge/Dropbox/ginsys:/dbox/Dropbox \
+	-v /home/serge/Dropbox/.dropbox-ginsys:/dbox/.dropbox \
+	--name dropbox-ginsys \
+	janeczku/dropbox
+

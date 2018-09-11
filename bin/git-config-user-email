@@ -1,0 +1,14 @@
+#!/bin/bash
+
+ORGEMAIL="${1:-serge@vanginderachter.be}"
+
+for d in $(find . -type d -name .git)
+do
+    pushd $(readlink -f ${d/.git})
+    echo -n "$(git config user.email) --> "
+    git config user.email $ORGEMAIL
+    git config user.email
+    popd >/dev/null
+    echo
+done
+dirs

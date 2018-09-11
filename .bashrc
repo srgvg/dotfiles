@@ -8,7 +8,7 @@ export BASH_IT="/home/serge/.bash_it"
 export BASH_IT_THEME='serge'
 
 # Your place for hosting Git repos. I use this for private repos.
-export GIT_HOSTING='git@git.ginsys.eu'
+#export GIT_HOSTING='git@git.ginsys.eu'
 
 # Don't check mail when opening terminal.
 unset MAILCHECK
@@ -34,3 +34,13 @@ if [ -f $HOME/.bashrc2 ]
 then
     source $HOME/.bashrc2
 fi
+
+
+### DEBUG INFO
+# PS4='+$BASH_SOURCE> ' BASH_XTRACEFD=7 bash -xl 7>&2
+## That will simulate a login shell and show everything that is done along
+# with the name of the file currently being interpreted.
+# So all you need to do is look for the name of your environment variable in
+# that output. (you can use the script command to help you store the whole
+# shell session output, or for the bash approach, use 7> file.log instead of
+# 7>&2 to store the xtrace output to file.log instead of on the terminal).
