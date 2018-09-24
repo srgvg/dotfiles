@@ -13,4 +13,4 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-ip addr sh | grep -q ${HOME_LAN_SUBNET}
+ip addr sh | grep ${HOME_LAN_SUBNET} >/dev/null 2>&1
