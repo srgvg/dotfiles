@@ -73,10 +73,10 @@ workspace 11	output $outpri
 workspace 12	output $outpri
 workspace 13	output $outpri
 workspace 14	output $outpri
-workspace 15	output $outpri
-workspace 16	output $outpri
-workspace 17	output $outpri
-workspace 18	output $outpri
+workspace 15	output $outsec
+workspace 16	output $outsec
+workspace 17	output $outsec
+workspace 18	output $outsec
 workspace 19	output $outsec
 workspace 20	output $outsec
 workspace 21	output $outsec
@@ -589,6 +589,7 @@ bindsym $mod+Control+l			exec --no-startup-id $suspend
 
 # start some tools
 bindsym $mod+i					exec ircwindow
+bindsym $mod+Control+i			[window_role="irc" class="Terminator" instance="terminator" title="IRCWINDOW"]	kill
 bindsym $mod+c					exec gnome-calculator
 bindsym $mod+d					exec nemo
 bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HOME/tmp
