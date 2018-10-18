@@ -1,6 +1,6 @@
 [global]
     #font = Ubuntu Mono 10
-    font = Ubuntu 10
+    font = FantasqueSansMono 15
 
     # allow a small subset of html markup:
     # <b>bold</b>
@@ -28,7 +28,7 @@
     #   %p  progress value if set ([  0%] to [100%]) or nothing
     #format = "<b>%s</b>\n%b"
     #format = "<b>%s</b>   <small><tt>%a</tt></small>\n\n<big>%b</big>"
-    format = "<big><b>%s</b></big>  <small>%a</small>\n\n%b"
+    format = "<big><b>%s</b></big>  <small>%a</small>\n\n%b %p"
 
     # Sort messages by urgency
     sort = yes
@@ -38,7 +38,7 @@
 
     # alignment of message text.
     # Possible values are "left", "center" and "right"
-    alignment = right
+    alignment = left
 
     # The frequency with wich text that is longer than the notification
     # window allows bounces back and forth.
@@ -69,7 +69,8 @@
     # The width can be negative. In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
     #geometry = "500x10-12+35"
-    geometry = "300x10-32+55"
+    #geometry = "500x10-32+55"
+    geometry = "600x10-40+60"
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
@@ -78,7 +79,7 @@
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
     # Set to 0 to disable.
-    idle_threshold = 5
+    idle_threshold = 2
 
     # Which monitor should the notifications be displayed on.
     monitor = 0
@@ -106,13 +107,13 @@
 
     # Draw a line of 'separatpr_height' pixel height between two notifications.
     # Set to 0 to disable
-    separator_height = 1
+    separator_height = 2
 
     # padding between text and separator
-    padding = 8
+    padding = 10
 
     # horizontal padding
-    horizontal_padding = 8
+    horizontal_padding = 10
 
     # Define a color for the separator.
     # possible values are:
@@ -120,7 +121,8 @@
     #  * foreground: use the same color as the foreground
     #  * frame: use the same color as the frame.
     #  * anything else will be interpreted as a X color
-    separator_color = frame
+    #separator_color = frame
+    separator_color = #FFFFFF
 
     # print a notification on startup
     # This is mainly for error detection, since dbus (re-)starts dunst
@@ -134,8 +136,12 @@
     # browser for opening urls in context menu
     browser = /usr/bin/sensible-browser
 
-    width = 0
-    color = "#aaaaaa"
+    #
+    markup = strip
+    stack_duplicates = true
+    show_indicators = true
+    icon_position = right
+    icon_path = "/usr/share/icons/gnome/48x48/actions/:/usr/share/icons/gnome/48x48/animations/:/usr/share/icons/gnome/48x48/apps/:/usr/share/icons/gnome/48x48/categories/:/usr/share/icons/gnome/48x48/devices/:/usr/share/icons/gnome/48x48/emblems/:/usr/share/icons/gnome/48x48/emotes/:/usr/share/icons/gnome/48x48/mimetypes/:/usr/share/icons/gnome/48x48/places/:/usr/share/icons/gnome/48x48/status/"
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
@@ -164,12 +170,12 @@
     timeout = 10
 
 [urgency_normal]
-    background = "#225588"
-    foreground = "#FFFFFF"
+    background = "#FFFF00"
+    foreground = "#333300"
     timeout = 15
 
 [urgency_critical]
-    background = "#FF0000"
+    background = "#CC3300"
     foreground = "#FFFFFF"
     timeout = 30
 

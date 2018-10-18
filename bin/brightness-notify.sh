@@ -12,25 +12,27 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-
-case $1 in
+inc=10
+case ${1:-} in
 	"up")
-		xbacklight -time 100 -inc 10
+		action="-inc $inc"
 		;;
 	"down")
-		xbacklight -time 100 -dec 10
+		action="-dec $inc"
 		;;
 	"set")
-		xbacklight -time 100 =$2
+		action="=${2:-100}"
 		;;
 	*)
 		echo "I don't know what you mean"
 		exit 1
 		;;
 esac
+xbacklight -time 100 $action
 
+action2=$(echo $action | sed -e 's/-inc/increase/' -e 's/-dec/decrease/' -e 's/=/set to /')
 brightness=$(xbacklight -get)
 brightness=$(printf "%.0f" ${brightness})
 
-notify-send "Brightness" "$brightness" -t 1200 -i xfpm-brightness-lcd -h int:value:$brightness -c device -u low
+notify-send "Brightness" "$action2" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness -c device -u low
 

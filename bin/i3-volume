@@ -17,6 +17,7 @@ action=${1:-}
 SONOS_VOLUME_CACHE="${SONOS_VOLUME_CACHE:=$HOME/.cache/sonos-volume}"
 steppa=5
 stepso=5
+icon="audio-volume-medium"
 
 function sonos_playing() {
 	if [ "$(sonos state)" = "PLAYING" ]
@@ -105,16 +106,18 @@ function volume() {
 					ponymix increase ${steppa}
 					;;
 			esac
+			icon=audio-volume-high
 			;;
 		down)
 			case "${device}" in
 				sonos)
-					sonos volume -${steppa}
+					sonos volume -${stepso}
 					;;
 				pa)
 					ponymix decrease ${steppa}
 					;;
 			esac
+			icon=audio-volume-low
 			;;
 		is-muted)
 			case "${device}" in
@@ -135,6 +138,7 @@ function volume() {
 					ponymix mute
 					;;
 			esac
+			icon=audio-volume-muted
 			;;
 		unmute)
 			case "${device}" in
@@ -149,9 +153,21 @@ function volume() {
 		toggle)
 			case "${device}" in
 				sonos)
+					if sonos_is_muted
+					then
+						icon=audio-volume-medium
+					else
+						icon=audio-volume-muted
+					fi
 					sonos_toggle
 					;;
 				pa)
+					if ponymix is-muted
+					then
+						icon=audio-volume-medium
+					else
+						icon=audio-volume-muted
+					fi
 					ponymix toggle
 					;;
 			esac
@@ -171,10 +187,13 @@ if sonos_playing	# && ! sonos_dlna
 then
 	# change sonos directly
 	device="sonos"
+	device2="Sonos"
 else
 	# change pulseaudio
 	device="pa"
-	notify_debug "device '$(pa-default short)' action '${action}'"
+	device2="$(pa-default long)"
 fi
 
 volume "${device}" "${action}"
+#notify_desktop low i3-volume "$device2: volume ${action} [$level]" $icon
+notify_desktop low i3-volume "$device2: volume ${action}" $icon

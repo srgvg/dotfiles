@@ -169,19 +169,21 @@ function errexit() {
 
 function notify_desktop() {
 	{ set +x; } 2>/dev/null
-	if ! ifinteractive
+	if  ! ifinteractive
 	then
 		local numparam=3
-		[ $# -eq ${numparam} ] || errexit "function ${FUNCNAME[0]} expects ${numparam} parameters, got $#: '$#'"
+		[ $# -ge ${numparam} ] || errexit "function ${FUNCNAME[0]} expects at least ${numparam} parameters, got $#: '$#'"
 
 		local urgency
 		local summary
 		local body
 		local color
+		local icon
 
 		urgency=${1}
 		summary=${2}
 		body=${3}
+		icon=${4:-dialog-info}
 
 		case $urgency in
 			"low")
@@ -198,7 +200,7 @@ function notify_desktop() {
 				;;
 		esac
 
-		notify-send --urgency="${urgency}" --icon=gtk-info \
+		notify-send --urgency="${urgency}" --icon="${icon}" \
 					"${summary}" "${body}" || :
 	fi
 	set_xtrace
@@ -208,7 +210,7 @@ function notify2() {
 	{ set +x; } 2>/dev/null
 	local message="${1:-}"
 	notify "${message}"
-	notify_desktop normal "${BASH_SOURCE[1]}" "${message}"
+	notify_desktop normal "$(basename ${BASH_SOURCE[1]})" "${message}"
 }
 
 function notify_error_desktop() {
