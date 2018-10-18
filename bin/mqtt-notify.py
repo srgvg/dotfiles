@@ -82,7 +82,7 @@ def on_message(client, userdata, msg):
 
     message = updatemsg(json.loads(msg.payload))
 
-    blacklist_buffers = ['core.highmon']
+    blacklist_buffers = ['core.highmon', 'irc.bitlbee.gmail']
     blacklisted = message['buffer_full'] in blacklist_buffers
     displayed = message['displayed']
     highlighted = message['highlight']
@@ -95,7 +95,7 @@ def on_message(client, userdata, msg):
         summary = '%s (%s on %s)' % (message['sender'],
                                      message['buffer_short'],
                                      message['server'])
-        body = '%s (%s)' % (message['message'], message['local_time'])
+        body = '%s\n(%s)' % (message['message'], message['local_time'])
 
         # NOTIFY
         notify(summary=summary, body=body)
@@ -137,7 +137,7 @@ def notify(summary, body):
     service = 'org.freedesktop.Notifications'
     path = '/org/freedesktop/Notifications'
     interface = service
-    app_icon = ''
+    app_icon = 'user-invisible'
     expire_timeout = 10000
     actions = []
     hints = []
