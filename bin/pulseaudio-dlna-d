@@ -8,23 +8,21 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+# Something is interfering here
+DEBUG=0
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
 pulseaudio_dlna_opts="--msearch-port 65353 --port 58080 --auto-reconnect"
-if ifdebug1
-then
-	pulseaudio_dlna_opts="--debug $pulseaudio_dlna_opts"
-fi
 
 trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
     trap - SIGINT
     sleep 1
-	pulseaudio --kill
+	pulseaudio --check && pulseaudio --kill
 	pulseaudio --start
-    echo
+    echo RESTARTED
 }
 
 while true

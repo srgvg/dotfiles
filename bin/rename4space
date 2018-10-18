@@ -15,7 +15,7 @@ source "$HOME/bin/common.bash"
 echo=""
 
 function rename() {
-	file="$1"
+	file="${1:-}"
 	if [ ! -f "$file" ]
 	then
 		echo "File '$file' does not exist?"
