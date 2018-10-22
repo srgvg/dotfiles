@@ -655,14 +655,14 @@ bindsym $mod+Control+m					exec pavucontrol
 # Fn-F4  XF86AudioMicMute
 
 # Fn-F5  XF86MonBrightnessDown
-bindsym XF86MonBrightnessDown			exec --no-startup-id brightness-notify.sh down
+bindsym XF86MonBrightnessDown			exec --no-startup-id i3-brightness down
 
 # Fn-F6  XF86MonBrightnessUp
-bindsym XF86MonBrightnessUp				exec --no-startup-id brightness-notify.sh up
+bindsym XF86MonBrightnessUp				exec --no-startup-id i3-brightness up
 
 ## Fn-F7 XF86Display
-bindsym XF86Display						exec --no-startup-id "rerandr3 restore; sleep 3; i3-move-workspaces"
-bindsym $mod+Scroll_Lock				exec --no-startup-id "rerandr3 restore; sleep 3; i3-move-workspaces"
+bindsym XF86Display						exec --no-startup-id "rerandr3 restore; sleep 1; i3-move-workspaces"
+bindsym $mod+Scroll_Lock				exec --no-startup-id "rerandr3 restore; sleep 1; i3-move-workspaces"
 bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
 

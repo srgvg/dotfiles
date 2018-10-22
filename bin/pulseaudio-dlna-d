@@ -22,7 +22,7 @@ trap_continue() {
     sleep 1
 	pulseaudio --check && pulseaudio --kill
 	pulseaudio --start
-    echo RESTARTED
+    echo PULSEAUDIO RESTARTED
 }
 
 while true

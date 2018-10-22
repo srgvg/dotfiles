@@ -1,5 +1,17 @@
 #! /bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
 SLEEP_TIME=5   # Default time between checks.
 SAFE_PERCENT=30  # Still safe at this level.
 DANGER_PERCENT=15  # Warn when battery at this level.
@@ -10,7 +22,7 @@ export DISPLAY=:0.0
 
 function launchNagBar
 {
-    i3-nagbar -m 'Battery low!' -b 'Hibernate!' 'pm-hibernate' >/dev/null 2>&1 &
+    i3-nagbar -m 'Battery low!' -b 'Suspend!' 'systemctl suspend' >/dev/null 2>&1 &
     NAGBAR_PID=$!
 }
 
@@ -31,24 +43,28 @@ while [ true ]; do
     killNagBar
 
     if [[ -n $(acpi -b | grep -i discharging) ]]; then
-        pm-powersave true
-        rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+")
+        sudo pm-powersave true
+        rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
+		num=$(acpi -b | wc -l)
+		rem_bat=$(expr $rem_bat / $num)
+		notify "Battery discharging... ${rem_bat}% left"
 
         if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
-            SLEEP_TIME=10
+            SLEEP_TIME=30
         else
-            SLEEP_TIME=5
+            SLEEP_TIME=10
             if [[ $rem_bat -le $DANGER_PERCENT ]]; then
-                SLEEP_TIME=2
+                SLEEP_TIME=5
                 launchNagBar
             fi
             if [[ $rem_bat -le $CRITICAL_PERCENT ]]; then
                 SLEEP_TIME=1
-                pm-hibernate
+                systemctl suspend
             fi
         fi
-    else
-        pm-powersave false
+	else
+		notify "running on power"
+        sudo pm-powersave false
         SLEEP_TIME=10
     fi
 

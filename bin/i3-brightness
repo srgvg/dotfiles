@@ -24,7 +24,7 @@ case ${1:-} in
 		action="=${2:-100}"
 		;;
 	*)
-		echo "I don't know what you mean"
+		echo "I don't know what you mean: up, down or 'set x'"
 		exit 1
 		;;
 esac

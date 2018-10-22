@@ -67,6 +67,10 @@ then
 	cp "${file}" "${pubfile}"
 fi
 
+if ! ${dropboxcmd} sharelink "${pubfile2}"
+then
+	docker restart dropbox-ginsys
+fi
 dropbox_puburl="$(${dropboxcmd} sharelink "${pubfile2}" | tr -d '\r')"
 notify_debug "shared on ${dropbox_puburl}"
 if ! [[ ${dropbox_puburl:0:4} == http ]]
