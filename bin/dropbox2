@@ -12,13 +12,60 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
+DBDIR="$HOME/Dropbox"
 
-if [ x${1} != x"" ]; then
-    instance=${1};
-    shift;
+function get_instances() {
+	cd ${DBDIR}
+	ls | grep -v 'lost+found' | sort
+}
+
+function get_commands() {
+	dropbox help | grep '^ ' | awk '{print $1}' | sort
+}
+
+function help() {
+	echo
+	echo "$0 <instance> <dropbox command>"
+	echo "$0 <dropbox commands   # which will run said command for every instance"
+	echo
+	echo "Available instances: ${dbinstances[@]}"
+	echo
+	echo "Available commands: ${dbcommands[@]}"
+	echo
+}
+
+declare -a dbinstances=($(get_instances))
+declare -a dbcommands=($(get_commands))
+
+# https://unix.stackexchange.com/a/177589
+declare -A dbinstmap
+declare -A dbcommap
+for key in "${!dbinstances[@]}"; do dbinstmap[${dbinstances[$key]}]="$key"; done
+for key in "${!dbcommands[@]}";  do  dbcommap[${dbcommands[$key]}]="$key";  done
+
+arg=${1:-}
+
+if [ -z "$arg" ]
+then
+	help
+	exit 1
+elif [ -n "${dbinstmap[$arg]:-}" ]
+then
+	instance=${arg}
+	shift
     docker exec -ti dropbox-${instance} dropbox "$@";
+elif [ -n "${dbcommap[$arg]:-}" ]
+then
+	for i in ${dbinstances[@]}
+	do
+		echo -n "${i} : "
+		docker exec -ti dropbox-${i} dropbox "$@"
+	done
 else
-    echo ENOARGS;
-	echo "$0 <instance> <dropbox commands>"
+	echo "First argument '$arg' is not a dropbox instance or a dropbox command"
+	help
+	exit 2
 fi
+
+
 

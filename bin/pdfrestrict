@@ -9,8 +9,7 @@ then
 
 	pdftk "${file}" output "${pdfout}" encrypt_128bit owner_pw "${pw}" allow printing
 
-	echo "Converted ${file} to restricted pdf"
-	echo "${pdfout}"
+	echo "Converted ${file} to restricted pdf ${pdfout}"
 else
 	echo "No filename to convert was given" >&2
 	exit 1

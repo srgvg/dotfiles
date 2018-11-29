@@ -7,7 +7,6 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-DEBUG=2
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -22,18 +21,42 @@ fi
 
 if ! nmcli device show enp0s31f6 | grep -q LAN-LCM
 then
+	echo
+	echo '** nmcli connection up LAN-LCM'
 	nmcli connection up LAN-LCM
 fi
 
 if dnssec-trigger-control status | grep -q insecure_mode
 then
+	echo
+	echo '** dnssec-trigger-control reprobe'
 	dnssec-trigger-control reprobe
 fi
 
+echo
+echo '** dnssec-trigger-script --cleanup'
 sudo /usr/libexec/dnssec-trigger-script --cleanup ||:
+
+echo
+echo '** submitting LCm dns servers to dnssec-trigger'
 dnssec-trigger-control submit $(nmcli d show enp0s31f6 | grep IP4.DNS | cut -d: -f2 | xargs)
 
+echo '** dnssec-trigger-control status'
 dnssec-trigger-control status
+echo
+echo '** dnssec-trigger-control hotspot_signon'
 dnssec-trigger-control hotspot_signon
 
+echo
+echo '** updating resolv.conf'
 nmcli d show enp0s31f6 | grep IP4.DNS | cut -d: -f2 | sed 's/^\s*/nameserver /' | sudo tee /etc/resolv.conf
+
+{
+echo
+echo '** insecure zones:'
+sudo unbound-control list_insecure
+echo
+echo '** forwarders:'
+sudo unbound-control list_forwards
+echo
+} | grep -v arpa

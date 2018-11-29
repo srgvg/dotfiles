@@ -12,28 +12,32 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-pulseaudio --check || pulseaudio --start
-
 
 function outputs() {
 	outputs="$(pactl list short sinks | awk '{print $1}' |
-				grep -v ^$ | sort -n | xargs) "
+				grep -v ^$ | sort -n | xargs)"
+	notify_debug "outputs: ${outputs}"
 	current_sink=$(defaultsink)
-	# make the current default sink the first in the list, whilst keeping tyhe
+	notify_debug "current sink: ${current_sink}"
+	# make the current default sink the first in the list, whilst keeping the
 	# list circular sorted
-	notify_debug "${current_sink}@@${outputs#*${current_sink} }@@${outputs%${current_sink} *}"
-	echo "${current_sink} ${outputs#*${current_sink} } ${outputs%${current_sink} *}"
+	notify_debug "ordered sinks, default first: ${current_sink} - ${outputs#*${current_sink}} - ${outputs%${current_sink}*}"
+	echo "${current_sink} ${outputs#*${current_sink}} ${outputs%${current_sink}*}"
 }
 
 function outputsnames() {
+	local _sinkname
 	for sink in $(outputs)
 	do
-		echo "$sink $(sinkname $sink)"
+		_sinkname=$(sinkname $sink)
+		echo "$sink ${_sinkname}"
+		notify_debug "sink $sink = ${_sinkname}"
+
 	done
 }
 
 function defaultsink() {
-	ponymix defaults | grep sink | awk '{print $2}' | sed 's/://'
+	ponymix defaults | grep ^sink | awk '{print $2}' | sed 's/://'
 }
 
 function sinkname() {
@@ -42,7 +46,10 @@ function sinkname() {
 }
 
 function selectsink() {
-	outputsnames | (dmenu -p "Select audio output: " -l 10 ||:) | awk '{print $1}'
+	local _selectedsink
+	_selectedsink=$(outputsnames | (dmenu -p "Select audio output: " -l 10 ||:) | awk '{print $1}')
+	notify_debug "selected sink: ${_selectedsink}"
+	echo ${_selectedsink}
 }
 
 function updatesink() {
@@ -50,15 +57,15 @@ function updatesink() {
 	pacmd set-default-sink $next_sink
 	pactl list short sink-inputs | awk '{print $1}' | while read -r streamid
 	do
+		notify_debug "move sink-input '$streamid' to '$next_sink'"
 		pactl move-sink-input "$streamid" "$next_sink"
 	done
 }
 
 function main() {
 	local action=${1:-}
+	pulseaudio --check || pulseaudio --start
 
-	# reset pulseaudio-dlna-d to let him clean up old dlna devices
-	#pkill -SIGINT --parent $(pgrep --full "bin/pulseaudio-dlna-d" | head -n 1)
 
 	previous_sink=$(defaultsink)
 	previous_sink_name=$(sinkname $previous_sink)
@@ -69,14 +76,18 @@ function main() {
 		next_sink_name="${PA_SINK_DEFAULT_NAME}"
 	else
 		next_sink=$(selectsink)
-		[ -z "$next_sink" ] && exit
+		if [ -z "${next_sink}" ]
+		then
+			notify_debug "no sink selected, exiting"
+			exit 0
+		fi
 		next_sink_name=$(sinkname $next_sink)
 	fi
 
 	if [ ! "${previous_sink}" -eq "${next_sink}" ]
 	then
 		updatesink $next_sink
-		notify_send -u low "Activated: $next_sink_name" "previously: $previous_sink_name"
+		notify_desktop low "Activated: $next_sink_name" "previously: $previous_sink_name" "volume-knob" $(basename ${0})
 	fi
 }
 

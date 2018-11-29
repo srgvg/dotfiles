@@ -179,11 +179,14 @@ function notify_desktop() {
 		local body
 		local color
 		local icon
+		local app
 
 		urgency=${1}
 		summary=${2}
 		body=${3}
 		icon=${4:-dialog-info}
+		app=${5:-$(hostname)}
+		[ -n "${app}" ] && app="--app-name=${app}"
 
 		case $urgency in
 			"low")
@@ -200,7 +203,7 @@ function notify_desktop() {
 				;;
 		esac
 
-		notify-send --urgency="${urgency}" --icon="${icon}" \
+		notify-send --urgency="${urgency}" --icon="${icon}" "${app}"\
 					"${summary}" "${body}" || :
 	fi
 	set_xtrace
@@ -210,7 +213,7 @@ function notify2() {
 	{ set +x; } 2>/dev/null
 	local message="${1:-}"
 	notify "${message}"
-	notify_desktop normal "$(basename ${BASH_SOURCE[1]})" "${message}"
+	notify_desktop normal "$(basename ${BASH_SOURCE[1]})" "${message} info"
 }
 
 function notify_error_desktop() {
@@ -223,7 +226,7 @@ function notify_error_desktop() {
 	else
 		message="$*"
 	fi
-	notify_desktop critical ERROR "${message}"
+	notify_desktop critical ERROR "${message} error"
 }
 
 function errexit_desktop() {

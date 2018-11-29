@@ -11,25 +11,25 @@ COLIN = "#FFFFFF"
 status = Status()
 
 status.register("online",
-                hints = {"separator": False, "separator_block_width": 0},
+                hints = {"separator": False, "separator_block_width": 1},
                 format_online="",
                 color=COLAU,
                 format_offline="",
                 color_offline="#ff0000")
 
 status.register("shell",
-                hints = {"separator": False, "separator_block_width": 0},
+                hints = {"separator": False, "separator_block_width": 1},
                 ignore_empty_stdout=True,
                 color=COLIN,
                 command="i3pystatus-commands wifi",
                 interval=2)
 
 status.register("keyboard_locks",
-                hints = {"separator": False, "separator_block_width": 0},
+                hints = {"separator": False, "separator_block_width": 1},
                 color=COLIN,
                 format="{num}",
-                num_off="",
-                num_on="",)
+                num_on="",
+                num_off="_",)
 
 status.register("backlight",
                 hints = {"separator": False, "separator_block_width": 2},

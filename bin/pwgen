@@ -65,5 +65,5 @@ esac
 
 # formerly using xclip - gives trouble when this script is redirected to not stdout
 echo -n $pass | xsel --clipboard --input
-notify_desktop low "Password copied to clipboard" "${msg}"
+notify_desktop low "Password copied to clipboard" "${msg}" stock_lock pwgen
 echo "${pass}"

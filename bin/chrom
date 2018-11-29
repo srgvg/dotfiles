@@ -21,6 +21,7 @@ PROFILESDIR="$HOME/.config/${BROWSER}/profiles"
 CACHEDIR="$HOME/.cache/google-chrome/profiles"
 
 function _addpreferences() {
+	notify "Setting default browser preferences"
 	local=PREFERENCEDIR
 	# shellcheck disable=SC2034
 	local=PREFERENCEPATH
@@ -29,178 +30,178 @@ function _addpreferences() {
 
 	mkdir -p "${PREFERENCEDIR}"
 	cat >"${PREFERENCEPATH}" <<-EOF
-{
-  "AudioCaptureAllowed": false,
-  "alternate_error_pages": {
-    "enabled": false
-  },
-  "autofill": {
-    "enabled": false
-  },
-  "bookmark_bar": {
-    "show_apps_shortcut": false,
-    "show_on_all_tabs": false
-  },
-  "browser": {
-    "check_default_browser": false,
-    "custom_chrome_frame": false,
-	"has_seen_welcome_page": true,
-    "enable_spellchecking": false,
-    "show_home_button": false
-  },
-  "distribution": {
-    "auto_launch_chrome": false,
-    "create_all_shortcuts": false,
-    "do_not_create_desktop_shortcut": true,
-    "do_not_create_quick_launch_shortcut": true,
-    "do_not_launch_chrome": true,
-    "do_not_register_for_update_launch": true,
-    "import_bookmarks": true,
-    "import_history": false,
-    "import_home_page": true,
-    "import_search_engine": false,
-    "make_chrome_default": false,
-    "make_chrome_default_for_user": false,
-    "show_welcome_page": true,
-    "skip_first_run_ui": true,
-    "suppress_first_run_bubble": true,
-    "suppress_first_run_default_BROWSER_prompt": true,
-    "suppress_first_run_default_browser_prompt": true,
-    "system_level": true,
-    "verbose_logging": true
-  },
-  "download": {
-    "default_directory": "~/PROFILEPATH",
-    "directory_upgrade": true,
-    "prompt_for_download": true
-  },
-  "first_run_tabs": [
-    "https://duckduckgo.com/"
-  ],
-  "homepage": "https://duckduckgo.com/",
-  "homepage_is_newtabpage": false,
-  "net": {
-    "network_prediction_options": 2
-  },
-  "profile": {
-    "password_manager_enabled": false,
-	"avatar_bubble_tutorial_shown": 2,
-	"avatar_index": 26,
-	"blacklisted_credentials_stripped": true,
-    "content_settings": {
-      "exceptions": {
-        "accessibility_events": {},
-        "app_banner": {},
-        "auto_select_certificate": {},
-        "automatic_downloads": {},
-        "autoplay": {},
-        "background_sync": {},
-        "bluetooth_guard": {},
-        "client_hints": {},
-        "clipboard": {},
-        "cookies": {},
-        "durable_storage": {},
-        "flash_data": {},
-        "geolocation": {},
-        "images": {},
-        "important_site_info": {},
-        "javascript": {},
-        "media_engagement": {},
-        "media_stream_camera": {},
-        "media_stream_mic": {},
-        "midi_sysex": {},
-        "mixed_script": {},
-        "notifications": {},
-        "password_protection": {},
-        "payment_handler": {},
-        "permission_autoblocking_data": {},
-        "plugins": {},
-        "popups": {},
-        "ppapi_broker": {},
-        "protocol_handler": {},
-        "sensors": {},
-        "site_engagement": {
-          "https://community.spiceworks.com:443,*": {
-            "last_modified": "13173468420694804",
-            "setting": {
-              "lastEngagementTime": 13173468420694712,
-              "lastShortcutLaunchTime": 0,
-              "pointsAddedToday": 2.7,
-              "rawScore": 2.7
-            }
-          },
-          "https://productforums.google.com:443,*": {
-            "last_modified": "13173469032282436",
-            "setting": {
-              "lastEngagementTime": 13173469032282340,
-              "lastShortcutLaunchTime": 0,
-              "pointsAddedToday": 3.9000000000000004,
-              "rawScore": 3.9000000000000004
-            }
-          },
-          "https://www.google.be:443,*": {
-            "last_modified": "13173468397994655",
-            "setting": {
-              "lastEngagementTime": 13173468397994624,
-              "lastShortcutLaunchTime": 0,
-              "pointsAddedToday": 3.6,
-              "rawScore": 3.6
-            }
-          }
-        },
-        "sound": {},
-        "ssl_cert_decisions": {},
-        "subresource_filter": {},
-        "subresource_filter_data": {},
-        "usb_chooser_data": {},
-        "usb_guard": {}
-      },
-      "pref_version": 1
-    },
-    "created_by_version": "67.0.3396.87",
-	"exited_cleanly": true,
-	"managed_user_id": "",
-i	"name": "Anonymous",
+			{
+			  "AudioCaptureAllowed": false,
+			  "alternate_error_pages": {
+			    "enabled": false
+			  },
+			  "autofill": {
+			    "enabled": false
+			  },
+			  "bookmark_bar": {
+			    "show_apps_shortcut": false,
+			    "show_on_all_tabs": false
+			  },
+			  "browser": {
+			    "check_default_browser": false,
+			    "custom_chrome_frame": false,
+				"has_seen_welcome_page": true,
+			    "enable_spellchecking": false,
+			    "show_home_button": false
+			  },
+			  "distribution": {
+			    "auto_launch_chrome": false,
+			    "create_all_shortcuts": false,
+			    "do_not_create_desktop_shortcut": true,
+			    "do_not_create_quick_launch_shortcut": true,
+			    "do_not_launch_chrome": true,
+			    "do_not_register_for_update_launch": true,
+			    "import_bookmarks": true,
+			    "import_history": false,
+			    "import_home_page": true,
+			    "import_search_engine": false,
+			    "make_chrome_default": false,
+			    "make_chrome_default_for_user": false,
+			    "show_welcome_page": true,
+			    "skip_first_run_ui": true,
+			    "suppress_first_run_bubble": true,
+			    "suppress_first_run_default_BROWSER_prompt": true,
+			    "suppress_first_run_default_browser_prompt": true,
+			    "system_level": true,
+			    "verbose_logging": true
+			  },
+			  "download": {
+			    "default_directory": "~/PROFILEPATH",
+			    "directory_upgrade": true,
+			    "prompt_for_download": true
+			  },
+			  "first_run_tabs": [
+			    "https://duckduckgo.com/"
+			  ],
+			  "homepage": "https://duckduckgo.com/",
+			  "homepage_is_newtabpage": false,
+			  "net": {
+			    "network_prediction_options": 2
+			  },
+			  "profile": {
+			    "password_manager_enabled": false,
+				"avatar_bubble_tutorial_shown": 2,
+				"avatar_index": 26,
+				"blacklisted_credentials_stripped": true,
+			    "content_settings": {
+			      "exceptions": {
+			        "accessibility_events": {},
+			        "app_banner": {},
+			        "auto_select_certificate": {},
+			        "automatic_downloads": {},
+			        "autoplay": {},
+			        "background_sync": {},
+			        "bluetooth_guard": {},
+			        "client_hints": {},
+			        "clipboard": {},
+			        "cookies": {},
+			        "durable_storage": {},
+			        "flash_data": {},
+			        "geolocation": {},
+			        "images": {},
+			        "important_site_info": {},
+			        "javascript": {},
+			        "media_engagement": {},
+			        "media_stream_camera": {},
+			        "media_stream_mic": {},
+			        "midi_sysex": {},
+			        "mixed_script": {},
+			        "notifications": {},
+			        "password_protection": {},
+			        "payment_handler": {},
+			        "permission_autoblocking_data": {},
+			        "plugins": {},
+			        "popups": {},
+			        "ppapi_broker": {},
+			        "protocol_handler": {},
+			        "sensors": {},
+			        "site_engagement": {
+			          "https://community.spiceworks.com:443,*": {
+			            "last_modified": "13173468420694804",
+			            "setting": {
+			              "lastEngagementTime": 13173468420694712,
+			              "lastShortcutLaunchTime": 0,
+			              "pointsAddedToday": 2.7,
+			              "rawScore": 2.7
+			            }
+			          },
+			          "https://productforums.google.com:443,*": {
+			            "last_modified": "13173469032282436",
+			            "setting": {
+			              "lastEngagementTime": 13173469032282340,
+			              "lastShortcutLaunchTime": 0,
+			              "pointsAddedToday": 3.9000000000000004,
+			              "rawScore": 3.9000000000000004
+			            }
+			          },
+			          "https://www.google.be:443,*": {
+			            "last_modified": "13173468397994655",
+			            "setting": {
+			              "lastEngagementTime": 13173468397994624,
+			              "lastShortcutLaunchTime": 0,
+			              "pointsAddedToday": 3.6,
+			              "rawScore": 3.6
+			            }
+			          }
+			        },
+			        "sound": {},
+			        "ssl_cert_decisions": {},
+			        "subresource_filter": {},
+			        "subresource_filter_data": {},
+			        "usb_chooser_data": {},
+			        "usb_guard": {}
+			      },
+			      "pref_version": 1
+			    },
+			    "created_by_version": "67.0.3396.87",
+				"exited_cleanly": true,
+				"managed_user_id": "",
+			i	"name": "Anonymous",
 
-  },
-  "safebrowsing": {
-    "enabled": false
-  },
-  "search": {
-    "suggest_enabled": false
-  },
-  "spellcheck": {
-    "dictionaries": [
-      "en-US"
-    ],
-    "dictionary": ""
-  },
-  "sync_promo": {
-    "show_on_first_run_allowed": false
-  },
-  "translate": {
-    "enabled": false
-  },
-  "translate_blocked_languages": [
-    "en",
-    "nl",
-    "fr"
-  ]
-}
-EOF
+			  },
+			  "safebrowsing": {
+			    "enabled": false
+			  },
+			  "search": {
+			    "suggest_enabled": false
+			  },
+			  "spellcheck": {
+			    "dictionaries": [
+			      "en-US"
+			    ],
+			    "dictionary": ""
+			  },
+			  "sync_promo": {
+			    "show_on_first_run_allowed": false
+			  },
+			  "translate": {
+			    "enabled": false
+			  },
+			  "translate_blocked_languages": [
+			    "en",
+			    "nl",
+			    "fr"
+			  ]
+			}
+			EOF
 }
 
 function _cleanup() {
-	rm -Rf "${PROFILEPATH}" "${CACHEPATH}"
+	notify "Cleaning up ${PROFILEPATH} and ${CACHEPATH}"
+	notify_debug "$(rm -Rf "${PROFILEPATH}" "${CACHEPATH}")"
 }
 
 function _set_tmp() {
+	notify "Setting tmp session options"
 	NOFLOAT=""
 	[ "${PROFILECLASS}" = "TMP" ] && NOFLOAT=1
 	PROFILEPATH="$(mktemp -d -p "${PROFILESDIR}")"
 	PROFILENAME="${PROFILEPATH#${PROFILESDIR}/}" # get the basename 'tmp-***'
-	CLASS="browser-${PROFILENAME}"
-	PROFILECLASS="${PROFILENAME}"
 	[ -n "${NOFLOAT}" ] && PROFILECLASS="${PROFILECLASS/tmp/TMP}"
 	CACHEPATH="${CACHEDIR}/${PROFILENAME}"
 
@@ -208,7 +209,7 @@ function _set_tmp() {
 	SWITCHES="${SWITCHES} --disable-infobars"
 	SWITCHES="${SWITCHES} --disable-translate"
 	SWITCHES="${SWITCHES} --window-size=1200,800"
-	#SWITCHES="${SWITCHES} --incognito"
+	SWITCHES="${SWITCHES} --incognito"
 
 	_addpreferences
 }
@@ -218,92 +219,96 @@ function _query_parameter() {
 	# shellcheck disable=SC2048
 	for p in $*
 	do
-		if [ -z "${QUERY}" ]
+		if [ -z "${QUERY}" ]	# first iteration
 		then
 			QUERY="${p}"
-		else
+		else					# next iterations
 			QUERY="${QUERY}+${p}"
 		fi
 	done
 	echo ${QUERY}
 }
 
+#####################################################################
 
+notify_debug "Started as '$0 $*'"
 
-mkdir -p "${PROFILESDIR}" "${CACHEDIR}"
+mkdir -vp "${PROFILESDIR}" "${CACHEDIR}"
 myname=$(basename $0)
+myaction="${1:-}"
+shopt -s extglob         # enables pattern lists like +(...|...)
+matchtest='+(serge|google|radio|g|i|TMP|tmp)'
 case ${myname} in
-	i|g)
+	chrom)
+		case "${myaction}" in
+			${matchtest})
+				PROFILECLASS="${myaction}"
+				shift
+				;;
+			*)
+				PROFILECLASS="tmp"
+				;;
+		esac
+		;;
+	google-chrome|chromium|x-www-browser)
+		PROFILECLASS="tmp"
+		;;
+	${matchtest})
 		PROFILECLASS=${myname}
 		;;
+	google-chrome|chromium)
+		PROFILECLASS=tmp
+		;;
 	*)
-		if [ -n "${1:-}" ]
-		then
-			PROFILECLASS="${1}"
-		else
-			PROFILECLASS="tmp"
-		fi
+		errexit_desktop "Unknown profile '${myname}'"
 		;;
 esac
-
+notify "Profileclass set to ${PROFILECLASS}"
 PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
+
 case ${PROFILECLASS} in
-	serge)				shift;;
-	google)				shift;;
-	radio)				shift;;
-	g)	# google search
-		[ $PROFILECLASS != $myname ] && shift
-		URL="https://www.google.com/search?q"
+	serge|google|radio)
+		:
+		;;
+	g)	# search
+		#URL="https://www.google.com/search?q"
+		URL="https://duckduckgo.com/?q"
+		notify "Setting search query parameters $*"
 		# shellcheck disable=SC2048
 		QUERY=$(_query_parameter $*)
 		shift $#
 		_set_tmp
 		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
 		;;
-	i)	# google image search
-		[ $PROFILECLASS != $myname ] && shift
+	i)	# image search
 		#URL="https://www.google.com/search?as_st=y&tbs=isz%3Alt%2Cislt%3A2mp&tbm=isch&source=hp&biw=1920&bih=973&ei=k1VfWu2jKYjKkwXJorDoDQ&q"
 		URL="https://duckduckgo.com/?iax=images&ia=images&iaf=layout%3Aaspect-wide%2Csize%3Aimagesize-wallpaper&q"
 		PROFILECLASS="TMP"
+		notify "Setting search query parameters $*"
 		# shellcheck disable=SC2048
 		QUERY=$(_query_parameter $*)
 		shift $#
 		_set_tmp
 		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
 		;;
-	TMP) # special option to have a temp session as tiling window
-		PROFILECLASS="TMP"
-		shift
+	TMP|tmp) # special option to have a temp session as tiling window
 		_set_tmp
 		trap _cleanup EXIT
+		#if [ -z "$*" ]
+		#then
+		#	SWITCHES="${SWITCHES} https://duckduckgo.com/"
+		#fi
 		;;
 	*)
-		_set_tmp
-		trap _cleanup EXIT
+		errexit_desktop
 		;;
 esac
 
 CLASS=browser-${PROFILECLASS}
-
+SWITCHES="--class=${CLASS} ${SWITCHES}"
 ARGS=("$@")
+SWITCHES="--user-data-dir=${PROFILEPATH} ${SWITCHES}"
 
-if [ -n "${CLASS}" ]
-then
-	SWITCHES="--class=${CLASS} ${SWITCHES}"
-fi
-
-if [ -n "${PROFILEPATH}" ]
-then
-	SWITCHES="--user-data-dir=${PROFILEPATH} ${SWITCHES}"
-fi
-
-#if [ "$(nmcli device show enp0s31f6 | grep GENERAL.CONNECTION | \
-#	awk '{print $2}')" = "LAN-LCM" ]
-#then
-#	SWITCHES="--proxy-pac-url=http://pac.webdefence.global.blackspider.com/proxy.pac?p=bbfk74zg ${SWITCHES}"
-#fi
 # shellcheck disable=SC2068
-echo /usr/bin/${BROWSER} ${SWITCHES} ${ARGS[@]}
-# shellcheck disable=SC2068
+notify_debug "Starting '/usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"'"
 /usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"
-

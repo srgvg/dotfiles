@@ -195,5 +195,11 @@ else
 fi
 
 volume "${device}" "${action}"
-#notify_desktop low i3-volume "$device2: volume ${action} [$level]" $icon
-notify_desktop low i3-volume "$device2: volume ${action}" $icon
+
+if [ "${device}" = "sonos" ]
+then
+	level="$(sonos volume)"
+else
+	level="$(ponymix get-volume)"
+fi
+notify_desktop low "$device2 [$level]" "volume ${action} → ${level}" $icon i3-volume

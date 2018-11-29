@@ -12,10 +12,10 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-SLEEP_TIME=5   # Default time between checks.
-SAFE_PERCENT=30  # Still safe at this level.
-DANGER_PERCENT=15  # Warn when battery at this level.
-CRITICAL_PERCENT=5  # Hibernate when battery at this level.
+SLEEP_TIME=15		# Default time between checks.
+SAFE_PERCENT=30		# Still safe at this level.
+DANGER_PERCENT=15	# Warn when battery at this level.
+CRITICAL_PERCENT=5	# Hibernate when battery at this level.
 
 NAGBAR_PID=0
 export DISPLAY=:0.0
@@ -29,10 +29,7 @@ function launchNagBar
 function killNagBar
 {
     if [[ $NAGBAR_PID -ne 0 ]]; then
-        ps -p $NAGBAR_PID | grep "i3-nagbar"
-        if [[ $? -eq 0 ]]; then
-            kill $NAGBAR_PID
-        fi
+		kill $NAGBAR_PID
         NAGBAR_PID=0
     fi
 }
@@ -50,11 +47,11 @@ while [ true ]; do
 		notify "Battery discharging... ${rem_bat}% left"
 
         if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
-            SLEEP_TIME=30
+            SLEEP_TIME=15
         else
-            SLEEP_TIME=10
+            SLEEP_TIME=5
             if [[ $rem_bat -le $DANGER_PERCENT ]]; then
-                SLEEP_TIME=5
+                SLEEP_TIME=1
                 launchNagBar
             fi
             if [[ $rem_bat -le $CRITICAL_PERCENT ]]; then

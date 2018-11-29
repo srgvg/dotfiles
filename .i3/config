@@ -597,8 +597,8 @@ bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HO
 # start browsers
 bindsym $mod+Control+o			exec chrom serge
 bindsym $mod+Control+Shift+o	exec chrom google
-bindsym $mod+o					exec chrom /dev/null
-bindsym $mod+Shift+o			exec chrom TMP /dev/null
+bindsym $mod+o					exec chrom
+bindsym $mod+Shift+o			exec chrom TMP
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
@@ -618,7 +618,7 @@ bindsym $mod+$Alt+n				exec nm-toggle-wifi
 
 
 # custom shit
-bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705883544.remmina
+bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705868530.remmina
 
 #######################################################################################################################
 #
@@ -804,6 +804,7 @@ assign [class="Wireshark" instance="wireshark"] $ws_tool1
 assign [class="Remmina" instance="remmina" title="cmc.be"] 12
 assign [class="Remmina" instance="remmina"]		$ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
+for_window [class="^rdesktop"] floating disable
 
 # Teamviewer
 #assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
@@ -886,6 +887,7 @@ exec "nextcloud-client &"
 #exec "alarm-clock-applet --hidden &"
 exec "gufw &"
 exec "dnssec-trigger-panel &"
+exec "blueman-applet &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec --no-startup-id "setbg default"

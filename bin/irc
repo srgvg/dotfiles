@@ -20,25 +20,30 @@ on_exit() {
     ssh ${IRC_HOST} -O exit
 }
 
+ifdebug1 && SSHDEBUG="-v" || SSHDEBUG=""
 action="${1:-}"
 if [ "${action}" = "lock" ]
 then
+	notify_debug "got lock signal, removing $WEECHAT_FILEAWAY"
     # only lock existing open connections, so check if the CM socket is
     # available - master process can still be running, but ssh can timeout
 	# b/c no network - so we do an extra check with low timeout to avoid this
 	# script waiting for the whole big timeout when locking when no network
 	# (which happens when closing the lid)
-	# But. We still have a timemout for host resolution. Hence & backgrounded
-    ssh ${IRC_HOST} -O check >/dev/null 2>&1 \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 "rm -fv $WEECHAT_FILEAWAY"
+    ssh ${SSHDEBUG} ${IRC_HOST} -O check >/dev/null 2>&1 \
+		&& ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 "rm -fv $WEECHAT_FILEAWAY"
 elif [ "${action}" = "unlock" ]
 then
+	notify_debug "got unlock signal, creating $WEECHAT_FILEAWAY"
 	# same same
-	ssh ${IRC_HOST} -O check &>/dev/null \
-		&& ssh ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
+	ssh ${SSHDEBUG} ${IRC_HOST} -O check &>/dev/null \
+		&& ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
 else
+	notify_debug "Set up a trap for exit"
     trap on_exit INT TERM EXIT
-	ssh ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
-    ssh ${IRC_HOST} -t "tmux new-session -A -s irc weechat"
+	notify_debug "ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 'touch $WEECHAT_FILEAWAY'"
+	ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
+    notify_debug "ssh ${SSHDEBUG} ${IRC_HOST} -t 'tmux new-session -A -s irc weechat'"
+    ssh ${SSHDEBUG} ${IRC_HOST} -t 'tmux new-session -A -s irc weechat'
 fi
 

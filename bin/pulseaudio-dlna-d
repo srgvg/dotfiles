@@ -19,8 +19,8 @@ pulseaudio_dlna_opts="--msearch-port 65353 --port 58080 --auto-reconnect"
 trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
     trap - SIGINT
-    sleep 1
 	pulseaudio --check && pulseaudio --kill
+    sleep 1
 	pulseaudio --start
     echo PULSEAUDIO RESTARTED
 }
@@ -29,6 +29,7 @@ while true
 do
 	# press ctrl-c to restart pulseaudio-dlna
 	trap trap_continue SIGINT
+	pulseaudio --check || pulseaudio --start
     pulseaudio-dlna ${pulseaudio_dlna_opts}
 done
 

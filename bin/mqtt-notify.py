@@ -96,12 +96,13 @@ def on_message(client, userdata, msg):
                                      message['buffer_short'],
                                      message['server'])
         body = '%s\n(%s)' % (message['message'], message['local_time'])
+        body1 = '%s' % (message['message'])
 
         # NOTIFY
         notify(summary=summary, body=body)
 
         if not DEBUG:
-            print message['local_time'], summary, body
+            print message['local_time'], summary, body1
 
     if DEBUG:
         print json.dumps(message, indent=4, sort_keys=True)

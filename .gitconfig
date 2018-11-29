@@ -52,7 +52,7 @@
 	root = rev-parse --show-toplevel
 
 	show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
-	st = status -sb
+	st = status --short --branch --verbose --show-stash
 
 	stash-all = stash save --include-untracked
 

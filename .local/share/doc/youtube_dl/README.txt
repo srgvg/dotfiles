@@ -20,7 +20,7 @@ youtube-dl - download videos from youtube.com or other video platforms
 INSTALLATION
 
 
-To install it right away for all UNIX users (Linux, OS X, etc.), type:
+To install it right away for all UNIX users (Linux, macOS, etc.), type:
 
     sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
     sudo chmod a+rx /usr/local/bin/youtube-dl
@@ -41,7 +41,7 @@ You can also use pip:
 This command will update youtube-dl if you have already installed it.
 See the pypi page for more information.
 
-OS X users can install youtube-dl with Homebrew:
+macOS users can install youtube-dl with Homebrew:
 
     brew install youtube-dl
 
@@ -61,9 +61,9 @@ DESCRIPTION
 YOUTUBE-DL is a command-line program to download videos from YouTube.com
 and a few more sites. It requires the Python interpreter, version 2.6,
 2.7, or 3.2+, and it is not platform specific. It should work on your
-Unix box, on Windows or on Mac OS X. It is released to the public
-domain, which means you can modify it, redistribute it or use it however
-you like.
+Unix box, on Windows or on macOS. It is released to the public domain,
+which means you can modify it, redistribute it or use it however you
+like.
 
     youtube-dl [OPTIONS] URL [URL...]
 
@@ -116,8 +116,8 @@ OPTIONS
 Network Options:
 
     --proxy URL                      Use the specified HTTP/HTTPS/SOCKS proxy.
-                                     To enable experimental SOCKS proxy, specify
-                                     a proper scheme. For example
+                                     To enable SOCKS proxy, specify a proper
+                                     scheme. For example
                                      socks5://127.0.0.1:1080/. Pass in an empty
                                      string (--proxy "") for direct connection
     --socket-timeout SECONDS         Time to wait before giving up, in seconds
@@ -131,16 +131,18 @@ Geo Restriction:
     --geo-verification-proxy URL     Use this proxy to verify the IP address for
                                      some geo-restricted sites. The default
                                      proxy specified by --proxy (or none, if the
-                                     options is not present) is used for the
+                                     option is not present) is used for the
                                      actual downloading.
     --geo-bypass                     Bypass geographic restriction via faking
-                                     X-Forwarded-For HTTP header (experimental)
+                                     X-Forwarded-For HTTP header
     --no-geo-bypass                  Do not bypass geographic restriction via
                                      faking X-Forwarded-For HTTP header
-                                     (experimental)
     --geo-bypass-country CODE        Force bypass geographic restriction with
                                      explicitly provided two-letter ISO 3166-2
-                                     country code (experimental)
+                                     country code
+    --geo-bypass-ip-block IP_BLOCK   Force bypass geographic restriction with
+                                     explicitly provided IP block in CIDR
+                                     notation
 
 
 Video Selection:
@@ -227,10 +229,15 @@ Download Options:
                                      size. By default, the buffer size is
                                      automatically resized from an initial value
                                      of SIZE.
+    --http-chunk-size SIZE           Size of a chunk for chunk-based HTTP
+                                     downloading (e.g. 10485760 or 10M) (default
+                                     is disabled). May be useful for bypassing
+                                     bandwidth throttling imposed by a webserver
+                                     (experimental)
     --playlist-reverse               Download playlist videos in reverse order
     --playlist-random                Download playlist videos in random order
     --xattr-set-filesize             Set file xattribute ytdl.filesize with
-                                     expected file size (experimental)
+                                     expected file size
     --hls-prefer-native              Use the native HLS downloader instead of
                                      ffmpeg
     --hls-prefer-ffmpeg              Use ffmpeg instead of the native HLS
@@ -249,7 +256,9 @@ Download Options:
 Filesystem Options:
 
     -a, --batch-file FILE            File containing URLs to download ('-' for
-                                     stdin)
+                                     stdin), one URL per line. Lines starting
+                                     with '#', ';' or ']' are considered as
+                                     comments and ignored.
     --id                             Use only video ID in file name
     -o, --output TEMPLATE            Output filename template, see the "OUTPUT
                                      TEMPLATE" for all the info
@@ -465,9 +474,9 @@ Post-processing Options:
                                      default; fix file if we can, warn
                                      otherwise)
     --prefer-avconv                  Prefer avconv over ffmpeg for running the
-                                     postprocessors (default)
-    --prefer-ffmpeg                  Prefer ffmpeg over avconv for running the
                                      postprocessors
+    --prefer-ffmpeg                  Prefer ffmpeg over avconv for running the
+                                     postprocessors (default)
     --ffmpeg-location PATH           Location of the ffmpeg/avconv binary;
                                      either the path to the binary or its
                                      containing directory.
@@ -484,7 +493,7 @@ CONFIGURATION
 
 
 You can configure youtube-dl by placing any supported command line
-option to a configuration file. On Linux and OS X, the system wide
+option to a configuration file. On Linux and macOS, the system wide
 configuration file is located at /etc/youtube-dl.conf and the user wide
 configuration file at ~/.config/youtube-dl/config. On Windows, the user
 wide configuration file locations are %APPDATA%\youtube-dl\config.txt or
@@ -585,6 +594,8 @@ with sequence type are:
     available
 -   upload_date (string): Video upload date (YYYYMMDD)
 -   uploader_id (string): Nickname or id of the video uploader
+-   channel (string): Full name of the channel the video is uploaded on
+-   channel_id (string): Id of the channel
 -   location (string): Physical location where the video was filmed
 -   duration (numeric): Length of the video in seconds
 -   view_count (numeric): How many users have watched the video on the
@@ -631,6 +642,9 @@ with sequence type are:
     with leading zeros according to the total length of the playlist
 -   playlist_id (string): Playlist identifier
 -   playlist_title (string): Playlist title
+-   playlist_uploader (string): Full name of the playlist uploader
+-   playlist_uploader_id (string): Nickname or id of the playlist
+    uploader
 
 Available for the video that belongs to some logical chapter or section:
 
@@ -1135,15 +1149,15 @@ Use the --cookies option, for example
 
 In order to extract cookies from browser use any conforming browser
 extension for exporting cookies. For example, cookies.txt (for Chrome)
-or Export Cookies (for Firefox).
+or cookies.txt (for Firefox).
 
 Note that the cookies file must be in Mozilla/Netscape format and the
 first line of the cookies file must be either # HTTP Cookie File or
 # Netscape HTTP Cookie File. Make sure you have correct newline format
 in the cookies file and convert newlines if necessary to correspond with
 your OS, namely CRLF (\r\n) for Windows and LF (\n) for Unix and
-Unix-like systems (Linux, Mac OS, etc.). HTTP Error 400: Bad Request
-when using --cookies is a good sign of invalid newline format.
+Unix-like systems (Linux, macOS, etc.). HTTP Error 400: Bad Request when
+using --cookies is a good sign of invalid newline format.
 
 Passing cookies to youtube-dl is a good way to workaround login when a
 particular extractor does not implement it explicitly. Another use case
@@ -1343,12 +1357,12 @@ yourextractor):
 1.  Fork this repository
 2.  Check out the source code with:
 
-        git clone git@github.com:YOUR_GITHUB_USERNAME/youtube-dl.git
+         git clone git@github.com:YOUR_GITHUB_USERNAME/youtube-dl.git
 
 3.  Start a new git branch with
 
-        cd youtube-dl
-        git checkout -b yourextractor
+         cd youtube-dl
+         git checkout -b yourextractor
 
 4.  Start with this simple template and save it to
     youtube_dl/extractor/yourextractor.py:
@@ -1411,10 +1425,10 @@ yourextractor):
 9.  When the tests pass, add the new files and commit them and push the
     result, like this:
 
-        $ git add youtube_dl/extractor/extractors.py
-        $ git add youtube_dl/extractor/yourextractor.py
-        $ git commit -m '[yourextractor] Add new extractor'
-        $ git push origin yourextractor
+         $ git add youtube_dl/extractor/extractors.py
+         $ git add youtube_dl/extractor/yourextractor.py
+         $ git commit -m '[yourextractor] Add new extractor'
+         $ git push origin yourextractor
 
 10. Finally, create a pull request. We'll then review and merge it.
 
@@ -1577,9 +1591,28 @@ The code definitely should not look like:
 
 Use safe conversion functions
 
-Wrap all extracted numeric data into safe functions from utils:
-int_or_none, float_or_none. Use them for string to number conversions as
-well.
+Wrap all extracted numeric data into safe functions from
+youtube_dl/utils.py: int_or_none, float_or_none. Use them for string to
+number conversions as well.
+
+Use url_or_none for safe URL processing.
+
+Use try_get for safe metadata extraction from parsed JSON.
+
+Explore youtube_dl/utils.py for more useful convenience functions.
+
+More examples
+
+Safely extract optional description from parsed JSON
+
+    description = try_get(response, lambda x: x['result']['video'][0]['summary'], compat_str)
+
+Safely extract more optional metadata
+
+    video = try_get(response, lambda x: x['result']['video'][0], dict) or {}
+    description = video.get('summary')
+    duration = float_or_none(video.get('durationMs'), scale=1000)
+    view_count = int_or_none(video.get('views'))
 
 
 

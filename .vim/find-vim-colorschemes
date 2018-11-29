@@ -11,8 +11,6 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-check_debug_logging
 
 find /home/serge/.vim/bundle/*/colors/ |
-	sed -e 's/.vim$//'  -e 's@.*/@@g'  |
-	sort -u
+	sed -e 's/.vim$//'  -e 's@.*/@@g'

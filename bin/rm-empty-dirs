@@ -12,28 +12,30 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-if [ x"$1" = xdo ]
+one=${1:-}
+two=${2:-}
+if [ "${one}" = do ]
 then
-    dir='.'
-    act=do
-elif [ x$2 = xdo ]
-then
-    dir="$1"
+    dir="."
     act="do"
-elif [ -z "$1" ]
+elif [ "${two}" = do ]
+then
+    dir="${one}"
+    act="do"
+elif [ -z "${one}" ]
 then
     dir='.'
 else
-    dir="$1"
+    dir="${one}"
 fi
 
-if [ x$act = xdo ]
+if [ "${act:-}" = "do" ]
 then    # act
-        find "$dir" -type d -empty | xargs rmdir --parents --verbose
+        find "$dir" -mindepth 1 -type d -empty | xargs rmdir --parents --verbose
 else    # no act
         echo 'Directories that would be deleted:'
         echo
-        find "$dir" -type d -empty
+        find "$dir" -mindepth 1 -type d -empty
         echo
-        echo 'Execute "'$0 $1 do'" to delete them.'
+        echo "Execute '${0} ${dir} do' to delete them."
 fi
