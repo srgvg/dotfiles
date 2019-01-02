@@ -22,13 +22,13 @@ function get_sink() {
 			ponymix list | grep -B1 "${PA_SINK_DEFAULT_NAME}" | grep sink | awk '{print $2}'  | sed s/://
 			;;
 		short)
-			ponymix defaults | grep sink | awk '{print $3}'
+			ponymix defaults | grep '^sink' | awk '{print $3}'
 			;;
 		long)
-			ponymix defaults | grep -A1 sink | grep -v sink | awk '{$1=$1};1'
+			ponymix defaults | grep -A1 '^sink' | grep -v sink | awk '{$1=$1};1' | head -n1
 			;;
 		number|*)
-			ponymix defaults | grep sink | awk '{print $2}' | sed s/://
+			ponymix defaults | grep '^sink' | awk '{print $2}' | sed s/://
 			;;
 	esac
 }

@@ -597,8 +597,8 @@ bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HO
 # start browsers
 bindsym $mod+Control+o			exec chrom serge
 bindsym $mod+Control+Shift+o	exec chrom google
-bindsym $mod+o					exec chrom
-bindsym $mod+Shift+o			exec chrom TMP
+bindsym $mod+o					exec chrom TMP
+bindsym $mod+Shift+o			exec chrom
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
@@ -882,11 +882,11 @@ exec "system-config-printer-applet &"
 exec "keepassxc &"
 exec "run_keybase &"
 exec "spotify &"
-exec "nextcloud-client &"
+exec "nextcloud &"
 #exec "dropbox start"
 #exec "alarm-clock-applet --hidden &"
-exec "gufw &"
-exec "dnssec-trigger-panel &"
+#exec "gufw &"
+#exec "dnssec-trigger-panel &"
 exec "blueman-applet &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact

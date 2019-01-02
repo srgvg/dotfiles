@@ -11,10 +11,10 @@ DEBUG="${DEBUG:-0}"
 
 IRC_HOST="irchost"
 
-PA_SINK_DEFAULT_NAME="Built-in Audio Analog Stereo"
+PA_SINK_DEFAULT_NAME="Built-in Audio"
 
 #LOCK_ANNOTATETEXT=
-LOCK_DEFAULT_LOCKSCREEN="blurred"
+LOCK_DEFAULT_LOCKSCREEN="flock"
 LOCK_ICONS="$HOME/Pictures/icons/i3lock"
 LOCK_ICON="${LOCK_ICONS}/token.png"
 LOCK_SCREEN_IMAGE="$HOME/.lockscreen.png"
@@ -22,7 +22,7 @@ LOCK_SCREENSHOT_IMAGE="$HOME/.screenshot.png"
 
 LOGS_PATH="$HOME/logs/scripts"
 
-HOME_LAN_SONOS_IP="172.31.32.197"
+HOME_LAN_SONOS_IP="$(dig +short sonos-office.lan.vanginderachter.be || echo -n 172.31.32.31)"
 HOME_LAN_SUBNET="172.31.32"
 
 SETBG_BACKGROUND="$HOME/.background.png"

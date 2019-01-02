@@ -21,12 +21,12 @@ PROFILESDIR="$HOME/.config/${BROWSER}/profiles"
 CACHEDIR="$HOME/.cache/google-chrome/profiles"
 
 function _addpreferences() {
-	notify "Setting default browser preferences"
 	local=PREFERENCEDIR
 	# shellcheck disable=SC2034
 	local=PREFERENCEPATH
-	PREFERENCEDIR="${PROFILEPATH}/user_data/Default"
+	PREFERENCEDIR="${PROFILEPATH}/Default"
 	PREFERENCEPATH="${PREFERENCEDIR}/Preferences"
+	notify "Setting default browser preferences as ${PREFERENCEPATH}"
 
 	mkdir -p "${PREFERENCEDIR}"
 	cat >"${PREFERENCEPATH}" <<-EOF
@@ -48,6 +48,31 @@ function _addpreferences() {
 				"has_seen_welcome_page": true,
 			    "enable_spellchecking": false,
 			    "show_home_button": false
+			  },
+		    "default_search_provider_data": {
+			    "template_url_data": {
+			      "alternate_urls": [],
+			      "contextual_search_url": "",
+			      "created_by_policy": false,
+			      "doodle_url": "",
+			      "favicon_url": "",
+			      "id": "1",
+			      "image_url": "",
+			      "image_url_post_params": "",
+			      "input_encodings": [],
+			      "keyword": "duckduckgo.com",
+			      "logo_url": "",
+			      "new_tab_url": "",
+			      "originating_url": "",
+			      "prepopulate_id": 0,
+			      "safe_for_autoreplace": false,
+			      "search_url_post_params": "",
+			      "short_name": "DuckDuckGo",
+			      "suggestions_url": "",
+			      "suggestions_url_post_params": "",
+			      "url": "https://duckduckgo.com/?q={searchTerms}",
+			      "usage_count": 0
+			    }
 			  },
 			  "distribution": {
 			    "auto_launch_chrome": false,
@@ -120,35 +145,6 @@ function _addpreferences() {
 			        "ppapi_broker": {},
 			        "protocol_handler": {},
 			        "sensors": {},
-			        "site_engagement": {
-			          "https://community.spiceworks.com:443,*": {
-			            "last_modified": "13173468420694804",
-			            "setting": {
-			              "lastEngagementTime": 13173468420694712,
-			              "lastShortcutLaunchTime": 0,
-			              "pointsAddedToday": 2.7,
-			              "rawScore": 2.7
-			            }
-			          },
-			          "https://productforums.google.com:443,*": {
-			            "last_modified": "13173469032282436",
-			            "setting": {
-			              "lastEngagementTime": 13173469032282340,
-			              "lastShortcutLaunchTime": 0,
-			              "pointsAddedToday": 3.9000000000000004,
-			              "rawScore": 3.9000000000000004
-			            }
-			          },
-			          "https://www.google.be:443,*": {
-			            "last_modified": "13173468397994655",
-			            "setting": {
-			              "lastEngagementTime": 13173468397994624,
-			              "lastShortcutLaunchTime": 0,
-			              "pointsAddedToday": 3.6,
-			              "rawScore": 3.6
-			            }
-			          }
-			        },
 			        "sound": {},
 			        "ssl_cert_decisions": {},
 			        "subresource_filter": {},
@@ -161,8 +157,7 @@ function _addpreferences() {
 			    "created_by_version": "67.0.3396.87",
 				"exited_cleanly": true,
 				"managed_user_id": "",
-			i	"name": "Anonymous",
-
+				"name": "Anonymous"
 			  },
 			  "safebrowsing": {
 			    "enabled": false

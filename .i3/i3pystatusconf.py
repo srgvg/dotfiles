@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from i3pystatus import Status
 from i3pystatus.updates import aptget
@@ -36,6 +36,7 @@ status.register("backlight",
                 color=COLIN,
                 transforms={'percentage': lambda cdict: round((cdict["brightness"] / cdict["max_brightness"]) * 10)},
                 format="{percentage}",
+                format_no_backlight="",
                 interval=2)
 
 status.register("clock",

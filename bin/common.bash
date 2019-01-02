@@ -15,7 +15,7 @@ _DEBUG="${DEBUG:-0}" ; unset DEBUG
 DEBUG="${_DEBUG}"    ; unset _DEBUG
 
 function timestamp() {
-	date +%Y%m%d-%H%M
+	date +%Y-%m-%d-%H:%M:%S
 }
 
 function ifdebug1() {
