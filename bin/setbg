@@ -122,6 +122,11 @@ showpath() {
 	echo "${dirname}/${filename}"
 }
 
+showpic() {
+	# open picture separetely
+	gnome-open "$(showpath)"
+}
+
 notifypath() {
     # show and notify which picture is used
 	showpath
@@ -160,6 +165,9 @@ main() {
 				;;
 			'show')				# show current picture path
 				notifypath
+				;;
+			'showpic')				# open current picture
+				showpic
 				;;
 			'lock'|'loop')		# these need a parameter
 				notify_error "setbg: The action '${p1}' needs a parameter"

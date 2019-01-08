@@ -30,6 +30,7 @@ do
 	# press ctrl-c to restart pulseaudio-dlna
 	trap trap_continue SIGINT
 	pulseaudio --check || pulseaudio --start
+	sleep 1
     pulseaudio-dlna ${pulseaudio_dlna_opts}
 done
 

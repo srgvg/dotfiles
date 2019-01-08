@@ -13,20 +13,19 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-if [ -r ./.git-config-user-email ]
+TS=$(date +%Y%m%d%H%M)
+if [ -d "${1:-}" ]
 then
-    ORGEMAIL=$(cat ./.git-config-user-email)
+	subvol="$(readlink -f ${1})"
+	if ! sudo btrfs subvolume show ${subvol} >/dev/null 2>&1
+	then
+		echo "Not a subvolume or no access: ${subvol}"
+		exit 1
+	fi
 else
-    ORGEMAIL="${1:-serge@vanginderachter.be}"
+	echo "not a directory: $1"
+	exit 1
 fi
 
-for d in $(find . -type d -name .git)
-do
-    pushd $(readlink -f ${d/.git})
-    echo -n "$(git config user.email) --> "
-    git config user.email $ORGEMAIL
-    git config user.email
-    popd >/dev/null
-    echo
-done
-dirs
+sudo btrfs subvolume snapshot -r  "${subvol}" "${subvol}@${TS}"
+
