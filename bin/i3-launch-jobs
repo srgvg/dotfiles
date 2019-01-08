@@ -15,6 +15,7 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
+	arandr-autoconfig --post i3-move-workspaces
 	mqtt-notify.py
 	dmesg --human --decode --follow
 	tail --follow=name /var/log/syslog

@@ -43,44 +43,45 @@ set $noborder		pixel 0
 
 # workspaces
 set $ws_www			1
-set $ws_tool2		8
-set $ws_tool1		9
-set $ws_tool0		10
+set $ws_tool2		15
+set $ws_tool1		16
+set $ws_tool0		17
 set $ws_chat		11
-set $ws_logs		20
 set $ws_util    	21
+set $ws_logs		21
 set $ws_music		22
 
 #set $ws_
 
 # Xresources settings
-set_from_resource $outpri i3.output.primary		eDP1
-set_from_resource $outsec i3.output.secondary	eDP1
+set_from_resource $output0 i3.output.0	eDP1
+set_from_resource $output1 i3.output.1	eDP1
+set_from_resource $output2 i3.output.2	eDP1
 
 # Automatically putting workspaces on specific screens
-#workspace 0	 output $outpri
-workspace 1		output $outpri
-workspace 2		output $outpri
-workspace 3		output $outpri
-workspace 4		output $outpri
-workspace 5		output $outpri
-workspace 6		output $outpri
-workspace 7		output $outpri
-workspace 8		output $outpri
-workspace 9		output $outpri
-workspace 10	output $outpri
-workspace 11	output $outpri
-workspace 12	output $outpri
-workspace 13	output $outpri
-workspace 14	output $outpri
-workspace 15	output $outsec
-workspace 16	output $outsec
-workspace 17	output $outsec
-workspace 18	output $outsec
-workspace 19	output $outsec
-workspace 20	output $outsec
-workspace 21	output $outsec
-workspace 22	output $outsec
+#workspace 0	 output $output0
+workspace 1		output $output0
+workspace 2		output $output0
+workspace 3		output $output0
+workspace 4		output $output0
+workspace 5		output $output0
+workspace 6		output $output0
+workspace 7		output $output0
+workspace 8		output $output0
+workspace 9		output $output1
+workspace 10	output $output1
+workspace 11	output $output0
+workspace 12	output $output0
+workspace 13	output $output0
+workspace 14	output $output0
+workspace 15	output $output0
+workspace 16	output $output0
+workspace 17	output $output0
+workspace 18	output $output0
+workspace 19	output $output1
+workspace 20	output $output1
+workspace 21	output $output2
+workspace 22	output $output2
 
 #######################################################################################################################
 #
@@ -333,6 +334,7 @@ bindsym $mod+space focus mode_toggle
 # 10  scroll wheel button
 #
 bindsym --whole-window button10						exec --no-startup-id setbg next
+bindsym --whole-window $mod+button10				exec --no-startup-id setbg showpic
 
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
@@ -602,6 +604,7 @@ bindsym $mod+Shift+o			exec chrom
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
+bindsym $mod+Shift+Control+b	exec --no-startup-id setbg showpic
 bindsym $mod+$Alt+b				exec --no-startup-id setbg next
 bindsym $mod+Control+$Alt+b		exec --no-startup-id setbg
 
@@ -618,7 +621,7 @@ bindsym $mod+$Alt+n				exec nm-toggle-wifi
 
 
 # custom shit
-bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705868530.remmina
+#bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705868530.remmina
 
 #######################################################################################################################
 #
@@ -661,8 +664,8 @@ bindsym XF86MonBrightnessDown			exec --no-startup-id i3-brightness down
 bindsym XF86MonBrightnessUp				exec --no-startup-id i3-brightness up
 
 ## Fn-F7 XF86Display
-bindsym XF86Display						exec --no-startup-id "rerandr3 restore; sleep 1; i3-move-workspaces"
-bindsym $mod+Scroll_Lock				exec --no-startup-id "rerandr3 restore; sleep 1; i3-move-workspaces"
+bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
 
@@ -721,7 +724,7 @@ for_window [class="feh" instance="feh"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"] resize set 700 700
 for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
-for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable
+for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable,border $defaultborder
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
 # (!) window_* seems to not take PCRE's
@@ -838,7 +841,7 @@ for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable
 
 # Music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_music
-for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
+#for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
@@ -869,7 +872,7 @@ exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
 exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
-exec --no-startup-id "rerandr3 restore"
+exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 exec --no-startup-id "pulseaudio --check || pulseaudio --start"
 exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
 exec_always --no-startup-id "xcompmgr &"
@@ -895,6 +898,7 @@ exec --no-startup-id "sleep 10; i3-launch-jobs"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
+exec_always --no-startup-id "i3-move-workspaces"
 exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse

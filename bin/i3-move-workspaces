@@ -11,17 +11,19 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-PRIMARY=$( (grep ^i3.output.primary $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
-SECONDARY=$( (grep ^i3.output.secondary $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+PRIMARY=$(	 (grep ^i3.output.0 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+SECONDARY=$( (grep ^i3.output.1 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+THIRD=$(	 (grep ^i3.output.2 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-eDP1}
+THIRD=${THIRD:-eDP1}
 
 CURRENT=$(i3-msg -t get_workspaces   | jq '.[] | select(.focused==true).name' | sed 's/"//g')
+CURRENTS=$(i3-msg -t get_workspaces   | jq '.[] | select(.visible==true).name' | sed 's/"//g' | grep -v $CURRENT)
 
-PRIMARIES=$(grep ^workspace\   $HOME/.i3/config |
-            grep outpri | awk '{print $2}')
-SECONDARIES=$(grep ^workspace\   $HOME/.i3/config |
-            grep outsec | awk '{print $2}')
+PRIMARIES=$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}')
+SECONDARIES=$(grep ^workspace\  $HOME/.i3/config | grep output1 | awk '{print $2}')
+THIRDS=$(     grep ^workspace\  $HOME/.i3/config | grep output2 | awk '{print $2}' )
 
 if [ -n "${PRIMARIES}" ]
 then
@@ -41,4 +43,18 @@ then
     done
 fi
 
+if [ -n "${THIRDS}" ]
+then
+    for w in ${THIRDS}
+    do
+        _debug=$(i3-msg "workspace $w; move workspace to output $THIRD" 2>&1)
+        notify_debug "Moving workspace $w to output $THIRD ** ${_debug}"
+    done
+fi
+
+for w in $CURRENTS
+do
+	i3-msg workspace $w >/dev/null
+done
 i3-msg workspace $CURRENT >/dev/null
+setbg redisplay
