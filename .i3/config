@@ -659,9 +659,11 @@ bindsym $mod+Control+m					exec pavucontrol
 
 # Fn-F5  XF86MonBrightnessDown
 bindsym XF86MonBrightnessDown			exec --no-startup-id i3-brightness down
+bindsym Shift+XF86MonBrightnessDown		exec --no-startup-id i3-brightness set 20
 
 # Fn-F6  XF86MonBrightnessUp
 bindsym XF86MonBrightnessUp				exec --no-startup-id i3-brightness up
+bindsym Shift+XF86MonBrightnessUp			exec --no-startup-id i3-brightness set 100
 
 ## Fn-F7 XF86Display
 bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
