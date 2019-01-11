@@ -15,42 +15,45 @@ source "$HOME/bin/common.bash"
 # based on https://superuser.com/a/603618
 
 ## Get screen info
-screen1=($(xrandr | grep -w connected | sed 's/primary //' |
-			awk -F'[ +x]' '{print $3,$4,$5,$6}' | head -n 1))
-screen2=($(xrandr | grep -w connected | sed 's/primary //' |
-			awk -F'[ +x]' '{print $3,$4,$5,$6}' | tail -n 1))
-
-## Figure out which screen is to the right of which
-if [ ${screen1[3]} -eq 0  ]
-then
-	left=(${screen2[@]})
-	right=(${screen1[@]})
-else
-	left=(${screen1[@]})
-	right=(${screen2[@]})
-fi
-_left="${left[@]}"
-_right="${right[@]}"
-notify_debug "left screen ${_left}"
-notify_debug "right screen ${_right}"
+count=-1
+declare -a displays
+while read -r LINE
+do
+	count=$((${count}+1))
+	displays[${count}]="${LINE}"
+	notify_debug "display ${count} : ${displays[${count}]}"
+done <<<"$(xrandr | grep  -e " connected" | sed -e 's/primary //' -e 's/.*current//' | \
+			sort -n -b -t+ -k 2 | sort -n -b -t+ -k 3 | awk -F'[ +x]' '{print $3,$4,$5,$6}')"
 
 ## Get window position
-pos=$(xwininfo -id $(xdotool getactivewindow 2>/dev/null) |
+xpos=$(xwininfo -id $(xdotool getactivewindow 2>/dev/null) |
 	grep "Absolute upper-left X" |
 	awk '{print $NF}')
-notify_debug "Active window is on X position $pos"
+notify_debug "Active window is on X position $xpos"
+ypos=$(xwininfo -id $(xdotool getactivewindow 2>/dev/null) |
+	grep "Absolute upper-left Y" |
+	awk '{print $NF}')
+notify_debug "Active window is on Y position $ypos"
 
-## Which screen is this window displayed in? If $pos
-## is greater than the offset of the right screen,
-## then the window is on the right hand one
-notify_debug "Right window is on X position ${right[2]}"
-if [ "$pos" -gt "${right[2]}" ]
-then
-	display=(${right[@]})
-	notify_debug "window is on right screen"
-else
-	display=(${left[@]})
-	notify_debug "window is on left screen"
-fi
+## Which screen is this window displayed in?
+currentdisplay=0
+for n in $(seq 0 ${count})
+do
+	xypos=(${displays[${n}]})
+	x1=${xypos[2]}
+	y1=${xypos[3]}
+	x2=$(( ${xypos[0]} + ${x1} - 1 ))
+	y2=$(( ${xypos[1]} + ${y1} - 1 ))
 
+	if  [ ${xpos} -ge ${x1} ] && \
+		[ ${xpos} -le ${x2} ] && \
+		[ ${ypos} -ge ${y1} ] && \
+		[ ${ypos} -le ${y2} ]
+	then
+		currentdisplay=${n}
+		break
+	fi
+done
+
+display=(${displays[${currentdisplay}]})
 echo "${display[0]}x${display[1]}+${display[2]}+${display[3]}"
