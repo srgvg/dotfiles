@@ -30,7 +30,6 @@ if [ -z "${IMAGE_NEW}" ]
 then
 	IMAGE_NAME="$(basename "${IMAGE}")"
 	IMAGE_NAME_BASE="${IMAGE_NAME%.*}"
-	#IMAGE_NAME_EXT="${IMAGE_NAME##*.}"
 	IMAGE_NEW="${IMAGE_PATH}/${IMAGE_NAME_BASE}-xrandr.png"
 else
 	# check new image filename extension
@@ -53,28 +52,35 @@ else
 	notify_debug "New generated xrandr image will be located at '${IMAGE_NEW}'"
 fi
 
-#NUMBER_OF_DISPLAYS="$(xrandr | grep -c '^.* connected.*x.*+.*+')"
 IMG=${IMAGE}
 CONVERT=(time2 convert)
 while read -r LINE
 do
+	if [[ "$LINE" =~ ([0-9]+)\ x\ ([0-9]+) ]]; then
+		CANVASW=${BASH_REMATCH[1]}
+		CANVASH=${BASH_REMATCH[2]}
+		notify_debug "Detected screen canvas ${CANVASW}x${CANVASH}"
+		CONVERT+=(-page ${CANVASW}x${CANVASH})
+	fi
 	if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
 		W=${BASH_REMATCH[1]}
 		H=${BASH_REMATCH[2]}
 		X=${BASH_REMATCH[3]}
 		Y=${BASH_REMATCH[4]}
 
-		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
-		CONVERT+=(-page ${W}x${H}+${X}+${Y} '\(' $IMG -resize ${W}x${H}^)
-		CONVERT+=(-gravity center -extent ${W}x${H} '\)')
 
-		if [ "${IMG}" != "+clone" ]
+		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
+		CONVERT+=('\(' $IMG -resize ${W}x${H}^)
+		CONVERT+=(-gravity center -extent ${W}x${H} -repage ${W}x${H}+${X}+${Y} '\)')
+
+		if [ "${IMG}" != "-clone 0" ]
 		then
 			# first instance should be the image, next use +clone
-			IMG="+clone"
+			IMG="-clone 0"
 		fi
 	fi
-done <<<"$(xrandr)"
+		# sort displays from left to right, from top to bottom
+done <<<"$(xrandr | grep -e "current " -e " connected" | sed -e 's/primary //' -e 's/.*current//' | sort -n -b -t+ -k 2 | sort -n -b -t+ -k 3)"
 CONVERT+=(-layers merge -transparent white ${IMAGE_NEW})
 
 notify_debug "${CONVERT[@]}"
