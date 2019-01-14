@@ -59,7 +59,7 @@ set_from_resource $output1 i3.output.1	eDP1
 set_from_resource $output2 i3.output.2	eDP1
 
 # Automatically putting workspaces on specific screens
-#workspace 0	 output $output0
+workspace 0		output $output2
 workspace 1		output $output0
 workspace 2		output $output0
 workspace 3		output $output0
@@ -82,6 +82,8 @@ workspace 19	output $output1
 workspace 20	output $output1
 workspace 21	output $output2
 workspace 22	output $output2
+workspace 23	output $output2
+workspace 24	output $output2
 
 #######################################################################################################################
 #
@@ -350,7 +352,7 @@ bindsym $mod+Control+s exec i3swap
 #
 
 # switch to workspace
-#bindsym $mod+grave workspace 0
+bindsym $mod+grave workspace 0
 bindsym $mod+1 workspace 1
 bindsym $mod+2 workspace 2
 bindsym $mod+3 workspace 3
@@ -373,9 +375,13 @@ bindsym $mod+F9 workspace 19
 bindsym $mod+F10 workspace 20
 bindsym $mod+F11 workspace 21
 bindsym $mod+F12 workspace 22
+bindsym $mod+$alt+F11 workspace 23
+bindsym $mod+$alt+F12 workspace 24
+bindsym $mod+XF86LaunchA workspace 23
+bindsym $mod+XF86Explorer workspace 24
 
 # move focused container to workspace
-#bindsym $mod+Control+grave move container to workspace 0
+bindsym $mod+Control+grave move container to workspace 0
 bindsym $mod+Control+1 move container to workspace 1
 bindsym $mod+Control+2 move container to workspace 2
 bindsym $mod+Control+3 move container to workspace 3
@@ -398,9 +404,13 @@ bindsym $mod+Control+F9 move container to workspace 19
 bindsym $mod+Control+F10 move container to workspace 20
 bindsym $mod+Control+F11 move container to workspace 21
 bindsym $mod+Control+F12 move container to workspace 22
+bindsym $mod+Control+$alt+F11 move container to workspace 24
+bindsym $mod+Control+$alt+F12 move container to workspace 23
+bindsym $mod+Control+XF86LaunchA move container to workspace 23
+bindsym $mod+Control+XF86Explorer move container to workspace 24
 
 # move focused container to workspace
-#bindsym $mod+Shift+grave move container to workspace 0
+bindsym $mod+Shift+grave move container to workspace 0
 bindsym $mod+Shift+1 move container to workspace 1
 bindsym $mod+Shift+2 move container to workspace 2
 bindsym $mod+Shift+3 move container to workspace 3
@@ -423,6 +433,10 @@ bindsym $mod+Shift+F9 move container to workspace 19
 bindsym $mod+Shift+F10 move container to workspace 20
 bindsym $mod+Shift+F11 move container to workspace 21
 bindsym $mod+Shift+F12 move container to workspace 22
+bindsym $mod+Shift+$alt+F11 move container to workspace 24
+bindsym $mod+Shift+$alt+F12 move container to workspace 23
+bindsym $mod+Shift+XF86LaunchA move container to workspace 23
+bindsym $mod+Shift+XF86Explorer move container to workspace 24
 
 #
 ## tab
@@ -542,12 +556,12 @@ mode "$mode_system" {
 ## Scratchpad things
 #
 # Make the currently focused window a scratchpad
-bindsym $mod+Control+grave border normal, mark scratchpad, move scratchpad
-bindsym $mod+Shift+grave unmark scratchpad
+bindsym $mod+Control+Escape border normal, mark scratchpad, move scratchpad
+bindsym $mod+Shift+Escape unmark scratchpad
 # Show the first scratchpad window
-bindsym $mod+grave scratchpad show
+bindsym $mod+Escape scratchpad show
 # quickswitch select scratchpad window
-bindsym $mod+$Alt+grave exec i3-quickswitch --prompt --scratchpad
+bindsym $mod+$Alt+Escape exec i3-quickswitch --prompt --scratchpad
 
 
 #######################################################################################################################
