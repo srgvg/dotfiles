@@ -15,9 +15,11 @@ source "$HOME/bin/common.bash"
 if checkhomeip
 then
 	notify_debug "On SOHO LAN"
+	HOME_LAN_SONOS_IP="$(dig +short sonos-office.lan.vanginderachter.be || echo -n 172.31.32.31)"
 	if netcat -z -w 1 ${HOME_LAN_SONOS_IP} 1443
 	then
 		notify_debug "Sonos online"
+		echo ${HOME_LAN_SONOS_IP}
 		exit 0
 	else
 		errexit "Timeout connecting to HOME_LAN_SONOS"

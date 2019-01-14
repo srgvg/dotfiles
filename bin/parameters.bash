@@ -22,7 +22,6 @@ LOCK_SCREENSHOT_IMAGE="$HOME/.screenshot.png"
 
 LOGS_PATH="$HOME/logs/scripts"
 
-HOME_LAN_SONOS_IP="$(dig +short sonos-office.lan.vanginderachter.be || echo -n 172.31.32.31)"
 HOME_LAN_SUBNET="172.31.32"
 
 SETBG_BACKGROUND="$HOME/.background.png"

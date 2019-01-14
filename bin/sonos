@@ -18,9 +18,8 @@ then
 	exit 1
 fi
 
-if checksonos
+if HOME_LAN_SONOS_IP=$(checksonos)
 then
-	#_out=$(socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-} 2>&1)
 	_out=$(socos ${1} "${HOME_LAN_SONOS_IP}" ${2:-})
 	if [[ "${_out}" =~ "Unknown command" ]]
 	then
