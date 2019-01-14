@@ -145,6 +145,7 @@ setbg() {
 lock() {
     checktarget $1
 	pickpic
+	echo ${background}
 	rm -f "${LOCK_SCREEN_IMAGE}"
 	cp --dereference "$(realpath --canonicalize-existing ${background})" "${LOCK_SCREEN_IMAGE}"
 }

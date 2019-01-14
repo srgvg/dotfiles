@@ -21,9 +21,6 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-I3LOCK_ANNOTATETEXT="${LOCK_ANNOTATETEXT:-}"
-I3LOCK_ICONS="${LOCK_ICONS:-$HOME/Pictures/icons/i3lock}"
-I3LOCK_ICON="${LOCK_ICON:-$I3LOCK_ICONS/token.png}"
 LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
 LOCKSCREEN="${1:-${LOCK_DEFAULT_LOCKSCREEN}}"
 LOCKSLEEP=5
@@ -65,14 +62,12 @@ function prepare() {
 	if [ ! "$LOCKSCREEN" = "keep" ] && [ ! "$LOCKSCREEN" = "blurred" ]
 	then
 		notify "Choosing a picture background."
-		setbg lock "$LOCKSCREEN"
+		LOCKSCREEN_SRC="$(setbg lock "$LOCKSCREEN")"
 		notify "Converting single picture to multi-display"
-		xrandr-background "${LOCK_SCREEN_IMAGE}" "${LOCK_SCREEN_IMAGE}"
-		annotate_lockscreen
+		xrandr-background lock "${LOCKSCREEN_SRC}" "${LOCK_SCREEN_IMAGE}"
 	elif [ "$LOCKSCREEN" = "blurred" ]
 	then
 		make_blurred
-		annotate_lockscreen
 	else
 		notify "Keeping the current lockscreen."
 		return
@@ -90,40 +85,6 @@ function make_blurred() {
 
 	# blur screenshot
 	time2 convert "${LOCK_SCREENSHOT_IMAGE}" ${BLUR} "${LOCK_SCREEN_IMAGE}"
-}
-
-function annotate_lockscreen() {
-	notify "Annotate lockscreen with lock symbol and optional text."
-
-	TEXT="${I3LOCK_ANNOTATETEXT}"
-	ICON="${I3LOCK_ICON}"
-
-	# for some reason "convert -list font" returns 1
-	FONT="$( (convert -list font ||:) | awk "{ a[NR] = \$2 } /family: $(fc-match sans -f "%{family}\n")/ { print a[NR-1]; exit }")"
-
-	# calculate position for lock symbol and text
-	LOCK=()
-	while read -r LINE
-	do
-		if [[ "$LINE" =~ ([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+) ]]; then
-			W=${BASH_REMATCH[1]}
-			H=${BASH_REMATCH[2]}
-			Xoff=${BASH_REMATCH[3]}
-			Yoff=${BASH_REMATCH[4]}
-			MIDXi=$((W / 2 + Xoff - 60  / 2))
-			MIDYi=$((H / 2 + Yoff - 60  / 2))
-			if [ -n "${TEXT}" ]
-			then
-				MIDXt=$((W / 2 + Xoff - 285 / 2))
-				MIDYt=$((H / 2 + Yoff + 320 / 2))
-				LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
-				   -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
-				   -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT")
-			fi
-			LOCK+=($ICON -geometry +$MIDXi+$MIDYi -composite)
-		fi
-	done <<<"$(xrandr)"
-	time2 convert "${LOCK_SCREEN_IMAGE}" "${LOCK[@]}" "${LOCK_SCREEN_IMAGE}"
 }
 
 function pre_lock() {

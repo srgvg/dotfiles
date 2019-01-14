@@ -12,15 +12,27 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+I3LOCK_ANNOTATETEXT="${LOCK_ANNOTATETEXT:-}"
+I3LOCK_ICONS="${LOCK_ICONS:-$HOME/Pictures/icons/i3lock}"
+I3LOCK_ICON="${LOCK_ICON:-$I3LOCK_ICONS/token.png}"
+
 CACHEDIR="$HOME/.cache/$(basename $0)"
 [ -d ${CACHEDIR} ] || mkdir -p ${CACHEDIR}
 
 # first parameter is the file to convert
 IMAGE=${1:-}
+ANNOTATE_LOCK=0
 if [ -z "${IMAGE}" ]
 then
-	errexit "missing image argument"
-elif [ ! -r "${IMAGE}"  ]
+	errexit "missing image argument or 'lock <image>'"
+elif [ "${IMAGE}" = "lock" ]
+then
+	ANNOTATE_LOCK=1
+	shift
+	IMAGE=${1:-}
+fi
+
+if [ ! -r "${IMAGE}"  ]
 then
 	errexit "cannot read ${IMAGE}"
 fi
@@ -61,6 +73,13 @@ fi
 IMG=${IMAGE}
 CONVERT=(time2 convert)
 CACHEFILENAME="${IMAGE_NAME_BASE}"
+if [ ${ANNOTATE_LOCK} -eq 1 ]
+then
+	CACHEFILENAME="${IMAGE_NAME_BASE}_lock"
+fi
+
+# hold calculated position for lock symbol and text
+LOCK=()
 while read -r LINE
 do
 	if [[ "$LINE" =~ ([0-9]+)\ x\ ([0-9]+) ]]; then
@@ -75,6 +94,23 @@ do
 		X=${BASH_REMATCH[3]}
 		Y=${BASH_REMATCH[4]}
 
+		MIDXi=$((W / 2 + X - 60  / 2))
+		MIDYi=$((H / 2 + Y - 60  / 2))
+
+		TEXT="${I3LOCK_ANNOTATETEXT}"
+		ICON="${I3LOCK_ICON}"
+		if [ -n "${TEXT}" ]
+		then
+			# for some reason "convert -list font" returns 1
+			FONT="$( (convert -list font ||:) | awk "{ a[NR] = \$2 } /family: $(fc-match sans -f "%{family}\n")/ { print a[NR-1]; exit }")"
+
+			MIDXt=$((W / 2 + X - 285 / 2))
+			MIDYt=$((H / 2 + Y + 320 / 2))
+			LOCK+=(-font $FONT -pointsize 26 -fill lightgrey -stroke grey10 \
+			   -strokewidth 2 -annotate +$MIDXt+$MIDYt "$TEXT" \
+			   -fill lightgrey -stroke lightgrey -strokewidth 1 -annotate +$MIDXt+$MIDYt "$TEXT")
+		fi
+		LOCK+=($ICON -geometry +$MIDXi+$MIDYi -composite)
 
 		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
 		CACHEFILENAME="${CACHEFILENAME}_${W}x${H}+${X}+${Y}"
@@ -100,6 +136,11 @@ then
 else
 	notify_debug "${CONVERT[@]}"
 	eval "${CONVERT[@]}"
+	if [ ${ANNOTATE_LOCK} -eq 1 ]
+	then
+		notify "Annotate lockscreen with lock symbol and optional text."
+		time2 convert "${IMAGE_NEW}" "${LOCK[@]}" "${IMAGE_NEW}"
+	fi
 	cp "${IMAGE_NEW}" "${CACHEFILE}"
 	notify "Created multidisplay file at ${IMAGE_NEW}, cached at ${CACHEFILE}"
 fi
