@@ -12,6 +12,9 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+CACHEDIR="$HOME/.cache/$(basename $0)"
+[ -d ${CACHEDIR} ] || mkdir -p ${CACHEDIR}
+
 # first parameter is the file to convert
 IMAGE=${1:-}
 if [ -z "${IMAGE}" ]
@@ -26,6 +29,9 @@ fi
 IMAGE_NEW=${2:-}
 IMAGE="$(realpath --no-symlinks "${IMAGE}")"
 IMAGE_PATH="$(dirname "${IMAGE}")"
+IMAGE_NAME_BASE="$(basename ${IMAGE})"
+IMAGE_NAME_EXTN="${IMAGE_NAME_BASE##*.}"
+IMAGE_NAME_BASE="${IMAGE_NAME_BASE%.*}"
 if [ -z "${IMAGE_NEW}" ]
 then
 	IMAGE_NAME="$(basename "${IMAGE}")"
@@ -54,6 +60,7 @@ fi
 
 IMG=${IMAGE}
 CONVERT=(time2 convert)
+CACHEFILENAME="${IMAGE_NAME_BASE}"
 while read -r LINE
 do
 	if [[ "$LINE" =~ ([0-9]+)\ x\ ([0-9]+) ]]; then
@@ -70,6 +77,7 @@ do
 
 
 		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
+		CACHEFILENAME="${CACHEFILENAME}_${W}x${H}+${X}+${Y}"
 		CONVERT+=('\(' $IMG -resize ${W}x${H}^)
 		CONVERT+=(-gravity center -extent ${W}x${H} -repage ${W}x${H}+${X}+${Y} '\)')
 
@@ -81,8 +89,17 @@ do
 	fi
 		# sort displays from left to right, from top to bottom
 done <<<"$(xrandr | grep -e "current " -e " connected" | sed -e 's/primary //' -e 's/.*current//' | sort -n -b -t+ -k 2 | sort -n -b -t+ -k 3)"
-CONVERT+=(-layers merge -transparent white ${IMAGE_NEW})
+CONVERT+=(-layers merge -transparent white "${IMAGE_NEW}")
 
-notify_debug "${CONVERT[@]}"
-eval "${CONVERT[@]}"
-notify "Created multidisplay file at ${IMAGE_NEW}"
+CACHEFILENAME="${CACHEFILENAME}.${IMAGE_NEW_EXT}"
+CACHEFILE="${CACHEDIR}/${CACHEFILENAME}"
+if [ -r "${CACHEFILE}" ]
+then
+	notify "Using cached file "${CACHEFILE}""
+	cp "${CACHEFILE}" "${IMAGE_NEW}"
+else
+	notify_debug "${CONVERT[@]}"
+	eval "${CONVERT[@]}"
+	cp "${IMAGE_NEW}" "${CACHEFILE}"
+	notify "Created multidisplay file at ${IMAGE_NEW}, cached at ${CACHEFILE}"
+fi
