@@ -22,52 +22,52 @@ export DISPLAY=:0.0
 
 function launchNagBar
 {
-    i3-nagbar -m 'Battery low!' -b 'Suspend!' 'systemctl suspend' >/dev/null 2>&1 &
-    NAGBAR_PID=$!
+	i3-nagbar -m 'Battery low!' -b 'Suspend!' 'systemctl suspend' >/dev/null 2>&1 &
+	NAGBAR_PID=$!
 }
 
 function killNagBar
 {
-    if [[ $NAGBAR_PID -ne 0 ]]; then
+	if [[ $NAGBAR_PID -ne 0 ]]; then
 		kill $NAGBAR_PID
-        NAGBAR_PID=0
-    fi
+		NAGBAR_PID=0
+	fi
 }
 
 
 while [ true ]; do
 
-    killNagBar
+	killNagBar
 
-    if [[ -n $(acpi -b | grep -i discharging) ]]; then
-        sudo pm-powersave true
-        rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
+	if [[ -n $(acpi -b | grep -i discharging) ]]; then
+		sudo pm-powersave true
+		rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
 		num=$(acpi -b | wc -l)
 		rem_bat=$(expr $rem_bat / $num)
 		notify "Battery discharging... ${rem_bat}% left"
 
-        if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
-            SLEEP_TIME=15
-        else
-            SLEEP_TIME=5
-            if [[ $rem_bat -le $DANGER_PERCENT ]]; then
-                SLEEP_TIME=1
-                launchNagBar
-            fi
-            if [[ $rem_bat -le $CRITICAL_PERCENT ]]; then
-                SLEEP_TIME=1
-                systemctl suspend
-            fi
-        fi
+		if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
+			SLEEP_TIME=15
+		else
+			SLEEP_TIME=5
+			if [[ $rem_bat -le $DANGER_PERCENT ]]; then
+				SLEEP_TIME=1
+				launchNagBar
+			fi
+			if [[ $rem_bat -le $CRITICAL_PERCENT ]]; then
+				SLEEP_TIME=1
+				systemctl suspend
+			fi
+		fi
 	else
-        sudo pm-powersave false
-        rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
+		sudo pm-powersave false
+		rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
 		num=$(acpi -b | wc -l)
 		rem_bat=$(expr $rem_bat / $num)
 		notify "Running on power... battery at ${rem_bat}%"
-        SLEEP_TIME=10
-    fi
+		SLEEP_TIME=10
+	fi
 
-    sleep ${SLEEP_TIME}m
+	sleep ${SLEEP_TIME}m
 
 done
