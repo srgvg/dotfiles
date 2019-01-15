@@ -60,8 +60,11 @@ while [ true ]; do
             fi
         fi
 	else
-		notify "running on power"
         sudo pm-powersave false
+        rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
+		num=$(acpi -b | wc -l)
+		rem_bat=$(expr $rem_bat / $num)
+		notify "Running on power... battery at ${rem_bat}%"
         SLEEP_TIME=10
     fi
 
