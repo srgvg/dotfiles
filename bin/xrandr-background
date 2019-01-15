@@ -63,6 +63,7 @@ else
 	IMAGE_NEW_EXT=${IMAGE_NEW##*.}
 	if [ ! "${IMAGE_NEW_EXT}" = "png" ]
 	then
+		IMAGE_NEW_EXT="png"
 		IMAGE_NEW_BASE=${IMAGE_NEW%.*}
 		IMAGE_NEW="${IMAGE_NEW_BASE}.png"
 		notify_debug "The passed new image filename has extension '${IMAGE_NEW_EXT}'; converting to '${IMAGE_NEW}'"
