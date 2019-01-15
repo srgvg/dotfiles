@@ -44,11 +44,20 @@ IMAGE_PATH="$(dirname "${IMAGE}")"
 IMAGE_NAME_BASE="$(basename ${IMAGE})"
 IMAGE_NAME_EXTN="${IMAGE_NAME_BASE##*.}"
 IMAGE_NAME_BASE="${IMAGE_NAME_BASE%.*}"
+
+if [ ${ANNOTATE_LOCK} -eq 0 ]
+then
+	notify "Converting single picture ${IMAGE} to multi-display"
+else
+	notify "Converting single picture ${IMAGE} to multi-display annotated lock image"
+fi
+
 if [ -z "${IMAGE_NEW}" ]
 then
 	IMAGE_NAME="$(basename "${IMAGE}")"
 	IMAGE_NAME_BASE="${IMAGE_NAME%.*}"
 	IMAGE_NEW="${IMAGE_PATH}/${IMAGE_NAME_BASE}-xrandr.png"
+	notify_debug "Target file path is ${IMAGE_NEW}"
 else
 	# check new image filename extension
 	IMAGE_NEW_EXT=${IMAGE_NEW##*.}
@@ -75,7 +84,9 @@ CONVERT=(time2 convert)
 CACHEFILENAME="${IMAGE_NAME_BASE}"
 if [ ${ANNOTATE_LOCK} -eq 1 ]
 then
-	CACHEFILENAME="${IMAGE_NAME_BASE}_lock"
+	CACHEFILENAMEL="${IMAGE_NAME_BASE}_lock"
+else
+	CACHEFILENAMEL="${IMAGE_NAME_BASE}"
 fi
 
 # hold calculated position for lock symbol and text
@@ -114,6 +125,7 @@ do
 
 		notify_debug "Detected screen at ${W}x${H}+${X}+${Y}"
 		CACHEFILENAME="${CACHEFILENAME}_${W}x${H}+${X}+${Y}"
+		CACHEFILENAMEL="${CACHEFILENAMEL}_${W}x${H}+${X}+${Y}"
 		CONVERT+=('\(' $IMG -resize ${W}x${H}^)
 		CONVERT+=(-gravity center -extent ${W}x${H} -repage ${W}x${H}+${X}+${Y} '\)')
 
@@ -127,8 +139,9 @@ do
 done <<<"$(xrandr | grep -e "current " -e " connected" | sed -e 's/primary //' -e 's/.*current//' | sort -n -b -t+ -k 2 | sort -n -b -t+ -k 3)"
 CONVERT+=(-layers merge -transparent white "${IMAGE_NEW}")
 
-CACHEFILENAME="${CACHEFILENAME}.${IMAGE_NEW_EXT}"
-CACHEFILE="${CACHEDIR}/${CACHEFILENAME}"
+CACHEFILE="${CACHEDIR}/${CACHEFILENAME}.${IMAGE_NEW_EXT}"
+CACHEFILEL="${CACHEDIR}/${CACHEFILENAMEL}.${IMAGE_NEW_EXT}"
+
 if [ -r "${CACHEFILE}" ]
 then
 	notify "Using cached file "${CACHEFILE}""
@@ -136,11 +149,20 @@ then
 else
 	notify_debug "${CONVERT[@]}"
 	eval "${CONVERT[@]}"
-	if [ ${ANNOTATE_LOCK} -eq 1 ]
-	then
-		notify "Annotate lockscreen with lock symbol and optional text."
-		time2 convert "${IMAGE_NEW}" "${LOCK[@]}" "${IMAGE_NEW}"
-	fi
 	cp "${IMAGE_NEW}" "${CACHEFILE}"
 	notify "Created multidisplay file at ${IMAGE_NEW}, cached at ${CACHEFILE}"
+fi
+
+if [ ${ANNOTATE_LOCK} -eq 1 ]
+then
+	if [ -r "${CACHEFILEL}" ]
+	then
+		notify "Using cached lockscreen file "${CACHEFILEL}""
+		cp "${CACHEFILEL}" "${IMAGE_NEW}"
+	else
+		notify "Annotate lockscreen with lock symbol and optional text"
+		time2 convert "${IMAGE_NEW}" "${LOCK[@]}" "${IMAGE_NEW}"
+		cp "${IMAGE_NEW}" "${CACHEFILEL}"
+		notify "Created multidisplay lockscreen file at ${IMAGE_NEW}, cached at ${CACHEFILEL}"
+	fi
 fi

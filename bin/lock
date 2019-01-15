@@ -50,7 +50,7 @@ function systemdservice() {
 function prepare() {
 	if ! systemdservice
 	then # these checks don't work when ran via systemd (needs dbus)
-		notify "Check music players and sound volume."
+		notify "Check music players and sound volume"
 		PLAYERCTLSTATUS="$(playerctl status ||:)"
 		i3-volume is-muted && MUTED=yes || MUTED=no || :
 	else
@@ -58,18 +58,17 @@ function prepare() {
 		MUTED="unknown"
 	fi
 
-	notify "Pick the right lockscreen image.(${SECONDS}s)"
+	notify "Pick the right lockscreen image"
 	if [ ! "$LOCKSCREEN" = "keep" ] && [ ! "$LOCKSCREEN" = "blurred" ]
 	then
-		notify "Choosing a picture background."
+		notify "Choosing a picture background"
 		LOCKSCREEN_SRC="$(setbg lock "$LOCKSCREEN")"
-		notify "Converting single picture to multi-display"
 		xrandr-background lock "${LOCKSCREEN_SRC}" "${LOCK_SCREEN_IMAGE}"
 	elif [ "$LOCKSCREEN" = "blurred" ]
 	then
 		make_blurred
 	else
-		notify "Keeping the current lockscreen."
+		notify "Keeping the current lockscreen"
 		return
 	fi
 
@@ -77,7 +76,7 @@ function prepare() {
 
 function make_blurred() {
 	# take a screenshot and blur it for the lock screen
-	notify "Take a screenshot and blur it."
+	notify "Take a screenshot and blur it"
 	BLUR="-blur 0x5"
 
 	# take screenshot
@@ -92,27 +91,27 @@ function pre_lock() {
 	then
 		if [ "${MUTED}" = "no" ]
 		then
-			notify "Mute sound."
-			i3-volume mute >/dev/null || notify "Could not mute the sound." >&2
+			notify "Mute sound"
+			i3-volume mute >/dev/null || notify "Could not mute the sound" >&2
 		fi
 		if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 		then
-			notify "Stop any music player."
-			playerctl stop || notify "Could not stop the music player." >&2
+			notify "Stop any music player"
+			playerctl stop || notify "Could not stop the music player" >&2
 		fi
 	fi
 
-	notify "Disable presentation mode."
+	notify "Disable presentation mode"
 	presentation-mode stop
 
     # sleep because seems too soon after pres mode stop
 	(
 		sleep 1
-		notify "Pause notifications."
+		notify "Pause notifications"
 		notify "$(killall -v -SIGUSR1 dunst 2>&1)"
 	 ) &
 
-	notify "Lock remote irssi screen."
+	notify "Lock remote irssi screen"
 	(irc lock ||:)&
 }
 
@@ -121,10 +120,10 @@ function perform_lock() {
 	# then wait for the lock to end (when unlocked)
 	if ifdebug2
 	then
-		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s."
+		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s"
 		time2 sleep ${LOCKSLEEP} &
 	else
-		notify "Running i3lock."
+		notify "Running i3lock"
 		time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" &
 	fi
 
@@ -156,7 +155,7 @@ function perform_lock() {
 	if systemdservice
 	then
 		systemd-notify --ready --status="Screen locked with image $LOCKSCREEN" &>/dev/null
-		notify "Notifying systemd the lock is done."
+		notify "Notifying systemd the lock is done"
 	fi
 
 	wait
@@ -164,10 +163,10 @@ function perform_lock() {
 
 function post_lock() {
 
-	notify "Unlock remote irssi screen."
+	notify "Unlock remote irssi screen"
 	(irc unlock ||:) &  # too many issues with ssh timeouts
 
-    notify "Re-enable notifications."
+    notify "Re-enable notifications"
 	notify "$(killall -v -SIGUSR2 dunst 2>&1)"
 
 	if ! systemdservice
@@ -175,13 +174,13 @@ function post_lock() {
 		# re-renable music if it was playing
 		#if [ "${PLAYERCTLSTATUS}" = "Playing" ]
 		#then
-		#	notify "Restart music player."
-		#	playerctl play || notify "Could not start the music player." >&2
+		#	notify "Restart music player"
+		#	playerctl play || notify "Could not start the music player" >&2
 		#fi
 		if [ "${MUTED}" = "no" ]
 		then
-			notify "Unmute the sounds again."
-			i3-volume unmute >/dev/null || notify "Could not unmute the sound." >&2
+			notify "Unmute the sounds again"
+			i3-volume unmute >/dev/null || notify "Could not unmute the sound" >&2
 		fi
 	fi
 
@@ -192,11 +191,11 @@ function setpid() {
 	PID=${1:-$$}
 	mkdir -p ${PIDPATH}
 	echo $PID >"${PIDFILE}"
-	notify "Lock process started with pid $PID, set in ${PIDFILE}."
+	notify "Lock process started with pid $PID, set in ${PIDFILE}"
 }
 
 function delpid() {
-	notify "Removing PID file ${PIDFILE}."
+	notify "Removing PID file ${PIDFILE}"
 	rm -f "${PIDFILE}"
 }
 
