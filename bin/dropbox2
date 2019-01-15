@@ -53,19 +53,18 @@ elif [ -n "${dbinstmap[$arg]:-}" ]
 then
 	instance=${arg}
 	shift
-    docker exec -ti dropbox-${instance} dropbox "$@";
+    docker exec dropbox-${instance} dropbox "$@"
 elif [ -n "${dbcommap[$arg]:-}" ]
 then
 	for i in ${dbinstances[@]}
 	do
 		echo -n "${i} : "
-		docker exec -ti dropbox-${i} dropbox "$@"
+		docker exec dropbox-${i} dropbox "$@"
 	done
 else
 	echo "First argument '$arg' is not a dropbox instance or a dropbox command"
 	help
 	exit 2
 fi
-
 
 
