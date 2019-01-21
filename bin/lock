@@ -158,7 +158,7 @@ function perform_lock() {
 		notify "Notifying systemd the lock is done"
 	fi
 
-	wait
+	wait $PID
 }
 
 function post_lock() {
