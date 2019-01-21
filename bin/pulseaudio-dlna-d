@@ -21,16 +21,20 @@ trap_continue() {
     trap - SIGINT
 	pulseaudio --check && pulseaudio --kill
     sleep 1
-	pulseaudio --start
+	pulseaudio --check || pulseaudio --start
     echo PULSEAUDIO RESTARTED
 }
+
+sleep 5
+pulseaudio --check && pulseaudio --kill
+sleep 1
+pulseaudio --check || pulseaudio --start
 
 while true
 do
 	# press ctrl-c to restart pulseaudio-dlna
 	trap trap_continue SIGINT
-	pulseaudio --check || pulseaudio --start
-	sleep 1
     pulseaudio-dlna ${pulseaudio_dlna_opts}
+	sleep 1
 done
 
