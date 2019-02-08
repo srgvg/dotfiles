@@ -127,7 +127,7 @@
     # print a notification on startup
     # This is mainly for error detection, since dbus (re-)starts dunst
     # automatically after a crash.
-    startup_notification = false
+    startup_notification = true
 
     # dmenu path
     #dmenu = /usr/bin/dmenu -p dunst:
@@ -141,7 +141,7 @@
     stack_duplicates = true
     show_indicators = true
     icon_position = right
-    icon_path = "/usr/share/icons/gnome/48x48/actions/:/usr/share/icons/gnome/48x48/animations/:/usr/share/icons/gnome/48x48/apps/:/usr/share/icons/gnome/48x48/categories/:/usr/share/icons/gnome/48x48/devices/:/usr/share/icons/gnome/48x48/emblems/:/usr/share/icons/gnome/48x48/emotes/:/usr/share/icons/gnome/48x48/mimetypes/:/usr/share/icons/gnome/48x48/places/:/usr/share/icons/gnome/48x48/status/"
+    icon_path = "/home/serge/.local/share/icons/local/64x64:/usr/share/icons/gnome/48x48/actions/:/usr/share/icons/gnome/48x48/animations/:/usr/share/icons/gnome/48x48/apps/:/usr/share/icons/gnome/48x48/categories/:/usr/share/icons/gnome/48x48/devices/:/usr/share/icons/gnome/48x48/emblems/:/usr/share/icons/gnome/48x48/emotes/:/usr/share/icons/gnome/48x48/mimetypes/:/usr/share/icons/gnome/48x48/places/:/usr/share/icons/gnome/48x48/status/"
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
@@ -231,3 +231,7 @@
 #    summary = *twitter.com*
 #    urgency = normal
 #
+[Nextcloud]
+    appname = Nextcloud
+    body = *could not be synced due to*
+    format =
