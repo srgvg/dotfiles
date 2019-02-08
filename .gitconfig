@@ -100,10 +100,17 @@
 
 [color "diff"]
 
-	meta = yellow bold
+	context = white
+	meta = blue black bold reverse
 	frag = magenta bold
+	commit =  yellow bold
 	old = red bold
 	new = green bold
+	oldMoved = 8
+	newMoved = 14
+	oldMovedAlternative = 8 # grey
+	newMovedAlternative = 14
+	whitespace = white black reverse
 
 
 [color "status"]
