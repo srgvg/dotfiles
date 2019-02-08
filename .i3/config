@@ -43,10 +43,11 @@ set $noborder		pixel 0
 
 # workspaces
 set $ws_www			1
-set $ws_tool2		15
+set $ws_tool0		15
 set $ws_tool1		16
-set $ws_tool0		17
+set $ws_tool2		17
 set $ws_chat		11
+set $ws_chat2		12
 set $ws_util    	21
 set $ws_logs		21
 set $ws_music		22
@@ -629,7 +630,7 @@ bindsym $mod+p					exec presentation-mode
 bindsym $mod+Control+p			exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
-bindsym $mod+n					exec nmcli_dmenu
+bindsym $mod+n					exec i3-nmcli
 bindsym $mod+Control+n			exec nm-toggle-wifi
 bindsym $mod+$Alt+n				exec nm-toggle-wifi
 
@@ -666,7 +667,7 @@ bindsym $mod+comma						exec --no-startup-id playerctl previous
 bindsym $mod+period						exec --no-startup-id playerctl next
 bindsym $mod+slash						exec --no-startup-id playerctl play-pause
 
-bindsym $mod+m							exec --no-startup-id pa-select-output
+bindsym $mod+m							exec --no-startup-id i3-pa-select-output
 bindsym $mod+Control+m					exec pavucontrol
 
 # Fn-F4  XF86AudioMicMute
@@ -809,9 +810,14 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 #
 # chat
 #
-assign		[window_role="irc"]					$ws_chat
+assign		[window_role="irc"]										$ws_chat
+assign		[class="Signal"]										$ws_chat2
+assign		[class="Slack" window_role="browser-window"]			$ws_chat2
+assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
+for_window	[class="Keybase|Signal|Slack"]							layout tabbed
 
-for_window	[class="Skype"]						floating enable
+
+for_window	[class="Skype"]									floating enable
 
 #######################################################################################################################
 #
@@ -824,7 +830,6 @@ assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Remote Desktop Client
-assign [class="Remmina" instance="remmina" title="cmc.be"] 12
 assign [class="Remmina" instance="remmina"]		$ws_tool0
 for_window [class="Remmina" instance="remmina"] layout tabbed
 for_window [class="^rdesktop"] floating disable
@@ -835,6 +840,9 @@ for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 
 # Gimp
 assign		[class="Gimp" instance="gimp"] $ws_tool2
+
+# Zoom
+assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Pycharm
 for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
@@ -854,10 +862,6 @@ for_window	[title="KeePassXC-Browser"]														floating enable
 for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout tabbed
 assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
 
-
-# chat
-#assign		[class="Keybase" instance="keybase" title="Keybase"]  $ws_util
-for_window	[class="Keybase" instance="keybase" title="Keybase"]  floating enable
 
 # Music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_music
@@ -904,11 +908,9 @@ exec "nm-applet &"
 exec "system-config-printer-applet &"
 exec "keepassxc &"
 exec "run_keybase &"
+exec "signal-desktop &"
 exec "spotify &"
 exec "nextcloud &"
-#exec "dropbox start"
-#exec "alarm-clock-applet --hidden &"
-#exec "gufw &"
 #exec "dnssec-trigger-panel &"
 exec "blueman-applet &"
 
