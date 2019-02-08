@@ -12,31 +12,44 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-inc=10
+inc='10'
+incx='0.10'
+
+brightness0=$(xbacklight -get)
+brightness0=$(printf "%2.0f" ${brightness0})
+brightness1=${brightness0}
+xbrightness1=$(awk "BEGIN {print ${brightness1} / 100; exit}")
+
+displays=$(xrandr -q | grep -w connected | awk '{print $1}')
 case ${1:-} in
 	"up")
 		action="-inc $inc"
+		xbrightness2=$(awk "BEGIN {print ${xbrightness1} + ${incx}; exit}")
 		;;
 	"down")
 		action="-dec $inc"
+		xbrightness2=$(awk "BEGIN {print ${xbrightness1} - ${incx}; exit}")
 		;;
 	"set")
-		action="=${2:-100}"
+		action="-set ${2:-100}"
+		xbrightness2=$(awk "BEGIN {print ${2:-100} / 100; exit}")
 		;;
 	*)
 		echo "I don't know what you mean: up, down or 'set x'"
 		exit 1
 		;;
 esac
+brightness2=$(awk "BEGIN {print ${xbrightness2} * 100; exit}")
 
-brightness0=$(xbacklight -get)
-brightness0=$(printf "%.0f" ${brightness0})
+for output in ${displays}
+do
+	xrandr --output $output --brightness ${xbrightness2}
+done
+xbacklight -time 1000 -set ${brightness2} &
 
-xbacklight -time 100 $action
 
 action2=$(echo $action | sed -e 's/-inc/increase/' -e 's/-dec/decrease/' -e 's/=/set to /')
-brightness=$(xbacklight -get)
-brightness=$(printf "%.0f" ${brightness})
-
-notify-send "Brightness" "$action2 from $brightness0" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness -c device -u low
+brightness2=$(printf "%2.0f" ${brightness2})
+xbrightness2=$(printf "%1.1f" ${xbrightness2})
+notify-send "Brightness" "${brightness0} $action2" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness2 -c device -u low
 

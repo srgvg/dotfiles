@@ -12,6 +12,9 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+###############################################################################
+
+PA_SINK_DEFAULT_NAME="${PA_SINK_DEFAULT_NAME:-Built-in Audio}"
 
 function outputs() {
 	outputs="$(pactl list short sinks | awk '{print $1}' |
@@ -47,7 +50,7 @@ function sinkname() {
 
 function selectsink() {
 	local _selectedsink
-	_selectedsink=$(outputsnames | (dmenu -p "Select audio output: " -l 10 ||:) | awk '{print $1}')
+	_selectedsink=$(outputsnames | (dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
 	notify_debug "selected sink: ${_selectedsink}"
 	echo ${_selectedsink}
 }
@@ -65,7 +68,6 @@ function updatesink() {
 function main() {
 	local action=${1:-}
 	pulseaudio --check || pulseaudio --start
-
 
 	previous_sink=$(defaultsink)
 	previous_sink_name=$(sinkname $previous_sink)

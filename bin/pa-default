@@ -12,8 +12,11 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-action=${1:-number}
+###############################################################################
 
+PA_SINK_DEFAULT_NAME="${PA_SINK_DEFAULT_NAME:-Built-in Audio}"
+
+action=${1:-number}
 
 function get_sink() {
 	local action=${1}

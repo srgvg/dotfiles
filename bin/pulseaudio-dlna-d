@@ -9,7 +9,7 @@ set -o errexit
 set -o pipefail
 
 # Something is interfering here
-DEBUG=0
+#DEBUG=0
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -19,15 +19,14 @@ pulseaudio_dlna_opts="--msearch-port 65353 --port 58080 --auto-reconnect"
 trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
     trap - SIGINT
-	pulseaudio --check && pulseaudio --kill
-    sleep 1
+    echo PULSEAUDIO-DLNA RESTARTING..
 	pulseaudio --check || pulseaudio --start
-    echo PULSEAUDIO RESTARTED
+	# this cleans up old dlna sinks
+	pacmd unload-module module-null-sink
+	sleep 1
 }
 
 sleep 5
-pulseaudio --check && pulseaudio --kill
-sleep 1
 pulseaudio --check || pulseaudio --start
 
 while true
@@ -35,6 +34,5 @@ do
 	# press ctrl-c to restart pulseaudio-dlna
 	trap trap_continue SIGINT
     pulseaudio-dlna ${pulseaudio_dlna_opts}
-	sleep 1
 done
 

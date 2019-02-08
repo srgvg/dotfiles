@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+trap_continue() {
+    # clear the trap so we can really stop here with a second ctrl-c
+	trap - SIGINT
+	echo
+	echo + sudo apt -y full-upgrade
+	echo
+	sudo apt -y full-upgrade ||:
+	echo
+	echo + sudo apt -y autoremove
+	echo
+	sudo apt -y autoremove ||:
+	echo
+	exec audd
+}
+
+while true
+do
+	# press ctrl-c to restart
+	trap trap_continue SIGINT
+	echo + sudo apt update
+	echo
+	sudo apt update
+	echo
+	echo + apt list --upgradable -a
+	echo
+	apt list --upgradable -a
+	echo
+	sleep 900
+done
+

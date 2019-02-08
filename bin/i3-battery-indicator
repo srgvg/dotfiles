@@ -22,22 +22,22 @@ export DISPLAY=:0.0
 
 function launchNagBar
 {
-	i3-nagbar -m 'Battery low!' -b 'Suspend!' 'systemctl suspend' >/dev/null 2>&1 &
+	if [[ $NAGBAR_PID -eq 0 ]] || ! pgrep i3-nagbar >/dev/null 2>&1; then
+		i3-nagbar -m 'Battery low!' -b 'Suspend!' 'systemctl suspend' >/dev/null 2>&1 &
+	fi
 	NAGBAR_PID=$!
 }
 
 function killNagBar
 {
 	if [[ $NAGBAR_PID -ne 0 ]]; then
-		kill $NAGBAR_PID
+		kill $NAGBAR_PID >/dev/null 2>&1 ||:
 		NAGBAR_PID=0
 	fi
 }
 
 
 while [ true ]; do
-
-	killNagBar
 
 	if [[ -n $(acpi -b | grep -i discharging) ]]; then
 		sudo pm-powersave true
@@ -60,6 +60,7 @@ while [ true ]; do
 			fi
 		fi
 	else
+		killNagBar
 		sudo pm-powersave false
 		rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
 		num=$(acpi -b | wc -l)
