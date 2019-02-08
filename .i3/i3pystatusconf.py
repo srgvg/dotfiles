@@ -10,6 +10,10 @@ COLIN = "#FFFFFF"
 
 status = Status()
 
+status.register("clock",
+                color=COLIN,
+                format="%a %-d %B %Y %T",)
+
 status.register("online",
                 hints = {"separator": False, "separator_block_width": 1},
                 format_online="",
@@ -38,10 +42,6 @@ status.register("backlight",
                 format="{percentage}",
                 format_no_backlight="",
                 interval=2)
-
-status.register("clock",
-                color=COLIN,
-                format="%a %-d %B %Y %T",)
 
 status.register("updates",
                 format="APT: {count}",
@@ -113,6 +113,11 @@ status.register("network",
 status.register("network",
                 interface="wlp4s0",
                 format_up=" [{quality:3.0f}% '{essid}'] [\[ {v6cidr} \]] [{v4cidr}]",
+                format_down="",)
+
+status.register("network",
+                interface="enxe04f4394834e",
+                format_up="🖧  [\[ {v6cidr} \]] [{v4cidr}] Dock",
                 format_down="",)
 
 
