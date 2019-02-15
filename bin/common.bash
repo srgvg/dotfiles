@@ -39,7 +39,7 @@ function set_xtrace() {
 }
 
 function ifinteractive() {
-	tty --silent
+	[[ -t 0  ]]
 }
 
 function _time() {

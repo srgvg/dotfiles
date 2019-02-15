@@ -445,7 +445,8 @@ bindsym $mod+Shift+XF86Explorer move container to workspace 24
 
 # switch container focus
 bindsym $mod+Tab				exec --no-startup-id i3-cycle right
-bindsym $mod+Shift+Tab			exec --no-startup-id i3-cycle left
+#bindsym $mod+Shift+Tab			exec --no-startup-id i3-cycle left
+bindsym $mod+Shift+Tab			focus left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -812,9 +813,9 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[class="Signal"]										$ws_chat2
-assign		[class="Slack" window_role="browser-window"]			$ws_chat2
+#assign		[class="Slack" window_role="browser-window"]			$ws_chat2
 assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
-for_window	[class="Keybase|Signal|Slack"]							layout tabbed
+#for_window	[class="Keybase|Signal|Slack"]							layout tabbed
 
 
 for_window	[class="Skype"]									floating enable

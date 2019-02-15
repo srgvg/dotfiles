@@ -30,9 +30,9 @@ export SCM_CHECK=true
 source $BASH_IT/bash_it.sh
 
 # custom things go here
-if [ -f $HOME/.bashrc2 ]
+if [ -d $HOME/.bashrc.d ]
 then
-    source $HOME/.bashrc2
+    source $HOME/.bashrc.d/*
 fi
 
 
