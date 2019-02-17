@@ -18,24 +18,39 @@ PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-eDP1}
 THIRD=${THIRD:-eDP1}
 
-CURRENT=$(i3-msg -t get_workspaces   | jq -c '.[] | select(.focused==true) | [.name,.output]' | sed 's/[]["]//g')
-CURRENTS=$(i3-msg -t get_workspaces  | jq -c '.[] | select(.visible==true) | [.name,.output]' | sed 's/[]["]//g'| grep -v ${CURRENT})
-notify_debug "Currently focused workspace, output: ${CURRENT}"
-notify_debug "Current workspace, output: ${CURRENTS}"
+ACTIVES=$(i3-msg -t get_workspaces  \
+	| jq -c '.[] | select(.visible==false) | [.name,.output]'						\
+	| sed 's/[]["]//g' | xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")  # pad single digits to two digits
+VISIBLE=$(i3-msg -t get_workspaces  \
+	| jq -c '.[] | select(.visible==true and .focused == false) | [.name,.output]'	\
+	| sed 's/[]["]//g' | xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")  # pad single digits to two digits
+FOCUSED=$(i3-msg -t get_workspaces  \
+	| jq -c '.[] | select(.focused==true)  | [.name,.output]'						\
+	| sed 's/[]["]//g' | xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")  # pad single digits to two digits
+notify_debug "Focused workspace is    ${FOCUSED}"
+notify_debug "Visible workspaces are  ${VISIBLE}"
+notify_debug "Active workspaces are   ${ACTIVES}"
 
-PRIMARIES=$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}')
-SECONDARIES=$(grep ^workspace\  $HOME/.i3/config | grep output1 | awk '{print $2}')
-THIRDS=$(     grep ^workspace\  $HOME/.i3/config | grep output2 | awk '{print $2}' )
-notify_debug "Primaries are ${PRIMARIES}"
-notify_debug "Secondaries are ${SECONDARIES}"
-notify_debug "Thirdss are ${THIRDS}"
+PRIMARIES=$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}' \
+	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
+SECONDARIES=$(grep ^workspace\  $HOME/.i3/config | grep output1 | awk '{print $2}' \
+	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
+THIRDS=$(     grep ^workspace\  $HOME/.i3/config | grep output2 | awk '{print $2}' \
+	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
+notify_debug "Primaries are           ${PRIMARIES}"
+notify_debug "Secondaries are         ${SECONDARIES}"
+notify_debug "Thirdss are             ${THIRDS}"
 
 if [ -n "${PRIMARIES}" ]
 then
     for w in ${PRIMARIES}
-    do
-        _debug=$(i3-msg "workspace ${w%%,*}; move workspace to output $PRIMARY" 2>&1)
-        notify_debug "Moving workspace ${w%%,*} to output $PRIMARY ** ${_debug}"
+	do
+		wn=${w%%,*}
+		if grep -q " ${wn}" <<< ${ACTIVES}; then
+			wn=${wn#0}
+			_debug=$(i3-msg "workspace ${wn}; move workspace to output $PRIMARY" 2>&1)
+			notify_debug "Moving workspace ${wn} to primary output $PRIMARY ** ${_debug}"
+		fi
     done
 fi
 
@@ -43,8 +58,12 @@ if [ -n "${SECONDARIES}" ]
 then
     for w in ${SECONDARIES}
     do
-        _debug=$(i3-msg "workspace ${w%%,*}; move workspace to output $SECONDARY" 2>&1)
-        notify_debug "Moving workspace ${w%%,*} to output $SECONDARY ** ${_debug}"
+		wn=${w%%,*}
+			wn=${wn#0}
+		if grep -q " ${wn}" <<< ${ACTIVES}; then
+			_debug=$(i3-msg "workspace ${wn}; move workspace to output $SECONDARY" 2>&1)
+		notify_debug "Moving workspace ${wn} to secondary output $SECONDARY ** ${_debug}"
+		fi
     done
 fi
 
@@ -52,16 +71,20 @@ if [ -n "${THIRDS}" ]
 then
     for w in ${THIRDS}
     do
-        _debug=$(i3-msg "workspace ${w%%,*}; move workspace to output $THIRD" 2>&1)
-        notify_debug "Moving workspace ${w%%,*} to output $THIRD ** ${_debug}"
+		wn=${w%%,*}
+		if grep -q " ${wn}" <<< ${ACTIVES}; then
+			wn=${wn#0}
+			_debug=$(i3-msg "workspace ${wn}; move workspace to output $THIRD" 2>&1)
+	 	notify_debug "Moving workspace ${wn} to third output $THIRD ** ${_debug}"
+		fi
     done
 fi
 
-for w in $CURRENTS
+for w in ${VISIBLE} ${FOCUSED}
 do
-	notify_debug "Put focus back to workspace ${w%%,*} on output ${w##*,}"
-	i3-msg workspace ${w%%,*} >/dev/null
+	wn=${w%%,*}; wn=${wn#0}
+	notify_debug "Put focus back to workspace ${wn} on output ${w##*,}"
+	i3-msg workspace ${wn} >/dev/null
 done
-notify_debug "Put focus back to workspace ${CURRENT%%,*} on output ${CURRENT##*,}"
-i3-msg workspace ${CURRENT%%,*} >/dev/null
+
 setbg redisplay
