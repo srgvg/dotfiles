@@ -130,14 +130,9 @@ do
 		CONVERT+=('\(' $IMG -resize ${W}x${H}^)
 		CONVERT+=(-gravity center -extent ${W}x${H} -repage ${W}x${H}+${X}+${Y} '\)')
 
-		if [ "${IMG}" != "-clone 0" ]
-		then
-			# first instance should be the image, next use +clone
-			IMG="-clone 0"
-		fi
 	fi
 		# sort displays from left to right, from top to bottom
-done <<<"$(xrandr | grep -e "current " -e " connected" | sed -e 's/primary //' -e 's/.*current//' | sort -n -b -t+ -k 2 | sort -n -b -t+ -k 3)"
+done <<<"$(xrandr | grep -e "current " -e " connected" | sed -e 's/primary //' -e 's/.*current//' | sort  -b -t+ -k 3 -k 2)"
 CONVERT+=(-layers merge -transparent white "${IMAGE_NEW}")
 
 CACHEFILE="${CACHEDIR}/${CACHEFILENAME}.${IMAGE_NEW_EXT}"
