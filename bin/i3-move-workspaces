@@ -30,6 +30,7 @@ FOCUSED=$(i3-msg -t get_workspaces  \
 notify_debug "Focused workspace is    ${FOCUSED}"
 notify_debug "Visible workspaces are  ${VISIBLE}"
 notify_debug "Active workspaces are   ${ACTIVES}"
+ALLACTIVES="${ACTIVES} ${VISIBLE} ${FOCUSED}"
 
 PRIMARIES=$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}' \
 	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
@@ -46,10 +47,10 @@ then
     for w in ${PRIMARIES}
 	do
 		wn=${w%%,*}
-		if grep -q " ${wn}" <<< ${ACTIVES}; then
+		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
-			_debug=$(i3-msg "workspace ${wn}; move workspace to output $PRIMARY" 2>&1)
-			notify_debug "Moving workspace ${wn} to primary output $PRIMARY ** ${_debug}"
+			debug=$(i3-msg "workspace ${wn}; move workspace to output $PRIMARY" 2>&1)
+			notify_debug "Moving workspace ${wn} to primary output $PRIMARY ** ${debug}"
 		fi
     done
 fi
@@ -59,10 +60,10 @@ then
     for w in ${SECONDARIES}
     do
 		wn=${w%%,*}
+		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
-		if grep -q " ${wn}" <<< ${ACTIVES}; then
-			_debug=$(i3-msg "workspace ${wn}; move workspace to output $SECONDARY" 2>&1)
-		notify_debug "Moving workspace ${wn} to secondary output $SECONDARY ** ${_debug}"
+			debug=$(i3-msg "workspace ${wn}; move workspace to output $SECONDARY" 2>&1)
+			notify_debug "Moving workspace ${wn} to secondary output $SECONDARY ** ${debug}"
 		fi
     done
 fi
@@ -72,10 +73,10 @@ then
     for w in ${THIRDS}
     do
 		wn=${w%%,*}
-		if grep -q " ${wn}" <<< ${ACTIVES}; then
+		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
-			_debug=$(i3-msg "workspace ${wn}; move workspace to output $THIRD" 2>&1)
-	 	notify_debug "Moving workspace ${wn} to third output $THIRD ** ${_debug}"
+			debug=$(i3-msg "workspace ${wn}; move workspace to output $THIRD" 2>&1)
+			notify_debug "Moving workspace ${wn} to third output $THIRD ** ${debug}"
 		fi
     done
 fi
