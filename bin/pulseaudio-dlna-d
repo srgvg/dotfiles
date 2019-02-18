@@ -20,7 +20,7 @@ trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
     trap - SIGINT
     echo PULSEAUDIO-DLNA RESTARTING..
-	pulseaudio --check || pulseaudio --start
+	systemctl restart --user pulseaudio.service
 	# this cleans up old dlna sinks
 	pacmd unload-module module-null-sink
 	sleep 1
