@@ -20,7 +20,7 @@ function execute() {
 
 case ${1:-} in
 	audio_current_sink)
-		execute "pa-default long | sed -e 's/ - / /' -e '/Built-in.*/d' 2>/dev/null ||:"
+		execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' 2>/dev/null ||:"
 		;;
 	audio_sonos_volume)
 		execute "sonos volume 2>/dev/null ||:"
@@ -28,9 +28,9 @@ case ${1:-} in
 		then
 			if [ "${output}" -gt 0 ]
 			then
-				output="Sonos🔊${output}%"
+				output="Sonos 🔊${output}%"
 			else [ "${output}" -eq 0 ]
-				output="Sonos🚫"
+				output="Sonos 🚫"
 			fi
 		fi
 

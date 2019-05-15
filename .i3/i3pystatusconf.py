@@ -70,8 +70,9 @@ status.register("shell",
 
 status.register("now_playing",
                 color=COLAU,
-                format="[🎶{status} {title} ({artist})]",
-                status={'pause': '', 'stop': '', 'play': ''},)
+                format="🎶{status}[ {artist} |] {title}",
+                format_no_player="🎶◾",
+                hide_no_player=False)
 
 status.register("battery",
                 format=" {percentage:.0f}% {consumption:.1f}W {remaining:%E%hh:%Mm} {status}",

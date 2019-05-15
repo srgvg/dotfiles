@@ -13,7 +13,8 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-action=${1:-}
+action=${1:-get}
+value=${2:-50}
 steppa=5
 stepso=5
 icon="audio-volume-medium"
@@ -95,7 +96,24 @@ function sonos_toggle() {
 function volume() {
 	local device="${1}"
 	local action="${2}"
+	local value="${3:-50}"
 	case "${action}" in
+		get) : ;;
+		set)
+			case "${device}" in
+				sonos)
+					_vol=$(( ${value} - ${level1} ))
+					if [ ${_vol} -gt 0 ]
+					then
+						_vol="+${_vol}"
+					fi
+					sonos volume ${_vol}
+					;;
+				pa)
+					ponymix set-volume ${value}
+					;;
+			esac
+			;;
 		up)
 			case "${device}" in
 				sonos)
@@ -193,12 +211,19 @@ else
 	device2="$(pa-default long)"
 fi
 
-volume "${device}" "${action}"
+if [ "${device}" = "sonos" ]
+then
+	level1="$(sonos volume)"
+else
+	level1="$(ponymix get-volume)"
+fi
+
+volume "${device}" "${action}" "${value:-50}"
 
 if [ "${device}" = "sonos" ]
 then
-	level="$(sonos volume)"
+	level2="$(sonos volume)"
 else
-	level="$(ponymix get-volume)"
+	level2="$(ponymix get-volume)"
 fi
-notify_desktop low "$device2 [$level]" "volume ${action} → ${level}" $icon i3-volume
+notify_desktop low "$device2 [$level2]" "volume ${action} ${level1} → ${level2}" $icon i3-volume

@@ -21,7 +21,7 @@ set $mod			Mod4
 set $Alt			Mod1
 set $terminal		terminator
 set $terminalfl		terminator-floating
-set $lockscreen		/home/serge/bin/lock
+set $lockscreen		systemctl start i3lock
 set $suspend		systemctl suspend
 
 # color defines
@@ -43,14 +43,14 @@ set $noborder		pixel 0
 
 # workspaces
 set $ws_www			1
-set $ws_tool0		15
-set $ws_tool1		16
-set $ws_tool2		17
-set $ws_chat		11
-set $ws_chat2		12
-set $ws_util    	21
-set $ws_logs		21
-set $ws_music		22
+set $ws_chat		0
+set $ws_chat2		10
+set $ws_tool0		18
+set $ws_tool1		17
+set $ws_tool2		16
+set $ws_util1    	19
+set $ws_util2		20
+set $ws_music		9
 
 #set $ws_
 
@@ -60,7 +60,7 @@ set_from_resource $output1 i3.output.1	eDP1
 set_from_resource $output2 i3.output.2	eDP1
 
 # Automatically putting workspaces on specific screens
-workspace 0		output $output2
+workspace 0		output $output0
 workspace 1		output $output0
 workspace 2		output $output0
 workspace 3		output $output0
@@ -83,8 +83,6 @@ workspace 19	output $output1
 workspace 20	output $output1
 workspace 21	output $output2
 workspace 22	output $output2
-workspace 23	output $output2
-workspace 24	output $output2
 
 #######################################################################################################################
 #
@@ -376,10 +374,6 @@ bindsym $mod+F9 workspace 19
 bindsym $mod+F10 workspace 20
 bindsym $mod+F11 workspace 21
 bindsym $mod+F12 workspace 22
-bindsym $mod+$alt+F11 workspace 23
-bindsym $mod+$alt+F12 workspace 24
-bindsym $mod+XF86LaunchA workspace 23
-bindsym $mod+XF86Explorer workspace 24
 
 # move focused container to workspace
 bindsym $mod+Control+grave move container to workspace 0
@@ -405,10 +399,6 @@ bindsym $mod+Control+F9 move container to workspace 19
 bindsym $mod+Control+F10 move container to workspace 20
 bindsym $mod+Control+F11 move container to workspace 21
 bindsym $mod+Control+F12 move container to workspace 22
-bindsym $mod+Control+$alt+F11 move container to workspace 24
-bindsym $mod+Control+$alt+F12 move container to workspace 23
-bindsym $mod+Control+XF86LaunchA move container to workspace 23
-bindsym $mod+Control+XF86Explorer move container to workspace 24
 
 # move focused container to workspace
 bindsym $mod+Shift+grave move container to workspace 0
@@ -434,10 +424,6 @@ bindsym $mod+Shift+F9 move container to workspace 19
 bindsym $mod+Shift+F10 move container to workspace 20
 bindsym $mod+Shift+F11 move container to workspace 21
 bindsym $mod+Shift+F12 move container to workspace 22
-bindsym $mod+Shift+$alt+F11 move container to workspace 24
-bindsym $mod+Shift+$alt+F12 move container to workspace 23
-bindsym $mod+Shift+XF86LaunchA move container to workspace 23
-bindsym $mod+Shift+XF86Explorer move container to workspace 24
 
 #
 ## tab
@@ -473,6 +459,12 @@ bindsym $mod+Control+Left workspace prev
 bindsym $mod+Control+Down workspace next
 bindsym $mod+Control+Up workspace prev
 bindsym $mod+Control+Right workspace next
+
+# switch to other output
+bindsym $mod+Control+$alt+Left focus output left
+bindsym $mod+Control+$alt+Down focus output down
+bindsym $mod+Control+$alt+Up focus output up
+bindsym $mod+Control+$alt+Right focus output right
 
 # move container to the next and previous workspace
 bindsym $mod+Shift+Control+Left move workspace to output left
@@ -582,6 +574,8 @@ bindsym $mod+Control+Return		exec $terminalfl
 # kill focused window except..
 bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator).*$"]	kill
 bindsym $mod+$Alt+x				kill
+bindsym $mod+COntrol+$Alt+x		exec --no-srtartup-id xdotool getwindowfocus windowkill
+
 
 # quickswitch
 bindsym $mod+q					exec i3-quickswitch --prompt
@@ -648,7 +642,12 @@ bindsym XF86AudioLowerVolume			exec --no-startup-id i3-volume down
 bindsym XF86AudioRaiseVolume			exec --no-startup-id i3-volume up
 bindsym Shift+XF86AudioLowerVolume		exec --no-startup-id sonos volume -10
 bindsym Shift+XF86AudioRaiseVolume		exec --no-startup-id sonos volume +10
+bindsym Control+XF86AudioLowerVolume	exec --no-startup-id ponymix decrease 10
+bindsym Control+XF86AudioRaiseVolume	exec --no-startup-id ponymix increase 10
+
 bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
+bindsym $mod+XF86AudioMute				exec --no-startup-id i3-volume set 50
+
 
 bindsym $mod+Control+comma				exec --no-startup-id i3-volume down
 bindsym $mod+Control+period				exec --no-startup-id i3-volume up
@@ -658,15 +657,13 @@ bindsym $mod+Control+slash				exec --no-startup-id i3-volume toggle
 
 bindsym XF86AudioPrev					exec --no-startup-id playerctl previous
 bindsym XF86AudioPlay					exec --no-startup-id playerctl play-pause
+bindsym Shift+XF86AudioPlay				exec --no-startup-id playerctl stop
 bindsym XF86AudioNext					exec --no-startup-id playerctl next
-
-bindsym Control+XF86AudioLowerVolume	exec --no-startup-id playerctl previous
-bindsym Control+XF86AudioRaiseVolume	exec --no-startup-id playerctl next
-bindsym Control+XF86AudioMute			exec --no-startup-id playerctl play-pause
 
 bindsym $mod+comma						exec --no-startup-id playerctl previous
 bindsym $mod+period						exec --no-startup-id playerctl next
 bindsym $mod+slash						exec --no-startup-id playerctl play-pause
+bindsym $mod+Shift+slash				exec --no-startup-id playerctl stop
 
 bindsym $mod+m							exec --no-startup-id i3-pa-select-output
 bindsym $mod+Control+m					exec pavucontrol
@@ -745,7 +742,7 @@ for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floati
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
 for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable,border $defaultborder
 
-assign [instance="sun-awt-X11-XFramePeer"] 5
+assign [instance="sun-awt-X11-XFramePeer"] 12
 for_window [instance="sun-awt-X11-XFramePeer"] floating disable, border normal
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
@@ -780,7 +777,7 @@ for_window [class="Gnome-terminal"]														floating enable
 # Tools
 #
 assign [window_role="SSHASKPASS"]														$ws_www
-for_window [window_role="SSHASKPASS"]													floating enable, border pixel 5
+for_window [window_role="SSHASKPASS"]													floating enable, sticky enable, border pixel 5
 for_window [class="Gcalctool"]															floating enable
 for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]				floating enable
 #for_window [class="Nautilus" instance="file_progress"]									floating enable
@@ -813,7 +810,7 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[class="Signal"]										$ws_chat2
-#assign		[class="Slack" window_role="browser-window"]			$ws_chat2
+assign		[class="Slack" window_role="browser-window"]			$ws_chat2
 assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
 #for_window	[class="Keybase|Signal|Slack"]							layout tabbed
 
@@ -824,11 +821,8 @@ for_window	[class="Skype"]									floating enable
 #
 # large screen tools
 #
-# Virtualbox
-assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
-
-# Wireshark
-assign [class="Wireshark" instance="wireshark"] $ws_tool1
+# Zoom
+assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Remote Desktop Client
 assign [class="Remmina" instance="remmina"]		$ws_tool0
@@ -836,14 +830,17 @@ for_window [class="Remmina" instance="remmina"] layout tabbed
 for_window [class="^rdesktop"] floating disable
 
 # Teamviewer
-#assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
+assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
 for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 
-# Gimp
-assign		[class="Gimp" instance="gimp"] $ws_tool2
+# Wireshark
+assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
-# Zoom
-assign		[class="zoom" instance="zoom"] $ws_tool0
+# Gimp
+assign		[class="Gimp" instance="gimp"] $ws_tool1
+
+# Virtualbox
+assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
 
 # Pycharm
 for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
@@ -855,13 +852,13 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign		[class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]	$ws_util
-for_window	[class="keepassxc" instance="keepassxc"]										layout tabbed
+assign		[class="keepassxc" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]	$ws_util2
+#for_window	[class="keepassxc" instance="keepassxc"]										layout tabbed
 for_window  [class="keepassxc" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
-for_window	[title="KeePassXC-Browser"]														floating enable
+#for_window	[title="KeePassXC-Browser"]														floating enable
 
 for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout tabbed
-assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
+assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
 
 
 # Music
@@ -871,7 +868,7 @@ assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Deskt
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
 
-assign		[window_role="i3jobs"]				$ws_logs
+assign		[window_role="i3jobs"]				$ws_util2
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
 
@@ -891,33 +888,32 @@ for_window  [class="Dnssec-trigger-panel"] floating enable
 # & send process to background avoids keeping the calling sh shells in memory
 
 ## Run at i3 initial start only
+exec_always "pgrep vorta || vorta &"
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec "/usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
-exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
+#exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
 exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
-exec --no-startup-id "pulseaudio --check || pulseaudio --start"
-exec --no-startup-id "/usr/lib/gvfs/gvfsd-fuse ~/.gvfs &"
-exec_always --no-startup-id "xcompmgr &"
 
 # Desktop Apps
+exec_always --no-startup-id "pkill xcompmgr ; xcompmgr &"
 exec "chrom serge & chrom google &"
-exec "pasystray &"
-exec "nm-applet &"
-exec "system-config-printer-applet &"
-exec "keepassxc &"
+exec_always "pgrep pasystray || pasystray &"
+exec_always "pgrep nm-applet || nm-applet &"
+exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
+exec_always "pgrep keepassxc || keepassxc &"
 exec "run_keybase &"
 exec "signal-desktop &"
-exec "spotify &"
-exec "nextcloud &"
+exec_always "pgrep spotify || spotify &"
+#exec_always "pgrep nextcloud || nextcloud &"
 #exec "dnssec-trigger-panel &"
-exec "blueman-applet &"
+exec_always "pgrep blueman-applet || blueman-applet &"
+exec "slack &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
-exec --no-startup-id "setbg default"
-exec --no-startup-id "sleep 10; i3-launch-jobs"
+exec --no-startup-id "sleep 10; i3-launch-jobs; i3-launch-jobs loop default"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs

@@ -28,7 +28,7 @@ LOCKSLEEP=5
 # SYSTEMDSERVICE is set to yes in the systemd service unit file
 SYSTEMDSERVICE=${SYSTEMDSERVICE:-no}
 MYUID="$(id -u "${USER}")"
-PIDPATH=/var/run/user/${MYUID:-1000}/i3lock
+PIDPATH=/run/user/${MYUID:-1000}/i3lock
 PIDFILE=${PIDPATH}/pid
 install -g serge -o serge -m 700 -d "${PIDPATH}"
 
@@ -112,7 +112,8 @@ function pre_lock() {
 	 ) &
 
 	notify "Lock remote irssi screen"
-	(irc lock ||:)&
+	#(irc lock ||:)&
+	irc lock ||:
 }
 
 function perform_lock() {
@@ -146,7 +147,7 @@ function perform_lock() {
 	# NotifyAccess=all
 	# Environment=DISPLAY=:0.0
 	# ExecStart=/home/serge/bin/lock
-	# PIDFile=/var/run/user/1000/i3lock/pid
+	# PIDFile=run/user/1000/i3lock/pid
 	# Environment=SYSTEMDSERVICE=yes
 	#
 	# [Install]
@@ -164,7 +165,8 @@ function perform_lock() {
 function post_lock() {
 
 	notify "Unlock remote irssi screen"
-	(irc unlock ||:) &  # too many issues with ssh timeouts
+	#(irc unlock ||:) &  # too many issues with ssh timeouts
+	irc unlock ||:
 
     notify "Re-enable notifications"
 	notify "$(killall -v -SIGUSR2 dunst 2>&1)"

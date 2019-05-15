@@ -32,22 +32,22 @@ notify_debug "Visible workspaces are  ${VISIBLE}"
 notify_debug "Active workspaces are   ${ACTIVES}"
 ALLACTIVES="${ACTIVES} ${VISIBLE} ${FOCUSED}"
 
-PRIMARIES=$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}' \
+PRIMARIES=" "$(  grep ^workspace\  $HOME/.i3/config | grep output0 | awk '{print $2}' \
 	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
-SECONDARIES=$(grep ^workspace\  $HOME/.i3/config | grep output1 | awk '{print $2}' \
+SECONDARIES=" "$(grep ^workspace\  $HOME/.i3/config | grep output1 | awk '{print $2}' \
 	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
-THIRDS=$(     grep ^workspace\  $HOME/.i3/config | grep output2 | awk '{print $2}' \
+THIRDS=" "$(     grep ^workspace\  $HOME/.i3/config | grep output2 | awk '{print $2}' \
 	| xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")
 notify_debug "Primaries are           ${PRIMARIES}"
 notify_debug "Secondaries are         ${SECONDARIES}"
-notify_debug "Thirdss are             ${THIRDS}"
+notify_debug "Thirds are              ${THIRDS}"
 
 if [ -n "${PRIMARIES}" ]
 then
     for w in ${PRIMARIES}
 	do
 		wn=${w%%,*}
-		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
+		if grep -q "${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
 			debug=$(i3-msg "workspace ${wn}; move workspace to output $PRIMARY" 2>&1)
 			notify_debug "Moving workspace ${wn} to primary output $PRIMARY ** ${debug}"

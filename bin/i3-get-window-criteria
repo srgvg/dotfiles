@@ -56,4 +56,6 @@ function get_window_criteria() {
 }
 
 text=$(get_window_criteria)
+notify2 "${text}"
+echo
 echo "${text}"

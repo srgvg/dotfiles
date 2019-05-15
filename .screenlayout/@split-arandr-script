@@ -1,0 +1,12 @@
+#!/bin/bash
+
+[ -f "$1" ] || exit 1
+
+_tmp="$(mktemp)"
+
+<${1} sed $'s/--output/\\\n--output/g' \
+    | grep -v xrandr \
+    | sed 's/^--/xrandr --/' \
+    | tee ${_tmp}
+mv ${_tmp} ${1}
+chmod +x ${1}

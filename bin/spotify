@@ -8,9 +8,9 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-find /home/serge/.vim/bundle/*/colors/ |
-	sed -e 's/.vim$//'  -e 's@.*/@@g'
+###############################################################################
+
+/usr/bin/spotify --force-device-scale-factor=0.8 $*

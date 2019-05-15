@@ -12,18 +12,19 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
+VOLUME=${1:-}
 
 TS=$(date +%Y%m%d%H%M)
-if [ -d "${1:-}" ]
+if [ -d "${VOLUME}" ]
 then
-	subvol="$(readlink -f ${1})"
+	subvol="$(readlink -f ${VOLUME})"
 	if ! sudo btrfs subvolume show ${subvol} >/dev/null 2>&1
 	then
 		echo "Not a subvolume or no access: ${subvol}"
 		exit 1
 	fi
 else
-	echo "not a directory: $1"
+	echo "not a directory: ${VOLUME}"
 	exit 1
 fi
 

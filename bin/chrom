@@ -70,7 +70,7 @@ function _addpreferences() {
 			      "short_name": "DuckDuckGo",
 			      "suggestions_url": "",
 			      "suggestions_url_post_params": "",
-			      "url": "https://duckduckgo.com/?q={searchTerms}",
+			      "url": "https://duckduckgo.com/?kae=d&kav=1&k1=-1&kaj=m&kam=google-maps&kay=b&kak=-1&kax=-1&kaq=-1&kap=-1&kao=-1&kau=-1&q={searchTerms}",
 			      "usage_count": 0
 			    }
 			  },
@@ -101,7 +101,7 @@ function _addpreferences() {
 			    "prompt_for_download": true
 			  },
 			  "first_run_tabs": [
-			    "https://duckduckgo.com/"
+			    "https://duckduckgo.com/?kae=d&kav=1&k1=-1&kaj=m&kam=google-maps&kay=b&kak=-1&kax=-1&kaq=-1&kap=-1&kao=-1&kau=-1"
 			  ],
 			  "homepage": "https://duckduckgo.com/",
 			  "homepage_is_newtabpage": false,
@@ -251,9 +251,6 @@ case ${myname} in
 	${matchtest})
 		PROFILECLASS=${myname}
 		;;
-	google-chrome|chromium)
-		PROFILECLASS=tmp
-		;;
 	*)
 		errexit_desktop "Unknown profile '${myname}'"
 		;;
@@ -267,7 +264,7 @@ case ${PROFILECLASS} in
 		;;
 	g)	# search
 		#URL="https://www.google.com/search?q"
-		URL="https://duckduckgo.com/?q"
+		URL="https://duckduckgo.com/?kae=d&kav=1&k1=-1&kaj=m&kam=google-maps&kay=b&kak=-1&kax=-1&kaq=-1&kap=-1&kao=-1&kau=-1&q"
 		notify "Setting search query parameters $*"
 		# shellcheck disable=SC2048
 		QUERY=$(_query_parameter $*)
@@ -277,7 +274,7 @@ case ${PROFILECLASS} in
 		;;
 	i)	# image search
 		#URL="https://www.google.com/search?as_st=y&tbs=isz%3Alt%2Cislt%3A2mp&tbm=isch&source=hp&biw=1920&bih=973&ei=k1VfWu2jKYjKkwXJorDoDQ&q"
-		URL="https://duckduckgo.com/?iax=images&ia=images&iaf=layout%3Aaspect-wide%2Csize%3Aimagesize-wallpaper&q"
+		URL="https://duckduckgo.com/?kae=d&kav=1&k1=-1&kaj=m&kam=google-maps&kay=b&kak=-1&kax=-1&kaq=-1&kap=-1&kao=-1&kau=-1&iax=images&ia=images&iaf=layout%3Aaspect-wide%2Csize%3Alarge&q"
 		PROFILECLASS="TMP"
 		notify "Setting search query parameters $*"
 		# shellcheck disable=SC2048

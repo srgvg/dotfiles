@@ -15,6 +15,10 @@ _DEBUG="${DEBUG:-0}" ; unset DEBUG
 DEBUG="${_DEBUG}"    ; unset _DEBUG
 
 function timestamp() {
+	date +%Y%m%d-%H%M%S
+}
+
+function timestamp2() {
 	date +%Y-%m-%d-%H:%M:%S
 }
 
@@ -169,42 +173,45 @@ function errexit() {
 
 function notify_desktop() {
 	{ set +x; } 2>/dev/null
+
+	local numparam=3
+	[ $# -ge ${numparam} ] || errexit "function ${FUNCNAME[0]} expects at least ${numparam} parameters, got $#: '$#'"
+
+	local urgency
+	local summary
+	local body
+	local color
+	local icon
+	local app
+
+	urgency=${1}
+	summary=${2}
+	body=${3}
+	icon=${4:-dialog-info}
+	app=${5:-$(hostname)}
+	[ -n "${app}" ] && app="--app-name=${app}"
+
+	case $urgency in
+		"low")
+			color="lightgray"
+			;;
+		"normal")
+			color="white"
+			;;
+		"critical")
+			color="red"
+			;;
+		*)
+			errexit "First parameter should be one of '[low|normal|critical]'"
+			;;
+	esac
+
 	if  ! ifinteractive
 	then
-		local numparam=3
-		[ $# -ge ${numparam} ] || errexit "function ${FUNCNAME[0]} expects at least ${numparam} parameters, got $#: '$#'"
-
-		local urgency
-		local summary
-		local body
-		local color
-		local icon
-		local app
-
-		urgency=${1}
-		summary=${2}
-		body=${3}
-		icon=${4:-dialog-info}
-		app=${5:-$(hostname)}
-		[ -n "${app}" ] && app="--app-name=${app}"
-
-		case $urgency in
-			"low")
-				color="lightgray"
-				;;
-			"normal")
-				color="white"
-				;;
-			"critical")
-				color="red"
-				;;
-			*)
-				errexit "First parameter should be one of '[low|normal|critical]'"
-				;;
-		esac
-
 		notify-send --urgency="${urgency}" --icon="${icon}" "${app}"\
 					"${summary}" "${body}" || :
+	else
+		notify "${urgency} ${icon} ${app} ${summary} ${body}"
 	fi
 	set_xtrace
 }
