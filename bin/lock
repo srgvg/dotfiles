@@ -17,6 +17,7 @@ set -o pipefail
 # shellcheck disable=SC2034
 [ -z "${SYSTEMDSERVICE:-}" ] && [ "${DEBUG:-0}" -eq 0 ] &&
 	FORCE_DEBUG_LOGGING="TRUE"
+DEBUG=2
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -119,7 +120,7 @@ function pre_lock() {
 function perform_lock() {
 	# start the real lock command in the background, set the PID file,
 	# then wait for the lock to end (when unlocked)
-	if ifdebug2
+	if ifdebug3
 	then
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s"
 		time2 sleep ${LOCKSLEEP} &

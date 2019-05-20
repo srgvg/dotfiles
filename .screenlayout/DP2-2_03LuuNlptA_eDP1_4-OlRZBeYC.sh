@@ -1,1 +1,1 @@
-ginsys-office-hidpi.sh
+ginsys-office.sh
