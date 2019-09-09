@@ -16,6 +16,11 @@ WEECHAT_FILEAWAY='/home/serge/.weechat/fileaway.available'
 
 # make sure the irssi specific control master ends, so mqtt-irssi disconnects
 on_exit() {
+	if [ ${IRC_EXIT:=$?} -gt 0 ]
+	then
+		notify_error_desktop "ssh-tmux-weechat exited with error ${IRC_EXIT}"
+		notify-send --urgency=critical --icon=dialog-info --app-name=ssh-tmux-weechat "IRC Error" "exited with error ${IRC_EXIT}"
+	fi
     # stop the control master
     ssh ${IRC_HOST} -O exit
 }
@@ -38,12 +43,13 @@ then
 	# same same
 	ssh ${SSHDEBUG} ${IRC_HOST} -O check &>/dev/null \
 		&& ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
-else
+else # start the app over ssh
 	notify_debug "Set up a trap for exit"
     trap on_exit INT TERM EXIT
 	notify_debug "ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 'touch $WEECHAT_FILEAWAY'"
 	ssh ${SSHDEBUG} ${IRC_HOST} -o ConnectTimeout=1 "touch $WEECHAT_FILEAWAY"
     notify_debug "ssh ${SSHDEBUG} ${IRC_HOST} -t 'tmux new-session -A -s irc weechat'"
     ssh ${SSHDEBUG} ${IRC_HOST} -t 'tmux new-session -A -s irc weechat'
+	IRC_EXIT=$?
 fi
 

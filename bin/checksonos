@@ -15,8 +15,8 @@ source "$HOME/bin/common.bash"
 if checkhomeip
 then
 	notify_debug "On SOHO LAN"
-	#HOME_LAN_SONOS_IP="$(dig +short sonos-office.lan.vanginderachter.be @172.31.32.1 || echo -n 172.31.32.31)"
-	HOME_LAN_SONOS_IP="172.31.32.31"
+	#HOME_LAN_SONOS_IP="$(dig +short sonos-office.lan.vanginderachter.be @172.31.32.1 || echo -n 172.31.32.160)"
+	HOME_LAN_SONOS_IP="172.31.32.160"
 	if netcat -z -w 1 ${HOME_LAN_SONOS_IP} 1443
 	then
 		notify_debug "Sonos online"

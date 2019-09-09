@@ -15,8 +15,8 @@ PRIMARY=$(	 (grep ^i3.output.0 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 SECONDARY=$( (grep ^i3.output.1 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 THIRD=$(	 (grep ^i3.output.2 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 PRIMARY=${PRIMARY:-eDP1}
-SECONDARY=${SECONDARY:-eDP1}
-THIRD=${THIRD:-eDP1}
+SECONDARY=${SECONDARY:-$PRIMARY}
+THIRD=${THIRD:-$SECONDARY}
 
 ACTIVES=$(i3-msg -t get_workspaces  \
 	| jq -c '.[] | select(.visible==false) | [.name,.output]'						\
@@ -89,3 +89,4 @@ do
 done
 
 setbg redisplay
+systemctl restart --user dunst.service

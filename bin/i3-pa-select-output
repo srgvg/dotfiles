@@ -88,9 +88,11 @@ function main() {
 
 	if [ ! "${previous_sink}" -eq "${next_sink}" ]
 	then
-		updatesink $next_sink
 		notify_desktop low "Activated: $next_sink_name" "previously: $previous_sink_name" "volume-knob" $(basename ${0})
+	else
+		notify_desktop low "Confirming: $next_sink_name" "already set: $previous_sink_name" "volume-knob" $(basename ${0})
 	fi
+	updatesink $next_sink
 }
 
 main ${1:-}

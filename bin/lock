@@ -126,7 +126,8 @@ function perform_lock() {
 		time2 sleep ${LOCKSLEEP} &
 	else
 		notify "Running i3lock"
-		time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" &
+		time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
+			|| notify-error "i3lock exited with exit code $?" &
 	fi
 
 	# get and set i3lock pid

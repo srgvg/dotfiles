@@ -66,13 +66,20 @@ status.register("shell",
                 ignore_empty_stdout=True,
                 color=COLAU,
                 command="i3pystatus-commands audio_sonos_volume",
-                interval=1)
+                interval=2)
 
-status.register("now_playing",
+status.register("shell",
+                ignore_empty_stdout=True,
                 color=COLAU,
-                format="🎶{status}[ {artist} |] {title}",
-                format_no_player="🎶◾",
-                hide_no_player=False)
+                command="i3pystatus-commands now_playing",
+                interval=3)
+
+#status.register("now_playing",
+#                #player="spotify",
+#                color=COLAU,
+#                format="🎶{status}[ {artist} |] {title}",
+#                format_no_player="🎶◾",
+#                hide_no_player=False)
 
 status.register("battery",
                 format=" {percentage:.0f}% {consumption:.1f}W {remaining:%E%hh:%Mm} {status}",

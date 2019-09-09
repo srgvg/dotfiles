@@ -44,6 +44,30 @@ case ${1:-} in
 			output="⊥"
 		fi
 		;;
+	now_playing)
+		output=""
+		player=""
+		player0=$(cat $HOME/.playerctl_active)
+		if [ -n "$player0" ]
+		then
+			stat=""
+			player="[$player0] "
+			player0="-p $player0"
+			state="$(playerctl $player0 status)"
+			if [ ! "$state" = "Stopped" ] && [ ! "$state" = "No players found" ]
+			then
+				if   [ "${state}" = "Playing" ]; then stat="▶  "
+				elif [ "${state}" = "Paused" ];  then stat="▌▌ "; fi
+				artist=$(playerctl $player0 metadata xesam:artist);	[ -n "$artist" ] && artist="$artist "
+				album=$( playerctl $player0 metadata xesam:album);	[ -n "$album" ]  && album="($album) "
+				title=$( playerctl $player0 metadata xesam:title);	[ -n "$title" ]  && title="'$title' "
+				output="${player}${stat}${artist}${album}${title}"
+			elif [ "${state}" = "Stopped" ]
+			then	stat="◼ "
+					output="${player}${stat}"
+			fi
+		fi
+		;;
 	*)
 		notify_error "$(
 			echo "Possible options are:";
@@ -52,4 +76,4 @@ case ${1:-} in
 		;;
 esac
 
-echo -n ${output}
+echo -n "${output}"

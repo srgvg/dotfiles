@@ -189,7 +189,6 @@ function notify_desktop() {
 	body=${3}
 	icon=${4:-dialog-info}
 	app=${5:-$(hostname)}
-	[ -n "${app}" ] && app="--app-name=${app}"
 
 	case $urgency in
 		"low")
@@ -208,10 +207,9 @@ function notify_desktop() {
 
 	if  ! ifinteractive
 	then
-		notify-send --urgency="${urgency}" --icon="${icon}" "${app}"\
-					"${summary}" "${body}" || :
+		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" || :
 	else
-		notify "${urgency} ${icon} ${app} ${summary} ${body}"
+		notify_debug "${summary} ${body}"
 	fi
 	set_xtrace
 }
@@ -220,7 +218,7 @@ function notify2() {
 	{ set +x; } 2>/dev/null
 	local message="${1:-}"
 	notify "${message}"
-	notify_desktop normal "$(basename ${BASH_SOURCE[1]})" "${message} info"
+	notify_desktop normal "$(basename ${BASH_SOURCE[1]})" "${message}"
 }
 
 function notify_error_desktop() {
@@ -233,7 +231,7 @@ function notify_error_desktop() {
 	else
 		message="$*"
 	fi
-	notify_desktop critical ERROR "${message} error"
+	notify_desktop critical ERROR "${message}"
 }
 
 function errexit_desktop() {

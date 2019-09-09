@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/.playerctl_active}"
+PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE)}"
+
+PLAYERS=$(playerctl --list-all | grep -v chrome | sort -ur | xargs)
+notify_debug "current players: $PLAYERS"
+
+# make the current player the first in the list, whilst keeping the list circular sorted
+notify_debug "current players, active first: ${PLAYERCTL_ACTIVE_PLAYER} - ${PLAYERS#*${PLAYERCTL_ACTIVE_PLAYER}} - ${PLAYERS%${PLAYERCTL_ACTIVE_PLAYER}*}"
+PLAYERS="${PLAYERCTL_ACTIVE_PLAYER} ${PLAYERS#*${PLAYERCTL_ACTIVE_PLAYER}} ${PLAYERS%${PLAYERCTL_ACTIVE_PLAYER}*}"
+
+selected_player="$(echo $PLAYERS | xargs -n1 | (dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
+if [ -n "${selected_player}" ]
+then
+	notify_debug "selected player: ${selected_player}"
+	echo ${selected_player} > ${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE}
+else
+	notify_debug "no player selected"
+fi

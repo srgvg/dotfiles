@@ -12,5 +12,10 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-export DEBUG=1
-arandr-autoconfig --post i3-move-workspaces $*
+
+PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/.playerctl_active}"
+PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE)}"
+
+playeropt=""
+[ -n "$PLAYERCTL_ACTIVE_PLAYER" ] && playeropt="-p $PLAYERCTL_ACTIVE_PLAYER"
+/usr/bin/playerctl $playeropt $*

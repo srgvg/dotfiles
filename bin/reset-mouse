@@ -1,7 +1,8 @@
 #!/bin/bash -x
-sudo modprobe -v -r usbhid hid_generic hid
-#echo press ctrl-c
-#sleep 5
-#sudo modprobe -v    hid
-#sudo modprobe -v    usbhid
-#sudo modprobe -v    hid_generic
+sudo modprobe -v -r usbhid hid_generic hid xhci_hcd
+echo press ctrl-c to not reload
+sleep 5
+sudo modprobe -v    hid
+sudo modprobe -v    usbhid
+sudo modprobe -v    hid_generic
+sudo modprobe -v    hid_generic xhci_hcd

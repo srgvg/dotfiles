@@ -18,7 +18,7 @@ source "$HOME/bin/common.bash"
 BROWSER="google-chrome"
 SWITCHES=""
 PROFILESDIR="$HOME/.config/${BROWSER}/profiles"
-CACHEDIR="$HOME/.cache/google-chrome/profiles"
+CACHEDIR="$HOME/.cache/${BROWSER}/profiles"
 
 function _addpreferences() {
 	local=PREFERENCEDIR

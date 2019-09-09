@@ -44,20 +44,20 @@ set $noborder		pixel 0
 # workspaces
 set $ws_www			1
 set $ws_chat		0
-set $ws_chat2		10
 set $ws_tool0		18
 set $ws_tool1		17
 set $ws_tool2		16
-set $ws_util1    	19
-set $ws_util2		20
-set $ws_music		9
+set $ws_music		19
+set $ws_chat2		20
+set $ws_util1    	21
+set $ws_util2		22
 
 #set $ws_
 
 # Xresources settings
 set_from_resource $output0 i3.output.0	eDP1
 set_from_resource $output1 i3.output.1	eDP1
-set_from_resource $output2 i3.output.2	eDP1
+set_from_resource $output2 i3.output.2	$output1
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
@@ -69,18 +69,18 @@ workspace 5		output $output0
 workspace 6		output $output0
 workspace 7		output $output0
 workspace 8		output $output0
-workspace 9		output $output1
-workspace 10	output $output1
-workspace 11	output $output0
-workspace 12	output $output0
-workspace 13	output $output0
-workspace 14	output $output0
-workspace 15	output $output0
-workspace 16	output $output0
-workspace 17	output $output0
-workspace 18	output $output0
-workspace 19	output $output1
-workspace 20	output $output1
+workspace 9		output $output0
+workspace 10	output $output0
+workspace 11	output $output1
+workspace 12	output $output1
+workspace 13	output $output1
+workspace 14	output $output1
+workspace 15	output $output1
+workspace 16	output $output1
+workspace 17	output $output1
+workspace 18	output $output1
+workspace 19	output $output2
+workspace 20	output $output2
 workspace 21	output $output2
 workspace 22	output $output2
 
@@ -256,7 +256,7 @@ force_focus_wrapping no
 
 # This configuration directive enables automatic workspace back_and_forth when
 # switching to the workspace that is currently focused.
-workspace_auto_back_and_forth no
+workspace_auto_back_and_forth yes
 
 # If an application on another workspace sets an urgency hint, switching to
 # this workspace may lead to immediate focus of the application, which also
@@ -578,11 +578,13 @@ bindsym $mod+COntrol+$Alt+x		exec --no-srtartup-id xdotool getwindowfocus window
 
 
 # quickswitch
-bindsym $mod+q					exec i3-quickswitch --prompt
+#bindsym $mod+q					exec i3-quickswitch --prompt
+bindsym $mod+q					exec rofi -show window
 
 # start dmenu (a program launcher)
 #bindsym $mod+r					exec dmenu_run -i -p "Command:" -nb "$dark" -nf "$light" -sb "$ginsys" -sf "$light" \
-bindsym $mod+r					exec dmenu_run -i -p "Command:" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+#bindsym $mod+r					exec dmenu_run -i -p "Command:" -fn "-urw-*-*-r-*-*-*-100-*-*-*-*-*-*"
+bindsym $mod+r					exec rofi -show run -sort
 
 # reload the configuration file
 bindsym $mod+Shift+r			reload
@@ -666,6 +668,7 @@ bindsym $mod+slash						exec --no-startup-id playerctl play-pause
 bindsym $mod+Shift+slash				exec --no-startup-id playerctl stop
 
 bindsym $mod+m							exec --no-startup-id i3-pa-select-output
+bindsym $mod+$alt+m						exec --no-startup-id i3-playerctl-select-player
 bindsym $mod+Control+m					exec pavucontrol
 
 # Fn-F4  XF86AudioMicMute
@@ -868,9 +871,12 @@ assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Deskt
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
 
-assign		[window_role="i3jobs"]				$ws_util2
+assign		[class="vorta"]						$ws_util1
+assign		[window_role="i3jobs"]				$ws_util1
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
+
+
 
 #######################################################################################################################
 #
@@ -888,7 +894,7 @@ for_window  [class="Dnssec-trigger-panel"] floating enable
 # & send process to background avoids keeping the calling sh shells in memory
 
 ## Run at i3 initial start only
-exec_always "pgrep vorta || vorta &"
+#exec_always "pgrep vorta || vorta &"
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 exec "/usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
@@ -913,10 +919,12 @@ exec_always "pgrep blueman-applet || blueman-applet &"
 exec "slack &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
-exec --no-startup-id "sleep 10; i3-launch-jobs; i3-launch-jobs loop default"
+exec_always --no-startup-id "i3-launch-jobs"
+exec --no-startup-id "sleep 10; i3-launch-jobs loop default"
 exec --no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
+exec_always --no-startup-id "xset dpms 360 600 900 s blank s 300 60 s on"
 exec_always --no-startup-id "i3-move-workspaces"
 exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
