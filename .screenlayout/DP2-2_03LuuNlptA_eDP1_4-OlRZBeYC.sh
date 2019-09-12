@@ -1,1 +1,1 @@
-ginsys-office.sh
+profile-ginsys-office.sh
