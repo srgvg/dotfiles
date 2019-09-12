@@ -662,6 +662,9 @@ bindsym XF86AudioPlay					exec --no-startup-id playerctl play-pause
 bindsym Shift+XF86AudioPlay				exec --no-startup-id playerctl stop
 bindsym XF86AudioNext					exec --no-startup-id playerctl next
 
+bindsym $mod+XF86AudioLowerVolume		exec --no-startup-id playerctl previous
+bindsym $mod+XF86AudioRaiseVolume		exec --no-startup-id playerctl next
+
 bindsym $mod+comma						exec --no-startup-id playerctl previous
 bindsym $mod+period						exec --no-startup-id playerctl next
 bindsym $mod+slash						exec --no-startup-id playerctl play-pause

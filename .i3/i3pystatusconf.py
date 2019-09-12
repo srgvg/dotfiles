@@ -92,26 +92,26 @@ status.register("battery",
                 charging_color="#ff7700",
                 full_color=COLHW,)
 
-status.register("temp",
-                color=COLHW,
-                format=" {temp}°C")
-
-status.register("cpu_freq",
-                color=COLHW,
-                format="{avgg}GHz")
+#status.register("temp",
+#                color=COLHW,
+#                format=" {temp}°C")
+#
+#status.register("cpu_freq",
+#                color=COLHW,
+#                format="{avgg}GHz")
 
 status.register("load",
                 color=COLHW,
                 format=" {avg1} {avg5} {avg15} {tasks}")
 
-status.register("disk",
-                color=COLHW,
-                path="/",
-                format=" {percentage_avail}%",)
-
-status.register("mem",
-                color=COLHW,
-                format="🐏 {percent_used_mem}%",)
+#status.register("disk",
+#                color=COLHW,
+#                path="/",
+#                format=" {percentage_avail}%",)
+#
+#status.register("mem",
+#                color=COLHW,
+#                format="🐏 {percent_used_mem}%",)
 
 status.register("network",
                 interface="enp0s31f6",

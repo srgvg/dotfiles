@@ -59,9 +59,10 @@ case ${1:-} in
 				if   [ "${state}" = "Playing" ]; then stat="▶  "
 				elif [ "${state}" = "Paused" ];  then stat="▌▌ "; fi
 				artist=$(playerctl $player0 metadata xesam:artist);	[ -n "$artist" ] && artist="$artist "
-				album=$( playerctl $player0 metadata xesam:album);	[ -n "$album" ]  && album="($album) "
-				title=$( playerctl $player0 metadata xesam:title);	[ -n "$title" ]  && title="'$title' "
-				output="${player}${stat}${artist}${album}${title}"
+				#album=$( playerctl $player0 metadata xesam:album);	[ -n "$album" ]  && album="($album) "
+				title=$( playerctl $player0 metadata xesam:title);	[ -n "$title" ]  && title="$title "
+				#output="${player}${stat}${artist}${album}${title}"
+				output="${player}${stat}${artist}${title}"
 			elif [ "${state}" = "Stopped" ]
 			then	stat="◼ "
 					output="${player}${stat}"
