@@ -68,7 +68,7 @@
 	up = remote update
 
 	wip = commit -a -m WIP
-	pushall = !git remote | xargs -L1 git push --all
+	pushall = !git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 git push --all
 
 
 [apply]

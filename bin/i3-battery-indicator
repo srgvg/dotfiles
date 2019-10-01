@@ -15,7 +15,7 @@ source "$HOME/bin/common.bash"
 SLEEP_TIME=15		# Default time between checks.
 SAFE_PERCENT=30		# Still safe at this level.
 DANGER_PERCENT=15	# Warn when battery at this level.
-CRITICAL_PERCENT=5	# Hibernate when battery at this level.
+CRITICAL_PERCENT=3	# Hibernate when battery at this level.
 
 NAGBAR_PID=0
 export DISPLAY=:0.0
@@ -48,6 +48,7 @@ while [ true ]; do
 
 		if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
 			SLEEP_TIME=15
+			killNagBar
 		else
 			SLEEP_TIME=5
 			if [[ $rem_bat -le $DANGER_PERCENT ]]; then

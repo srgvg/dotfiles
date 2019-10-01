@@ -18,14 +18,14 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 	arandrd
 	mqtt-notify.py
 	autocutsel -verbose -selection CLIPBOARD
+	journalctl -u i3lock -f
+	journalctl --user-unit dunst.service -f
 	vorta --foreground
+	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
 	audd
 	dmesg --human --decode --follow --ctime --time-format iso
 	tail --follow=name /var/log/syslog
-	pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
 	i3-battery-indicator
-	journalctl -u i3lock -f
-	journalctl --user-unit dunst.service -f
 
 	#dnssec-trigger-control results
 	#journalctl -fu unbound

@@ -74,6 +74,7 @@ function _check_debug_logging() {
 	if ifdebug1 || [ -n "${FORCE_DEBUG_LOGGING:-}" ]
 	then
 		# log this scripts full output
+		mkdir -p ${LOGS_PATH}
 		LOGFILE="$(readlink -f "$0" | sed -e 's@/home/serge/@@' \
 					-e 's@/@_@g' -e 's@ @@g').log"
 		LOGFILE="$LOGS_PATH/${LOGFILE}"

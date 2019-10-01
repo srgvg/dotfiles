@@ -69,6 +69,12 @@ case ${1:-} in
 			fi
 		fi
 		;;
+	refresh)
+		p3spid=$(pgrep -f "python3 $HOME/.i3/i3pystatusconf.py")
+		kill -SIGUSR1 ${p3spid}
+		output=""
+		echo "py3status process ${p3spid} refreshed"
+		;;
 	*)
 		notify_error "$(
 			echo "Possible options are:";
