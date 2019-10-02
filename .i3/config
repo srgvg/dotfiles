@@ -536,7 +536,7 @@ mode "$mode_moveit" {
 set $mode_system x Exit | [Shift] d [de-]activate Debugging
 bindsym $mod+Control+$Alt+q mode "$mode_system"
 mode "$mode_system" {
-	bindsym x exec --no-startup-id i3-msg "quit"
+	bindsym x exit
 	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
 	bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
 	# back to normal: Enter or Escape
@@ -639,16 +639,20 @@ bindsym $mod+$Alt+n				exec nm-toggle-wifi
 #
 # volume and media controls, special keys
 #
+## Fn XF86WakeUp
 
+# Fn-F1  XF86AudioMute
+bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
+bindsym $mod+XF86AudioMute				exec --no-startup-id i3-volume set 50
+
+# Fn-F2  XF86AudioLowerVolume
+# Fn-F3  XF86AudioRaiseVolume
 bindsym XF86AudioLowerVolume			exec --no-startup-id i3-volume down
 bindsym XF86AudioRaiseVolume			exec --no-startup-id i3-volume up
 bindsym Shift+XF86AudioLowerVolume		exec --no-startup-id sonos volume -10
 bindsym Shift+XF86AudioRaiseVolume		exec --no-startup-id sonos volume +10
 bindsym Control+XF86AudioLowerVolume	exec --no-startup-id ponymix decrease 10
 bindsym Control+XF86AudioRaiseVolume	exec --no-startup-id ponymix increase 10
-
-bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
-bindsym $mod+XF86AudioMute				exec --no-startup-id i3-volume set 50
 
 
 bindsym $mod+Control+comma				exec --no-startup-id i3-volume down
@@ -675,6 +679,7 @@ bindsym $mod+$alt+m						exec --no-startup-id i3-playerctl-select-player
 bindsym $mod+Control+m					exec pavucontrol
 
 # Fn-F4  XF86AudioMicMute
+bindsym XF86AudioMicMute				exec --no-startup-id ponymix  --source --device 1 toggle
 
 # Fn-F5  XF86MonBrightnessDown
 bindsym XF86MonBrightnessDown			exec --no-startup-id i3-brightness down
@@ -682,13 +687,15 @@ bindsym Shift+XF86MonBrightnessDown		exec --no-startup-id i3-brightness set 20
 
 # Fn-F6  XF86MonBrightnessUp
 bindsym XF86MonBrightnessUp				exec --no-startup-id i3-brightness up
-bindsym Shift+XF86MonBrightnessUp			exec --no-startup-id i3-brightness set 100
+bindsym Shift+XF86MonBrightnessUp		exec --no-startup-id i3-brightness set 100
 
 ## Fn-F7 XF86Display
 bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
-bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
+bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
+bindsym XF86WakeUp						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+bindsym Shift+XF86WakeUp				exec --no-startup-id xdisplcd
 
 # Fn-F8 XF86WLAN
 bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
@@ -707,8 +714,13 @@ bindsym Shift+Control+Print				exec --no-startup-id screengrab full
 bindsym Shift+Control+XF86Search		exec --no-startup-id screengrab full
 bindsym $mod+Print						exec --no-startup-id publish
 
+# Fn-F10 XF86Bluetooth
+bindsym XF86Bluetooth					exec --no-start-up-if bluetooth toggle
+
 # Fn-F11 XF86LaunchA
 # Fn-F12 XF86Explorer
+# Fn-F12 XLookupString
+# Fn-F12 XF86Favorites
 
 
 #######################################################################################################################
@@ -792,11 +804,13 @@ for_window [class="Nemo" instance="nemo" title="Plugins"]								floating enable
 for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
 for_window [class="(Totem|Vlc)" instance="(totem|vlc)"]									floating enable
 for_window [class="Gnome-control-center" instance="gnome-control-center"]				floating enable
-for_window [title="Event Tester"]														floating enable # xev
+# xev
+for_window [title="Event Tester"]														floating enable
 for_window [instance="libreoffice"]														border normal
 for_window [class="Files" instance="small"]												floating enable, resize set 700 300
 for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
 for_window [class="flameshot" instance="flameshot"]										floating enable
+for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"]			floating disable
 
 #######################################################################################################################
 #
@@ -904,10 +918,10 @@ exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
 #exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
-exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+#exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 
 # Desktop Apps
-exec_always --no-startup-id "pkill xcompmgr ; xcompmgr &"
+exec_always --no-startup-id "xcompmgr &"
 exec "chrom serge & chrom google &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"

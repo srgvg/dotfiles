@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
 _PID=$(pgrep --full /usr/bin/xcompmgr) && [ $_PID ] && /bin/kill -9 $_PID
 /usr/bin/xcompmgr -c -f -F -I0.2 -O0.2 -D30 &
-

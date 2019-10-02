@@ -22,21 +22,21 @@ status.register("online",
                 color_offline="#ff0000")
 
 status.register("shell",
-                hints = {"separator": False, "separator_block_width": 1},
+                hints = {"separator": False, "separator_block_width": 3},
                 ignore_empty_stdout=True,
                 color=COLIN,
                 command="i3pystatus-commands wifi",
                 interval=2)
 
 status.register("keyboard_locks",
-                hints = {"separator": False, "separator_block_width": 1},
+                hints = {"separator": False, "separator_block_width": 3},
                 color=COLIN,
                 format="{num}",
                 num_on="",
                 num_off="_",)
 
 status.register("backlight",
-                hints = {"separator": False, "separator_block_width": 2},
+                hints = {"separator": False, "separator_block_width": 3},
                 color=COLIN,
                 transforms={'percentage': lambda cdict: round((cdict["brightness"] / cdict["max_brightness"]) * 10)},
                 format="{percentage}",
@@ -120,6 +120,11 @@ status.register("network",
 
 status.register("network",
                 interface="wlp4s0",
+                format_up=" [{quality:3.0f}% '{essid}'] [\[ {v6cidr} \]] [{v4cidr}]",
+                format_down="",)
+
+status.register("network",
+                interface="wlp0s20f3",
                 format_up=" [{quality:3.0f}% '{essid}'] [\[ {v6cidr} \]] [{v4cidr}]",
                 format_down="",)
 
