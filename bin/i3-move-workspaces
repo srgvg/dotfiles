@@ -60,7 +60,7 @@ then
     for w in ${SECONDARIES}
     do
 		wn=${w%%,*}
-		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
+		if grep -q "${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
 			debug=$(i3-msg "workspace ${wn}; move workspace to output $SECONDARY" 2>&1)
 			notify_debug "Moving workspace ${wn} to secondary output $SECONDARY ** ${debug}"
@@ -73,7 +73,7 @@ then
     for w in ${THIRDS}
     do
 		wn=${w%%,*}
-		if grep -q " ${wn}" <<< ${ALLACTIVES}; then
+		if grep -q "${wn}" <<< ${ALLACTIVES}; then
 			wn=${wn#0}
 			debug=$(i3-msg "workspace ${wn}; move workspace to output $THIRD" 2>&1)
 			notify_debug "Moving workspace ${wn} to third output $THIRD ** ${debug}"

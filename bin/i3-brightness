@@ -51,5 +51,6 @@ xbacklight -time 1000 -set ${brightness2} &
 action2=$(echo $action | sed -e 's/-inc/increase/' -e 's/-dec/decrease/' -e 's/=/set to /')
 brightness2=$(printf "%2.0f" ${brightness2})
 xbrightness2=$(printf "%1.1f" ${xbrightness2})
-notify-send "Brightness" "${brightness0} $action2" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness2 -c device -u low
+#notify-send "Brightness" "${brightness0} $action2" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness2 -c device -u low
+notify_desktop low "Brightness" "${brightness0} $action2" video-display
 

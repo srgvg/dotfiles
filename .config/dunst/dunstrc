@@ -48,7 +48,7 @@
 
     # show age of message if message is older than show_age_threshold seconds.
     # set to -1 to disable
-    show_age_threshold = 30
+    show_age_threshold = 60
 
     # split notifications into multiple lines if they don't fit into geometry
     word_wrap = yes
@@ -138,11 +138,19 @@
     browser = /usr/bin/sensible-browser
 
     #
-    markup = strip
+    markup = full
     stack_duplicates = true
     show_indicators = true
     icon_position = right
     icon_path = "/home/serge/.local/share/icons/local/64x64:/usr/share/icons/gnome/48x48/actions/:/usr/share/icons/gnome/48x48/animations/:/usr/share/icons/gnome/48x48/apps/:/usr/share/icons/gnome/48x48/categories/:/usr/share/icons/gnome/48x48/devices/:/usr/share/icons/gnome/48x48/emblems/:/usr/share/icons/gnome/48x48/emotes/:/usr/share/icons/gnome/48x48/mimetypes/:/usr/share/icons/gnome/48x48/places/:/usr/share/icons/gnome/48x48/status/"
+    max_icon_size = 60
+
+    browser = "$HOME/bin/chrom"
+
+    # 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg'
+    verbosity = info
+
+    corner_radius = 10
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key

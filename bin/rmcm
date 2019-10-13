@@ -12,22 +12,19 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-sockets=$(shopt -s nullglob; echo ~/.ssh/cm-*)
+sockets=$(shopt -s nullglob; echo ~serge/.ssh/s:*)
 
-if [ "$1" = "" ]
-then
-    paction=""
-elif [ "$1" = "do" ]
+action=${1:-}
+if [ "$action" = "doit" ]
 then
     paction="pkill"
 else
-    sockets="$1"
-    paction="pkill"
+    paction="echo pkill"
 fi
 
 for socket in ${sockets}
 do
     echo -n `pgrep -af "ssh:.*${socket}"`" "
-    [ -z "${paction}" ] || ${paction} -cf "ssh:.*${socket}" && echo
+    ${paction} -cf "ssh:.*${socket}"
 done
 

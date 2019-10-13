@@ -58,10 +58,14 @@ case ${1:-} in
 			then
 				if   [ "${state}" = "Playing" ]; then stat="▶  "
 				elif [ "${state}" = "Paused" ];  then stat="▌▌ "; fi
-				artist=$(playerctl $player0 metadata xesam:artist);	[ -n "$artist" ] && artist="$artist "
-				#album=$( playerctl $player0 metadata xesam:album);	[ -n "$album" ]  && album="($album) "
-				title=$( playerctl $player0 metadata xesam:title);	[ -n "$title" ]  && title="$title "
-				#output="${player}${stat}${artist}${album}${title}"
+				nowply=$(playerctl $player0 metadata vlc:nowplaying);
+				if [ -n "$nowply" ] ; then
+					title="$nowply "
+					artist=""
+				else
+					artist=$(playerctl $player0 metadata xesam:artist);	    [ -n "$artist" ] && artist="$artist "
+					title=$( playerctl $player0 metadata xesam:title);  	[ -n "$title" ]  && title="$title "
+				fi
 				output="${player}${stat}${artist}${title}"
 			elif [ "${state}" = "Stopped" ]
 			then	stat="◼ "

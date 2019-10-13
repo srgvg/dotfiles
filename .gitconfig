@@ -68,7 +68,7 @@
 	up = remote update
 
 	wip = commit -a -m WIP
-	pushall = !git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 git push --all
+	pushall = "!git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 -I@ bash -xc 'git push --all @ ; git push --tags @'"
 
 
 [apply]
@@ -137,7 +137,8 @@
 [diff]
 
 	tool = icdiff
-	renames = copies
+	renames = copy
+	noprefix = true
 
 
 [difftool]
@@ -220,6 +221,7 @@
 	relativePaths = true
 	showUntrackedFiles = all
 	submodulesummary = true
+	showStash = true
 
 
 [svn]

@@ -189,7 +189,7 @@ function notify_desktop() {
 	summary=${2}
 	body=${3}
 	icon=${4:-dialog-info}
-	app=${5:-$(hostname)}
+	app=${5:-$(basename $0)}
 
 	case $urgency in
 		"low")
@@ -208,7 +208,7 @@ function notify_desktop() {
 
 	if  ! ifinteractive
 	then
-		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" || :
+		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}"|| :
 	else
 		notify_debug "${summary} ${body}"
 	fi
@@ -241,6 +241,11 @@ function errexit_desktop() {
 
 	notify_error_desktop "${message}"
 	errexit "${message}"
+}
+
+function printline() {
+	local _char=$1
+	printf "%`tput cols`s" | tr " " "$_char"
 }
 
 

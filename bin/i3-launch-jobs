@@ -25,6 +25,7 @@ JOBS=$(cat <<- EOF | sed -e 's/#.*//' -e '/^\s*$/d'
 	audd
 	dmesg --human --decode --follow --ctime --time-format iso
 	tail --follow=name /var/log/syslog
+	tail --follow=name /var/log/dnsmasq.log
 	i3-battery-indicator
 
 	#dnssec-trigger-control results

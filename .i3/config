@@ -44,11 +44,11 @@ set $noborder		pixel 0
 # workspaces
 set $ws_www			1
 set $ws_chat		0
+set $ws_chat2		11
 set $ws_tool0		18
 set $ws_tool1		17
 set $ws_tool2		16
-set $ws_music		19
-set $ws_chat2		20
+set $ws_music		20
 set $ws_util1    	21
 set $ws_util2		22
 
@@ -628,8 +628,7 @@ bindsym $mod+Control+p			exec /usr/share/system-config-printer/system-config-pri
 
 # dmenu networkmanager script
 bindsym $mod+n					exec i3-nmcli
-bindsym $mod+Control+n			exec nm-toggle-wifi
-bindsym $mod+$Alt+n				exec nm-toggle-wifi
+bindsym $mod+Shift+n			exec nm-toggle-wifi
 
 
 # custom shit
@@ -694,8 +693,8 @@ bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-
 bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
 bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
-bindsym XF86WakeUp						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
-bindsym Shift+XF86WakeUp				exec --no-startup-id xdisplcd
+#bindsym XF86WakeUp						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+#bindsym Shift+XF86WakeUp				exec --no-startup-id xdisplcd
 
 # Fn-F8 XF86WLAN
 bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
@@ -811,6 +810,7 @@ for_window [class="Files" instance="small"]												floating enable, resize s
 for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
 for_window [class="flameshot" instance="flameshot"]										floating enable
 for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"]			floating disable
+for_window [class="System-config-printer.py" instance="system-config-printer" ]			floating disable
 
 #######################################################################################################################
 #
@@ -832,7 +832,7 @@ assign		[window_role="irc"]										$ws_chat
 assign		[class="Signal"]										$ws_chat2
 assign		[class="Slack" window_role="browser-window"]			$ws_chat2
 assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
-#for_window	[class="Keybase|Signal|Slack"]							layout tabbed
+for_window	[class="Keybase|Signal|Slack"]							layout tabbed
 
 
 for_window	[class="Skype"]									floating enable

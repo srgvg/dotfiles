@@ -172,6 +172,7 @@ function post_lock() {
 
     notify "Re-enable notifications"
 	notify "$(killall -v -SIGUSR2 dunst 2>&1)"
+    systemctl restart --user dunst.service
 
 	if ! systemdservice
 	then

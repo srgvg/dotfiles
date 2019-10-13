@@ -43,10 +43,10 @@ status.register("backlight",
                 format_no_backlight="",
                 interval=2)
 
-status.register("updates",
-                format="APT: {count}",
-                color_working="#FF0000",
-                backends=[aptget.AptGet()])
+#status.register("updates",
+#                format="APT: {count}",
+#                color_working="#FF0000",
+#                backends=[aptget.AptGet()])
 
 status.register("pulseaudio",
                 sink=None,
