@@ -801,8 +801,8 @@ for_window [class="Dropbox" instance="dropbox" title="Dropbox Preferences"]				f
 for_window [class="Nautilus" ]															floating enable
 for_window [class="Nemo" instance="nemo" title="Plugins"]								floating enable
 for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
+for_window [class="Totem" instance="totem"]												floating enable
 for_window [class="Gnome-control-center" instance="gnome-control-center"]				floating enable
-assign     [class="vlc"]																$ws_music
 # xev
 for_window [title="Event Tester"]														floating enable
 for_window [instance="libreoffice"]														border normal
@@ -882,8 +882,9 @@ assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
 
 
 # Music
-assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  $ws_music
-#for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]  layout splitv
+assign      [class="vlc"]																				$ws_music
+assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]		$ws_music
+for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
 
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
