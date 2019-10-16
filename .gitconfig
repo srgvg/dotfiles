@@ -45,6 +45,9 @@
 	# Prune deletes any local branch which has been deleted from the remote.
 	prune = fetch --prune
 
+	#pushall = "!git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 -I@ bash -xc 'git push --all @ ; git push --tags @'"
+	pushall = "!git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 -I@ bash -xc 'git push --mirror @'"
+
 	rm-deleted = ! git rm $(git ls-files --deleted)
 	rm-untracked = ! rm -v $(git ls-files --others)
 
@@ -68,7 +71,6 @@
 	up = remote update
 
 	wip = commit -a -m WIP
-	pushall = "!git remote -v | grep push | grep -v http | awk '{print $1}' | xargs -L1 -I@ bash -xc 'git push --all @ ; git push --tags @'"
 
 
 [apply]
