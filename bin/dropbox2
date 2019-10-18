@@ -20,7 +20,23 @@ function get_instances() {
 }
 
 function get_commands() {
-	dropbox help | grep '^ ' | awk '{print $1}' | sort
+	#dropbox help | grep '^ ' | awk '{print $1}' | sort
+	cat - <<EOF | awk '{print $1}' | sort
+ status       get current status of the dropboxd
+ throttle     set bandwidth limits for Dropbox
+ help         provide help
+ puburl       get public url of a file in your dropbox's public folder
+ stop         stop dropboxd
+ running      return whether dropbox is running
+ start        start dropboxd
+ filestatus   get current sync status of one or more files
+ ls           list directory contents with current sync status
+ autostart    automatically start dropbox at login
+ exclude      ignores/excludes a directory from syncing
+ lansync      enables or disables LAN sync
+ sharelink    get a shared link for a file in your dropbox
+ proxy        set proxy settings for Dropbox
+EOF
 }
 
 function help() {
