@@ -45,9 +45,9 @@ set $noborder		pixel 0
 set $ws_www			1
 set $ws_chat		0
 set $ws_chat2		11
-set $ws_tool0		18
-set $ws_tool1		17
-set $ws_tool2		16
+set $ws_tool0		8
+set $ws_tool1		9
+set $ws_tool2		10
 set $ws_music		20
 set $ws_util1    	21
 set $ws_util2		22
@@ -857,10 +857,10 @@ for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Gimp
-assign		[class="Gimp" instance="gimp"] $ws_tool1
+assign		[class="Gimp" instance="gimp"] $ws_tool2
 
 # Virtualbox
-assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool2
+assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool0
 
 # Pycharm
 for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
