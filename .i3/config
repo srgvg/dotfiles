@@ -683,10 +683,14 @@ bindsym XF86AudioMicMute				exec --no-startup-id ponymix  --source --device 1 to
 # Fn-F5  XF86MonBrightnessDown
 bindsym XF86MonBrightnessDown			exec --no-startup-id i3-brightness down
 bindsym Shift+XF86MonBrightnessDown		exec --no-startup-id i3-brightness set 20
+bindsym $mod+bracketleft				exec --no-startup-id i3-brightness down
+bindsym $mod+Shift+bracketleft			exec --no-startup-id i3-brightness set 20
 
 # Fn-F6  XF86MonBrightnessUp
 bindsym XF86MonBrightnessUp				exec --no-startup-id i3-brightness up
 bindsym Shift+XF86MonBrightnessUp		exec --no-startup-id i3-brightness set 100
+bindsym $mod+bracketright				exec --no-startup-id i3-brightness up
+bindsym $mod+Shift+bracketright			exec --no-startup-id i3-brightness set 100
 
 ## Fn-F7 XF86Display
 bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
@@ -945,7 +949,7 @@ exec --no-startup-id "syndaemon -dkRi 0.5"
 exec_always --no-startup-id "xset dpms 360 600 900 s blank s 300 60 s on"
 exec_always --no-startup-id "i3-move-workspaces"
 exec_always --no-startup-id "setbg redisplay"
-exec_always --no-startup-id "systemctl restart --user dunst.service"
+#exec_always --no-startup-id "systemctl restart --user dunst.service"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/

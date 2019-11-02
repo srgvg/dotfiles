@@ -12,15 +12,17 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+# constants
 inc='10'
 incx='0.10'
 
-brightness0=$(xbacklight -get)
-brightness0=$(printf "%2.0f" ${brightness0})
-brightness1=${brightness0}
-xbrightness1=$(awk "BEGIN {print ${brightness1} / 100; exit}")
+## get current brightness level
+# https://stackoverflow.com/a/19120674
+xbrightness1=$(xrandr --verbose | grep -m 1 Brightness | awk '{print $2}' ||:)
+brightness1=$(awk "BEGIN {print ${xbrightness1} * 100; exit}")
 
-displays=$(xrandr -q | grep -w connected | awk '{print $1}')
+## check action and new brightness
+displays=$(xrandr -q | grep -w connected | grep -v eDP1 | awk '{print $1}')
 case ${1:-} in
 	"up")
 		action="-inc $inc"
@@ -41,16 +43,19 @@ case ${1:-} in
 esac
 brightness2=$(awk "BEGIN {print ${xbrightness2} * 100; exit}")
 
-for output in ${displays}
-do
-	xrandr --output $output --brightness ${xbrightness2}
-done
+## update brightness
+# for laptop screen
 xbacklight -time 1000 -set ${brightness2} &
 
+# for external displays
+for output in ${displays}
+do
+	xrandr --output $output --brightness ${xbrightness2} ||:
+done
 
-action2=$(echo $action | sed -e 's/-inc/increase/' -e 's/-dec/decrease/' -e 's/=/set to /')
+
+action2=$(echo $action | sed -e 's/-inc/increase/' -e 's/-dec/decrease/' -e 's/.*set.*//')
 brightness2=$(printf "%2.0f" ${brightness2})
 xbrightness2=$(printf "%1.1f" ${xbrightness2})
-#notify-send "Brightness" "${brightness0} $action2" -t 1200 -i /usr/share/icons/gnome/48x48/devices/video-display.png -h int:value:$brightness2 -c device -u low
-notify_desktop low "Brightness" "${brightness0} $action2" video-display
+notify_desktop low "Brightness" "${brightness1} ${action2} to ${brightness2}" video-display
 

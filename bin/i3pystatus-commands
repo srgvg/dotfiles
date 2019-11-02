@@ -53,7 +53,7 @@ case ${1:-} in
 			stat=""
 			player="[$player0] "
 			player0="-p $player0"
-			state="$(playerctl $player0 status)"
+			state="$(playerctl $player0 status 2>&1 ||:)"
 			if [ ! "$state" = "Stopped" ] && [ ! "$state" = "No players found" ]
 			then
 				if   [ "${state}" = "Playing" ]; then stat="▶  "
@@ -70,6 +70,8 @@ case ${1:-} in
 			elif [ "${state}" = "Stopped" ]
 			then	stat="◼ "
 					output="${player}${stat}"
+			else
+					output="◼ "
 			fi
 		fi
 		;;

@@ -47,7 +47,7 @@ function ifinteractive() {
 }
 
 function _time() {
-	if which time >/dev/null
+	if command -v time >/dev/null
 	then
 		# shellcheck disable=SC2048
 		/usr/bin/time --format %E $*
@@ -208,7 +208,7 @@ function notify_desktop() {
 
 	if  ! ifinteractive
 	then
-		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}"|| :
+		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
 	else
 		notify_debug "${summary} ${body}"
 	fi
