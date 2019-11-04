@@ -175,11 +175,6 @@
 	#program = gpg
 
 
-[include]
-
-	path = ~/.gitconfig.d/git-repo
-
-
 [merge]
 
 	conflictstyle = diff3
@@ -209,13 +204,13 @@
 	fsckobjects = true
 
 
-[sendemail]
-
-	smtpserver = smtp.gmail.com
-	smtpserverport = 587
-	smtpencryption = tls
-	smtpuser = serge@vanginderachter.be
-	verify = off
+#[sendemail]
+#
+#	smtpserver = smtp.gmail.com
+#	smtpserverport = 587
+#	smtpencryption = tls
+#	smtpuser = serge@vanginderachter.be
+#	verify = off
 
 
 [status]
@@ -241,9 +236,24 @@
 [user]
 
 	name = Serge van Ginderachter
-	email = serge@vanginderachter.be
-	signingkey = D08FC082B8E46E8E
+    email = serge@vanginderachter.be
+    signingkey = D08FC082B8E46E8E
 
 
 [rebase]
+
 	autoStash = True
+
+
+## includes
+
+[include]
+
+	path = ~/.gitconfig.d/git-repo
+
+
+[includeIf "gitdir:~/src/massivemedia/"]
+
+	path = ~/.gitconfig.d/massivemedia
+
+
