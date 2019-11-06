@@ -45,9 +45,10 @@ set $noborder		pixel 0
 set $ws_www			1
 set $ws_chat		0
 set $ws_chat2		11
-set $ws_tool0		8
-set $ws_tool1		9
-set $ws_tool2		10
+set $ws_tool0		7
+set $ws_tool1		8
+set $ws_tool2		9
+set $ws_tool3		10
 set $ws_music		20
 set $ws_util1    	21
 set $ws_util2		22
@@ -763,7 +764,7 @@ for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floati
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
 for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable,border $defaultborder
 
-assign [instance="sun-awt-X11-XFramePeer"] 12
+assign [instance="sun-awt-X11-XFramePeer"] $ws_tool3
 for_window [instance="sun-awt-X11-XFramePeer"] floating disable, border normal
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
