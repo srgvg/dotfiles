@@ -32,7 +32,9 @@ source $BASH_IT/bash_it.sh
 # custom things go here
 if [ -d $HOME/.bashrc.d ]
 then
-    source $HOME/.bashrc.d/*
+    for bashrc in $HOME/.bashrc.d/*; do
+        source $bashrc
+    done
 fi
 
 

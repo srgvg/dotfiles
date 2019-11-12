@@ -1,0 +1,10 @@
+# systemd --user
+export XDG_RUNTIME_DIR="/run/user/$UID"
+
+source <(kubectl completion bash)
+source <(doctl completion bash)
+source <(helm completion bash)
+export DIGITALOCEAN_ENABLE_BETA=1
+
+export GIT_COMMITTER_NAME=$(git config --get user.name)
+export GIT_COMMITTER_EMAIL=$(git config --get user.email)
