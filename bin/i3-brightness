@@ -18,11 +18,12 @@ incx='0.10'
 
 ## get current brightness level
 # https://stackoverflow.com/a/19120674
-xbrightness1=$(xrandr --verbose | grep -m 1 Brightness | awk '{print $2}' ||:)
+# and calculate average
+xbrightness1=$(xrandr --verbose | grep Brightness | awk '{ sum+=($2)} END {print sum/NR }' ||:)
 brightness1=$(awk "BEGIN {print ${xbrightness1} * 100; exit}")
 
 ## check action and new brightness
-displays=$(xrandr -q | grep -w connected | grep -v eDP1 | awk '{print $1}')
+displays=$(xrandr -q | grep -w connected | awk '{print $1}')
 case ${1:-} in
 	"up")
 		action="-inc $inc"
