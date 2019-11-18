@@ -19,22 +19,20 @@ PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIV
 
 #PLAYERS=$(playerctl --list-all | grep -v chrome | sort -ur | xargs)
 # include chrome google profile for youtube stuff
-PLAYERS=$( (playerctl --list-all | grep -v chrome ||: ; playerctl --list-all | grep "$(pgrep -of chrome.*profiles/google)" ||:) | sort -ur | xargs)
-if ! echo ${PLAYERS} | grep ${PLAYERCTL_ACTIVE_PLAYER}
+PLAYERS=$(playerctl --list-all | grep -v chrom ||: ; for player in $(playerctl --list-all | grep chrom ); do  echo -n "${player} "; wmctrl -lp | grep ${player/*instance} | awk '{$1=$2=$3=$4=""; print}' | xargs; done)
+if ! echo ${PLAYERS} | grep -q ${PLAYERCTL_ACTIVE_PLAYER}
 then
 	PLAYERCTL_ACTIVE_PLAYER=""
-fi
-notify_debug "current players, active first: ${PLAYERCTL_ACTIVE_PLAYER} - ${PLAYERS#*${PLAYERCTL_ACTIVE_PLAYER}} - ${PLAYERS%${PLAYERCTL_ACTIVE_PLAYER}*} (unfiltered)"
-
-# make the current player the first in the list, whilst keeping the list circular sorted
-if [ -n "${PLAYERCTL_ACTIVE_PLAYER}" ]
+elif [ -n "${PLAYERCTL_ACTIVE_PLAYER}" ]
 then
-	PLAYERS="${PLAYERCTL_ACTIVE_PLAYER} ${PLAYERS#*${PLAYERCTL_ACTIVE_PLAYER}} ${PLAYERS%${PLAYERCTL_ACTIVE_PLAYER}*}"
+# add the current player as the first in the list
+PLAYERS="${PLAYERCTL_ACTIVE_PLAYER}
+${PLAYERS}"
 fi
 
 notify_debug "current players, active first: ${PLAYERS}"
 
-selected_player="$(echo $PLAYERS | xargs -n1 | (dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
+selected_player="$(echo "$PLAYERS" |  (dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
 if [ -n "${selected_player}" ]
 then
 	notify_debug "selected player: ${selected_player}"
