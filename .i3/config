@@ -890,7 +890,6 @@ assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
 assign      [class="vlc"]																				$ws_music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]		$ws_music
 for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
-
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
 

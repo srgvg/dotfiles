@@ -9,8 +9,10 @@ set -o errexit
 set -o pipefail
 
 
+FORCE_DEBUG_LOGGING="TRUE"
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
+
 
 SLEEP_TIME=15		# Default time between checks.
 SAFE_PERCENT=20		# Still safe at this level.
