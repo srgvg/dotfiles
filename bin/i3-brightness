@@ -19,7 +19,7 @@ incx='0.10'
 ## get current brightness level
 # https://stackoverflow.com/a/19120674
 # and calculate average
-xbrightness1=$(xrandr --verbose | grep Brightness | awk '{ sum+=($2)} END {print sum/NR }' ||:)
+xbrightness1=$(xrandr --verbose | grep " connected" -A10 | grep Brightness | awk '{ sum+=($2)} END {print sum/NR }' ||:)
 brightness1=$(awk "BEGIN {print ${xbrightness1} * 100; exit}")
 
 ## check action and new brightness
