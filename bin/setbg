@@ -151,14 +151,14 @@ lock() {
 }
 
 main() {
-    # what parameters did we get?
 	local action
+
     if [ -z "$p1" ]				## ZERO PARAMETERS
-    then						# default action, pick and set a background
-		$HOME/bin/loop					# stop any background loop
-        target="${SETBG_DEFAULT_BACKGROUND}"
-        setbg ${target}
-    elif [ -z "$p2" ]			## ONE PARAMETER
+    then						# default action
+		p1="show"					# show which background
+	fi
+
+    if [ -z "$p2" ]			## ONE PARAMETER
     then						#	action without argument, or
 		case ${p1} in			#	just a target
 			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
@@ -175,6 +175,11 @@ main() {
 				;;
 			'next')
 				loopnext
+				;;
+			'def*')				# default
+				$HOME/bin/loop							# stop current loop
+        		target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
+        		setbg ${target}							# pick and set a background
 				;;
 			*)					# must be a target
 				target="${p1}"
