@@ -4,6 +4,16 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+DEBUG=1
 COMMAND="/usr/bin/terminator --geometry 800x600"
 
 if [ "$(basename $0)" = "terminator-floating" ]
@@ -15,4 +25,10 @@ else
 	COMMAND="$COMMAND --working-directory=${PWD}"
 fi
 
-exec $COMMAND
+if ifdebug1
+then
+	mkdir -p ~/t/term/
+	(exec strace $COMMAND) |& ts %Y-%m-%d-%T > ~/t/term/$(date +%Y%m%d-%H%M%S).trace.log
+else
+	exec $COMMAND
+fi
