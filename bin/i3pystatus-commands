@@ -22,6 +22,19 @@ case ${1:-} in
 	audio_current_sink)
 		execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' 2>/dev/null ||:"
 		;;
+	audio_current_sink_volume)
+		execute "ponymix get-volume"
+		if [ -n "${output}" ]
+		then
+			if [ "${output}" -gt 0 ]
+			then
+				output="🔊${output}%"
+			else [ "${output}" -eq 0 ]
+				output="🚫"
+			fi
+		fi
+
+		;;
 	audio_sonos_volume)
 		execute "sonos volume 2>/dev/null ||:"
 		if [ -n "${output}" ]

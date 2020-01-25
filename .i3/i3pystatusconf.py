@@ -55,6 +55,13 @@ status.register("pulseaudio",
                 format="🔊 {volume}%",
                 format_muted="🚫",)
 
+#status.register("shell",
+#                hints = {"separator": False, "separator_block_width": 5},
+#                ignore_empty_stdout=True,
+#                color=COLAU,
+#                command="i3pystatus-commands audio_current_sink_volume",
+#                interval=3)
+
 status.register("shell",
                 hints = {"separator": False, "separator_block_width": 5},
                 ignore_empty_stdout=True,
