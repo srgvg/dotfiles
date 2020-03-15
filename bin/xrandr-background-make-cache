@@ -10,12 +10,13 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
+source "$HOME/bin/parameters.bash"
 
 ###############################################################################
 
 export DEBUG=1
 
-for picture in ~/Backgrounds/flock/*
+for picture in $(find ${LOCK_DEFAULT_LOCKSCREEN} -type f)
 do
     xrandr-background lock $picture $HOME/tmp/cached
 done

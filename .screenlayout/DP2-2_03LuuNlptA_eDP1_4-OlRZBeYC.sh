@@ -1,1 +1,1 @@
-profile-ginsys-office.sh
+mode-homeoffice.sh

@@ -623,13 +623,14 @@ bindsym $mod+Control+$Alt+b		exec --no-startup-id setbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 bindsym $mod+p					exec presentation-mode
+bindsym $mod+Shift+p			exec presentation-mode start2
 
 # Launch Printer config
 bindsym $mod+Control+p			exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
 bindsym $mod+n					exec i3-nmcli
-bindsym $mod+Shift+n			exec nm-toggle-wifi
+bindsym $mod+Control+n			exec nm-toggle-wifi
 
 
 # custom shit
@@ -930,7 +931,7 @@ exec "chrom google & sleep 1; chrom serge &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
-exec_always "pgrep -f snap/keepassxc || keepassxc &"
+exec_always "keepassxc"
 #exec_always "run-one i3-autotiling &"
 exec "run_keybase -a &"
 exec "signal-desktop &"
@@ -952,6 +953,7 @@ exec_always --no-startup-id "setbg redisplay"
 #exec_always --no-startup-id "systemctl restart --user dunst.service"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
+exec_always "synology-drive"
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
 						-option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard

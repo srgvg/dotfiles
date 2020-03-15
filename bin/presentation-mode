@@ -16,7 +16,9 @@ function start() {
 
 	if [ -z "${ACTIVATED}" ]
 	then
-		killall -SIGUSR1 dunst  # disable OSD notifications
+		if [ "${1:-}" != "keep-notif" ]; then
+			killall -SIGUSR1 dunst  # disable OSD notifications
+		fi
 		xset -dpms              # disable dpms
 		xset s off              # disable scren saver blanking
     	eval "${RUNTRAY}" &
@@ -55,7 +57,8 @@ function main() {
 	ACTIVATED=$(pgrep -f "gtrayicon --activated .* --activate=/bin/true --deactivate=${_self}" || :)
 
 	case "${ACTION}" in
-		start)  start ;;
+		start)  start;;
+		start2)  start keep-notif;;
 		stop)   stop ;;
 		toggle) toggle ;;
 		*)

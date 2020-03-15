@@ -134,6 +134,11 @@ notifypath() {
 	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}\n\n${filename}" video-display setbg
 }
 
+rmcurrentbg() {
+	_output=$(mv -v showpath $HOME/Pictures/Backgrounds/TRASH)
+	notify_desktop critical "${BASH_SOURCE[1]}" "${_output}"
+}
+
 setbg() {
     checktarget $1
 	pickpic
@@ -166,6 +171,9 @@ main() {
 				;;
 			'show')				# show current picture path
 				notifypath
+				;;
+			'rm')				# delete current picture
+				rmcurrentbg
 				;;
 			'showpic')				# open current picture
 				showpic

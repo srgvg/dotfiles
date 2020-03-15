@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+set -x
+
+
+target=$1
+
+ssh ${target} 'mkdir -vp $HOME/bin $HOME/.bashrc.d $HOME/.config'
+scp $HOME/bin2/starship ${target}:bin/
+scp $HOME/.config/starship.toml ${target}:.config/
+for file in ${HOME}/.bashrc.d/*
+do
+    scp ${file} ${target}:.bashrc.d/
+done
+scp $HOME/.bashrc $target:

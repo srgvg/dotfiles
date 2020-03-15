@@ -7,7 +7,7 @@
 
 PATH=$HOME/bin:$PATH
 source $HOME/bin/parameters.bash
-source $HOME/.bash_it/custom/functions.bash
+source $HOME/.bashrc.d/functions.bash
 
 # make sure DEBUG is not exported
 # it is when called 'DEBUG=1 foo.sh'

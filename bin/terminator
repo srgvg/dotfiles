@@ -13,7 +13,7 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-DEBUG=1
+#DEBUG=1
 COMMAND="/usr/bin/terminator --geometry 800x600"
 
 if [ "$(basename $0)" = "terminator-floating" ]
@@ -28,7 +28,9 @@ fi
 if ifdebug1
 then
 	mkdir -p ~/t/term/
-	(exec strace $COMMAND) |& ts %Y-%m-%d-%T > ~/t/term/$(date +%Y%m%d-%H%M%S).trace.log
+	filename=$HOME/t/term/$(date +%Y%m%d-%H%M%S).trace.log
+	ln -nfs $filename ~/t/term/latest.trace.log
+	exec strace -o $filename -tt -T -y -yy -f $COMMAND
 else
 	exec $COMMAND
 fi

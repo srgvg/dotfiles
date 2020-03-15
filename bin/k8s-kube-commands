@@ -1,0 +1,2 @@
+
+kubectl get rolebinding,clusterrolebinding --all-namespaces -o jsonpath='{range .items[?(@.subjects[0].name=="system:authenticated")]}[{.roleRef.kind},{.roleRef.name}]{end}'

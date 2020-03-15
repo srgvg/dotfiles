@@ -13,5 +13,9 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-/usr/bin/spotify --force-device-scale-factor=0.8 $*
-pkill -f /usr/bin/spotify
+starship -V
+
+bash <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOME/bin2 --yes
+
+starship -V
+

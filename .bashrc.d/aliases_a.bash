@@ -1,0 +1,1 @@
+/home/serge/src/util/complete-alias/bash_completion.sh
