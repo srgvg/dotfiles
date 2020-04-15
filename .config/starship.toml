@@ -1,10 +1,62 @@
-# Don't print a new line at the start of the prompt
-#add_newline = false
+###
+#
+add_newline = true
+scan_timeout = 30
+prompt_order = [
+    "username",
+    "hostname",
+    "kubernetes",
+    "directory",
+    "git_branch",
+    "git_commit",
+    "git_state",
+    "git_status",
+    "hg_branch",
+    "docker_context",
+    "package",
+    "dotnet",
+    "elixir",
+    "elm",
+    "golang",
+    "haskell",
+    "java",
+    "julia",
+    "nodejs",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "terraform",
+    "nix_shell",
+    "conda",
+    "memory_usage",
+    "aws",
+    "env_var",
+    "crystal",
+    "cmd_duration",
+    "custom",
+    "custom.ansible",
+    "line_break",
+    "jobs",
+    "battery",
+    "time",
+    "custom.sudo",
+    "character",
+]
 
-# Replace the "❯" symbol in the prompt with "➜"
+###
+
 [character]      # The name of the module we are configuring is "character"
-#symbol = "➜"     # The "symbol" segment is being set to "➜"
 symbol = "➞ "     # The "symbol" segment is being set to "➜"
+error_symbol = "[$?] ➞ "
+use_symbol_for_status = true
+
+[cmd_duration]
+min_time = 3_000
+show_milliseconds = true
+
+[docker_context]
+disabled = false
 
 [hostname]
 ssh_only = false
@@ -14,7 +66,6 @@ truncation_length = 5
 truncate_to_repo = true
 prefix = ""
 
-# Disable the package module, hiding it from the prompt completely
 [package]
 disabled = true
 
@@ -23,3 +74,26 @@ disabled = false
 
 [python]
 pyenv_version_name = true
+
+[time]
+disabled = false
+
+[username]
+show_always = true
+
+###
+
+[custom.ansible]
+description = "Ansible version"
+command = "echo -n Ⓐ ' 'v$(ansible --version 2>/dev/null | grep ^ansible | awk '{ print $2 }') $(which ansible | sed -e s@$HOME@~@ -e s@/bin/ansible@@)"
+when = """ test -n "${ANSIBLE_HOME}" """
+files = [ "ansible.cfg" ]
+shell = "/bin/bash"
+
+
+[custom.sudo]
+description = "valid sudo timestamp marker"
+command = "echo -n '√'"
+prefix = ""
+style = "bold bg:red fg:bright-white"
+when = "sudo -vn &>/dev/null"

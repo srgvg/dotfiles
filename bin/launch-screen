@@ -64,7 +64,7 @@ check_options() {
             sname="$1"
             cmd="_start_or_attach"
 		else
-			exerror "we don't know what to do"
+			errexit "we don't know what to do"
 		fi
 	fi
 	wname="$(echo ${command:-} | sed -e 's/-//g' -e 's/\s/_/g')"

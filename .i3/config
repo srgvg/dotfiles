@@ -194,7 +194,7 @@ bar {
 		#  the order in which fonts are “declared” for use in i3bar actually
 		#  matters. The first font in the list shall be the one containing
 		#  icons, the latter the one for plain text
-		font pango:FontAwesome Solid 10, Terminus 10
+		font pango:FontAwesome Solid 12, Terminus 12
 
 		# workspace_buttons <yes|no>
 		workspace_buttons yes
@@ -953,7 +953,7 @@ exec_always --no-startup-id "setbg redisplay"
 #exec_always --no-startup-id "systemctl restart --user dunst.service"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
-exec_always "synology-drive"
+exec_always "pgrep -f cloud-drive || synology-drive &"
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
 						-option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard

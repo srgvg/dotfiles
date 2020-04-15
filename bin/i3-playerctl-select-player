@@ -20,14 +20,14 @@ PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIV
 #PLAYERS=$(playerctl --list-all | grep -v chrome | sort -ur | xargs)
 # include chrome google profile for youtube stuff
 PLAYERS=$(playerctl --list-all | grep -v chrom ||: ; for player in $(playerctl --list-all | grep chrom ); do  echo -n "${player} "; wmctrl -lp | grep ${player/*instance} | awk '{$1=$2=$3=$4=""; print}' | xargs; done)
-if ! echo ${PLAYERS} | grep -q ${PLAYERCTL_ACTIVE_PLAYER}
+if ! echo "${PLAYERS}" | grep -q ${PLAYERCTL_ACTIVE_PLAYER}
 then
 	PLAYERCTL_ACTIVE_PLAYER=""
 elif [ -n "${PLAYERCTL_ACTIVE_PLAYER}" ]
 then
 # add the current player as the first in the list
 PLAYERS="${PLAYERCTL_ACTIVE_PLAYER}
-${PLAYERS}"
+$(echo "${PLAYERS}" | grep -v ${PLAYERCTL_ACTIVE_PLAYER})"
 fi
 
 notify_debug "current players, active first: ${PLAYERS}"

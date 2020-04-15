@@ -29,6 +29,9 @@
 	ignore = update-index assume-unchanged
 	unignore = update-index --no-assume-unchanged
 
+	# https://ses4j.github.io/2020/04/01/git-alias-recent-branches/
+	lb = !git reflog show --pretty=format:'%gs ~ %gd' --date=relative | grep 'checkout:' | grep -oE '[^ ]+ ~ .*' | awk -F~ '!seen[$1]++' | head -n 10 | awk -F' ~ HEAD@{' '{printf(\"  \\033[33m%s: \\033[37m %s\\033[0m\\n\", substr($2, 1, length($2)-1), $1)}'
+
 	# http://tschuermans.be/2016/03/git-compare-log-develop/
 	# A small git alias which can be used to list all commits which are
 	# different to the master (or an optionally named) branch.
@@ -115,6 +118,13 @@
 	whitespace = white black reverse
 
 
+[color "diff-highlight"]
+    oldNormal = red bold
+    oldHighlight = red bold 52
+    newNormal = green bold
+    newHighlight = green bold 22
+
+
 [color "status"]
 
 	added = yellow
@@ -139,7 +149,7 @@
 
 [diff]
 
-	tool = icdiff
+	#tool = icdiff
 	renames = copy
 	noprefix = true
 
@@ -149,9 +159,14 @@
 	prompt = false
 
 
-[difftool "icdiff"]
+#[difftool "icdiff"]
+#
+#	cmd = icdiff --line-numbers $LOCAL $REMOTE
 
-	cmd = icdiff --line-numbers $LOCAL $REMOTE
+
+[diff-so-fancy]
+	first-run = false
+	changeHunkIndicators = false
 
 
 [fetch]

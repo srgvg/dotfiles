@@ -13,13 +13,15 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
+export DEBIAN_FRONTEND=noninteractive
+
 trap_continue() {
     # clear the trap so we can really stop here with a second ctrl-c
 	trap - SIGINT
 	echo
-	echo + sudo apt -y full-upgrade
+	echo + sudo apt -o Dpkg::Options::="--force-confold" -y full-upgrade
 	echo
-	sudo apt -y full-upgrade ||:
+	sudo apt -o Dpkg::Options::="--force-confold" -y full-upgrade ||:
 	echo
 	echo + sudo apt -y autoremove
 	echo
