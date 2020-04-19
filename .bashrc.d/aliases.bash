@@ -50,9 +50,9 @@ alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
 alias r='ranger'
 alias shredit='shred --verbose --iterations 5 --zero --remove'
-alias sshnc="ssh -S none"
-alias sshnokey="ssh -o PubkeyAuthentication=no"
-alias sshpw="ssh -o ControlPath=none -o PreferredAuthentications=password"
+alias ssh-nc="ssh -S none"
+alias ssh-nokey="ssh -o PubkeyAuthentication=no"
+alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
 alias svn-addall='svn add `svn status | grep ? | cut -d\  -f2- | xargs`'
 alias swappy="/sbin/sysctl vm.swappiness"
 alias sysl="tail -n 200 -f /var/log/syslog"
