@@ -2,7 +2,8 @@
 
 [global]
     #font = Ubuntu Mono 10
-    font = FantasqueSansMono 10
+    #font = FantasqueSansMono 10
+    font = LiberationMonoRegular 10
 
     # allow a small subset of html markup:
     # <b>bold</b>
@@ -137,7 +138,7 @@
     dmenu = "/usr/bin/dmenu -p dunst: -nb #FFFFFF -nf #000000 -sb #94DBFF -sf #000000"
 
     # browser for opening urls in context menu
-    browser = /usr/bin/sensible-browser
+    #browser = /usr/bin/sensible-browser
     browser = "$HOME/bin/chrom"
 
     # Define the class of the windows spawned by dunst
@@ -159,7 +160,7 @@
     #  mesg: Important Messages
     #  info: all unimportant stuff
     # debug: all less than unimportant stuff
-    verbosity = info
+    verbosity = mesg
 
     # Define the corner radius of the notification window
     # in pixel size. If the radius is 0, you have no rounded

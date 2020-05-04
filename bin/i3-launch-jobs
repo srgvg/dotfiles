@@ -20,7 +20,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	mqtt-notify.py
 	i3-battery-indicator
 	vorta --foreground
-	tail -f .SynologyDrive/log/daemon.log
+	tail --follow=name .SynologyDrive/log/daemon.log
 	journalctl --user-unit dunst.service -f
 	journalctl -u i3lock -f
 	tail --follow=name /var/log/syslog

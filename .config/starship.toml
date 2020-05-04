@@ -1,7 +1,7 @@
 ###
 #
 add_newline = true
-scan_timeout = 30
+scan_timeout = 10
 prompt_order = [
     "username",
     "hostname",
@@ -57,6 +57,11 @@ show_milliseconds = true
 
 [docker_context]
 disabled = false
+
+[git_status]
+disabled = true
+staged_count.enabled = true
+staged_count.style = "green"
 
 [hostname]
 ssh_only = false

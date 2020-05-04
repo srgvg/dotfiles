@@ -431,9 +431,10 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab				exec --no-startup-id i3-cycle right
-#bindsym $mod+Shift+Tab			exec --no-startup-id i3-cycle left
+bindsym $mod+Tab				focus right
 bindsym $mod+Shift+Tab			focus left
+bindsym $mod+$alt+Tab			exec --no-startup-id i3-cycle right
+bindsym $mod+Shift+$alt+Tab		exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -678,6 +679,7 @@ bindsym $mod+Shift+slash				exec --no-startup-id playerctl stop
 bindsym $mod+m							exec --no-startup-id i3-pa-select-output
 bindsym $mod+$alt+m						exec pavucontrol
 bindsym $mod+Control+m					exec --no-startup-id i3-playerctl-select-player
+bindsym $mod+Shift+m    				exec --no-startup-id pa-rotate-sinks
 
 # Fn-F4  XF86AudioMicMute
 bindsym XF86AudioMicMute				exec --no-startup-id ponymix  --source --device 1 toggle
