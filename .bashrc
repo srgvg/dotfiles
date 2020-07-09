@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-umask 0027
+umask 0022
 
 # most things go here
 if [ -d $HOME/.bashrc.d ]

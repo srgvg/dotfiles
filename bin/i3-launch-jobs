@@ -53,7 +53,7 @@ function i3-launch-job() {
         return
     fi
     notify "Checking for \"$*\" ... "
-	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" | xargs)
+	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs)
     then
 		notify "              ... already running (${_pid})"
     else

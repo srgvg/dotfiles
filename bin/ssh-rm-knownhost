@@ -3,4 +3,4 @@
 ip=$(dig +short $1)
 
 ssh-keygen -R $1
-[ ! -z $ip ] && ssh-keygen -R $ip
+[ ! -z "$ip" ] && ssh-keygen -R $ip

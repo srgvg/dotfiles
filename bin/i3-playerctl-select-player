@@ -32,7 +32,7 @@ fi
 
 notify_debug "current players, active first: ${PLAYERS}"
 
-selected_player="$(echo "$PLAYERS" |  (dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
+selected_player="$(echo "$PLAYERS" |  (rofi -dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
 if [ -n "${selected_player}" ]
 then
 	notify_debug "selected player: ${selected_player}"

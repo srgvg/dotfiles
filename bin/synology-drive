@@ -13,15 +13,8 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-starship -V
-
-bash <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOMETMPDIR --yes
-if [ $? -eq 0 ]; then
-	mv -v $HOMETMPDIR/starship $HOME/bin2/starship
-else
-	echo "Error downloading startship to $HOMETMPDIR"
+if pgrep -f SynologyDrive/SynologyDrive.app/bin/cloud-drive-ui >/dev/null; then
+	pkill -f SynologyDrive/SynologyDrive.app/bin/cloud-drive-ui
+	sleep 10
 fi
-
-
-starship -V
-
+/usr/bin/synology-drive

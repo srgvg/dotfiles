@@ -4,7 +4,7 @@ pushd /home/serge/src/ansible/ansible
 git up && (
     git co devel && \
     git rebase ansible/devel && \
-    git push srvg devel && \
+    git push srgvg devel && \
     git submodule update --init --recursive
     )
 popd

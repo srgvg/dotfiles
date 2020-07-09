@@ -21,8 +21,3 @@ function _printline() {
 	printf "%`tput cols`s" | tr " " "$_char"
 }
 
-function k8s_completions() {
-	hash kubectl >&/dev/null && source <(kubectl completion bash)
-	hash helm >&/dev/null && source <(helm completion bash)
-	hash oc >&/dev/null && source <(oc completion bash)
-}

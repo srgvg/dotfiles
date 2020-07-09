@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
 # This script is a fork of
 # http://fabian-affolter.ch/blog/mqtt-and-desktop-notifications/
@@ -51,9 +51,9 @@ def on_connect(client, userdata, flags, rc):
                                                             broker, port,
                                                             mqtt_client_name)
         if DEBUG:
-            print '{"message": %s}' % msg
+            print('{"message": %s}' % msg)
         else:
-            print msg
+            print(msg)
         # Subscribe to topic 'test'
         client.subscribe(topic, qos)
     else:
@@ -61,18 +61,18 @@ def on_connect(client, userdata, flags, rc):
                                                        broker, port,
                                                        mqtt_client_name)
         if DEBUG:
-            print '{"message": %s}' % msg
+            print('{"message": %s}' % msg)
         else:
-            print msg
+            print(msg)
 
 
 def on_disconnect(client, userdata, rc):
     msg = '%s Disconnected from %s:%s as %s' % (
         timestamp(), broker, port, mqtt_client_name)
     if DEBUG:
-        print '{"message": %s}' % msg
+        print('{"message": %s}' % msg)
     else:
-        print msg
+        print(msg)
 
 
 def on_message(client, userdata, msg):
@@ -102,10 +102,10 @@ def on_message(client, userdata, msg):
         notify(summary=summary, body=body)
 
         if not DEBUG:
-            print message['local_time'], summary, body1
+            print(message(['local_time'], summary, body1))
 
     if DEBUG:
-        print json.dumps(message, indent=4, sort_keys=True)
+        print(json.dumps(message, indent=4, sort_keys=True))
         with open('/home/serge/logs/mqtt_notify-json.log', 'a') as jsonlog:
             jsonlog.write(json.dumps(message, sort_keys=True))
             jsonlog.write('\n')
@@ -170,7 +170,7 @@ def main():
         # Loop the client forever
         mqttclient.loop_forever()
     except KeyboardInterrupt:
-        print
+        print()
         mqttclient.disconnect()
         sys.exit(0)
 

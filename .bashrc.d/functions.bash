@@ -112,3 +112,12 @@ function mv() {
   read -ei "$1" newfilename
   command mv -v -- "$1" "$newfilename"
 }
+
+function mkcd() {
+	if [ "$#" -eq 1 ]; then
+		mkdir -pv $1
+		cd $1
+	else
+		echo missing target dir to create
+	fi
+}

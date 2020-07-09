@@ -25,19 +25,22 @@ alias gi='git myinfo'
 alias gl='git lola'
 alias gls='git lol'
 alias gld='git lold'
+alias glt='git lolt'
 alias grep='grep --color=auto'
 alias grepr='grep --line-number --initial-tab --recursive'
 alias gsmu='git submodule update'
-alias gt='git show-tree'
+alias gt='git tree'
+alias gtt='git treet'
 alias gst='git st'
 alias gu='git up'
 alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution: %wpx x %hpx\nColors: %k'"
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
+alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 alias k="kubectl"
-alias kac='k8s_completions; export KUBECONFIG=$(ls $HOME/.kube/config.d/ | sed "s@^@:$HOME/.kube/config.d/@g" | xargs | sed "s/^://;s/\ //g")'
-alias kct='kubectx'
-alias kns='kubens'
+alias ku="kubie"
+alias kc='kubie ctx'
+alias kn='kubie ns'
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'
 alias ls='ls --color=auto'

@@ -5,6 +5,7 @@
 # vi: set shiftwidth=4 tabstop=4
 #
 
+HOMETMPDIR="$(readlink --canonicalize-existing --no-newline $HOME/tmp)"
 BACKGROUND_PICTURES="$HOME/Pictures/Backgrounds"
 
 DEBUG="${DEBUG:-0}"

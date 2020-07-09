@@ -8,15 +8,16 @@ export PATH="/usr/local/bin:/usr/bin:/bin"
 export PATH="$PATH:/usr/local/sbin:/usr/sbin:/sbin"
 export PATH="$PATH:/usr/local/games:/usr/games"
 
-pathmunge /snap/bin:
+pathmunge /snap/bin
 
 ## GOPATH
 export GOPATH=$HOME/go
-pathmunge ${GOPATH}
+pathmunge ${GOPATH}/bin
 
 ## set PATH so it includes various user's private bin dirs
 pathmunge $HOME/bin
 pathmunge $HOME/bins
 pathmunge $HOME/bin2
 pathmunge $HOME/.local/bin
+pathmunge $HOME/.krew/bin
 pathmunge $HOME/.screenlayout after
