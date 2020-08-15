@@ -14,7 +14,7 @@ source "$HOME/bin/common.bash"
 
 screenshotdir="$HOME/tmp"
 imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
-util="/usr/bin/maim --delay 0.2 --format=png --hidecursor --quality 7 --quiet"
+util="/usr/bin/maim --delay 0.2 --format=png --quality 7 --quiet"
 
 action="${1:-select}"
 notify_debug "Got action '${action}'"
@@ -42,6 +42,7 @@ if ifdebug3
 then
 	grabcommand="echo ${grabcommand}"
 fi
+echo ${grabcommand}
 if ${grabcommand}
 then
 	notify2 "Screenshot ${action} saved to ${imagefile}"

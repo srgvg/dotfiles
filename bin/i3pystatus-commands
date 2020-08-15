@@ -36,15 +36,18 @@ case ${1:-} in
 
 		;;
 	audio_sonos_volume)
-		execute "sonos volume 2>/dev/null ||:"
-		if [ -n "${output}" ]
+		execute "sonos state 2>/dev/null ||:"
+		if [ "${output}" != "" ] && [ "${output}" != "STOPPED" ]
 		then
+			execute "sonos volume 2>/dev/null ||:"
 			if [ "${output}" -gt 0 ]
 			then
 				output="Sonos 🔊${output}%"
 			else [ "${output}" -eq 0 ]
 				output="Sonos 🚫"
 			fi
+		else
+			output=""
 		fi
 
 		;;

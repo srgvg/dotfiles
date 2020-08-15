@@ -676,10 +676,10 @@ bindsym $mod+period						exec --no-startup-id playerctl next
 bindsym $mod+slash						exec --no-startup-id playerctl play-pause
 bindsym $mod+Shift+slash				exec --no-startup-id playerctl stop
 
-bindsym $mod+m							exec --no-startup-id i3-pa-select-output
 bindsym $mod+$alt+m						exec pavucontrol
-bindsym $mod+Control+m					exec --no-startup-id i3-playerctl-select-player
-bindsym $mod+Shift+m    				exec --no-startup-id pa-rotate-sinks
+bindsym $mod+Control+m					exec --no-startup-id pa-rotate-sinks
+bindsym $mod+Shift+m					exec --no-startup-id i3-pa-select-output
+bindsym $mod+m							exec --no-startup-id i3-playerctl-select-player
 
 # Fn-F4  XF86AudioMicMute
 bindsym XF86AudioMicMute				exec --no-startup-id ponymix  --source --device 1 toggle
@@ -932,7 +932,8 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 #exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 
 # Desktop Apps
-exec_always --no-startup-id "xcompmgr &"
+#exec_always --no-startup-id "xcompmr &"
+exec_always --no-startup-id "compton &"
 exec "chrom google & sleep 1; chrom serge &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
