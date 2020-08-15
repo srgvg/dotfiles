@@ -56,9 +56,12 @@ set $ws_util2		22
 #set $ws_
 
 # Xresources settings
-set_from_resource $output0 i3.output.0	eDP1
-set_from_resource $output1 i3.output.1	eDP1
-set_from_resource $output2 i3.output.2	$output1
+set_from_resource $output0 i3.output.0.name	eDP1
+set_from_resource $output1 i3.output.1.name	$output0
+set_from_resource $output2 i3.output.2.name	$output1
+set_from_resource $layout0 i3.output.0.layout tabbed
+set_from_resource $layout1 i3.output.1.layout tabbed
+set_from_resource $layout2 i3.output.2.layout tabbed
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
