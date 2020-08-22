@@ -11,9 +11,9 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-PRIMARY=$(	 (grep ^i3.output.0 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
-SECONDARY=$( (grep ^i3.output.1 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
-THIRD=$(	 (grep ^i3.output.2 $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+PRIMARY=$(	 (grep ^i3.output.0.name $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+SECONDARY=$( (grep ^i3.output.1.name $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
+THIRD=$(	 (grep ^i3.output.2.name $HOME/.Xresources.d/i3 ||:) | cut -d\  -f2)
 PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-$PRIMARY}
 THIRD=${THIRD:-$SECONDARY}

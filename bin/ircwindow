@@ -14,9 +14,12 @@ source "$HOME/bin/common.bash"
 
 # switch to the IRC window, or start it
 wmctrl -a IRCWINDOW || \
-/usr/bin/terminator \
-            --geometry 800x600 \
-            --title IRCWINDOW \
-            --role irc \
-            --command "bash -ci irc" &
-            # bash -i : must be "interactive" to load bashrc stuff, that loads keychain stuff
+$HOME/.cargo/bin/alacritty --class IRCWINDOW --command bash -ci irc &
+#/usr/bin/terminator \
+#            --geometry 800x600 \
+#            --title IRCWINDOW \
+#            --role irc \
+#            --command "bash -ci irc" &
+#            # bash -i : must be "interactive" to load bashrc stuff, that loads keychain stuff
+
+

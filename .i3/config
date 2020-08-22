@@ -19,8 +19,8 @@
 #
 set $mod			Mod4
 set $Alt			Mod1
-set $terminal		terminator
-set $terminalfl		terminator-floating
+set $terminal		term
+set $terminalfl		termf
 set $lockscreen		systemctl start i3lock
 set $suspend		systemctl suspend
 
@@ -61,7 +61,7 @@ set_from_resource $output1 i3.output.1.name	$output0
 set_from_resource $output2 i3.output.2.name	$output1
 set_from_resource $layout0 i3.output.0.layout tabbed
 set_from_resource $layout1 i3.output.1.layout tabbed
-set_from_resource $layout2 i3.output.2.layout tabbed
+set_from_resource $layout2 i3.output.2.layout splith
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
@@ -608,7 +608,8 @@ bindsym $mod+Control+l			exec --no-startup-id $suspend
 
 # start some tools
 bindsym $mod+i					exec ircwindow
-bindsym $mod+Control+i			[window_role="irc" class="Terminator" instance="terminator" title="IRCWINDOW"]	kill
+#bindsym $mod+Control+i			[window_role="irc" class="Terminator" instance="terminator" title="IRCWINDOW"]	kill
+bindsym $mod+Control+i			[instance="IRCWINDOW"]	kill
 bindsym $mod+c					exec gnome-calculator
 bindsym $mod+d					exec nemo
 bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HOME/tmp
@@ -639,6 +640,7 @@ bindsym $mod+Control+n			exec nm-toggle-wifi
 
 # custom shit
 #bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705868530.remmina
+bindsym $mod+$alt+Control+t		exec --no-startup-id alacritty-colorscheme -T
 
 #######################################################################################################################
 #
@@ -796,9 +798,11 @@ no_focus [window_role="pop-up"]
 #
 # terminals
 #
-for_window [window_role="floating"]														floating enable
+for_window [window_role="-floating"]													floating enable
+for_window [instance="-floating"]					    								floating enable
+for_window [window_role="-tiled"]														floating disable
+for_window [class="Gnome-terminal" window_role="gnome-terminal-preferences"]			floating enable
 for_window [class="Terminator" instance="terminator" title="Terminator Preferences"]	floating enable
-for_window [class="Gnome-terminal"]														floating enable
 
 #######################################################################################################################
 #
@@ -827,7 +831,7 @@ for_window [class="System-config-printer.py" instance="system-config-printer" ]	
 # Browsers
 #
 assign		[class="^(browser-)(serge|google)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
-for_window	[class="^(browser-)(serge|google)"]											layout tabbed
+for_window	[class="^(browser-)(serge|google)"]											layout $layout0
 for_window	[class="^(browser-tmp)"]													floating enable
 assign		[class="^(browser-radio)"]													$ws_music
 for_window	[class="^(browser-radio)"]													floating disable, layout splith
@@ -839,6 +843,7 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 # chat
 #
 assign		[window_role="irc"]										$ws_chat
+assign		[instance="IRCWINDOW"]									$ws_chat
 assign		[class="Signal"]										$ws_chat2
 assign		[class="Slack" window_role="browser-window"]			$ws_chat2
 assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
@@ -846,7 +851,7 @@ assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
 assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat2
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
-for_window	[class="Keybase|Signal|Slack|Microsoft Teams"]			layout tabbed
+for_window	[class="Keybase|Signal|Slack|Microsoft Teams"]			layout $layout1
 
 
 for_window	[class="Skype"]									floating enable
@@ -860,7 +865,7 @@ assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Remote Desktop Client
 assign [class="Remmina" instance="remmina"]		$ws_tool0
-for_window [class="Remmina" instance="remmina"] layout tabbed
+for_window [class="Remmina" instance="remmina"] layout layout0
 for_window [class="^rdesktop"] floating disable
 
 # Teamviewer
@@ -886,23 +891,24 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign		[class="KeepassXC" instance="keepassxc" title="^(?!KeePassXC HTTP Confirm Access)"]	$ws_util2
-#for_window	[class="KeepassXC" instance="keepassxc"]										layout tabbed
+assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util2
+for_window	[class="KeepassXC" instance="keepassxc"]										layout $layout2
 for_window  [class="KeepassXC" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
 #for_window	[title="KeePassXC-Browser"]														floating enable
 
-for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout tabbed
+for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout $layout2
 assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
 
 
 # Music
-assign      [class="vlc"]																				$ws_music
-assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player)"]		$ws_music
-for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
+assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
+for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout $layout2
 # https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
+for_window	[instance="spotify"]				move to workspace $ws_music
 
 assign		[class="vorta"]						$ws_util1
+for_window	[class="vorta"]						layout $layout
 assign		[window_role="i3jobs"]				$ws_util1
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
@@ -927,7 +933,7 @@ for_window  [class="Dnssec-trigger-panel"] floating enable
 ## Run at i3 initial start only
 #exec_always "pgrep vorta || vorta &"
 ## start with interactive bash shell as this needs ssh keys to be unlocked
-exec "/usr/bin/terminator --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+exec "termf --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
@@ -935,7 +941,7 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 #exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 
 # Desktop Apps
-#exec_always --no-startup-id "xcompmr &"
+#exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
 exec_always --no-startup-id "compton &"
 exec "chrom google & sleep 1; chrom serge &"
 exec_always "pgrep pasystray || pasystray &"
