@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+#DEBUG=1
+#COMMAND="/usr/bin/gnome-terminal --geometry 100x40+0+0"
+COMMAND="$HOME/.cargo/bin/alacritty --live-config-reload"
+
+if [ "$(basename $0)" = "termf" ]
+then
+	#COMMAND="$COMMAND --role gnome-terminal-floating"
+	COMMAND="$COMMAND --class alacritty-floating"
+else
+	PWD="$(xcwd ||:)"
+	[ -z "${PWD}" ] && PWD="$HOME"
+	#COMMAND="$COMMAND --role gnome-terminal-tiled"
+	COMMAND="$COMMAND --class alacritty-tiled"
+	COMMAND="$COMMAND --working-directory=${PWD}"
+fi
+
+if ifdebug1
+then
+	mkdir -p ~/t/term/
+	filename=$HOME/t/term/$(date +%Y%m%d-%H%M%S).trace.log
+	ln -nfs $filename ~/t/term/latest.trace.log
+	exec strace -o $filename -tt -T -y -yy -f $COMMAND
+else
+	exec $COMMAND
+fi
