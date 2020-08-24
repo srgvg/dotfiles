@@ -19,7 +19,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	audd
 	mqtt-notify.py
 	i3-battery-indicator
-	vorta --foreground
+	nice -n 20 vorta --foreground
 	tail --follow=name .SynologyDrive/log/daemon.log
 	journalctl --user-unit dunst.service -f
 	journalctl -u i3lock -f
@@ -79,8 +79,10 @@ do
 done
 
 notify_debug "Check if there is an attached screen"
-if ! pgrep -f "screen -D -r i3jobs" >/dev/null
+if pgrep -f "screen -D -r i3jobs" >/dev/null
 then
+	wmctrl -a i3jobs
+else
 	notify "start a terminal and attach"
-	/usr/bin/terminator --role i3jobs --execute screen -D -r i3jobs & >/dev/null 2>&1
+	alacritty --class i3jobs --title i3jobs --command screen -D -r i3jobs & >/dev/null 2>&1
 fi

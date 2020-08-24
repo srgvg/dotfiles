@@ -62,6 +62,9 @@ set_from_resource $output2 i3.output.2.name	$output1
 set_from_resource $layout0 i3.output.0.layout tabbed
 set_from_resource $layout1 i3.output.1.layout tabbed
 set_from_resource $layout2 i3.output.2.layout splith
+set_from_resource $primary i3.output.primary eDP1
+set_from_resource $secondary i3.output.secondary
+set_from_resource $third i3.output.third
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
@@ -75,10 +78,10 @@ workspace 7		output $output0
 workspace 8		output $output0
 workspace 9		output $output0
 workspace 10	output $output0
-workspace 11	output $output1
-workspace 12	output $output1
-workspace 13	output $output1
-workspace 14	output $output1
+workspace 11	output $output0
+workspace 12	output $output0
+workspace 13	output $output0
+workspace 14	output $output0
 workspace 15	output $output1
 workspace 16	output $output1
 workspace 17	output $output1
@@ -133,40 +136,33 @@ client.placeholder		$IGNORED			$dark				$lesslight			$IGNORED
 # status bar
 #
 bar {
-		colors {
+		id main
 
+		colors {
 			# Text color to be used for the separator.
 			separator			$light
-
 			# Text color to be used for the statusline.
 			statusline			$light
-
 			# Background color of the bar.
 			background			$dark
-
-
 			## type				border				background		text
-
 			# workspace button when the workspace does not have focus and is not
 			# active (visible) on any output. This will be the case for most workspaces.
 			inactive_workspace	$dark   			$dark			$lesslight
-
 			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
 			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-			active_workspace	$lesslight				$dark			$lesslight
-
+			active_workspace	$lesslight			$dark			$lesslight
 			# color for a workspace button when the workspace has focus.
 			focused_workspace	$focus				$dark			$focus
-
 			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
 			urgent_workspace	$red				$dark			$red
-
 		}
 
-		id main
 		## status_command
-		#status_command py3status | ~/.i3/i3status_wrapper.py
 		status_command		~/.i3/i3pystatusconf.py
+
+		# You can restrict i3bar to one or more outputs (monitors). The default is to handle all outputs.
+		output primary
 
 		# tray_output <none|primary|output>
 		tray_output primary
@@ -174,12 +170,83 @@ bar {
 		# By default, a padding of 2 pixels is used for the upper, lower and
 		# right-hand side of the tray area and between the individual icons.
 		# tray_padding <px> [px]
-		tray_padding 1
+		tray_padding 2
 
 		# custom symbol to be used for the separator as opposed to the
 		# vertical, one pixel thick separator.
 		# separator_symbol <symbol>
 		separator_symbol "⸱" # unicode 2e31
+
+		# position <top|bottom>
+		position top
+
+		# mode <dock|hide|invisible>
+		mode dock
+
+		# hidden_state <hide|show>
+		hidden_state hide
+
+		# modifier <Modifier>
+		modifier $mod
+
+		# font <font>
+		#  the order in which fonts are “declared” for use in i3bar actually
+		#  matters. The first font in the list shall be the one containing
+		#  icons, the latter the one for plain text
+		font pango:FontAwesome Solid 12, Terminus 12
+
+		# workspace_buttons <yes|no>
+		workspace_buttons yes
+
+		# binding_mode_indicator <yes|no>
+		# Specifies whether the current binding mode indicator should be shown
+		# or not. This is useful if you want to hide the workspace buttons but
+		# still be able to see the current binding mode indicator.
+		binding_mode_indicator yes
+}
+
+bar {
+		id others
+
+		colors {
+			# Text color to be used for the separator.
+			separator			$light
+			# Text color to be used for the statusline.
+			statusline			$light
+			# Background color of the bar.
+			background			$dark
+			## type				border				background		text
+			# workspace button when the workspace does not have focus and is not
+			# active (visible) on any output. This will be the case for most workspaces.
+			inactive_workspace	$dark   			$dark			$lesslight
+			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+			active_workspace	$lesslight			$dark			$lesslight
+			# color for a workspace button when the workspace has focus.
+			focused_workspace	$focus				$dark			$focus
+			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+			urgent_workspace	$red				$dark			$red
+		}
+
+		## status_command
+		status_command	sleep infinity
+
+		# You can restrict i3bar to one or more outputs (monitors). The default is to handle all outputs.
+		#output
+
+		# tray_output <none|primary|output>
+		output $secondary
+		output $third
+
+		# By default, a padding of 2 pixels is used for the upper, lower and
+		# right-hand side of the tray area and between the individual icons.
+		# tray_padding <px> [px]
+		tray_padding 2
+
+		# custom symbol to be used for the separator as opposed to the
+		# vertical, one pixel thick separator.
+		# separator_symbol <symbol>
+		separator_symbol " " # unicode 2e31
 
 		# position <top|bottom>
 		position top
@@ -833,8 +900,6 @@ for_window [class="System-config-printer.py" instance="system-config-printer" ]	
 assign		[class="^(browser-)(serge|google)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
 for_window	[class="^(browser-)(serge|google)"]											layout $layout0
 for_window	[class="^(browser-tmp)"]													floating enable
-assign		[class="^(browser-radio)"]													$ws_music
-for_window	[class="^(browser-radio)"]													floating disable, layout splith
 for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" window_role="About"] floating_enable
 
 
@@ -844,15 +909,11 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[instance="IRCWINDOW"]									$ws_chat
-assign		[class="Signal"]										$ws_chat2
-assign		[class="Slack" window_role="browser-window"]			$ws_chat2
-assign		[class="Keybase" instance="keybase" title="Keybase"]	$ws_chat2
+assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat2
+for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout $layout0
 
 assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat2
-for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
-
-for_window	[class="Keybase|Signal|Slack|Microsoft Teams"]			layout $layout1
-
+for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] layout $layout0, floating enable
 
 for_window	[class="Skype"]									floating enable
 
@@ -908,8 +969,8 @@ for_window	[class="Spotify"]					move to workspace $ws_music
 for_window	[instance="spotify"]				move to workspace $ws_music
 
 assign		[class="vorta"]						$ws_util1
-for_window	[class="vorta"]						layout $layout
-assign		[window_role="i3jobs"]				$ws_util1
+for_window	[class="vorta"]						layout $layout2
+assign		[instance="i3jobs"]				$ws_util1
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
 
@@ -933,7 +994,7 @@ for_window  [class="Dnssec-trigger-panel"] floating enable
 ## Run at i3 initial start only
 #exec_always "pgrep vorta || vorta &"
 ## start with interactive bash shell as this needs ssh keys to be unlocked
-exec "termf --role=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
+#exec "termf --class=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
@@ -942,35 +1003,34 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 
 # Desktop Apps
 #exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
-exec_always --no-startup-id "compton &"
-exec "chrom google & sleep 1; chrom serge &"
+exec_always --no-startup-id "pkill compton ; compton &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
 exec_always "keepassxc"
-#exec_always "run-one i3-autotiling &"
-exec "run_keybase -a &"
-exec "signal-desktop &"
+exec		"chrom google & sleep 1; chrom serge &"
+exec		"run_keybase -a &"
+exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
 exec_always "pgrep spotify || spotify &"
-exec_always "vlc &"
+exec		"vlc &"
 exec_always "pgrep nextcloud || nextcloud &"
 #exec "dnssec-trigger-panel &"
 exec_always "pgrep blueman-applet || blueman-applet &"
-exec "slack &"
+exec_always "pgrep slack || nice -n 20 slack &"
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 exec_always --no-startup-id "i3-launch-jobs"
-exec --no-startup-id "sleep 10; i3-launch-jobs loop default"
-exec --no-startup-id "syndaemon -dkRi 0.5"
+exec		--no-startup-id "sleep 10; i3-launch-jobs loop default"
+exec		--no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
 exec_always --no-startup-id "xset dpms 900 1800 3600 s blank s 300 60 s on"
 exec_always --no-startup-id "i3-move-workspaces"
 exec_always --no-startup-id "setbg redisplay"
-#exec_always --no-startup-id "systemctl restart --user dunst.service"
 exec_always --no-startup-id "numlockx on"
 exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
-exec_always "/home/serge/bin/synology-drive"
+exec_always					"/home/serge/bin/synology-drive"
+
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/
 exec_always setxkbmap -layout us -variant euro -model pc105 -option -option compose:caps -option lv3:ralt_switch \
 						-option terminate:ctrl_alt_bkspc -option eurosign:e -option nbsp:level3n # set keyboard

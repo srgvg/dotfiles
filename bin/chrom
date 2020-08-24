@@ -261,9 +261,10 @@ esac
 notify "Profileclass set to ${PROFILECLASS}"
 PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
 
+NICE=""
 case ${PROFILECLASS} in
 	serge|google|radio)
-		:
+		NICE="nice -n 15"
 		;;
 	g)	# search
 		#URL="https://www.google.com/search?q"
@@ -289,6 +290,7 @@ case ${PROFILECLASS} in
 		;;
 	TMP|tmp) # special option to have a temp session as tiling window
 		_set_tmp
+		NICE="nice -n 20"
 		trap _cleanup EXIT
 		#if [ -z "$*" ]
 		#then
@@ -307,4 +309,4 @@ SWITCHES="--user-data-dir=${PROFILEPATH} ${SWITCHES}"
 
 # shellcheck disable=SC2068
 notify_debug "Starting '/usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"'"
-/usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"
+$NICE /usr/bin/${BROWSER} ${SWITCHES} "${ARGS[@]}"

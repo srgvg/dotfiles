@@ -18,6 +18,9 @@ PRIMARY=${PRIMARY:-eDP1}
 SECONDARY=${SECONDARY:-$PRIMARY}
 THIRD=${THIRD:-$SECONDARY}
 
+notify_debug "Update Background" &
+setbg redisplay &
+
 ACTIVES=$(i3-msg -t get_workspaces  \
 	| jq -c '.[] | select(.visible==false) | [.name,.output]'						\
 	| sed 's/[]["]//g' | xargs | sed -r ":r;s/\b[0-9]{1,$((1))}\b/0&/g;tr")  # pad single digits to two digits
@@ -44,48 +47,40 @@ notify_debug "Thirds are              ${THIRDS}"
 
 if [ -n "${PRIMARIES}" ]
 then
-    for w in ${PRIMARIES}
+    for w in $( echo ${PRIMARIES} | xargs -n1 | grep $(echo ${ALLACTIVES} | xargs -n1 | sed s/,.*// | xargs -n1 echo '' -e | xargs echo ''))
 	do
 		wn=${w%%,*}
-		if grep -q "${wn}" <<< ${ALLACTIVES}; then
-			wn=${wn#0}
-			debug=$(i3-msg "workspace ${wn}; move workspace to output $PRIMARY" 2>&1)
-			notify_debug "Moving workspace ${wn} to primary output $PRIMARY ** ${debug}"
-		fi
+		wn=${wn#0}
+		i3-msg "workspace ${wn}; move workspace to output $PRIMARY" >/dev/null 2>&1 ; \
+		notify_debug "Moving workspace ${wn} to primary output $PRIMARY" &
     done
 fi
 
 if [ -n "${SECONDARIES}" ]
 then
-    for w in ${SECONDARIES}
+    for w in $( echo ${SECONDARIES} | xargs -n1 | grep $(echo ${ALLACTIVES} | xargs -n1 | sed s/,.*// | xargs -n1 echo '' -e | xargs echo ''))
     do
 		wn=${w%%,*}
-		if grep -q "${wn}" <<< ${ALLACTIVES}; then
-			wn=${wn#0}
-			debug=$(i3-msg "workspace ${wn}; move workspace to output $SECONDARY" 2>&1)
-			notify_debug "Moving workspace ${wn} to secondary output $SECONDARY ** ${debug}"
-		fi
+		wn=${wn#0}
+		i3-msg "workspace ${wn}; move workspace to output $SECONDARY" >/dev/null 2>&1 ; \
+		notify_debug "Moving workspace ${wn} to secondary output $SECONDARY" &
     done
 fi
 
 if [ -n "${THIRDS}" ]
 then
-    for w in ${THIRDS}
+    for w in $( echo ${THIRDS} | xargs -n1 | grep $(echo ${ALLACTIVES} | xargs -n1 | sed s/,.*// | xargs -n1 echo '' -e | xargs echo ''))
     do
 		wn=${w%%,*}
-		if grep -q "${wn}" <<< ${ALLACTIVES}; then
-			wn=${wn#0}
-			debug=$(i3-msg "workspace ${wn}; move workspace to output $THIRD" 2>&1)
-			notify_debug "Moving workspace ${wn} to third output $THIRD ** ${debug}"
-		fi
+		wn=${wn#0}
+		i3-msg "workspace ${wn}; move workspace to output $THIRD" >/dev/null 2>&1 ; \
+		notify_debug "Moving workspace ${wn} to third output $THIRD" &
     done
 fi
 
 for w in ${VISIBLE} ${FOCUSED}
 do
 	wn=${w%%,*}; wn=${wn#0}
-	notify_debug "Put focus back to workspace ${wn} on output ${w##*,}"
-	i3-msg workspace ${wn} >/dev/null
+	i3-msg workspace ${wn} >/dev/null 2>&1 ; \
+	notify_debug "Put focus back to workspace ${wn} on output ${w##*,}" &
 done
-
-setbg redisplay

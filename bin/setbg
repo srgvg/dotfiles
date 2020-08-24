@@ -24,7 +24,6 @@ p2="${2:-}"
 ## Functions
 
 checktarget() {
-
 	# verify the kind of target we have
 	local _target
 	_target=${1:-}
@@ -51,10 +50,11 @@ checktarget() {
 		target=${_target}
 	fi
     notify_debug "Resolved target '${_target}' to '${target}'"
+    background="$(readlink -e "${target}")"
 }
 
 pickpic() {
-	## pick a picture
+   ## pick a picture
     # get picture according to target
     # target is set to a file/dir we can read
     if [ -d "${target}" ]
@@ -62,8 +62,8 @@ pickpic() {
         pictures="${target}"
         # disable shell expansion for the iregex
         set -o noglob
-		# disable pipefail - when head quits, find doesn't like loosing its reader
-		set +o pipefail
+       # disable pipefail - when head quits, find doesn't like loosing its reader
+       set +o pipefail
         # Pick random picture
         background="$(find -L ${pictures} -type f -iregex '.*.jpg' \
             -o -iregex '.*.png' | sort -R | head -n 1)"
@@ -75,17 +75,14 @@ pickpic() {
     fi
     background=$(readlink -e "${background}")
     notify_debug "Selecting background '${background}'"
-}
-
-definebg() {
-    # set as default background
-    ln -nfs "${background}" "${SETBG_BACKGROUND}"
-    notify_debug "Symlinked '${SETBG_BACKGROUND}' -> '${background}'"
+	# set as default background
+	ln -nfs "${background}" "${SETBG_BACKGROUND}"
+	notify_debug "Symlinked '${SETBG_BACKGROUND}' -> '${background}'"
 }
 
 displaybg() {
     # set the background
-    /usr/bin/feh --no-fehbg --bg-fill ${SETBG_BACKGROUND}
+    /usr/bin/feh --no-fehbg --bg-fill --recursive --randomize "${background}"
     notify_debug "Set the background"
 }
 
@@ -122,11 +119,6 @@ showpath() {
 	echo "${dirname}/${filename}"
 }
 
-showpic() {
-	# open picture separetely
-	gnome-open "$(showpath)"
-}
-
 notifypath() {
     # show and notify which picture is used
 	showpath
@@ -134,15 +126,8 @@ notifypath() {
 	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}\n\n${filename}" video-display setbg
 }
 
-rmcurrentbg() {
-	_output=$(mv -v showpath $HOME/Pictures/Backgrounds/TRASH)
-	notify_desktop critical "${BASH_SOURCE[1]}" "${_output}"
-}
-
 setbg() {
     checktarget $1
-	pickpic
-    definebg
     displaybg
     showpath
 }
@@ -168,15 +153,6 @@ main() {
 		case ${p1} in			#	just a target
 			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
 				displaybg
-				;;
-			'show')				# show current picture path
-				notifypath
-				;;
-			'rm')				# delete current picture
-				rmcurrentbg
-				;;
-			'showpic')				# open current picture
-				showpic
 				;;
 			'lock'|'loop')		# these need a parameter
 				notify_error "setbg: The action '${p1}' needs a parameter"

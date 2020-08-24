@@ -67,28 +67,34 @@ case ${1:-} in
 		if [ -n "$player0" ]
 		then
 			stat=""
-			player="[$player0] "
+			player="$(echo -n $player0 | tr '[:lower:]' '[:upper:]')"
 			player0="-p $player0"
 			state="$(playerctl $player0 status 2>&1 ||:)"
-			if [ ! "$state" = "Stopped" ] && [ ! "$state" = "No players found" ]
+
+			if   [ "${state}" = "Playing" ]
 			then
-				if   [ "${state}" = "Playing" ]; then stat="▶  "
-				elif [ "${state}" = "Paused" ];  then stat="▌▌ "; fi
-				nowply=$(playerctl $player0 metadata vlc:nowplaying);
-				if [ -n "$nowply" ] ; then
-					title="$nowply "
-					artist=""
-				else
-					artist=$(playerctl $player0 metadata xesam:artist);	    [ -n "$artist" ] && artist="$artist "
-					title=$( playerctl $player0 metadata xesam:title);  	[ -n "$title" ]  && title="$title "
-				fi
-				output="${player}${stat}${artist}${title}"
+					stat="▶  "
+					nowply=$(playerctl $player0 metadata vlc:nowplaying);
+					if [ -n "$nowply" ]
+					then
+							title="$nowply "
+							artist=""
+					else
+						artist=$(playerctl $player0 metadata xesam:artist);	    [ -n "$artist" ] && artist="$artist "
+						title=$( playerctl $player0 metadata xesam:title);  	[ -n "$title" ]  && title="$title "
+					fi
+					output="${player} ${stat}${artist}${title}"
+			elif [ "${state}" = "Paused" ]
+			then
+					stat="▌▌ "
+					output="${player} ${stat}"
 			elif [ "${state}" = "Stopped" ]
-			then	stat="◼ "
-					output="${player}${stat}"
-			else
-					output="◼ "
+			then
+					stat="◼ "
+					output="${player} ${stat}"
 			fi
+		else
+				output="◼ "
 		fi
 		;;
 	refresh)

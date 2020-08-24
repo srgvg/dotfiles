@@ -13,7 +13,7 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 # switch to the IRC window, or start it
-wmctrl -a IRCWINDOW || \
+wmctrl -a WeeChat  || \
 $HOME/.cargo/bin/alacritty --class IRCWINDOW --command bash -ci irc &
 #/usr/bin/terminator \
 #            --geometry 800x600 \

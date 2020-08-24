@@ -1,1 +1,0 @@
-mode-homeoffice.sh
