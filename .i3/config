@@ -252,7 +252,8 @@ bar {
 		position top
 
 		# mode <dock|hide|invisible>
-		mode dock
+		#mode dock
+		mode hide
 
 		# hidden_state <hide|show>
 		hidden_state hide
@@ -644,7 +645,7 @@ bindsym $mod+Control+Return		exec $terminalfl
 #bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window except..
-bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator).*$"]	kill
+bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator|Alacritty).*$"]	kill
 bindsym $mod+$Alt+x				kill
 bindsym $mod+Control+$Alt+x		exec --no-startup-id xdotool getwindowfocus windowkill
 

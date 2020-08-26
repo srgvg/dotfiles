@@ -1,3 +1,4137 @@
-#!/usr/bin/env bash
+# bash completion for velero                               -*- shell-script -*-
 
-hash velero >&/dev/null && source <(velero completion bash)
+__velero_debug()
+{
+    if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
+        echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
+    fi
+}
+
+# Homebrew on Macs have version 1.3 of bash-completion which doesn't include
+# _init_completion. This is a very minimal version of that function.
+__velero_init_completion()
+{
+    COMPREPLY=()
+    _get_comp_words_by_ref "$@" cur prev words cword
+}
+
+__velero_index_of_word()
+{
+    local w word=$1
+    shift
+    index=0
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+        index=$((index+1))
+    done
+    index=-1
+}
+
+__velero_contains_word()
+{
+    local w word=$1; shift
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+    done
+    return 1
+}
+
+__velero_handle_reply()
+{
+    __velero_debug "${FUNCNAME[0]}"
+    case $cur in
+        -*)
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                compopt -o nospace
+            fi
+            local allflags
+            if [ ${#must_have_one_flag[@]} -ne 0 ]; then
+                allflags=("${must_have_one_flag[@]}")
+            else
+                allflags=("${flags[*]} ${two_word_flags[*]}")
+            fi
+            COMPREPLY=( $(compgen -W "${allflags[*]}" -- "$cur") )
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                [[ "${COMPREPLY[0]}" == *= ]] || compopt +o nospace
+            fi
+
+            # complete after --flag=abc
+            if [[ $cur == *=* ]]; then
+                if [[ $(type -t compopt) = "builtin" ]]; then
+                    compopt +o nospace
+                fi
+
+                local index flag
+                flag="${cur%=*}"
+                __velero_index_of_word "${flag}" "${flags_with_completion[@]}"
+                COMPREPLY=()
+                if [[ ${index} -ge 0 ]]; then
+                    PREFIX=""
+                    cur="${cur#*=}"
+                    ${flags_completion[${index}]}
+                    if [ -n "${ZSH_VERSION}" ]; then
+                        # zsh completion needs --flag= prefix
+                        eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
+                    fi
+                fi
+            fi
+            return 0;
+            ;;
+    esac
+
+    # check if we are handling a flag with special work handling
+    local index
+    __velero_index_of_word "${prev}" "${flags_with_completion[@]}"
+    if [[ ${index} -ge 0 ]]; then
+        ${flags_completion[${index}]}
+        return
+    fi
+
+    # we are parsing a flag and don't have a special handler, no completion
+    if [[ ${cur} != "${words[cword]}" ]]; then
+        return
+    fi
+
+    local completions
+    completions=("${commands[@]}")
+    if [[ ${#must_have_one_noun[@]} -ne 0 ]]; then
+        completions=("${must_have_one_noun[@]}")
+    fi
+    if [[ ${#must_have_one_flag[@]} -ne 0 ]]; then
+        completions+=("${must_have_one_flag[@]}")
+    fi
+    COMPREPLY=( $(compgen -W "${completions[*]}" -- "$cur") )
+
+    if [[ ${#COMPREPLY[@]} -eq 0 && ${#noun_aliases[@]} -gt 0 && ${#must_have_one_noun[@]} -ne 0 ]]; then
+        COMPREPLY=( $(compgen -W "${noun_aliases[*]}" -- "$cur") )
+    fi
+
+    if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
+		if declare -F __velero_custom_func >/dev/null; then
+			# try command name qualified custom func
+			__velero_custom_func
+		else
+			# otherwise fall back to unqualified for compatibility
+			declare -F __custom_func >/dev/null && __custom_func
+		fi
+    fi
+
+    # available in bash-completion >= 2, not always present on macOS
+    if declare -F __ltrim_colon_completions >/dev/null; then
+        __ltrim_colon_completions "$cur"
+    fi
+
+    # If there is only 1 completion and it is a flag with an = it will be completed
+    # but we don't want a space after the =
+    if [[ "${#COMPREPLY[@]}" -eq "1" ]] && [[ $(type -t compopt) = "builtin" ]] && [[ "${COMPREPLY[0]}" == --*= ]]; then
+       compopt -o nospace
+    fi
+}
+
+# The arguments should be in the form "ext1|ext2|extn"
+__velero_handle_filename_extension_flag()
+{
+    local ext="$1"
+    _filedir "@(${ext})"
+}
+
+__velero_handle_subdirs_in_dir_flag()
+{
+    local dir="$1"
+    pushd "${dir}" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1
+}
+
+__velero_handle_flag()
+{
+    __velero_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    # if a command required a flag, and we found it, unset must_have_one_flag()
+    local flagname=${words[c]}
+    local flagvalue
+    # if the word contained an =
+    if [[ ${words[c]} == *"="* ]]; then
+        flagvalue=${flagname#*=} # take in as flagvalue after the =
+        flagname=${flagname%=*} # strip everything after the =
+        flagname="${flagname}=" # but put the = back
+    fi
+    __velero_debug "${FUNCNAME[0]}: looking for ${flagname}"
+    if __velero_contains_word "${flagname}" "${must_have_one_flag[@]}"; then
+        must_have_one_flag=()
+    fi
+
+    # if you set a flag which only applies to this command, don't show subcommands
+    if __velero_contains_word "${flagname}" "${local_nonpersistent_flags[@]}"; then
+      commands=()
+    fi
+
+    # keep flag value with flagname as flaghash
+    # flaghash variable is an associative array which is only supported in bash > 3.
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        if [ -n "${flagvalue}" ] ; then
+            flaghash[${flagname}]=${flagvalue}
+        elif [ -n "${words[ $((c+1)) ]}" ] ; then
+            flaghash[${flagname}]=${words[ $((c+1)) ]}
+        else
+            flaghash[${flagname}]="true" # pad "true" for bool flag
+        fi
+    fi
+
+    # skip the argument to a two word flag
+    if [[ ${words[c]} != *"="* ]] && __velero_contains_word "${words[c]}" "${two_word_flags[@]}"; then
+			  __velero_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+        c=$((c+1))
+        # if we are looking for a flags value, don't show commands
+        if [[ $c -eq $cword ]]; then
+            commands=()
+        fi
+    fi
+
+    c=$((c+1))
+
+}
+
+__velero_handle_noun()
+{
+    __velero_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    if __velero_contains_word "${words[c]}" "${must_have_one_noun[@]}"; then
+        must_have_one_noun=()
+    elif __velero_contains_word "${words[c]}" "${noun_aliases[@]}"; then
+        must_have_one_noun=()
+    fi
+
+    nouns+=("${words[c]}")
+    c=$((c+1))
+}
+
+__velero_handle_command()
+{
+    __velero_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    local next_command
+    if [[ -n ${last_command} ]]; then
+        next_command="_${last_command}_${words[c]//:/__}"
+    else
+        if [[ $c -eq 0 ]]; then
+            next_command="_velero_root_command"
+        else
+            next_command="_${words[c]//:/__}"
+        fi
+    fi
+    c=$((c+1))
+    __velero_debug "${FUNCNAME[0]}: looking for ${next_command}"
+    declare -F "$next_command" >/dev/null && $next_command
+}
+
+__velero_handle_word()
+{
+    if [[ $c -ge $cword ]]; then
+        __velero_handle_reply
+        return
+    fi
+    __velero_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    if [[ "${words[c]}" == -* ]]; then
+        __velero_handle_flag
+    elif __velero_contains_word "${words[c]}" "${commands[@]}"; then
+        __velero_handle_command
+    elif [[ $c -eq 0 ]]; then
+        __velero_handle_command
+    elif __velero_contains_word "${words[c]}" "${command_aliases[@]}"; then
+        # aliashash variable is an associative array which is only supported in bash > 3.
+        if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+            words[c]=${aliashash[${words[c]}]}
+            __velero_handle_command
+        else
+            __velero_handle_noun
+        fi
+    else
+        __velero_handle_noun
+    fi
+    __velero_handle_word
+}
+
+_velero_backup_create()
+{
+    last_command="velero_backup_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--from-schedule=")
+    two_word_flags+=("--from-schedule")
+    local_nonpersistent_flags+=("--from-schedule=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--snapshot-volumes")
+    local_nonpersistent_flags+=("--snapshot-volumes")
+    flags+=("--storage-location=")
+    two_word_flags+=("--storage-location")
+    local_nonpersistent_flags+=("--storage-location=")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--volume-snapshot-locations=")
+    two_word_flags+=("--volume-snapshot-locations")
+    local_nonpersistent_flags+=("--volume-snapshot-locations=")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup_delete()
+{
+    last_command="velero_backup_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup_describe()
+{
+    last_command="velero_backup_describe"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--details")
+    local_nonpersistent_flags+=("--details")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup_download()
+{
+    last_command="velero_backup_download"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--force")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup_get()
+{
+    last_command="velero_backup_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup_logs()
+{
+    last_command="velero_backup_logs"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup()
+{
+    last_command="velero_backup"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("download")
+    commands+=("get")
+    commands+=("logs")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup-location_create()
+{
+    last_command="velero_backup-location_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-mode=")
+    two_word_flags+=("--access-mode")
+    local_nonpersistent_flags+=("--access-mode=")
+    flags+=("--backup-sync-period=")
+    two_word_flags+=("--backup-sync-period")
+    local_nonpersistent_flags+=("--backup-sync-period=")
+    flags+=("--bucket=")
+    two_word_flags+=("--bucket")
+    local_nonpersistent_flags+=("--bucket=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    local_nonpersistent_flags+=("--config=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--prefix=")
+    two_word_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix=")
+    flags+=("--provider=")
+    two_word_flags+=("--provider")
+    local_nonpersistent_flags+=("--provider=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup-location_get()
+{
+    last_command="velero_backup-location_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_backup-location()
+{
+    last_command="velero_backup-location"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("get")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_bug()
+{
+    last_command="velero_bug"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_client_config_get()
+{
+    last_command="velero_client_config_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_client_config_set()
+{
+    last_command="velero_client_config_set"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_client_config()
+{
+    last_command="velero_client_config"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("get")
+    commands+=("set")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_client()
+{
+    last_command="velero_client"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("config")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_completion()
+{
+    last_command="velero_completion"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--help")
+    flags+=("-h")
+    local_nonpersistent_flags+=("--help")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    must_have_one_noun+=("bash")
+    must_have_one_noun+=("zsh")
+    noun_aliases=()
+}
+
+_velero_create_backup()
+{
+    last_command="velero_create_backup"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--from-schedule=")
+    two_word_flags+=("--from-schedule")
+    local_nonpersistent_flags+=("--from-schedule=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--snapshot-volumes")
+    local_nonpersistent_flags+=("--snapshot-volumes")
+    flags+=("--storage-location=")
+    two_word_flags+=("--storage-location")
+    local_nonpersistent_flags+=("--storage-location=")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--volume-snapshot-locations=")
+    two_word_flags+=("--volume-snapshot-locations")
+    local_nonpersistent_flags+=("--volume-snapshot-locations=")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_create_backup-location()
+{
+    last_command="velero_create_backup-location"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-mode=")
+    two_word_flags+=("--access-mode")
+    local_nonpersistent_flags+=("--access-mode=")
+    flags+=("--backup-sync-period=")
+    two_word_flags+=("--backup-sync-period")
+    local_nonpersistent_flags+=("--backup-sync-period=")
+    flags+=("--bucket=")
+    two_word_flags+=("--bucket")
+    local_nonpersistent_flags+=("--bucket=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    local_nonpersistent_flags+=("--config=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--prefix=")
+    two_word_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix=")
+    flags+=("--provider=")
+    two_word_flags+=("--provider")
+    local_nonpersistent_flags+=("--provider=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_create_restore()
+{
+    last_command="velero_create_restore"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--allow-partially-failed")
+    local_nonpersistent_flags+=("--allow-partially-failed")
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--from-backup=")
+    two_word_flags+=("--from-backup")
+    local_nonpersistent_flags+=("--from-backup=")
+    flags+=("--from-schedule=")
+    two_word_flags+=("--from-schedule")
+    local_nonpersistent_flags+=("--from-schedule=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--namespace-mappings=")
+    two_word_flags+=("--namespace-mappings")
+    local_nonpersistent_flags+=("--namespace-mappings=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--restore-volumes")
+    local_nonpersistent_flags+=("--restore-volumes")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_create_schedule()
+{
+    last_command="velero_create_schedule"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--schedule=")
+    two_word_flags+=("--schedule")
+    local_nonpersistent_flags+=("--schedule=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--snapshot-volumes")
+    local_nonpersistent_flags+=("--snapshot-volumes")
+    flags+=("--storage-location=")
+    two_word_flags+=("--storage-location")
+    local_nonpersistent_flags+=("--storage-location=")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--volume-snapshot-locations=")
+    two_word_flags+=("--volume-snapshot-locations")
+    local_nonpersistent_flags+=("--volume-snapshot-locations=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_create_snapshot-location()
+{
+    last_command="velero_create_snapshot-location"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    local_nonpersistent_flags+=("--config=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--provider=")
+    two_word_flags+=("--provider")
+    local_nonpersistent_flags+=("--provider=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_create()
+{
+    last_command="velero_create"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backup")
+    commands+=("backup-location")
+    commands+=("restore")
+    commands+=("schedule")
+    commands+=("snapshot-location")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_delete_backup()
+{
+    last_command="velero_delete_backup"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_delete_restore()
+{
+    last_command="velero_delete_restore"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_delete_schedule()
+{
+    last_command="velero_delete_schedule"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_delete()
+{
+    last_command="velero_delete"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backup")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("backups")
+        aliashash["backups"]="backup"
+    fi
+    commands+=("restore")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("restores")
+        aliashash["restores"]="restore"
+    fi
+    commands+=("schedule")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("schedules")
+        aliashash["schedules"]="schedule"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_describe_backups()
+{
+    last_command="velero_describe_backups"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--details")
+    local_nonpersistent_flags+=("--details")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_describe_restores()
+{
+    last_command="velero_describe_restores"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--details")
+    local_nonpersistent_flags+=("--details")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_describe_schedules()
+{
+    last_command="velero_describe_schedules"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_describe()
+{
+    last_command="velero_describe"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backups")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("backup")
+        aliashash["backup"]="backups"
+    fi
+    commands+=("restores")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("restore")
+        aliashash["restore"]="restores"
+    fi
+    commands+=("schedules")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("schedule")
+        aliashash["schedule"]="schedules"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_backup-locations()
+{
+    last_command="velero_get_backup-locations"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_backups()
+{
+    last_command="velero_get_backups"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_plugins()
+{
+    last_command="velero_get_plugins"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_restores()
+{
+    last_command="velero_get_restores"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_schedules()
+{
+    last_command="velero_get_schedules"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get_snapshot-locations()
+{
+    last_command="velero_get_snapshot-locations"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_get()
+{
+    last_command="velero_get"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backup-locations")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("backup-location")
+        aliashash["backup-location"]="backup-locations"
+    fi
+    commands+=("backups")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("backup")
+        aliashash["backup"]="backups"
+    fi
+    commands+=("plugins")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("plugin")
+        aliashash["plugin"]="plugins"
+    fi
+    commands+=("restores")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("restore")
+        aliashash["restore"]="restores"
+    fi
+    commands+=("schedules")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("schedule")
+        aliashash["schedule"]="schedules"
+    fi
+    commands+=("snapshot-locations")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("snapshot-location")
+        aliashash["snapshot-location"]="snapshot-locations"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_install()
+{
+    last_command="velero_install"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--backup-location-config=")
+    two_word_flags+=("--backup-location-config")
+    local_nonpersistent_flags+=("--backup-location-config=")
+    flags+=("--bucket=")
+    two_word_flags+=("--bucket")
+    local_nonpersistent_flags+=("--bucket=")
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--crds-only")
+    local_nonpersistent_flags+=("--crds-only")
+    flags+=("--default-restic-prune-frequency=")
+    two_word_flags+=("--default-restic-prune-frequency")
+    local_nonpersistent_flags+=("--default-restic-prune-frequency=")
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--image=")
+    two_word_flags+=("--image")
+    local_nonpersistent_flags+=("--image=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--no-default-backup-location")
+    local_nonpersistent_flags+=("--no-default-backup-location")
+    flags+=("--no-secret")
+    local_nonpersistent_flags+=("--no-secret")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--plugins=")
+    two_word_flags+=("--plugins")
+    local_nonpersistent_flags+=("--plugins=")
+    flags+=("--pod-annotations=")
+    two_word_flags+=("--pod-annotations")
+    local_nonpersistent_flags+=("--pod-annotations=")
+    flags+=("--prefix=")
+    two_word_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix=")
+    flags+=("--provider=")
+    two_word_flags+=("--provider")
+    local_nonpersistent_flags+=("--provider=")
+    flags+=("--restic-pod-cpu-limit=")
+    two_word_flags+=("--restic-pod-cpu-limit")
+    local_nonpersistent_flags+=("--restic-pod-cpu-limit=")
+    flags+=("--restic-pod-cpu-request=")
+    two_word_flags+=("--restic-pod-cpu-request")
+    local_nonpersistent_flags+=("--restic-pod-cpu-request=")
+    flags+=("--restic-pod-mem-limit=")
+    two_word_flags+=("--restic-pod-mem-limit")
+    local_nonpersistent_flags+=("--restic-pod-mem-limit=")
+    flags+=("--restic-pod-mem-request=")
+    two_word_flags+=("--restic-pod-mem-request")
+    local_nonpersistent_flags+=("--restic-pod-mem-request=")
+    flags+=("--restore-only")
+    local_nonpersistent_flags+=("--restore-only")
+    flags+=("--sa-annotations=")
+    two_word_flags+=("--sa-annotations")
+    local_nonpersistent_flags+=("--sa-annotations=")
+    flags+=("--secret-file=")
+    two_word_flags+=("--secret-file")
+    local_nonpersistent_flags+=("--secret-file=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--snapshot-location-config=")
+    two_word_flags+=("--snapshot-location-config")
+    local_nonpersistent_flags+=("--snapshot-location-config=")
+    flags+=("--use-restic")
+    local_nonpersistent_flags+=("--use-restic")
+    flags+=("--use-volume-snapshots")
+    local_nonpersistent_flags+=("--use-volume-snapshots")
+    flags+=("--velero-pod-cpu-limit=")
+    two_word_flags+=("--velero-pod-cpu-limit")
+    local_nonpersistent_flags+=("--velero-pod-cpu-limit=")
+    flags+=("--velero-pod-cpu-request=")
+    two_word_flags+=("--velero-pod-cpu-request")
+    local_nonpersistent_flags+=("--velero-pod-cpu-request=")
+    flags+=("--velero-pod-mem-limit=")
+    two_word_flags+=("--velero-pod-mem-limit")
+    local_nonpersistent_flags+=("--velero-pod-mem-limit=")
+    flags+=("--velero-pod-mem-request=")
+    two_word_flags+=("--velero-pod-mem-request")
+    local_nonpersistent_flags+=("--velero-pod-mem-request=")
+    flags+=("--wait")
+    local_nonpersistent_flags+=("--wait")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_plugin_add()
+{
+    last_command="velero_plugin_add"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--image-pull-policy=")
+    two_word_flags+=("--image-pull-policy")
+    local_nonpersistent_flags+=("--image-pull-policy=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_plugin_get()
+{
+    last_command="velero_plugin_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_plugin_remove()
+{
+    last_command="velero_plugin_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_plugin()
+{
+    last_command="velero_plugin"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("get")
+    commands+=("remove")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restic_repo_get()
+{
+    last_command="velero_restic_repo_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restic_repo()
+{
+    last_command="velero_restic_repo"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("get")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restic()
+{
+    last_command="velero_restic"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("repo")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore_create()
+{
+    last_command="velero_restore_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--allow-partially-failed")
+    local_nonpersistent_flags+=("--allow-partially-failed")
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--from-backup=")
+    two_word_flags+=("--from-backup")
+    local_nonpersistent_flags+=("--from-backup=")
+    flags+=("--from-schedule=")
+    two_word_flags+=("--from-schedule")
+    local_nonpersistent_flags+=("--from-schedule=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--namespace-mappings=")
+    two_word_flags+=("--namespace-mappings")
+    local_nonpersistent_flags+=("--namespace-mappings=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--restore-volumes")
+    local_nonpersistent_flags+=("--restore-volumes")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore_delete()
+{
+    last_command="velero_restore_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore_describe()
+{
+    last_command="velero_restore_describe"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--details")
+    local_nonpersistent_flags+=("--details")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore_get()
+{
+    last_command="velero_restore_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore_logs()
+{
+    last_command="velero_restore_logs"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cacert=")
+    two_word_flags+=("--cacert")
+    local_nonpersistent_flags+=("--cacert=")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_restore()
+{
+    last_command="velero_restore"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("get")
+    commands+=("logs")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_schedule_create()
+{
+    last_command="velero_schedule_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--exclude-namespaces=")
+    two_word_flags+=("--exclude-namespaces")
+    local_nonpersistent_flags+=("--exclude-namespaces=")
+    flags+=("--exclude-resources=")
+    two_word_flags+=("--exclude-resources")
+    local_nonpersistent_flags+=("--exclude-resources=")
+    flags+=("--include-cluster-resources")
+    local_nonpersistent_flags+=("--include-cluster-resources")
+    flags+=("--include-namespaces=")
+    two_word_flags+=("--include-namespaces")
+    local_nonpersistent_flags+=("--include-namespaces=")
+    flags+=("--include-resources=")
+    two_word_flags+=("--include-resources")
+    local_nonpersistent_flags+=("--include-resources=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--schedule=")
+    two_word_flags+=("--schedule")
+    local_nonpersistent_flags+=("--schedule=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--snapshot-volumes")
+    local_nonpersistent_flags+=("--snapshot-volumes")
+    flags+=("--storage-location=")
+    two_word_flags+=("--storage-location")
+    local_nonpersistent_flags+=("--storage-location=")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--volume-snapshot-locations=")
+    two_word_flags+=("--volume-snapshot-locations")
+    local_nonpersistent_flags+=("--volume-snapshot-locations=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_schedule_delete()
+{
+    last_command="velero_schedule_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_schedule_describe()
+{
+    last_command="velero_schedule_describe"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_schedule_get()
+{
+    last_command="velero_schedule_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_schedule()
+{
+    last_command="velero_schedule"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("get")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_snapshot-location_create()
+{
+    last_command="velero_snapshot-location_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    local_nonpersistent_flags+=("--config=")
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--labels=")
+    two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--provider=")
+    two_word_flags+=("--provider")
+    local_nonpersistent_flags+=("--provider=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_snapshot-location_get()
+{
+    last_command="velero_snapshot-location_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label-columns=")
+    two_word_flags+=("--label-columns")
+    local_nonpersistent_flags+=("--label-columns=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output=")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--selector=")
+    flags+=("--show-labels")
+    local_nonpersistent_flags+=("--show-labels")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_snapshot-location()
+{
+    last_command="velero_snapshot-location"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("get")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_version()
+{
+    last_command="velero_version"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--client-only")
+    local_nonpersistent_flags+=("--client-only")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_velero_root_command()
+{
+    last_command="velero"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backup")
+    commands+=("backup-location")
+    commands+=("bug")
+    commands+=("client")
+    commands+=("completion")
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("get")
+    commands+=("install")
+    commands+=("plugin")
+    commands+=("restic")
+    commands+=("restore")
+    commands+=("schedule")
+    commands+=("snapshot-location")
+    commands+=("version")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--add_dir_header")
+    flags+=("--alsologtostderr")
+    flags+=("--features=")
+    two_word_flags+=("--features")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    flags+=("--kubecontext=")
+    two_word_flags+=("--kubecontext")
+    flags+=("--log_backtrace_at=")
+    two_word_flags+=("--log_backtrace_at")
+    flags+=("--log_dir=")
+    two_word_flags+=("--log_dir")
+    flags+=("--log_file=")
+    two_word_flags+=("--log_file")
+    flags+=("--log_file_max_size=")
+    two_word_flags+=("--log_file_max_size")
+    flags+=("--logtostderr")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    flags+=("--skip_headers")
+    flags+=("--skip_log_headers")
+    flags+=("--stderrthreshold=")
+    two_word_flags+=("--stderrthreshold")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+    flags+=("--vmodule=")
+    two_word_flags+=("--vmodule")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+__start_velero()
+{
+    local cur prev words cword
+    declare -A flaghash 2>/dev/null || :
+    declare -A aliashash 2>/dev/null || :
+    if declare -F _init_completion >/dev/null 2>&1; then
+        _init_completion -s || return
+    else
+        __velero_init_completion -n "=" || return
+    fi
+
+    local c=0
+    local flags=()
+    local two_word_flags=()
+    local local_nonpersistent_flags=()
+    local flags_with_completion=()
+    local flags_completion=()
+    local commands=("velero")
+    local must_have_one_flag=()
+    local must_have_one_noun=()
+    local last_command
+    local nouns=()
+
+    __velero_handle_word
+}
+
+if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -o default -F __start_velero velero
+else
+    complete -o default -o nospace -F __start_velero velero
+fi
+
+# ex: ts=4 sw=4 et filetype=sh

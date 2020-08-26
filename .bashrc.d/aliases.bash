@@ -39,7 +39,6 @@ alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 alias k="kubectl"
 alias ku="kubie"
-alias kc='kubie ctx'
 alias kn='kubie ns'
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'

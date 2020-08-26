@@ -1,4 +1,3 @@
-
 # prevent duplicate directories in you PATH variable
 # pathmunge /path/to/dir is equivalent to PATH=/path/to/dir:$PATH
 # pathmunge /path/to/dir after is equivalent to PATH=$PATH:/path/to/dir
@@ -21,3 +20,11 @@ function _printline() {
 	printf "%`tput cols`s" | tr " " "$_char"
 }
 
+function cloud_completions() {
+    if [ -d $HOME/.bashrc.d/cloud_completions ]
+    then
+        for bashrc in $HOME/.bashrc.d/cloud_completions/*.bash; do
+            source $bashrc
+        done
+    fi
+}

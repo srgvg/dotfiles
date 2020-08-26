@@ -1,0 +1,111 @@
+#=============================================================================
+# dark_powered.toml --- dark powered configuration example for SpaceVim
+# Copyright (c) 2016-2017 Wang Shidong & Contributors
+# Author: Wang Shidong < wsdjeg at 163.com >
+# URL: https://spacevim.org
+# License: GPLv3
+#=============================================================================
+
+# All SpaceVim option below [option] section
+[options]
+
+# By default, this feature is disabled. It would slow down the startup of Vim/Neovim.
+# If you like this feature, add following to your custom configuration file.
+#automatic_update = true
+# set spacevim theme. by default colorscheme layer is not loaded,
+# if you want to use more colorscheme, please load the colorscheme
+# layer
+colorscheme = "gruvbox"
+colorscheme_bg = "dark"
+# Disable guicolors in basic mode, many terminal do not support 24bit
+# true colors
+enable_guicolors = 1
+# Disable statusline separator, if you want to use other value, please
+# install nerd fonts
+statusline_separator = "arrow"
+statusline_inactive_separator = "arrow"
+buffer_index_type = 4
+enable_cursorcolumn = 1
+enable_tabline_filetype_icon = true
+enable_statusline_mode = false
+max_column = 80
+default_indent = 2
+
+relativenumber = false
+
+# https://github.com/SpaceVim/SpaceVim/issues/695#issuecomment-435686461
+bootstrap_before = "custom_init#before"
+bootstrap_after  = "custom_init#after"
+
+
+
+# Enable autocomplete layer
+[[layers]]
+name = 'autocomplete'
+auto-completion-return-key-behavior = "complete"
+auto-completion-tab-key-behavior = "smart"
+
+
+[[layers]]
+name = "lang#sh"
+
+
+[[layers]]
+name = 'shell'
+default_position = 'top'
+default_height = 30
+
+
+[[layers]]
+name = "lang#python"
+
+
+[[layers]]
+name = "lang#ruby"
+
+
+[[layers]]
+name = "lang#puppet"
+
+
+[[layers]]
+name = "lang#markdown"
+
+
+[[layers]]
+name = "lang#php"
+
+
+[[layers]]
+name = "lang#toml"
+
+
+[[layers]]
+name = "lang#vim"
+
+
+[[layers]]
+name = "lsp"
+filetypes = [
+    "python"
+  ]
+
+
+[[layers]]
+name = ""
+
+
+[[layers]]
+name = ""
+
+
+[[custom_plugins]]
+name = "jamessan/vim-gnupg"
+
+[[custom_plugins]]
+name = "mrk21/yaml-vim"
+
+## vim colors
+#
+[[custom_plugins]]
+name = "morhetz/gruvbox"

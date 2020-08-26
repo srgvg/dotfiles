@@ -13,7 +13,6 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ## Parameters
-SETBG_BACKGROUND="${SETBG_BACKGROUND:-$HOME/.background.png}"
 SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default}" # no trailing slash!
 SETBG_LOOP_DELAY="${SETBG_LOOP_DELAY:-900}"
 LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
@@ -75,9 +74,6 @@ pickpic() {
     fi
     background=$(readlink -e "${background}")
     notify_debug "Selecting background '${background}'"
-	# set as default background
-	ln -nfs "${background}" "${SETBG_BACKGROUND}"
-	notify_debug "Symlinked '${SETBG_BACKGROUND}' -> '${background}'"
 }
 
 displaybg() {
@@ -113,7 +109,7 @@ loopnext() {
 showpath() {
     # show which picture is used
     notify_debug "Show which picture is used"
-	file="$(readlink --canonicalize ${SETBG_BACKGROUND})"
+	file="$(readlink --canonicalize ${background})"
 	filename=$(basename "${file}")
 	dirname=$(dirname "${file}")
 	echo "${dirname}/${filename}"
@@ -140,6 +136,12 @@ lock() {
 	cp --dereference "$(realpath --canonicalize-existing ${background})" "${LOCK_SCREEN_IMAGE}"
 }
 
+defaultbg() {
+	$HOME/bin/loop							# stop current loop
+    target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
+    setbg ${target}							# pick and set a background
+}
+
 main() {
 	local action
 
@@ -152,7 +154,7 @@ main() {
     then						#	action without argument, or
 		case ${p1} in			#	just a target
 			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
-				displaybg
+				loopnext || defaultbg
 				;;
 			'lock'|'loop')		# these need a parameter
 				notify_error "setbg: The action '${p1}' needs a parameter"
@@ -161,9 +163,7 @@ main() {
 				loopnext
 				;;
 			'def*')				# default
-				$HOME/bin/loop							# stop current loop
-        		target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
-        		setbg ${target}							# pick and set a background
+				defaultbg
 				;;
 			*)					# must be a target
 				target="${p1}"

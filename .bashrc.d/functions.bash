@@ -121,3 +121,7 @@ function mkcd() {
 		echo missing target dir to create
 	fi
 }
+
+function kc() {
+	kubie ctx $*
+}
