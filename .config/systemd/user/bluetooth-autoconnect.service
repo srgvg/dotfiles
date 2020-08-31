@@ -1,0 +1,10 @@
+[Unit]
+Description=Bluetooth autoconnect service
+Before=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=/home/serge/bin/bluetooth-autoconnect -d
+
+[Install]
+WantedBy=bluetooth.service

@@ -103,7 +103,7 @@ loop() {
 }
 
 loopnext() {
-	pkill -SIGINT --parent $(pgrep --full "setbg loop" | head -n 1)
+	pgrep --full "setbg loop" >/dev/null && pkill -SIGINT --parent $(pgrep --full "setbg loop" | head -n 1)
 }
 
 showpath() {

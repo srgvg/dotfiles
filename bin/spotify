@@ -13,5 +13,6 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-/usr/bin/spotify --force-device-scale-factor=0.8 $*
-pkill -f /usr/bin/spotify
+#/usr/bin/spotify --force-device-scale-factor=0.8 $*
+/usr/bin/spotify --force-device-scale-factor=1.0 $*
+pkill -9 -f /usr/bin/spotify

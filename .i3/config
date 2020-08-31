@@ -59,12 +59,14 @@ set $ws_util2		22
 set_from_resource $output0 i3.output.0.name	eDP1
 set_from_resource $output1 i3.output.1.name	$output0
 set_from_resource $output2 i3.output.2.name	$output1
+
 set_from_resource $layout0 i3.output.0.layout tabbed
 set_from_resource $layout1 i3.output.1.layout tabbed
 set_from_resource $layout2 i3.output.2.layout splith
+
 set_from_resource $primary i3.output.primary eDP1
-set_from_resource $secondary i3.output.secondary
-set_from_resource $third i3.output.third
+set_from_resource $secondary i3.output.secondary HDMI7
+set_from_resource $third i3.output.third HDMI7
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
@@ -993,7 +995,6 @@ for_window  [class="Dnssec-trigger-panel"] floating enable
 # & send process to background avoids keeping the calling sh shells in memory
 
 ## Run at i3 initial start only
-#exec_always "pgrep vorta || vorta &"
 ## start with interactive bash shell as this needs ssh keys to be unlocked
 #exec "termf --class=SSHASKPASS --geometry 400x50 -x /bin/bash -i -c 'echo ; ircwindow &'" ## KEEP THIS FIRST
 exec --no-startup-id "xset +dpms"
@@ -1004,7 +1005,7 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 
 # Desktop Apps
 #exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
-exec_always --no-startup-id "pkill compton ; compton &"
+exec_always --no-startup-id "picom &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
