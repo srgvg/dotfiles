@@ -122,6 +122,3 @@ function mkcd() {
 	fi
 }
 
-function kc() {
-	kubie ctx $*
-}

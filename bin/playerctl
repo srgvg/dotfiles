@@ -18,4 +18,10 @@ PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIV
 
 playeropt=""
 [ -n "$PLAYERCTL_ACTIVE_PLAYER" ] && playeropt="-p $PLAYERCTL_ACTIVE_PLAYER"
-/usr/bin/playerctl $playeropt $*
+if [ "$PLAYERCTL_ACTIVE_PLAYER" = "vlc" ] && [ "$1" = "play-pause" ] && [ "$(playerctl status)" = "Playing" ]
+then
+	shift
+	/usr/bin/playerctl $playeropt stop $*
+else
+	/usr/bin/playerctl $playeropt $*
+fi

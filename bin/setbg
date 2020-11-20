@@ -78,7 +78,7 @@ pickpic() {
 
 displaybg() {
     # set the background
-    /usr/bin/feh --no-fehbg --bg-fill --recursive --randomize "${background}"
+    /usr/bin/feh --bg-fill --recursive --randomize "${background}"
     notify_debug "Set the background"
 }
 
@@ -164,6 +164,9 @@ main() {
 				;;
 			'def*')				# default
 				defaultbg
+				;;
+			'show')
+				showbg
 				;;
 			*)					# must be a target
 				target="${p1}"

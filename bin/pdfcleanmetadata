@@ -1,0 +1,20 @@
+#!/bin/bash
+
+file=${1:-}
+if [ -r "${file}" ]
+then
+	pdfout="${2:-${file%.*}-cleaned.pdf}"
+	pdfout="${pdfout%.*}.pdf"
+
+	pdftk "${file}" output "${pdfout}" encrypt_128bit owner_pw "${pw}" allow printing
+
+
+    pdftk "${file}" update_info <(pdftk "${file}" dump_data  | sed s/InfoValue:.*/InfoValue:/ ) output "${pdfout}"
+
+	echo "Cleaned ${file} of metada into pdf ${pdfout}"
+else
+	echo "No filename to convert was given" >&2
+	exit 1
+fi
+
+

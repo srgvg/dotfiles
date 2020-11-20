@@ -7,10 +7,12 @@ reso=$(identify -format "%w %h" "$1" 2> /dev/null)
 
 w=${reso%%\ *}
 h=${reso##*\ }
-mp=$(expr $w \* $h / 1000)
+mp=$(( $w * $h / 1000 ))
+ratio=$(( $w / $h ))
 
 printf '%6s' $mp
 printf '%3s' "M  "
 printf '%12s' ${w}x${h}" "
+printf '%s' $(bc <<< "scale=2; $w/$h" )" "
 identify "$1"
 

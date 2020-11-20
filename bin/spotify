@@ -13,6 +13,18 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-#/usr/bin/spotify --force-device-scale-factor=0.8 $*
-/usr/bin/spotify --force-device-scale-factor=1.0 $*
-pkill -9 -f /usr/bin/spotify
+ARGS="$*"
+launch_spotify="/usr/bin/spotify --force-device-scale-factor=1.5 $ARGS"
+
+# if no spotify window
+if ! xwininfo -root -children | grep spotify >/dev/null
+then
+	# also if spotify process exists
+	if pgrep -f /usr/bin/spotify >/dev/null
+	then
+		pkill -9 spotify
+	fi
+	# start spotify
+	${launch_spotify}
+# else spotify runs fine as far as we know it here
+fi

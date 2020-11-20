@@ -19,5 +19,6 @@ pathmunge $HOME/bin
 pathmunge $HOME/bins
 pathmunge $HOME/bin2
 pathmunge $HOME/.local/bin
+pathmunge $HOME/.arkade/bin
 pathmunge $HOME/.krew/bin
 pathmunge $HOME/.screenlayout after

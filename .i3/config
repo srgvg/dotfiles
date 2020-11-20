@@ -240,6 +240,9 @@ bar {
 		output $secondary
 		output $third
 
+		# tray_output <none|primary|output>
+		tray_output primary
+
 		# By default, a padding of 2 pixels is used for the upper, lower and
 		# right-hand side of the tray area and between the individual icons.
 		# tray_padding <px> [px]
@@ -408,8 +411,8 @@ bindsym $mod+space focus mode_toggle
 # 9 - forward
 # 10  scroll wheel button
 #
-bindsym --whole-window button10						exec --no-startup-id setbg next
-bindsym --whole-window $mod+button10				exec --no-startup-id setbg showpic
+bindsym --whole-window $mod+button2					exec --no-startup-id setbg next
+bindsym --whole-window $mod+$alt+Control+button2				exec --no-startup-id showbg
 
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
@@ -504,10 +507,10 @@ bindsym $mod+Shift+F12 move container to workspace 22
 #
 
 # switch container focus
-bindsym $mod+Tab				focus right
-bindsym $mod+Shift+Tab			focus left
-bindsym $mod+$alt+Tab			exec --no-startup-id i3-cycle right
-bindsym $mod+Shift+$alt+Tab		exec --no-startup-id i3-cycle left
+#bindsym $mod+Tab			focus right
+#bindsym $mod+Shift+Tab		focus left
+bindsym $mod+Tab			exec --no-startup-id i3-cycle right
+bindsym $mod+Shift+Tab		exec --no-startup-id i3-cycle left
 
 # switch to the next and previous workspace
 bindsym $mod+Control+Tab workspace next
@@ -644,7 +647,6 @@ bindsym $mod+Return				exec $terminal
 
 # start a floating terminal
 bindsym $mod+Control+Return		exec $terminalfl
-#bindsym --whole-window $mod+button2 exec $terminalfl
 
 # kill focused window except..
 bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator|Alacritty).*$"]	kill
@@ -685,10 +687,8 @@ bindsym $mod+d					exec nemo
 bindsym $mod+$Alt+d				exec nautilus --class Files --name small --new-window $HOME/tmp
 
 # start browsers
-bindsym $mod+Control+o			exec chrom serge
-bindsym $mod+Control+Shift+o	exec chrom google
-bindsym $mod+o					exec chrom TMP
-bindsym $mod+Shift+o			exec chrom
+bindsym $mod+o					exec firefox
+bindsym $mod+Control+o			exec firefox --private-window
 
 # Show current Background filename
 bindsym $mod+Control+b			exec --no-startup-id setbg show
@@ -710,7 +710,7 @@ bindsym $mod+Control+n			exec nm-toggle-wifi
 
 # custom shit
 #bindsym $mod+$alt+r				exec remmina -c $HOME/.local/share/remmina/1530705868530.remmina
-bindsym $mod+$alt+Control+t		exec --no-startup-id alacritty-colorscheme -T
+bindsym $mod+$alt+Control+t		exec --no-startup-id switch-term-colors
 
 #######################################################################################################################
 #
@@ -916,7 +916,8 @@ assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat2
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout $layout0
 
 assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat2
-for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] layout $layout0, floating enable
+for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout $layout0, border $defaultborder
+for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
 for_window	[class="Skype"]									floating enable
 
@@ -929,8 +930,7 @@ assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Remote Desktop Client
 assign [class="Remmina" instance="remmina"]		$ws_tool0
-for_window [class="Remmina" instance="remmina"] layout layout0
-for_window [class="^rdesktop"] floating disable
+for_window [class="org.remmina.Remmina" instance="org.remmina.Remmina"] floating disable, layout layout0
 
 # Teamviewer
 assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
@@ -1010,10 +1010,10 @@ exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
 exec_always "keepassxc"
-exec		"chrom google & sleep 1; chrom serge &"
+exec		"firefox &"
 exec		"run_keybase -a &"
 exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
-exec_always "pgrep spotify || spotify &"
+exec_always "/home/serge/bin/spotify &"
 exec		"vlc &"
 exec_always "pgrep nextcloud || nextcloud &"
 #exec "dnssec-trigger-panel &"

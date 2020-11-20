@@ -9,14 +9,12 @@ set -o errexit
 set -o pipefail
 set -x
 
-
 target=$1
+copy="rsync --verbose --copy-links"
 
 ssh ${target} 'mkdir -vp $HOME/bin $HOME/.bashrc.d $HOME/.config'
-scp $HOME/bin2/starship ${target}:bin/
-scp $HOME/.config/starship.toml ${target}:.config/
-for file in ${HOME}/.bashrc.d/*
-do
-    scp ${file} ${target}:.bashrc.d/
-done
-scp $HOME/.bashrc $target:
+
+$copy $HOME/bin2/starship						${target}:bin/
+$copy $HOME/.config/starship.toml				${target}:.config/
+$copy -a ${HOME}/.bashrc.d/						${target}:.bashrc.d/
+$copy $HOME/.bashrc								$target:

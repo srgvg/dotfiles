@@ -235,7 +235,7 @@ mkdir -vp "${PROFILESDIR}" "${CACHEDIR}"
 myname=$(basename $0)
 myaction="${1:-}"
 shopt -s extglob         # enables pattern lists like +(...|...)
-matchtest='+(serge|google|radio|g|i|TMP|tmp)'
+matchtest='+(serge|google|whatsapp|g|i|TMP|tmp)'
 case ${myname} in
 	chrom)
 		case "${myaction}" in
@@ -263,8 +263,8 @@ PROFILEPATH=${PROFILESDIR}/${PROFILECLASS}
 
 NICE=""
 case ${PROFILECLASS} in
-	serge|google|radio)
-		NICE="nice -n 15"
+	serge|google|whatsapp)
+		#NICE="nice -n 5"
 		;;
 	g)	# search
 		#URL="https://www.google.com/search?q"
@@ -277,6 +277,7 @@ case ${PROFILECLASS} in
 		SWITCHES="${SWITCHES} ${URL}=${QUERY}"
 		;;
 	i)	# image search
+		#NICE="nice -n 20"
 		#URL="https://www.google.com/search?as_st=y&tbs=isz%3Alt%2Cislt%3A2mp&tbm=isch&source=hp&biw=1920&bih=973&ei=k1VfWu2jKYjKkwXJorDoDQ&q"
 		#URL="https://duckduckgo.com/?kae=d&kav=1&k1=-1&kaj=m&kam=google-maps&kay=b&kak=-1&kax=-1&kaq=-1&kap=-1&kao=-1&kau=-1&iax=images&ia=images&iaf=layout%3Aaspect-wide%2Csize%3Alarge&q"
 		URL="https://duckduckgo.com/?&kao=-1&kae=d&kap=-1&kaj=m&kaq=-1&kay=b&kav=1&k1=-1&kak=-1&kau=-1&kax=-1&kam=google-maps&iar=images&iax=images&ia=images&iaf=layout%3AWide%2Csize%3AWallpaper%2Ctype%3Aphoto&q"
@@ -290,7 +291,7 @@ case ${PROFILECLASS} in
 		;;
 	TMP|tmp) # special option to have a temp session as tiling window
 		_set_tmp
-		NICE="nice -n 20"
+		#NICE="nice -n 20"
 		trap _cleanup EXIT
 		#if [ -z "$*" ]
 		#then

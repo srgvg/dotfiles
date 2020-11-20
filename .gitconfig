@@ -11,7 +11,8 @@
 
 	changed = whatchanged --stat
 	ci = commit -vv
-	co = checkout
+	checkout = checkout --no-guess
+	co = checkout --no-guess
 
 	df = diff
 	dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
@@ -44,7 +45,8 @@
 	ls = ls-files
 	ls-untracked = ls-files --others
 
-	myinfo = ! echo && git remote -v && echo && git --no-pager branch --color=always --all --list -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
+	#myinfo = ! echo && git remote -v && echo && git --no-pager branch --color=always --all --list -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
+	myinfo = ! echo && git remote -v && echo && git --no-pager branch --list --color=auto --all --column=always && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
 
 	# Prune deletes any local branch which has been deleted from the remote.
 	prune = fetch --prune
@@ -146,7 +148,9 @@
 	excludesFile = ~/.gitignore
 	whitespace = trailing-space,space-before-tab
 	quotepath = false
-	pager = diff-so-fancy | less --tabs=4 -RFX
+	#pager = diff-so-fancy | less --tabs=4 -RFX
+	# https://veronneau.org/a-better-git-diff.html
+	pager =  /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
 
 
 [diff]
@@ -154,6 +158,8 @@
 	#tool = icdiff
 	renames = copy
 	noprefix = true
+	colorMoved = dimmed-zebra
+	colorMovedWS = allow-indentation-change
 
 
 [difftool]

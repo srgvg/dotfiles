@@ -3,7 +3,7 @@
 [global]
     #font = Ubuntu Mono 10
     #font = FantasqueSansMono 10
-    font = LiberationMonoRegular 10
+    font = LiberationMonoRegular 11
 
     # allow a small subset of html markup:
     # <b>bold</b>
@@ -73,16 +73,16 @@
     # screen width minus the width defined in within the geometry option.
     #geometry = "500x10-12+35"
     #geometry = "500x10-32+55"
-    geometry = "600x10-40+60"
+    geometry = "700x10-40+100"
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
-    transparency = 10
+    transparency = 25
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
     # Set to 0 to disable.
-    idle_threshold = 2
+    idle_threshold = 3
 
     # Which monitor should the notifications be displayed on.
     monitor = 0
@@ -98,7 +98,6 @@
     # If this option is set to mouse or keyboard, the monitor option will be
     # ignored.
     #follow = mouse
-    follow = keyboard
 
     # should a notification popped up from history be sticky or
     # timeout as if it would normally do.
@@ -109,9 +108,9 @@
     # This adds empty space above and under the text.
     line_height = 0
 
-    # Draw a line of 'separatpr_height' pixel height between two notifications.
+    # Draw a line of 'separator_height' pixel height between two notifications.
     # Set to 0 to disable
-    separator_height = 2
+    separator_height = 1
 
     # padding between text and separator
     padding = 10
@@ -125,8 +124,8 @@
     #  * foreground: use the same color as the foreground
     #  * frame: use the same color as the frame.
     #  * anything else will be interpreted as a X color
-    #separator_color = frame
-    separator_color = #FFFFFF
+    separator_color = frame
+    #separator_color = #FFFFFF
 
     # print a notification on startup
     # This is mainly for error detection, since dbus (re-)starts dunst
@@ -160,7 +159,7 @@
     #  mesg: Important Messages
     #  info: all unimportant stuff
     # debug: all less than unimportant stuff
-    verbosity = mesg
+    verbosity = info
 
     # Define the corner radius of the notification window
     # in pixel size. If the radius is 0, you have no rounded
@@ -175,7 +174,7 @@
     # dunst will attempt to calculate an appropriate dpi value for each monitor
     # using the resolution and physical size. This might be useful in setups
     # where there are multiple screens with very different dpi values.
-    per_monitor_dpi = true
+    #per_monitor_dpi = true
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key

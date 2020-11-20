@@ -2,103 +2,210 @@
 #
 add_newline = true
 scan_timeout = 10
-prompt_order = [
-    "username",
-    "hostname",
-    "kubernetes",
-    "directory",
-    "git_branch",
-    "git_commit",
-    "git_state",
-    "git_status",
-    "hg_branch",
-    "docker_context",
-    "package",
-    "dotnet",
-    "elixir",
-    "elm",
-    "golang",
-    "haskell",
-    "java",
-    "julia",
-    "nodejs",
-    "php",
-    "python",
-    "ruby",
-    "rust",
-    "terraform",
-    "nix_shell",
-    "conda",
-    "memory_usage",
-    "aws",
-    "env_var",
-    "crystal",
-    "cmd_duration",
-    "custom",
-    "custom.ansible",
-    "line_break",
-    "jobs",
-    "battery",
-    "time",
-    "custom.sudo",
-    "character",
-]
+format = """\
+    $username\
+    $hostname\
+    $directory\
+    $kubernetes\
+    $git_branch\
+    $git_state\
+    $git_commit\
+    $git_status\
+    $hg_branch\
+    $docker_context\
+    $package\
+    $dotnet\
+    $elixir\
+    $elm\
+    $golang\
+    $haskell\
+    $java\
+    $julia\
+    $nodejs\
+    $php\
+    $python\
+    $ruby\
+    $rust\
+    $terraform\
+    $nix_shell\
+    $conda\
+    $memory_usage\
+    $aws\
+    $env_var\
+    $cmd_duration\
+    ${custom.ansible}\
+    $line_break\
+    $jobs\
+    $time\
+    ${custom.sudo}\
+    $status\
+    $character\
+"""
+#    ${custom.bgfill}\
 
 ###
 
 [character]      # The name of the module we are configuring is "character"
-symbol = "➞ "     # The "symbol" segment is being set to "➜"
-error_symbol = "[$?] ➞ "
-use_symbol_for_status = true
+success_symbol = "[➞](bold green) "     # The "symbol" segment is being set to "➜"
+error_symbol = "[➞](bold red) "
+#vicmd_symbol = "[❮](bold green)"
 
 [cmd_duration]
+format = "took [$duration]($style) "
 min_time = 3_000
 show_milliseconds = true
+style = "bold yellow"
+# https://github.com/starship/starship/pull/1019/files
+show_notifications = true
+min_time_to_notify = 30_000
+
+[directory]
+disabled = false
+truncation_length = 5
+truncate_to_repo = true
+# The number of characters to use when applying fish shell pwd path logic.
+fish_style_pwd_dir_length = 0
+# Displays the logical path provided by the shell (PWD) instead of the path from the OS.
+use_logical_path = false
+style = "bold cyan"
+#read_only_symbol = "🔒"
+#read_only_symbol_style = "red"
+format = "[$path]($style)[$lock_symbol]($lock_style) "
+
+[directory.substitutions]
+#"/Volumes/network/path" = "/net"
+#"src/com/long/java/path" = "mypath"
 
 [docker_context]
 disabled = false
 
+[git_branch]
+disabled = false
+# The format for the module. Use "$branch" to refer to the current branch name.
+symbol = " "
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+# Truncates a git branch to X graphemes.
+#truncation_length = "2^63 - 1"
+# The symbol used to indicate a branch name was truncated. You can use "" for no symbol
+truncation_symbol = "…"
+
+[git_state]
+disabled = false
+tag_disabled = false
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+style = "bold purple"
+format = "\\([$state( $progress_current/$progress_total)]($style)\\) "
+
+[git_commit]
+disabled = false
+tag_disabled = false
+commit_hash_length = 7
+#format = "[\\($hash\\)]($style) [\\($tag\\)]($style)"
+style = "bold purple"
+only_detached = false
+tag_symbol = "🏷 "
+
 [git_status]
-disabled = true
-staged_count.enabled = true
-staged_count.style = "green"
+disabled = false
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed	= "s${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+style = "bold purple"
+# $all_status ~ $conflicted$stashed$deleted$renamed$modified$staged$untracked
+# ahead_behind	Displays diverged ahead or behind format string based on the current status of the repo
+format = "[${all_status}${ahead_behind}]($style) "
 
 [hostname]
 ssh_only = false
+style = "dimmed gray"
+format = "[@$hostname]($style) "
 
-[directory]
-truncation_length = 5
-truncate_to_repo = true
-prefix = ""
+[kubernetes]
+disabled = false
+symbol = "☸"
+#symbol = "⛵"
+format = "[${symbol}${context}(\\[$namespace\\])]($style) "
+style = "cyan bold"
+namespace_spaceholder = "none"
+
+[kubernetes.context_aliases]
+#"k3s0.office.ginsys.net" = "home"
 
 [package]
 disabled = true
 
-[kubernetes]
-disabled = false
-
 [python]
-pyenv_version_name = true
+disabled = false
+symbol = "py "
+style = "yellow bold"
+pyenv_version_name = false
+pyenv_prefix = "pyenv"
+scan_for_pyfiles = true
+python_binary = "python3"
+format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
+
+[status]
+disabled = false
+format = "[$symbol$status ]($style)"
+symbol = "✖"
+style = "bold red"
 
 [time]
 disabled = false
+#format = "[$time]($style) "
+time_format = "%T"
+format = "[🕙$time]($style) "
+use_12hr = false
+style = "bold yellow"
+# Sets the UTC offset to use. Range from -24 < x < 24.
+# Allows floats to accommodate 30/45 minute timezone offsets.
+#utc_time_offset = "+2"
+utc_time_offset = "local"
+# Sets the time range during which the module will be shown.
+# Times must be specified in 24-hours format
+#time_range = "10:00:00-14:00:00"
+time_range = "-"
 
 [username]
 show_always = true
+format = "[$user]($style)"
 
 ###
 
 [custom.ansible]
 description = "Ansible version"
-command = "echo -n Ⓐ ' 'v$(ansible --version 2>/dev/null | grep ^ansible | awk '{ print $2 }') $(which ansible | sed -e s@$HOME@~@ -e s@/bin/ansible@@)"
+command = "echo -n $(ansible --version 2>/dev/null | grep ^ansible | awk '{ print $2 }') $(which ansible | sed -e s@$HOME/@@ -e s@/bin/ansible@@ -e s@/.virtual_env@@) "
 when = """ test -n "${ANSIBLE_HOME}" """
 files = [ "ansible.cfg" ]
 shell = "/bin/bash"
-
+symbol = "Ⓐ "
+format = "[$symbol$output]($style) "
 
 [custom.sudo]
 description = "valid sudo timestamp marker"
 command = "echo -n '!'"
-prefix = ""
-style = "bold bg:red fg:bright-white"
+format = "[$symbol$output]($style) "
+style = "bold fg:bright-red"
 when = "sudo -vn &>/dev/null"
+
+[custom.bgfill]
+command = "echo ."
+style="fg:black bg:bright-black"
+when="true"
+shell="sh"
+format = "[$output\u001B\\[K]($style)"
+

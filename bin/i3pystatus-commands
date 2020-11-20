@@ -20,20 +20,24 @@ function execute() {
 
 case ${1:-} in
 	audio_current_sink)
-		execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' 2>/dev/null ||:"
+		execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' -e 's/HyperX 7.1 Audio Analog Stereo/Trust/' 2>/dev/null ||:"
 		;;
 	audio_current_sink_volume)
-		execute "ponymix get-volume"
-		if [ -n "${output}" ]
+		if ponymix is-muted
 		then
-			if [ "${output}" -gt 0 ]
+			output="🚫"
+		else
+			execute "ponymix get-volume"
+			if [ -n "${output}" ]
 			then
-				output="🔊${output}%"
-			else [ "${output}" -eq 0 ]
-				output="🚫"
+				if [ "${output}" -gt 0 ]
+				then
+					output="🔊${output}%"
+				else [ "${output}" -eq 0 ]
+					output="🚫"
+				fi
 			fi
 		fi
-
 		;;
 	audio_sonos_volume)
 		execute "sonos state 2>/dev/null ||:"
@@ -80,8 +84,23 @@ case ${1:-} in
 							title="$nowply "
 							artist=""
 					else
-						artist=$(playerctl $player0 metadata xesam:artist);	    [ -n "$artist" ] && artist="$artist "
-						title=$( playerctl $player0 metadata xesam:title);  	[ -n "$title" ]  && title="$title "
+						artist=$(playerctl $player0 metadata xesam:artist)
+						title=$( playerctl $player0 metadata xesam:title)
+						if [ -n "$artist" ]
+						then
+							if [ -n "$title" ]
+							then
+								artist="${artist}: "
+								title="$title "
+							else
+								artist="${artist} "
+							fi
+						else
+							if [ -n "$title" ]
+							then
+								title="$title "
+							fi
+						fi
 					fi
 					output="${player} ${stat}${artist}${title}"
 			elif [ "${state}" = "Paused" ]

@@ -12,7 +12,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-pwgen='/usr/bin/pwgen -N1'
+pwgen='/usr/bin/pwgen -N1 --remove-chars='\'\"\{\}\[\]\(\)\;
 
 case ${1:-} in
     # http://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
@@ -41,7 +41,7 @@ case $TYPE in
 		;;
     no*)
 		L=${PL:-30}
-		pass=$($pwgen -cny $L 1)
+		pass=$($pwgen -cn $L 1)
 		msg="type $TYPE with length $L"
 		notify_debug "${msg}"
 		;;

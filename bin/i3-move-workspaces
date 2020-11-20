@@ -84,3 +84,5 @@ do
 	i3-msg workspace ${wn} >/dev/null 2>&1 ; \
 	notify_debug "Put focus back to workspace ${wn} on output ${w##*,}" &
 done
+
+i3-msg reload

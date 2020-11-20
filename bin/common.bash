@@ -172,18 +172,9 @@ function errexit() {
 	exit 1
 }
 
-function notify_desktop() {
-	{ set +x; } 2>/dev/null
-
+function parse_notify_desktop() {
 	local numparam=3
 	[ $# -ge ${numparam} ] || errexit "function ${FUNCNAME[0]} expects at least ${numparam} parameters, got $#: '$#'"
-
-	local urgency
-	local summary
-	local body
-	local color
-	local icon
-	local app
 
 	urgency=${1}
 	summary=${2}
@@ -205,6 +196,19 @@ function notify_desktop() {
 			errexit "First parameter should be one of '[low|normal|critical]'"
 			;;
 	esac
+}
+
+function notify_desktop() {
+	{ set +x; } 2>/dev/null
+
+	local urgency
+	local summary
+	local body
+	local color
+	local icon
+	local app
+
+	parse_notify_desktop "$@"
 
 	if  ! ifinteractive
 	then
@@ -212,6 +216,23 @@ function notify_desktop() {
 	else
 		notify_debug "${summary} ${body}"
 	fi
+	set_xtrace
+}
+
+function notify_desktop_always() {
+	{ set +x; } 2>/dev/null
+
+	local urgency
+	local summary
+	local body
+	local color
+	local icon
+	local app
+
+	parse_notify_desktop "$@"
+
+	notify_debug "${summary} ${body}"
+	notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
 	set_xtrace
 }
 

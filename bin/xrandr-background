@@ -57,6 +57,7 @@ then
 	IMAGE_NAME="$(basename "${IMAGE}")"
 	IMAGE_NAME_BASE="${IMAGE_NAME%.*}"
 	IMAGE_NEW="${IMAGE_PATH}/${IMAGE_NAME_BASE}-xrandr.png"
+	IMAGE_NEW_EXT=${IMAGE_NEW##*.}
 	notify_debug "Target file path is ${IMAGE_NEW}"
 else
 	# check new image filename extension

@@ -41,11 +41,11 @@ function killNagBar
 
 while [ true ]; do
 
-	if [[ -n $(acpi -b | grep -i discharging) ]]; then
+	rem_bat=$(acpi -b | grep -v "Battery 0:" | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
+	num=$(acpi -b | grep -v "Battery 0:" | wc -l)
+	rem_bat=$(expr $rem_bat / $num)
+	if [[ -n $(acpi -b | grep -v "Battery 0:" | grep -i discharging) ]]; then
 		sudo pm-powersave true
-		rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
-		num=$(acpi -b | wc -l)
-		rem_bat=$(expr $rem_bat / $num)
 		notify "Battery discharging... ${rem_bat}% left"
 
 		if [[ $rem_bat -gt $SAFE_PERCENT ]]; then
@@ -65,9 +65,6 @@ while [ true ]; do
 	else
 		killNagBar
 		sudo pm-powersave false
-		rem_bat=$(acpi -b | grep -Eo "[0-9]+%" | grep -Eo "[0-9]+" | awk '{s+=$1} END {print s}')
-		num=$(acpi -b | wc -l)
-		rem_bat=$(expr $rem_bat / $num)
 		notify "Running on power... battery at ${rem_bat}%"
 		SLEEP_TIME=15
 	fi

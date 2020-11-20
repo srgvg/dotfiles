@@ -15,6 +15,7 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+	bato
 	arandrd
 	audd
 	mqtt-notify.py
@@ -26,6 +27,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	tail --follow=name /var/log/syslog
 	dmesg --human --decode --follow --ctime --time-format iso
 	autocutsel -verbose -selection CLIPBOARD
+	arbtt-capture -r 10
 
 	#pulseaudio-dlna-d # 58080/tcp 65353/udp 1900/udp ALLOW IN
 	#dnssec-trigger-control results

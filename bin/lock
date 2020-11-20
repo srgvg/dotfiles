@@ -113,8 +113,7 @@ function pre_lock() {
 	 ) &
 
 	notify "Lock remote irssi screen"
-	#(irc lock ||:)&
-	irc lock ||:
+	(irc lock ||:) & sleep 1
 }
 
 function perform_lock() {

@@ -23,7 +23,9 @@ then
 	COMMAND="$COMMAND --class alacritty-floating"
 else
 	PWD="$(xcwd ||:)"
-	[ -z "${PWD}" ] && PWD="$HOME"
+	# firefox spawns /snap/keepassxc/.../usr/bin/keepassxc-proxy
+	# which gets picked up by xcwd
+	[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ]&& PWD="$HOME"
 	#COMMAND="$COMMAND --role gnome-terminal-tiled"
 	COMMAND="$COMMAND --class alacritty-tiled"
 	COMMAND="$COMMAND --working-directory=${PWD}"

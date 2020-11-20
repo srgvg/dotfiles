@@ -10,7 +10,32 @@ set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-
 ###############################################################################
-export DEBUG=1
-arandr-autoconfig --post i3-move-workspaces $*
+
+if ifdebug1
+then
+	notify_desktop_always critical "WARNING" "THIS SCRIPT CONTAINS A TRAP THAT DOESN'T WORK WITH DEBUG SET"
+fi
+
+_trap() {
+	[ -z "$aec" ] && aec=$?
+	if [ $aec -le 1 ]
+	then
+		notify_desktop_always normal "arandr-autoconfig exited with ${aec}" "arandr-autoconfig stopped and will be restarted"
+	else
+		notify_desktop_always critical "arandr-autoconfig exited with ${aec}" "arandr-autoconfig crashed and will be restarted"
+	fi
+	unset aec
+	trap - EXIT ERR SIGHUP SIGINT SIGQUIT SIGPIPE
+	sleep 3
+	exec arandrd
+}
+
+trap _trap EXIT ERR SIGHUP SIGINT SIGQUIT SIGPIPE
+
+aec=""
+while arandr-autoconfig2
+do
+	aec=${aec:-?}
+	_trap
+done
