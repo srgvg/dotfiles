@@ -36,13 +36,19 @@ relativenumber = false
 bootstrap_before = "custom_init#before"
 bootstrap_after  = "custom_init#after"
 
-
+lint_on_the_fly = false
+enable_ale = false
 
 # Enable autocomplete layer
 [[layers]]
 name = 'autocomplete'
 auto-completion-return-key-behavior = "complete"
 auto-completion-tab-key-behavior = "smart"
+
+
+[[layers]]
+name = "checkers"
+show_cursor_error = false
 
 
 [[layers]]

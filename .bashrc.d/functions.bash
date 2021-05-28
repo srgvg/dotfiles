@@ -59,11 +59,12 @@ function aswitch() {
 function dl() {
 	# quick package search
 	# shellcheck disable=SC2046
-	dpkg -l | grep $(for n in ${*:-^}; do echo -n " -e $n"; done)
+	dpkg -l | grep -i $(for n in ${*:-^}; do echo -n " -e $n"; done)
 }
 
 function ka() {
-	kubectl $* --all-namespaces
+	#kubectl $* --all-namespaces
+	kubecolor $* --all-namespaces
 }
 
 function manswitch() {

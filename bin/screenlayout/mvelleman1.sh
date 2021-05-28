@@ -1,1 +1,0 @@
-HDMI2_LTqcpBuNrH_eDP1_4-OlRZBeYC.sh

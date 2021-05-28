@@ -18,6 +18,7 @@ HISTIGNORE="history"
 # command being saved on the history list (there is no limit).  The shell sets the  default  value
 # to 500 after reading any startup files.
 HISTSIZE=-1
+
 # The maximum number of lines contained in the history file.  When this  variable  is  assigned  a
 # value, the history file is truncated, if necessary, to contain no more than that number of lines
 # by removing the oldest entries.  The history file is also truncated to this size  after  writing
@@ -27,7 +28,7 @@ HISTSIZE=-1
 HISTFILESIZE=500000
 
 #HISTTIMEFORMAT="%h %d %H:%M:%S "
-HISTTIMEFORMAT="%F %T "
+HISTTIMEFORMAT="$PWD %F %T "
 
 # append to the history file, don't overwrite it
 shopt -s histappend

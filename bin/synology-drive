@@ -13,8 +13,13 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-if pgrep -f SynologyDrive/SynologyDrive.app/bin/cloud-drive-ui >/dev/null; then
-	pkill -f SynologyDrive/SynologyDrive.app/bin/cloud-drive-ui
-	sleep 10
-fi
+SIG=""
+while pgrep -f SynologyDrive/SynologyDrive.app/bin/cloud-drive-ui >/dev/null
+do
+	pkill $SIG -f SynologyDrive/SynologyDrive.app
+
+	SIG="-9"
+	sleep 5
+done
+
 /usr/bin/synology-drive

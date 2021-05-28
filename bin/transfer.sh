@@ -30,8 +30,8 @@ else
 fi
 file_name=$(basename "$file")
 
-maxdays=${2:-1}
-maxdown=${3:-3}
+maxdays=${2:-2}
+maxdown=${3:-9999}
 
 maxdaysh="Max-days: $maxdays"
 maxdownh="Max-Downloads: ${maxdown}"

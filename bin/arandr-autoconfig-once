@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -z "$1" ]
+then
+    arandr-autoconfig --once --post i3-move-workspaces
+else
+    arandr-autoconfig --once --post i3-move-workspaces --script $1
+fi

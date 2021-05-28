@@ -98,7 +98,6 @@ function volume() {
 	local action="${2}"
 	local value="${3:-50}"
 	case "${action}" in
-		get) : ;;
 		set)
 			case "${device}" in
 				sonos)
@@ -193,7 +192,7 @@ function volume() {
 			{
 				echo "Invalid action '${action}'" >&2
 				echo "Valid actions are:"
-				echo "up down is-muted mute unmute toggle"
+				echo "set up down is-muted mute unmute toggle"
 				exit 1
 			}
 	esac

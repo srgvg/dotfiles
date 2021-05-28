@@ -15,6 +15,8 @@ source "$HOME/bin/common.bash"
 DEBUG=1
 DOTFEHBG="${1:-$HOME/.fehbg}"
 
-bg="$(sed -n '2p' "${DOTFEHBG}" | cut -d\' -f2-6 | sed -e "s/' '/\n\n/g" -e 's@/home/serge/Documents/Pictures/@@g')"
+bg="$(sed -n '2p' "${DOTFEHBG}" | cut -d\' -f2-6 | sed -e "s/' '/\n/g" -e 's@/home/serge/Documents/Pictures/@@g')"
 
 notify_desktop low "${0}" "\n${bg}" video-display setbg
+#ifinteractive && feh $(echo ${bg} | xargs)
+feh $(echo ${bg} | xargs)

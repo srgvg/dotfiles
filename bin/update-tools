@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+# starship
+starship -V
+bash <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOME/bin2 --yes
+starship -V
+
+# kubetail
+curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
+curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
+
+# lazykube
+curl https://raw.githubusercontent.com/TNK-Studio/lazykube/main/scripts/install_update_linux.sh | sed s/sudo//g | DIR=$HOME/bin2/  bash -x
+
+# flux
+flux -v
+curl -s https://fluxcd.io/install.sh | bash -s ~/bin
+flux -v
+
+# update completions
+$HOME/.bashrc.d/generate_completions_from_binaries.sh
+

@@ -7,6 +7,7 @@ format = """\
     $hostname\
     $directory\
     $kubernetes\
+    $vcsh\
     $git_branch\
     $git_state\
     $git_commit\
@@ -62,37 +63,46 @@ min_time_to_notify = 30_000
 [directory]
 disabled = false
 truncation_length = 5
-truncate_to_repo = true
+truncate_to_repo = false
 # The number of characters to use when applying fish shell pwd path logic.
-fish_style_pwd_dir_length = 0
+fish_style_pwd_dir_length = 10
 # Displays the logical path provided by the shell (PWD) instead of the path from the OS.
-use_logical_path = false
+use_logical_path = true
 style = "bold cyan"
-#read_only_symbol = "🔒"
-#read_only_symbol_style = "red"
-format = "[$path]($style)[$lock_symbol]($lock_style) "
+read_only = "🔒"
+read_only_style = "red"
+truncation_symbol = "…/"
+format = "[$path]($style)[ $read_only]($read_only_style) "
+home_symbol = "~"
 
-[directory.substitutions]
+#[directory.substitutions]
 #"/Volumes/network/path" = "/net"
 #"src/com/long/java/path" = "mypath"
 
 [docker_context]
 disabled = false
 
+[vcsh]
+disabled = false
+symbol = "v"
+style = "bold yellow"
+format = "$symbol[$repo]($style) "
+
 [git_branch]
 disabled = false
 # The format for the module. Use "$branch" to refer to the current branch name.
-symbol = " "
+symbol = ""
 style = "bold purple"
-format = "[$symbol$branch]($style) "
+format = "[$symbol $branch $remote_name:$remote_branch]($style) "
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
 # The symbol used to indicate a branch name was truncated. You can use "" for no symbol
 truncation_symbol = "…"
+only_attached = true
 
 [git_state]
 disabled = false
-tag_disabled = false
+#tag_disabled = false
 rebase = "REBASING"
 merge = "MERGING"
 revert = "REVERTING"
@@ -138,9 +148,9 @@ format = "[@$hostname]($style) "
 disabled = false
 symbol = "☸"
 #symbol = "⛵"
-format = "[${symbol}${context}(\\[$namespace\\])]($style) "
+format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 style = "cyan bold"
-namespace_spaceholder = "none"
+#namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]
 #"k3s0.office.ginsys.net" = "home"
@@ -154,15 +164,21 @@ symbol = "py "
 style = "yellow bold"
 pyenv_version_name = false
 pyenv_prefix = "pyenv"
-scan_for_pyfiles = true
+#scan_for_pyfiles = true
 python_binary = "python3"
 format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
 
 [status]
 disabled = false
-format = "[$symbol$status ]($style)"
-symbol = "✖"
+format = "[$symbol$status ($signal_number/$signal_name )($common_meaning )]($style)"
+symbol = "🔴"
+not_executable_symbol = "🚫"
+not_found_symbol = "🔍"
+sigint_symbol = "🧱"
+signal_symbol = "⚡"
 style = "bold red"
+recognize_signal_code = true
+map_symbol = true
 
 [time]
 disabled = false

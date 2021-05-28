@@ -41,7 +41,7 @@ case ${1:-} in
 		;;
 	audio_sonos_volume)
 		execute "sonos state 2>/dev/null ||:"
-		if [ "${output}" != "" ] && [ "${output}" != "STOPPED" ]
+		if [ "${output}" = "PLAYING" ]
 		then
 			execute "sonos volume 2>/dev/null ||:"
 			if [ "${output}" -gt 0 ]
@@ -78,28 +78,27 @@ case ${1:-} in
 			if   [ "${state}" = "Playing" ]
 			then
 					stat="▶  "
-					nowply=$(playerctl $player0 metadata vlc:nowplaying);
-					if [ -n "$nowply" ]
+					if [ "${player}" = "VLC" ]
 					then
-							title="$nowply "
-							artist=""
+						artist=""
+						title="$( playerctl $player0 metadata vlc:nowplaying 2>/dev/null||:)"
 					else
-						artist=$(playerctl $player0 metadata xesam:artist)
-						title=$( playerctl $player0 metadata xesam:title)
-						if [ -n "$artist" ]
+						artist="$(playerctl $player0 metadata xesam:artist 2>/dev/null||:)"
+						title="$( playerctl $player0 metadata xesam:title 2>/dev/null ||:)"
+					fi
+					if [ -n "$artist" ]
+					then
+						if [ -n "$title" ]
 						then
-							if [ -n "$title" ]
-							then
-								artist="${artist}: "
-								title="$title "
-							else
-								artist="${artist} "
-							fi
+							artist="${artist}: "
+							title="$title "
 						else
-							if [ -n "$title" ]
-							then
-								title="$title "
-							fi
+							artist="${artist} "
+						fi
+					else
+						if [ -n "$title" ]
+						then
+							title="$title "
 						fi
 					fi
 					output="${player} ${stat}${artist}${title}"

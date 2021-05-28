@@ -1,0 +1,14 @@
+#!/bin/bash
+
+target=${1%:*}
+
+if [ "${target}" = "${1}" ]
+then
+    port=443
+else
+    port=${1#*:}
+fi
+
+ip=$(dig +short ${target})
+
+openssl s_client -showcerts -servername ${target} -connect ${target}:${port} <<< "Q" | openssl x509 -text

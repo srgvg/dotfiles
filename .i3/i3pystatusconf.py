@@ -87,11 +87,11 @@ status.register(
     interval=3,
 )
 
-# status.register("shell",
-#                ignore_empty_stdout=True,
-#                color=COLAU,
-#                command="i3pystatus-commands audio_sonos_volume",
-#                interval=2)
+status.register("shell",
+               ignore_empty_stdout=True,
+               color=COLAU,
+               command="i3pystatus-commands audio_sonos_volume",
+               interval=2)
 
 status.register(
     "shell",

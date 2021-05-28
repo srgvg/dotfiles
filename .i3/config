@@ -45,13 +45,13 @@ set $noborder		pixel 0
 set $ws_www			1
 set $ws_chat		0
 set $ws_chat2		11
-set $ws_tool0		7
-set $ws_tool1		8
-set $ws_tool2		9
-set $ws_tool3		10
-set $ws_music		20
+set $ws_tool0		9
+set $ws_tool1		10
+#set $ws_tool2		7
+#set $ws_tool3		8
 set $ws_util1    	21
-set $ws_util2		22
+#set $ws_util2		22
+set $ws_music		22
 
 #set $ws_
 
@@ -65,8 +65,8 @@ set_from_resource $layout1 i3.output.1.layout tabbed
 set_from_resource $layout2 i3.output.2.layout splith
 
 set_from_resource $primary i3.output.primary eDP1
-set_from_resource $secondary i3.output.secondary HDMI7
-set_from_resource $third i3.output.third HDMI7
+set_from_resource $secondary i3.output.secondary None
+set_from_resource $third i3.output.third None
 
 # Automatically putting workspaces on specific screens
 workspace 0		output $output0
@@ -74,12 +74,12 @@ workspace 1		output $output0
 workspace 2		output $output0
 workspace 3		output $output0
 workspace 4		output $output0
-workspace 5		output $output0
-workspace 6		output $output0
-workspace 7		output $output0
-workspace 8		output $output0
-workspace 9		output $output0
-workspace 10	output $output0
+workspace 5		output $output1
+workspace 6		output $output1
+workspace 7		output $output1
+workspace 8		output $output1
+workspace 9		output $output2
+workspace 10	output $output2
 workspace 11	output $output0
 workspace 12	output $output0
 workspace 13	output $output0
@@ -237,8 +237,7 @@ bar {
 		#output
 
 		# tray_output <none|primary|output>
-		output $secondary
-		output $third
+		output nonprimary
 
 		# tray_output <none|primary|output>
 		tray_output primary
@@ -401,6 +400,9 @@ bindsym $mod+t floating toggle
 
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
+
+# swap with largest window
+bindsym $mod+Control+space exec --no-startup-id i3-promote-window
 
 
 # vertical mouse buttons
@@ -718,6 +720,13 @@ bindsym $mod+$alt+Control+t		exec --no-startup-id switch-term-colors
 #
 ## Fn XF86WakeUp
 
+# Elgato light Office
+bindsym Control+XF86AudioMute				exec --no-startup-id elgato toggle
+bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato brightness --dimmer
+bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato brightness --brighter
+bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato color --cooler
+bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato color --warmer
+
 # Fn-F1  XF86AudioMute
 bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
 bindsym $mod+XF86AudioMute				exec --no-startup-id i3-volume set 50
@@ -728,8 +737,6 @@ bindsym XF86AudioLowerVolume			exec --no-startup-id i3-volume down
 bindsym XF86AudioRaiseVolume			exec --no-startup-id i3-volume up
 bindsym Shift+XF86AudioLowerVolume		exec --no-startup-id sonos volume -10
 bindsym Shift+XF86AudioRaiseVolume		exec --no-startup-id sonos volume +10
-bindsym Control+XF86AudioLowerVolume	exec --no-startup-id ponymix decrease 10
-bindsym Control+XF86AudioRaiseVolume	exec --no-startup-id ponymix increase 10
 
 
 bindsym $mod+Control+comma				exec --no-startup-id i3-volume down
@@ -772,9 +779,9 @@ bindsym $mod+bracketright				exec --no-startup-id i3-brightness up
 bindsym $mod+Shift+bracketright			exec --no-startup-id i3-brightness set 100
 
 ## Fn-F7 XF86Display
-bindsym XF86Display						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+bindsym XF86Display						exec --no-startup-id "arandr-autoconfig-once"
 bindsym Shift+XF86Display				exec --no-startup-id xdisplcd
-bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+bindsym $mod+Scroll_Lock				exec --no-startup-id "arandr-autoconfig-once"
 bindsym $mod+Shift+Scroll_Lock			exec --no-startup-id xdisplcd
 #bindsym XF86WakeUp						exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
 #bindsym Shift+XF86WakeUp				exec --no-startup-id xdisplcd
@@ -786,15 +793,16 @@ bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
 
 # Fn-F10 XF86Search
 # Screenshot
-bindsym Print							exec --no-startup-id screengrab select
-bindsym XF86Search						exec --no-startup-id screengrab select
-bindsym Shift+Print						exec --no-startup-id screengrab window
-bindsym Shift+XF86Search				exec --no-startup-id screengrab window
-bindsym Control+Print					exec --no-startup-id screengrab screen
-bindsym Control+XF86Search				exec --no-startup-id screengrab screen
-bindsym Shift+Control+Print				exec --no-startup-id screengrab full
-bindsym Shift+Control+XF86Search		exec --no-startup-id screengrab full
-bindsym $mod+Print						exec --no-startup-id publish
+#bindsym Print							exec --no-startup-id screengrab select
+#bindsym XF86Search						exec --no-startup-id screengrab select
+#bindsym Shift+Print						exec --no-startup-id screengrab window
+#bindsym Shift+XF86Search				exec --no-startup-id screengrab window
+#bindsym Control+Print					exec --no-startup-id screengrab screen
+#bindsym Control+XF86Search				exec --no-startup-id screengrab screen
+#bindsym Shift+Control+Print				exec --no-startup-id screengrab full
+#bindsym Shift+Control+XF86Search		exec --no-startup-id screengrab full
+#bindsym $mod+Print						exec --no-startup-id publish
+bindsym Print							exec --no-startup-id flameshot gui
 
 # Fn-F10 XF86Bluetooth
 bindsym XF86Bluetooth					exec --no-start-up-if bluetooth toggle
@@ -842,8 +850,14 @@ for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floati
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
 for_window [class="Gnome-calculator" instance="gnome-calculator" title="Calculator" window_role="gnome-calculator"] floating enable,border $defaultborder
 
-assign [instance="sun-awt-X11-XFramePeer"] $ws_tool3
-for_window [instance="sun-awt-X11-XFramePeer"] floating disable, border normal
+#assign [instance="sun-awt-X11-XFramePeer"] $ws_tool3
+#for_window [instance="sun-awt-X11-XFramePeer"] floating disable, border normal
+
+for_window [instance="clockify"] floating enable
+for_window [class="Toggl Desktop" instance="TogglDesktop" title="Toggl Track"] floating enable, border normal
+
+
+for_window [class="Gedit" instance="gedit"] border $defaultborder
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
 # (!) window_* seems to not take PCRE's
@@ -912,10 +926,10 @@ for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" wi
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[instance="IRCWINDOW"]									$ws_chat
-assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat2
+assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout $layout0
 
-assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat2
+assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
 for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout $layout0, border $defaultborder
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
@@ -926,7 +940,7 @@ for_window	[class="Skype"]									floating enable
 # large screen tools
 #
 # Zoom
-assign		[class="zoom" instance="zoom"] $ws_tool0
+#assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Remote Desktop Client
 assign [class="Remmina" instance="remmina"]		$ws_tool0
@@ -940,7 +954,7 @@ for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Gimp
-assign		[class="Gimp" instance="gimp"] $ws_tool2
+assign		[class="Gimp" instance="gimp"] $ws_tool1
 
 # Virtualbox
 assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool0
@@ -955,7 +969,7 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util2
+assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util1
 for_window	[class="KeepassXC" instance="keepassxc"]										layout $layout2
 for_window  [class="KeepassXC" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
 #for_window	[title="KeePassXC-Browser"]														floating enable
@@ -967,10 +981,15 @@ assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
 # Music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout $layout2
-# https://github.com/i3/i3/issues/2060#issuecomment-155179472
+
+### https://github.com/i3/i3/issues/2060#issuecomment-155179472
 for_window	[class="Spotify"]					move to workspace $ws_music
 for_window	[instance="spotify"]				move to workspace $ws_music
 
+assign		[class="spt" instance="spt"]										$ws_music
+for_window	[class="spt" instance="spt"]										layout $layout2
+
+# tools
 assign		[class="vorta"]						$ws_util1
 for_window	[class="vorta"]						layout $layout2
 assign		[instance="i3jobs"]				$ws_util1
@@ -1005,7 +1024,7 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 
 # Desktop Apps
 #exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
-exec_always --no-startup-id "picom &"
+exec_always --no-startup-id "pkill picom; sleep 2; picom -b"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
@@ -1030,7 +1049,7 @@ exec_always --no-startup-id "xset dpms 900 1800 3600 s blank s 300 60 s on"
 exec_always --no-startup-id "i3-move-workspaces"
 exec_always --no-startup-id "setbg redisplay"
 exec_always --no-startup-id "numlockx on"
-exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
+#exec_always --no-startup-id "vertical-mouse-settings" # Configure Vertical Mouse
 exec_always					"/home/serge/bin/synology-drive"
 
 # http://blog.ssokolow.com/archives/2011/12/24/getting-your-way-with-setxkbmap/

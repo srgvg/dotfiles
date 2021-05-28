@@ -8,7 +8,11 @@ alias aud='sudo apt update && apt list --upgradable -a'
 alias audf='sudo apt update && apt list --upgradable -a && sudo apt -y full-upgrade && sudo apt -y autoremove'
 alias aug='sudo apt -y upgrade'
 alias auf='sudo apt -y full-upgrade && sudo apt -y autoremove'
+alias b64d="base64 --decode"
 alias bi="bash-it"
+# https://benaaron.dev/blog/bitwarden-cli/
+alias bwu='export BW_SESSION="$(bw unlock --raw)"'
+alias bwl='export BW_SESSION='
 alias copy='xclip -in -selection c'
 alias diff='diff --unified --color'
 alias dL='dpkg -L'
@@ -37,7 +41,9 @@ alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
-alias k="kubectl"
+hash kubecolor >&/dev/null && alias k="kubecolor" || alias k="kubectl"
+alias kailns="kail --current-ns"
+alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
@@ -53,7 +59,6 @@ alias ping3="ping -c 3 "
 alias pip='pip3'
 alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
-alias python='python3'
 alias r='ranger'
 alias shredit='shred --verbose --iterations 5 --zero --remove'
 alias ssh-nc="ssh -S none"

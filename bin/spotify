@@ -14,7 +14,7 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 ARGS="$*"
-launch_spotify="/usr/bin/spotify --force-device-scale-factor=1.5 $ARGS"
+launch_spotify="/usr/bin/spotify --force-device-scale-factor=1.2 $ARGS"
 
 # if no spotify window
 if ! xwininfo -root -children | grep spotify >/dev/null
