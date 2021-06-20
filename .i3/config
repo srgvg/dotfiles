@@ -44,15 +44,8 @@ set $noborder		pixel 0
 # workspaces
 set $ws_www			1
 set $ws_chat		0
-set $ws_chat2		11
-set $ws_tool0		9
-set $ws_tool1		10
-#set $ws_tool2		7
-#set $ws_tool3		8
-set $ws_util1    	21
-#set $ws_util2		22
+set $ws_util    	21
 set $ws_music		22
-
 #set $ws_
 
 # Xresources settings
@@ -74,12 +67,12 @@ workspace 1		output $output0
 workspace 2		output $output0
 workspace 3		output $output0
 workspace 4		output $output0
-workspace 5		output $output1
+workspace 5		output $output0
 workspace 6		output $output1
 workspace 7		output $output1
 workspace 8		output $output1
-workspace 9		output $output2
-workspace 10	output $output2
+workspace 9		output $output1
+workspace 10	output $output1
 workspace 11	output $output0
 workspace 12	output $output0
 workspace 13	output $output0
@@ -721,11 +714,11 @@ bindsym $mod+$alt+Control+t		exec --no-startup-id switch-term-colors
 ## Fn XF86WakeUp
 
 # Elgato light Office
-bindsym Control+XF86AudioMute				exec --no-startup-id elgato toggle
-bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato brightness --dimmer
-bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato brightness --brighter
-bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato color --cooler
-bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato color --warmer
+bindsym Control+XF86AudioMute				exec --no-startup-id elgato.sh toggle
+bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 1
+bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 1
+bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato.sh color --cooler
+bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato.sh color --warmer
 
 # Fn-F1  XF86AudioMute
 bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
@@ -943,21 +936,21 @@ for_window	[class="Skype"]									floating enable
 #assign		[class="zoom" instance="zoom"] $ws_tool0
 
 # Remote Desktop Client
-assign [class="Remmina" instance="remmina"]		$ws_tool0
+#assign [class="Remmina" instance="remmina"]		$ws_tool0
 for_window [class="org.remmina.Remmina" instance="org.remmina.Remmina"] floating disable, layout layout0
 
 # Teamviewer
-assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
+#assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
 for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
 
 # Wireshark
-assign [class="Wireshark" instance="wireshark"] $ws_tool1
+#assign [class="Wireshark" instance="wireshark"] $ws_tool1
 
 # Gimp
-assign		[class="Gimp" instance="gimp"] $ws_tool1
+#assign		[class="Gimp" instance="gimp"] $ws_tool1
 
 # Virtualbox
-assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool0
+#assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool0
 
 # Pycharm
 for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
@@ -969,13 +962,13 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 #
 # KeePass
 # https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util1
+assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util
 for_window	[class="KeepassXC" instance="keepassxc"]										layout $layout2
 for_window  [class="KeepassXC" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
 #for_window	[title="KeePassXC-Browser"]														floating enable
 
 for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout $layout2
-assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util1
+assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
 
 
 # Music
@@ -990,9 +983,9 @@ assign		[class="spt" instance="spt"]										$ws_music
 for_window	[class="spt" instance="spt"]										layout $layout2
 
 # tools
-assign		[class="vorta"]						$ws_util1
+assign		[class="vorta"]						$ws_util
 for_window	[class="vorta"]						layout $layout2
-assign		[instance="i3jobs"]				$ws_util1
+assign		[instance="i3jobs"]				$ws_util
 for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
 for_window  [class="Dnssec-trigger-panel"] floating enable
 
@@ -1028,20 +1021,24 @@ exec_always --no-startup-id "pkill picom; sleep 2; picom -b"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
-exec_always "keepassxc"
+exec_always "pgrep keepassxc || keepassxc &"
 exec		"firefox &"
 exec		"run_keybase -a &"
 exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
 exec_always "/home/serge/bin/spotify &"
 exec		"vlc &"
-exec_always "pgrep nextcloud || nextcloud &"
-#exec "dnssec-trigger-panel &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 exec_always "pgrep slack || nice -n 20 slack &"
+exec_always "pgrep -f /usr/share/teams/teams || teams &"
+
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
-exec_always --no-startup-id "i3-launch-jobs"
-exec		--no-startup-id "sleep 10; i3-launch-jobs loop default"
+#exec_always --no-startup-id "i3-launch-jobs"
+exec		--no-startup-id "vorta"
+exec		--no-startup-id "autocutsel -verbose -selection CLIPBOARD"
+exec		--no-startup-id "bato"
+exec		--no-startup-id "i3-battery-indicator"
+#exec		--no-startup-id "sleep 10; i3-launch-jobs loop default"
 exec		--no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
