@@ -16,6 +16,7 @@ alias bwl='export BW_SESSION='
 alias copy='xclip -in -selection c'
 alias diff='diff --unified --color'
 alias dL='dpkg -L'
+alias dS='dpkg -S'
 alias dmesg="dmesg --ctime --time-format iso --decode --nopager"
 alias ev="expressvpn"
 alias ga='git add'
