@@ -1,28 +1,50 @@
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
+#
+# resources
+# - https://github.com/henrebotha/dotfiles/blob/main/git/dot-gitconfig
 
 [alias]
+
+	# Display all aliases :)
+	aliases = ! git config --list | awk '/alias/{ print $1 }' | perl -pe 's/alias\\.//g' | perl -pe 's/=.+//g'
+
+	ap = -c color.diff=true add --patch
 
 	authors-current = !git ls-files | xargs -n1 git blame --line-porcelain	| sed -n -e 's/^author //p' | sort | uniq -c | sort -rn
 	authors = shortlog -sne
 
 	br = branch
 
+	car = commit --amend --no-edit
 	changed = whatchanged --stat
 	ci = commit -vv
 	checkout = checkout --no-guess
 	co = checkout --no-guess
 
+	dc = diff --word-diff-regex=.
+	dca = diff --cached
+	dcac = diff --cached --word-diff-regex=.
+	dcaw = diff --cached --word-diff
 	df = diff
 	dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
+	dw = diff --word-diff
 
+	edit=commit --amend --only
 	genesis = commit --allow-empty -m Genesis
 
+	fa = fetch --all --prune
 	ff = merge --ff-only
 	find-deleted-commit = ! git fsck --no-reflog | awk '/dangling commit/ {print $3}' 2>/dev/null
+	fp = fetch --prune
 	# http://vstone.eu/github-pull-requests-as-seen-by-git/
 	fpr = !sh -c \"git fetch ${2:-origin} pull/${1}/head:PR/${2:-origin}/${1}\" -
+
+	hidden = ! git ls-files -v . | grep ^S | awk '{ print $2 }'
+	hide = update-index --skip-worktree
+	unhide = update-index --no-skip-worktree
+	unhide-all = ! cd $(git rev-parse --show-toplevel || echo ".") && git hidden | xargs git unhide
 
 	igd = ls-files --others -i --exclude-standard
 	# http://stackoverflow.com/questions/2363197/can-i-get-a-list-of-files-marked-assume-unchanged
@@ -38,6 +60,12 @@
 	# different to the master (or an optionally named) branch.
 	logcompare = "!f() { git log --oneline --decorate ${1:-master}..$(git rev-parse --abbrev-ref HEAD); }; f"
 
+	l = -c color.diff=true log
+	lg = -c color.diff=true log --oneline --decorate --graph
+	lga = -c color.diff=true log --oneline --decorate --graph --all
+	lgb = -c color.diff=true log --oneline --decorate --graph --branches
+	lo = -c color.diff=true log --oneline --decorate
+
 	lol =  log --graph --decorate --abbrev-commit		--pretty=custom --date=short
 	lola = log --graph --decorate --abbrev-commit --all --pretty=custom --date=short
 	lold = log --graph --decorate --abbrev-commit --all --pretty=custom
@@ -47,6 +75,12 @@
 
 	#myinfo = ! echo && git remote -v && echo && git --no-pager branch --color=always --all --list -vv && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
 	myinfo = ! echo && git remote -v && echo && git --no-pager branch --list --color=auto --all --column=always && echo && git st && echo && git log --decorate --abbrev-commit --pretty=custom --date=relative -n 3 && echo
+
+	# https://twitter.com/DotProto/status/991112367323824128
+	orphan = ! git log --pretty=oneline --abbrev-commit --graph --decorate `git reflog | cut -d \" \" -f 1`
+
+	# Safer alternative to --force
+	pf = push --force-with-lease
 
 	# Prune deletes any local branch which has been deleted from the remote.
 	prune = fetch --prune
@@ -58,6 +92,9 @@
 
 	# Print absolute path of repo root directory
 	root = rev-parse --show-toplevel
+
+	sdc = show --word-diff-regex=.
+	sdw = show --word-diff
 
 	show-upstream = rev-parse --abbrev-ref --symbolic-full-name @{u}
 	st = status --short --branch --verbose --show-stash
@@ -74,7 +111,7 @@
 	tree = log --all --graph --oneline --simplify-by-decoration --decorate-refs-exclude='refs/tags'
 	treet = log --all --graph --decorate --oneline --simplify-by-decoration
 
-	up = remote update
+	up = remote update --prune
 
 	wip = commit -a -m WIP
 
@@ -138,6 +175,7 @@
 [commit]
 
 	gpgsign = true
+	verbose = true
 
 
 [core]
@@ -145,20 +183,30 @@
 	autocrlf = false
 	editor = vim
 	excludesFile = ~/.gitignore
+	ignorecase = false
 	whitespace = trailing-space,space-before-tab
 	quotepath = false
 	#pager = diff-so-fancy | less --tabs=4 -RFX
 	# https://veronneau.org/a-better-git-diff.html
 	pager =  /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
+	# -X:           don't talk to X11 on startup
+	# -R:           read only mode
+	# -n:           don't use a swap file
+	# -c:           run command on start, after autocmd/modeline
+	#pager = ifne vim -X -R - -n -c 'set filetype=git nowrap noro'
+	sparseCheckoutCone = 1
 
 
 [diff]
 
-	#tool = icdiff
-	renames = copy
-	noprefix = true
 	colorMoved = dimmed-zebra
 	colorMovedWS = allow-indentation-change
+	compactionheuristic = true
+	fallbackToNoIndex = true
+	mnemonicprefix = true ; replace a/b with (i)ndex/(c)ommit/(w)orking tree
+	noprefix = true
+	renames = copy
+	#tool = icdiff
 
 
 [difftool]
@@ -174,6 +222,12 @@
 [diff-so-fancy]
 	first-run = false
 	changeHunkIndicators = false
+
+
+[grep]
+	lineNumber = true
+	extendedRegexp = true
+	fallbackToNoIndex = true
 
 
 [fetch]
@@ -203,6 +257,11 @@
 	program = gpg
 
 
+[init]
+
+	#defaultBranch = main
+
+
 [merge]
 
 	conflictstyle = diff3
@@ -213,6 +272,10 @@
 	onefullline = %C(yellow)%h%C(reset) %C(green)%ar%C(reset) %C(bold blue)%an%C(reset) %C(red)%d%C(reset) %s
 	custom = %C(bold blue)%h%C(reset) %C(bold green)%ad%C(reset) %C(dim white)%an%C(reset) %C(white)%s%C(reset) %C(bold yellow)%d%C(reset)
 
+
+[pull]
+
+	ff = only
 
 [push]
 

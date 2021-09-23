@@ -15,6 +15,9 @@ hash oc >&/dev/null &&          oc completion bash          >  $HOME/.bashrc.d/c
 hash scw >&/dev/null && scw autocomplete script shell=bash  >  $HOME/.bashrc.d/completions-generated-scw.bash
 hash starship >&/dev/null &&    starship completions        >  $HOME/.bashrc.d/completions-generated-starship.bash
 hash velero >&/dev/null &&      velero completion bash      >  $HOME/.bashrc.d/completions-generated-velero.bash
+hash havener >&/dev/null &&     havener completion bash     >  $HOME/.bashrc.d/completions-generated-havener.bash
+hash kubescape >&/dev/null &&   kubescape completion bash   >  $HOME/.bashrc.d/completions-generated-kubescape.bash
+hash kubecm >&/dev/null &&      kubecm completion bash      >  $HOME/.bashrc.d/completions-generated-kubecm.bash
 
 hash /home/serge/.arkade/bin/kustomize >&/dev/null && /home/serge/.arkade/bin/kustomize completion bash >> $HOME/.bashrc.d/completions-kustomize.bash
 

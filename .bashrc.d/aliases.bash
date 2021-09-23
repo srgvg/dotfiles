@@ -8,7 +8,6 @@ alias aud='sudo apt update && apt list --upgradable -a'
 alias audf='sudo apt update && apt list --upgradable -a && sudo apt -y full-upgrade && sudo apt -y autoremove'
 alias aug='sudo apt -y upgrade'
 alias auf='sudo apt -y full-upgrade && sudo apt -y autoremove'
-alias b64d="base64 --decode"
 alias bi="bash-it"
 # https://benaaron.dev/blog/bitwarden-cli/
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'

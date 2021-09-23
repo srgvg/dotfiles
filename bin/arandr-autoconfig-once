@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]
 then
-    arandr-autoconfig --once --post i3-move-workspaces
+    arandr-autoconfig --once
 else
-    arandr-autoconfig --once --post i3-move-workspaces --script $1
+    arandr-autoconfig --once --script $1
 fi

@@ -40,6 +40,12 @@ __kind_handle_go_custom_completion()
 {
     __kind_debug "${FUNCNAME[0]}: cur is ${cur}, words[*] is ${words[*]}, #words[@] is ${#words[@]}"
 
+    local shellCompDirectiveError=1
+    local shellCompDirectiveNoSpace=2
+    local shellCompDirectiveNoFileComp=4
+    local shellCompDirectiveFilterFileExt=8
+    local shellCompDirectiveFilterDirs=16
+
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
@@ -73,24 +79,50 @@ __kind_handle_go_custom_completion()
     __kind_debug "${FUNCNAME[0]}: the completion directive is: ${directive}"
     __kind_debug "${FUNCNAME[0]}: the completions are: ${out[*]}"
 
-    if [ $((directive & 1)) -ne 0 ]; then
+    if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
         # Error code.  No completion.
         __kind_debug "${FUNCNAME[0]}: received error from custom completion go code"
         return
     else
-        if [ $((directive & 2)) -ne 0 ]; then
+        if [ $((directive & shellCompDirectiveNoSpace)) -ne 0 ]; then
             if [[ $(type -t compopt) = "builtin" ]]; then
                 __kind_debug "${FUNCNAME[0]}: activating no space"
                 compopt -o nospace
             fi
         fi
-        if [ $((directive & 4)) -ne 0 ]; then
+        if [ $((directive & shellCompDirectiveNoFileComp)) -ne 0 ]; then
             if [[ $(type -t compopt) = "builtin" ]]; then
                 __kind_debug "${FUNCNAME[0]}: activating no file completion"
                 compopt +o default
             fi
         fi
+    fi
 
+    if [ $((directive & shellCompDirectiveFilterFileExt)) -ne 0 ]; then
+        # File extension filtering
+        local fullFilter filter filteringCmd
+        # Do not use quotes around the $out variable or else newline
+        # characters will be kept.
+        for filter in ${out[*]}; do
+            fullFilter+="$filter|"
+        done
+
+        filteringCmd="_filedir $fullFilter"
+        __kind_debug "File filtering command: $filteringCmd"
+        $filteringCmd
+    elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
+        # File completion for directories only
+        local subDir
+        # Use printf to strip any trailing newline
+        subdir=$(printf "%s" "${out[0]}")
+        if [ -n "$subdir" ]; then
+            __kind_debug "Listing directories in $subdir"
+            __kind_handle_subdirs_in_dir_flag "$subdir"
+        else
+            __kind_debug "Listing directories in ."
+            _filedir -d
+        fi
+    else
         while IFS='' read -r comp; do
             COMPREPLY+=("$comp")
         done < <(compgen -W "${out[*]}" -- "$cur")
@@ -159,10 +191,9 @@ __kind_handle_reply()
     local completions
     completions=("${commands[@]}")
     if [[ ${#must_have_one_noun[@]} -ne 0 ]]; then
-        completions=("${must_have_one_noun[@]}")
+        completions+=("${must_have_one_noun[@]}")
     elif [[ -n "${has_completion_function}" ]]; then
         # if a go completion function is provided, defer to that function
-        completions=()
         __kind_handle_go_custom_completion
     fi
     if [[ ${#must_have_one_flag[@]} -ne 0 ]]; then
@@ -336,17 +367,25 @@ _kind_build_node-image()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--arch=")
+    two_word_flags+=("--arch")
+    local_nonpersistent_flags+=("--arch")
+    local_nonpersistent_flags+=("--arch=")
     flags+=("--base-image=")
     two_word_flags+=("--base-image")
+    local_nonpersistent_flags+=("--base-image")
     local_nonpersistent_flags+=("--base-image=")
     flags+=("--image=")
     two_word_flags+=("--image")
+    local_nonpersistent_flags+=("--image")
     local_nonpersistent_flags+=("--image=")
     flags+=("--kube-root=")
     two_word_flags+=("--kube-root")
+    local_nonpersistent_flags+=("--kube-root")
     local_nonpersistent_flags+=("--kube-root=")
     flags+=("--type=")
     two_word_flags+=("--type")
+    local_nonpersistent_flags+=("--type")
     local_nonpersistent_flags+=("--type=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -406,6 +445,7 @@ _kind_completion_bash()
     flags+=("--help")
     flags+=("-h")
     local_nonpersistent_flags+=("--help")
+    local_nonpersistent_flags+=("-h")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
     flags+=("--quiet")
@@ -519,20 +559,25 @@ _kind_create_cluster()
 
     flags+=("--config=")
     two_word_flags+=("--config")
+    local_nonpersistent_flags+=("--config")
     local_nonpersistent_flags+=("--config=")
     flags+=("--image=")
     two_word_flags+=("--image")
+    local_nonpersistent_flags+=("--image")
     local_nonpersistent_flags+=("--image=")
     flags+=("--kubeconfig=")
     two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
     local_nonpersistent_flags+=("--kubeconfig=")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--retain")
     local_nonpersistent_flags+=("--retain")
     flags+=("--wait=")
     two_word_flags+=("--wait")
+    local_nonpersistent_flags+=("--wait")
     local_nonpersistent_flags+=("--wait=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -591,9 +636,11 @@ _kind_delete_cluster()
 
     flags+=("--kubeconfig=")
     two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
     local_nonpersistent_flags+=("--kubeconfig=")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -626,6 +673,7 @@ _kind_delete_clusters()
     local_nonpersistent_flags+=("--all")
     flags+=("--kubeconfig=")
     two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
     local_nonpersistent_flags+=("--kubeconfig=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -685,9 +733,11 @@ _kind_export_kubeconfig()
 
     flags+=("--kubeconfig=")
     two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
     local_nonpersistent_flags+=("--kubeconfig=")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -718,6 +768,7 @@ _kind_export_logs()
 
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -806,6 +857,7 @@ _kind_get_kubeconfig()
     local_nonpersistent_flags+=("--internal")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -836,6 +888,7 @@ _kind_get_nodes()
 
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -880,6 +933,34 @@ _kind_get()
     noun_aliases=()
 }
 
+_kind_help()
+{
+    last_command="kind_help"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--loglevel=")
+    two_word_flags+=("--loglevel")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--verbosity=")
+    two_word_flags+=("--verbosity")
+    two_word_flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
 _kind_load_docker-image()
 {
     last_command="kind_load_docker-image"
@@ -896,9 +977,11 @@ _kind_load_docker-image()
 
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--nodes=")
     two_word_flags+=("--nodes")
+    local_nonpersistent_flags+=("--nodes")
     local_nonpersistent_flags+=("--nodes=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -929,9 +1012,11 @@ _kind_load_image-archive()
 
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--nodes=")
     two_word_flags+=("--nodes")
+    local_nonpersistent_flags+=("--nodes")
     local_nonpersistent_flags+=("--nodes=")
     flags+=("--loglevel=")
     two_word_flags+=("--loglevel")
@@ -1015,6 +1100,7 @@ _kind_root_command()
     commands+=("delete")
     commands+=("export")
     commands+=("get")
+    commands+=("help")
     commands+=("load")
     commands+=("version")
 

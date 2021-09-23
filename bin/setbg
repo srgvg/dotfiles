@@ -64,8 +64,9 @@ pickpic() {
        # disable pipefail - when head quits, find doesn't like loosing its reader
        set +o pipefail
         # Pick random picture
-        background="$(find -L ${pictures} -type f -iregex '.*.jpg' \
-            -o -iregex '.*.png' | sort -R | head -n 1)"
+        background="$(find -L ${pictures} \
+				-type f \
+				\( -iregex '.*.jpg' -o -iregex '.*.png' \) | sort -R | head -n 1)"
         # reenable options
         set +o noglob
 

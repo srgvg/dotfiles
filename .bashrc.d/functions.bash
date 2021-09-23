@@ -56,6 +56,16 @@ function aswitch() {
 	popd
 }
 
+function b64() {
+	echo -n $* | base64
+}
+alias b=b64
+
+function b64d() {
+	echo -n $* | base64 -d
+}
+alias bd=b64d
+
 function dl() {
 	# quick package search
 	# shellcheck disable=SC2046

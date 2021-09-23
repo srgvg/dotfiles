@@ -14,7 +14,5 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 curl -SLfs https://dl.get-arkade.dev | sed -e 's@BINLOCATION="/usr/local/bin"@BINLOCATION="$HOME/bin2"@' -e 's@rm "$targetFile"@echo not rm "$targetFile"@' | sh
-cd $HOME/.arkade/bin
-ls -l
-arkade get | grep -v TOOL | xargs -n1 arkade get
-ls -l
+ls $HOME/.arkade/bin | xargs -n1 arkade get
+ls -l $HOME/.arkade/bin

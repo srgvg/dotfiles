@@ -183,7 +183,7 @@ _starship() {
             return 0
             ;;
         starship__module)
-            opts=" -l -h -V -s -p -P -d -k -j  --list --help --version --status --path --logical-path --cmd-duration --keymap --jobs  <name> "
+            opts=" -l -h -V -s -p -P -d -k -j  --list --help --version --status --pipestatus --path --logical-path --cmd-duration --keymap --jobs  <name> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -195,6 +195,10 @@ _starship() {
                     return 0
                     ;;
                     -s)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --pipestatus)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -261,7 +265,7 @@ _starship() {
             return 0
             ;;
         starship__prompt)
-            opts=" -h -V -s -p -P -d -k -j  --help --version --status --path --logical-path --cmd-duration --keymap --jobs  "
+            opts=" -h -V -s -p -P -d -k -j  --help --version --status --pipestatus --path --logical-path --cmd-duration --keymap --jobs  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -273,6 +277,10 @@ _starship() {
                     return 0
                     ;;
                     -s)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --pipestatus)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

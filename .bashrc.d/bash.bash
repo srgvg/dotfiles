@@ -28,7 +28,7 @@ HISTSIZE=-1
 HISTFILESIZE=500000
 
 #HISTTIMEFORMAT="%h %d %H:%M:%S "
-HISTTIMEFORMAT="$PWD %F %T "
+HISTTIMEFORMAT="%F %T "
 
 # append to the history file, don't overwrite it
 shopt -s histappend

@@ -715,10 +715,10 @@ bindsym $mod+$alt+Control+t		exec --no-startup-id switch-term-colors
 
 # Elgato light Office
 bindsym Control+XF86AudioMute				exec --no-startup-id elgato.sh toggle
-bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 1
-bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 1
-bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato.sh color --cooler
-bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato.sh color --warmer
+bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 2
+bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 2
+bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato.sh color --warmer 100
+bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato.sh color --cooler 100
 
 # Fn-F1  XF86AudioMute
 bindsym XF86AudioMute					exec --no-startup-id i3-volume toggle
@@ -965,6 +965,8 @@ for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floa
 assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util
 for_window	[class="KeepassXC" instance="keepassxc"]										layout $layout2
 for_window  [class="KeepassXC" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
+for_window  [class="Bitwarden" instance="bitwarden" title="Bitwarden" window_role="browser-window"] layout $layout2
+assign		[class="Bitwarden" instance="bitwarden" title="Bitwarden" window_role="browser-window"] $ws_util
 #for_window	[title="KeePassXC-Browser"]														floating enable
 
 for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout $layout2
@@ -1025,7 +1027,7 @@ exec_always "pgrep keepassxc || keepassxc &"
 exec		"firefox &"
 exec		"run_keybase -a &"
 exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
-exec_always "/home/serge/bin/spotify &"
+#exec_always "/home/serge/bin/spotify &"
 exec		"vlc &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 exec_always "pgrep slack || nice -n 20 slack &"

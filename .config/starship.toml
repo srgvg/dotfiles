@@ -6,6 +6,7 @@ format = """\
     $username\
     $hostname\
     $directory\
+    $gcloud\
     $kubernetes\
     $vcsh\
     $git_branch\
@@ -143,6 +144,10 @@ format = "[${all_status}${ahead_behind}]($style) "
 ssh_only = false
 style = "dimmed gray"
 format = "[@$hostname]($style) "
+
+[gcloud]
+format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
+symbol = "🌨️ "
 
 [kubernetes]
 disabled = false
