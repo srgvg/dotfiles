@@ -65,6 +65,7 @@ min_time_to_notify = 30_000
 disabled = false
 truncation_length = 5
 truncate_to_repo = false
+repo_root_style = "bold yellow"
 # The number of characters to use when applying fish shell pwd path logic.
 fish_style_pwd_dir_length = 10
 # Displays the logical path provided by the shell (PWD) instead of the path from the OS.
@@ -184,6 +185,16 @@ signal_symbol = "⚡"
 style = "bold red"
 recognize_signal_code = true
 map_symbol = true
+
+[terraform]
+format = "[${symbol}tf $version]($style) "
+version_format = "v${raw}"
+symbol = "💠"
+detect_extensions = ["tf", "tfplan", "tfstate"]
+detect_files = []
+detect_folders = [".terraform"]
+style = "bold 105"
+disabled = false
 
 [time]
 disabled = false

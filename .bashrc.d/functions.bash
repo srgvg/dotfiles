@@ -57,7 +57,7 @@ function aswitch() {
 }
 
 function b64() {
-	echo -n $* | base64
+	echo -n $* | base64 -w 0
 }
 alias b=b64
 

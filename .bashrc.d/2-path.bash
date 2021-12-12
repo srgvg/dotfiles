@@ -15,10 +15,10 @@ export GOPATH=$HOME/go
 pathmunge ${GOPATH}/bin
 
 ## set PATH so it includes various user's private bin dirs
-pathmunge $HOME/.local/bin
-pathmunge $HOME/.arkade/bin
-pathmunge $HOME/.krew/bin
 pathmunge $HOME/bin
 pathmunge $HOME/bins
 pathmunge $HOME/bin2
+pathmunge $HOME/.local/bin after
+pathmunge $HOME/.krew/bin after
+pathmunge $HOME/.arkade/bin after
 pathmunge $HOME/.screenlayout after

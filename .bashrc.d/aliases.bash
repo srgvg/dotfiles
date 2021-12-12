@@ -32,6 +32,7 @@ alias gld='git lold'
 alias glt='git lolt'
 alias grep='grep --color=auto'
 alias grepr='grep --line-number --initial-tab --recursive'
+hash kubecm >&/dev/null && alias ngron="gron --ungron"
 alias gsmu='git submodule update'
 alias gt='git tree'
 alias gtt='git treet'
@@ -41,13 +42,15 @@ alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
-hash kubecolor >&/dev/null && alias k="kubecolor" || alias k="kubectl"
+alias k="kubectl"
+#hash kubecolor >&/dev/null && alias k="kubecolor" || alias k="kubectl"
 alias kailns="kail --current-ns"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
+alias ksw="switcher"
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'
 alias ls='ls --color=auto'

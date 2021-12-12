@@ -1,1 +1,1 @@
-/home/serge/src/util/complete-alias/bash_completion.sh
+/home/serge/src/util/complete-alias/complete_alias

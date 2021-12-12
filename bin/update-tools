@@ -13,6 +13,7 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 set -x
+cd ~/tmp/
 
 # starship
 starship -V
@@ -31,7 +32,7 @@ curl https://raw.githubusercontent.com/TNK-Studio/lazykube/main/scripts/install_
 
 # flux
 flux -v
-curl -s https://fluxcd.io/install.sh | bash -s ~/bin
+curl -s https://fluxcd.io/install.sh | bash -s ~/bin2/
 flux -v
 
 #vcluster
@@ -44,14 +45,50 @@ curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.
 curl -sL https://raw.githubusercontent.com/homeport/havener/main/scripts/download-latest.sh | sed 's@${HOME}/bin@${HOME}/bin2@' | bash -x
 
 #kubescape
-curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | sed s@/usr/local/bin@$HOME/bin2@ | bash -x
+curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | sed -e s/sudo// -e s@/usr/local/bin@$HOME/bin2@ | bash -x
 
 #kubecm https://kubecm.cloud/#/
 VERSION=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest | jq -r .tag_name)
 NAME=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest | jq -r .name)
 curl -L https://github.com/sunny0826/kubecm/releases/download/${VERSION}/${NAME}_Linux_x86_64.tar.gz | tar -zxvf - kubecm && mv kubecm $HOME/bin2
 
+#kubecm https://kubecm.cloud/#/
+VERSION=$(curl -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
+curl -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
+
+#k9s
+VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
+curl -L https://github.com/derailed/k9s/releases/download/${VERSION}/k9s_Linux_x86_64.tar.gz -o $HOME/tmp/k9s_Linux_x86_64.tar.gz && \
+	tar -xvf $HOME/tmp/k9s_Linux_x86_64.tar.gz && mv $HOME/tmp/k9s $HOME/bin2/k9s
+
+
+
+## https://github.com/danielfoehrKn/kubeswitch
+#OS=linux                        # Pick the right os: linux, darwin (intel only)
+#VERSION=$(curl -s https://api.github.com/repos/danielfoehrKn/kubeswitch/releases/latest | jq -r .tag_name) # Pick the current version.
+#curl -L -o $HOME/bin2/switcher https://github.com/danielfoehrKn/kubeswitch/releases/download/${VERSION}/switcher_${OS}_amd64
+#curl -L -o $HOME/bin2/switch https://github.com/danielfoehrKn/kubeswitch/releases/download/${VERSION}/switch.sh
+#curl -L -o $HOME/.bashrc.d/completions-kubeswitch.bash https://raw.githubusercontent.com/danielfoehrKn/kubeswitch/master/script/_switch.bash
+#chmod -v +x $HOME/bin2/switch{,er}
+
+curl -L -o $HOME/bin2/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x $HOME/bin2/kubectl
+
+mv $HOME/bin2/kustomize $HOME/bin2/kustomize.old && \
+  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s $HOME/Documents/Applications/bin/
+																													# not bin2 as script does funky stuff with the symlink
+
+# certmanager cli
+OS=$(go env GOOS); ARCH=$(go env GOARCH); curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-$OS-$ARCH.tar.gz
+tar xzf cmctl.tar.gz
+mv cmctl /$HOME/bin2
+rm cmctl.tar.gz
+
+# datree
+curl https://get.datree.io | sed s@/usr/local/bin@$HOME/bin2@ | /bin/bash
+
+# scaleway cli
+curl -o $HOME/bin2/scw -L $(curl -s https://api.github.com/repos/scaleway/scaleway-cli/releases/latest  | jq -r '.assets[]|select(.name|endswith("linux-x86_64")).browser_download_url')
 
 # update completions
-$HOME/.bashrc.d/generate_completions_from_binaries.sh
+generate_bash_completions_from_binaries.sh
 

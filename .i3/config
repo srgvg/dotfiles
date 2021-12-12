@@ -907,10 +907,9 @@ for_window [class="System-config-printer.py" instance="system-config-printer" ]	
 #
 # Browsers
 #
-assign		[class="^(browser-)(serge|google)" window_role="^(?!GtkFileChooserDialog)"] $ws_www
-for_window	[class="^(browser-)(serge|google)"]											layout $layout0
-for_window	[class="^(browser-tmp)"]													floating enable
-for_window  [class="Firefox" instance="Browser" title="About Mozilla Firefox" window_role="About"] floating_enable
+#assign		[class="Firefox" instance="Navigator" window_role="^(?!GtkFileChooserDialog)"] $ws_www
+for_window  [class="Firefox" instance="Browser" window_role="About"]					floating_enable
+for_window	[class="Firefox" instance="Navigator" ]										layout $layout0
 
 
 #######################################################################################################################
@@ -1015,7 +1014,7 @@ exec --no-startup-id "xset +dpms"
 exec --no-startup-id "xset -b" # disable audible bell at Xorg level
 exec --no-startup-id "nmcli radio wifi off" # disable wifi
 #exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
-#exec --no-startup-id "arandr-autoconfig --post i3-move-workspaces --once"
+exec --no-startup-id "sleep 10 && arandr-autoconfig --post i3-move-workspaces --once"
 
 # Desktop Apps
 #exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
@@ -1023,15 +1022,15 @@ exec_always --no-startup-id "pkill picom; sleep 2; picom -b"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
-exec_always "pgrep keepassxc || keepassxc &"
-exec		"firefox &"
-exec		"run_keybase -a &"
 exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
-#exec_always "/home/serge/bin/spotify &"
-exec		"vlc &"
 exec_always "pgrep blueman-applet || blueman-applet &"
-exec_always "pgrep slack || nice -n 20 slack &"
-exec_always "pgrep -f /usr/share/teams/teams || teams &"
+exec_always "pgrep slack || nice -n 10 slack &"
+exec_always "pgrep signal-desktop || nice -n 10 signal-desktop &"
+exec_always "pgrep -f /usr/share/teams/teams || nice -n 10 teams &"
+#exec_always "/home/serge/bin/spotify &"
+#exec		"vlc &"
+exec		"firefox &"
+exec_always "nextcloud"
 
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact

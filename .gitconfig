@@ -80,6 +80,7 @@
 	orphan = ! git log --pretty=oneline --abbrev-commit --graph --decorate `git reflog | cut -d \" \" -f 1`
 
 	# Safer alternative to --force
+	please = push --force-with-lease
 	pf = push --force-with-lease
 
 	# Prune deletes any local branch which has been deleted from the remote.
@@ -344,13 +345,11 @@
 	path = ~/.gitconfig.d/git-repo
 
 
-[includeIf "gitdir:~/src/massivemedia/"]
+[includeIf "gitdir:~/src/autops/"]
 
-	path = ~/.gitconfig.d/massivemedia
+	path = ~/.gitconfig.d/autops
 
+[includeIf "gitdir:~/src/ginsys/"]
 
-[includeIf "gitdir:~/src/toptal/~"]
-
-	path = /.gitconfig.d/ginsys
-
+	path = ~/.gitconfig.d/ginsys
 
