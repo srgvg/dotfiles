@@ -918,14 +918,21 @@ for_window	[class="Firefox" instance="Navigator" ]										layout $layout0
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[instance="IRCWINDOW"]									$ws_chat
+
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
-for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout $layout0
+for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
 
 assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
-for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout $layout0, border $defaultborder
+for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
 for_window	[class="Skype"]									floating enable
+
+assign	[class="TelegramDesktop" id=134217734 instance="Telegram" title="Telegram"] $ws_chat
+for_window	[class="TelegramDesktop" id=134217734 instance="Telegram" title="Telegram"] layout tabbed
+
+assign	[class="discord" id=123731976 instance="discord" title="Chris | Totem Live Founder - Discord" window_role="browser-window"] $ws_chat
+for_window	[class="discord" id=123731976 instance="discord" title="Chris | Totem Live Founder - Discord" window_role="browser-window"] layout tabbed
 
 #######################################################################################################################
 #

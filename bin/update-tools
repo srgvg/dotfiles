@@ -12,36 +12,44 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-set -x
+title() {
+	set +x
+	echo
+	echo "###############################################################################"
+	echo ${1}
+	echo "###############################################################################"
+	echo
+	set -x
+}
 cd ~/tmp/
 
-# starship
+title starship
 starship -V
 bash <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOME/bin2 --yes
 starship -V
 
-# kubie
+title kubie
 kubie update
 
-# kubetail
+title kubetail
 curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
 curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
 
-# lazykube
+title lazykube
 curl https://raw.githubusercontent.com/TNK-Studio/lazykube/main/scripts/install_update_linux.sh | sed s/sudo//g | DIR=$HOME/bin2/  bash -x
 
-# flux
+title flux
 flux -v
 curl -s https://fluxcd.io/install.sh | bash -s ~/bin2/
 flux -v
 
-#vcluster
+title vcluster
 vcluster upgrade
 
-#kdash
+title kdash
 curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.sh | sed s@/usr/local/bin@/home/serge/bin2@ | bash -x
 
-# havener
+title havener
 curl -sL https://raw.githubusercontent.com/homeport/havener/main/scripts/download-latest.sh | sed 's@${HOME}/bin@${HOME}/bin2@' | bash -x
 
 #kubescape
@@ -52,11 +60,11 @@ VERSION=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest 
 NAME=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest | jq -r .name)
 curl -L https://github.com/sunny0826/kubecm/releases/download/${VERSION}/${NAME}_Linux_x86_64.tar.gz | tar -zxvf - kubecm && mv kubecm $HOME/bin2
 
-#kubecm https://kubecm.cloud/#/
+title kubescape
 VERSION=$(curl -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
 curl -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
 
-#k9s
+title k9s
 VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
 curl -L https://github.com/derailed/k9s/releases/download/${VERSION}/k9s_Linux_x86_64.tar.gz -o $HOME/tmp/k9s_Linux_x86_64.tar.gz && \
 	tar -xvf $HOME/tmp/k9s_Linux_x86_64.tar.gz && mv $HOME/tmp/k9s $HOME/bin2/k9s
@@ -77,18 +85,57 @@ mv $HOME/bin2/kustomize $HOME/bin2/kustomize.old && \
   curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s $HOME/Documents/Applications/bin/
 																													# not bin2 as script does funky stuff with the symlink
 
-# certmanager cli
+title certmanager cli
 OS=$(go env GOOS); ARCH=$(go env GOARCH); curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-$OS-$ARCH.tar.gz
 tar xzf cmctl.tar.gz
 mv cmctl /$HOME/bin2
 rm cmctl.tar.gz
 
-# datree
+title datree
 curl https://get.datree.io | sed s@/usr/local/bin@$HOME/bin2@ | /bin/bash
 
-# scaleway cli
+title scaleway cli
 curl -o $HOME/bin2/scw -L $(curl -s https://api.github.com/repos/scaleway/scaleway-cli/releases/latest  | jq -r '.assets[]|select(.name|endswith("linux-x86_64")).browser_download_url')
 
-# update completions
+title krew plugins
+(
+  set -x; cd "$(mktemp -d)" &&
+  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+  KREW="krew-${OS}_${ARCH}" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+  tar zxvf "${KREW}.tar.gz" &&
+  ./"${KREW}" install krew
+)
+krew upgrade
+
+title arkade
+mkdir $HOME/.arkade/bin -p
+curl -SLfs https://dl.get-arkade.dev | sed -e 's@BINLOCATION="/usr/local/bin"@BINLOCATION="$HOME/.arkade/bin"@' -e 's@rm "$targetFile"@echo not rm "$targetFile"@' | sh
+ls $HOME/.arkade/bin | xargs -n1 arkade get
+ls -l $HOME/.arkade/bin
+
+title microconfig https://github.com/microconfig/microconfig
+URL=$(curl -s https://api.github.com/repos/microconfig/microconfig/releases/latest | jq -r .assets[].browser_download_url | grep linux)
+curl -SLfs -o latest.zip ${URL}
+unzip latest
+chmod -v +x microconfig
+mv -v microconfig $HOME/bin2
+
+title argocd
+URL=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest  | jq -r .assets[].browser_download_url | grep linux)
+curl -SLfs -o $HOME/bin2/argocd ${URL}
+chmod +x $HOME/bin2/argocd
+
+#argocd-autpilot
+VERSION=$(curl --silent "https://api.github.com/repos/argoproj-labs/argocd-autopilot/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+curl -L --output - https://github.com/argoproj-labs/argocd-autopilot/releases/download/$VERSION/argocd-autopilot-linux-amd64.tar.gz | tar zx
+mv ./argocd-autopilot-* $HOME/bin2/argocd-autopilot
+
+title check the installation
+argocd-autopilot version
+
+
+title update completions
 generate_bash_completions_from_binaries.sh
 

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+(ssh root@rigel.lan.vanginderachter.be grep hardware /var/dhcpd/etc/dhcpd.conf -A1 | grep -e 'hardware ethernet' -e \
+'fixed-address' | sed -e 's/.*hardware ethernet //' -e 's/.*fixed-address //' -e 's/;//' | sed 'N;s/\n/ /' | awk \
+'{print $2" "$1}' ; ssh root@rigel.lan.vanginderachter.be cat /etc/hosts ) \
+    | sort -h | awk '
+                    {
+                      if($1==k)
+                        printf("%s"," ")
+                      else {
+                        if(NR!=1)
+                          print ""
+                        printf("%s\t",$1)
+                      }
+                      for(i=2;i<NF;i++)
+                        printf("%s ",$i)
+                      printf("%s",$NF)
+                      k=$1
+                    }
+                    END{
+                    print ""
+                    }'

@@ -318,7 +318,7 @@ _starship() {
             return 0
             ;;
         starship__print__config)
-            opts=" -d -h -V  --default --help --version  "
+            opts=" -d -h -V  --default --help --version  <name>... "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

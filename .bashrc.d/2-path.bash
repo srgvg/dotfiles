@@ -21,4 +21,5 @@ pathmunge $HOME/bin2
 pathmunge $HOME/.local/bin after
 pathmunge $HOME/.krew/bin after
 pathmunge $HOME/.arkade/bin after
+pathmunge $HOME/.cargo/bin after
 pathmunge $HOME/.screenlayout after

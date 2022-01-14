@@ -19,7 +19,6 @@ hash flux >&/dev/null &&        flux completion bash                > ${complpat
 hash helm >&/dev/null &&        helm completion bash                > ${complpath}/helm${complext}
 hash hcloud >&/dev/null &&      hcloud completion bash              > ${complpath}/hetzner${complext}
 hash kind >&/dev/null &&        kind completion bash                > ${complpath}/kind${complext}
-hash kubectl >&/dev/null &&     kubectl completion bash             > ${complpath}/kubectl${complext}
 hash oc >&/dev/null &&          oc completion bash                  > ${complpath}/oc${complext}
 hash scw >&/dev/null &&         scw autocomplete script shell=bash  > ${complpath}/scw${complext}
 hash starship >&/dev/null &&    starship completions                > ${complpath}/starship${complext}
@@ -31,7 +30,11 @@ hash kustomize >&/dev/null &&   kustomize completion bash           > ${complpat
 hash cmctl >&/dev/null &&       cmctl completion bash               > ${complpath}/cmctl${complext}
 hash datree >&/dev/null &&      datree completion bash              > ${complpath}/datree${complext}
 hash k9s >&/dev/null &&         k9s completion bash                 > ${complpath}/k9s${complext}
+hash arkade >&/dev/null &&      arkade completion bash              > ${complpath}/arkade${complext}
+hash krew >&/dev/null &&        krew completion bash                > ${complpath}/krew${complext}
+hash argocd >&/dev/null &&      argocd completion bash              > ${complpath}/argocd${complext}
 
+hash kubectl >&/dev/null &&     kubectl completion bash             > ${complpath}/kubectl${complext}
 cat                                                                >> ${complpath}/kubectl${complext}  <<- EOF
 # autocomplete for kubecolor
 complete -o default -F __start_kubectl kubecolor
