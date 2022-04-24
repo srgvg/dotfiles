@@ -381,6 +381,26 @@ _datree_completion()
     noun_aliases=()
 }
 
+_datree_config_get()
+{
+    last_command="datree_config_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _datree_config_set()
 {
     last_command="datree_config_set"
@@ -408,6 +428,7 @@ _datree_config()
     command_aliases=()
 
     commands=()
+    commands+=("get")
     commands+=("set")
 
     flags=()
@@ -440,6 +461,81 @@ _datree_help()
     must_have_one_flag=()
     must_have_one_noun=()
     has_completion_function=1
+    noun_aliases=()
+}
+
+_datree_kustomize_test()
+{
+    last_command="datree_kustomize_test"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--ignore-missing-schemas")
+    local_nonpersistent_flags+=("--ignore-missing-schemas")
+    flags+=("--no-record")
+    local_nonpersistent_flags+=("--no-record")
+    flags+=("--only-k8s-files")
+    local_nonpersistent_flags+=("--only-k8s-files")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output")
+    local_nonpersistent_flags+=("--output=")
+    local_nonpersistent_flags+=("-o")
+    flags+=("--policy=")
+    two_word_flags+=("--policy")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--policy")
+    local_nonpersistent_flags+=("--policy=")
+    local_nonpersistent_flags+=("-p")
+    flags+=("--policy-config=")
+    two_word_flags+=("--policy-config")
+    local_nonpersistent_flags+=("--policy-config")
+    local_nonpersistent_flags+=("--policy-config=")
+    flags+=("--schema-location=")
+    two_word_flags+=("--schema-location")
+    local_nonpersistent_flags+=("--schema-location")
+    local_nonpersistent_flags+=("--schema-location=")
+    flags+=("--schema-version=")
+    two_word_flags+=("--schema-version")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--schema-version")
+    local_nonpersistent_flags+=("--schema-version=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--verbose")
+    local_nonpersistent_flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_datree_kustomize()
+{
+    last_command="datree_kustomize"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("test")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
     noun_aliases=()
 }
 
@@ -479,6 +575,8 @@ _datree_test()
 
     flags+=("--ignore-missing-schemas")
     local_nonpersistent_flags+=("--ignore-missing-schemas")
+    flags+=("--no-record")
+    local_nonpersistent_flags+=("--no-record")
     flags+=("--only-k8s-files")
     local_nonpersistent_flags+=("--only-k8s-files")
     flags+=("--output=")
@@ -493,6 +591,10 @@ _datree_test()
     local_nonpersistent_flags+=("--policy")
     local_nonpersistent_flags+=("--policy=")
     local_nonpersistent_flags+=("-p")
+    flags+=("--policy-config=")
+    two_word_flags+=("--policy-config")
+    local_nonpersistent_flags+=("--policy-config")
+    local_nonpersistent_flags+=("--policy-config=")
     flags+=("--schema-location=")
     two_word_flags+=("--schema-location")
     local_nonpersistent_flags+=("--schema-location")
@@ -503,6 +605,8 @@ _datree_test()
     local_nonpersistent_flags+=("--schema-version")
     local_nonpersistent_flags+=("--schema-version=")
     local_nonpersistent_flags+=("-s")
+    flags+=("--verbose")
+    local_nonpersistent_flags+=("--verbose")
 
     must_have_one_flag=()
     must_have_one_noun=()
@@ -539,6 +643,7 @@ _datree_root_command()
     commands+=("completion")
     commands+=("config")
     commands+=("help")
+    commands+=("kustomize")
     commands+=("publish")
     commands+=("test")
     commands+=("version")

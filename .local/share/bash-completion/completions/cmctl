@@ -2,7 +2,7 @@
 
 __cmctl_debug()
 {
-    if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
+    if [[ -n ${BASH_COMP_DEBUG_FILE:-} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
     fi
 }
@@ -112,7 +112,7 @@ __cmctl_handle_go_custom_completion()
         $filteringCmd
     elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
         # File completion for directories only
-        local subDir
+        local subdir
         # Use printf to strip any trailing newline
         subdir=$(printf "%s" "${out[0]}")
         if [ -n "$subdir" ]; then
@@ -165,13 +165,19 @@ __cmctl_handle_reply()
                     PREFIX=""
                     cur="${cur#*=}"
                     ${flags_completion[${index}]}
-                    if [ -n "${ZSH_VERSION}" ]; then
+                    if [ -n "${ZSH_VERSION:-}" ]; then
                         # zsh completion needs --flag= prefix
                         eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
                     fi
                 fi
             fi
-            return 0;
+
+            if [[ -z "${flag_parsing_disabled}" ]]; then
+                # If flag parsing is enabled, we have completed the flags and can return.
+                # If flag parsing is disabled, we may not know all (or any) of the flags, so we fallthrough
+                # to possibly call handle_go_custom_completion.
+                return 0;
+            fi
             ;;
     esac
 
@@ -210,13 +216,13 @@ __cmctl_handle_reply()
     fi
 
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
-		if declare -F __cmctl_custom_func >/dev/null; then
-			# try command name qualified custom func
-			__cmctl_custom_func
-		else
-			# otherwise fall back to unqualified for compatibility
-			declare -F __custom_func >/dev/null && __custom_func
-		fi
+        if declare -F __cmctl_custom_func >/dev/null; then
+            # try command name qualified custom func
+            __cmctl_custom_func
+        else
+            # otherwise fall back to unqualified for compatibility
+            declare -F __custom_func >/dev/null && __custom_func
+        fi
     fi
 
     # available in bash-completion >= 2, not always present on macOS
@@ -250,7 +256,7 @@ __cmctl_handle_flag()
 
     # if a command required a flag, and we found it, unset must_have_one_flag()
     local flagname=${words[c]}
-    local flagvalue
+    local flagvalue=""
     # if the word contained an =
     if [[ ${words[c]} == *"="* ]]; then
         flagvalue=${flagname#*=} # take in as flagvalue after the =
@@ -269,7 +275,7 @@ __cmctl_handle_flag()
 
     # keep flag value with flagname as flaghash
     # flaghash variable is an associative array which is only supported in bash > 3.
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         if [ -n "${flagvalue}" ] ; then
             flaghash[${flagname}]=${flagvalue}
         elif [ -n "${words[ $((c+1)) ]}" ] ; then
@@ -281,7 +287,7 @@ __cmctl_handle_flag()
 
     # skip the argument to a two word flag
     if [[ ${words[c]} != *"="* ]] && __cmctl_contains_word "${words[c]}" "${two_word_flags[@]}"; then
-			  __cmctl_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+        __cmctl_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
         c=$((c+1))
         # if we are looking for a flags value, don't show commands
         if [[ $c -eq $cword ]]; then
@@ -341,7 +347,7 @@ __cmctl_handle_word()
         __cmctl_handle_command
     elif __cmctl_contains_word "${words[c]}" "${command_aliases[@]}"; then
         # aliashash variable is an associative array which is only supported in bash > 3.
-        if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
             words[c]=${aliashash[${words[c]}]}
             __cmctl_handle_command
         else
@@ -375,6 +381,10 @@ _cmctl_approve()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -474,6 +484,10 @@ _cmctl_check_api()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -765,6 +779,10 @@ _cmctl_create_certificaterequest()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -860,7 +878,7 @@ _cmctl_create()
 
     commands=()
     commands+=("certificaterequest")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("cr")
         aliashash["cr"]="certificaterequest"
     fi
@@ -899,6 +917,10 @@ _cmctl_deny()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -998,6 +1020,10 @@ _cmctl_experimental_create_certificatesigningrequest()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -1101,7 +1127,7 @@ _cmctl_experimental_create()
 
     commands=()
     commands+=("certificatesigningrequest")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("csr")
         aliashash["csr"]="certificatesigningrequest"
     fi
@@ -1202,6 +1228,84 @@ _cmctl_experimental_install()
     noun_aliases=()
 }
 
+_cmctl_experimental_uninstall()
+{
+    last_command="cmctl_experimental_uninstall"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--debug")
+    local_nonpersistent_flags+=("--debug")
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--kube-apiserver=")
+    two_word_flags+=("--kube-apiserver")
+    local_nonpersistent_flags+=("--kube-apiserver")
+    local_nonpersistent_flags+=("--kube-apiserver=")
+    flags+=("--kube-as-group=")
+    two_word_flags+=("--kube-as-group")
+    local_nonpersistent_flags+=("--kube-as-group")
+    local_nonpersistent_flags+=("--kube-as-group=")
+    flags+=("--kube-as-user=")
+    two_word_flags+=("--kube-as-user")
+    local_nonpersistent_flags+=("--kube-as-user")
+    local_nonpersistent_flags+=("--kube-as-user=")
+    flags+=("--kube-ca-file=")
+    two_word_flags+=("--kube-ca-file")
+    local_nonpersistent_flags+=("--kube-ca-file")
+    local_nonpersistent_flags+=("--kube-ca-file=")
+    flags+=("--kube-context=")
+    two_word_flags+=("--kube-context")
+    local_nonpersistent_flags+=("--kube-context")
+    local_nonpersistent_flags+=("--kube-context=")
+    flags+=("--kube-token=")
+    two_word_flags+=("--kube-token")
+    local_nonpersistent_flags+=("--kube-token")
+    local_nonpersistent_flags+=("--kube-token=")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig=")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--no-hooks")
+    local_nonpersistent_flags+=("--no-hooks")
+    flags+=("--registry-config=")
+    two_word_flags+=("--registry-config")
+    local_nonpersistent_flags+=("--registry-config")
+    local_nonpersistent_flags+=("--registry-config=")
+    flags+=("--repository-cache=")
+    two_word_flags+=("--repository-cache")
+    local_nonpersistent_flags+=("--repository-cache")
+    local_nonpersistent_flags+=("--repository-cache=")
+    flags+=("--repository-config=")
+    two_word_flags+=("--repository-config")
+    local_nonpersistent_flags+=("--repository-config")
+    local_nonpersistent_flags+=("--repository-config=")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--wait")
+    local_nonpersistent_flags+=("--wait")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _cmctl_experimental()
 {
     last_command="cmctl_experimental"
@@ -1211,6 +1315,7 @@ _cmctl_experimental()
     commands=()
     commands+=("create")
     commands+=("install")
+    commands+=("uninstall")
 
     flags=()
     two_word_flags=()
@@ -1267,6 +1372,10 @@ _cmctl_inspect_secret()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -1385,6 +1494,10 @@ _cmctl_renew()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -1482,6 +1595,10 @@ _cmctl_status_certificate()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -1572,6 +1689,131 @@ _cmctl_status()
     noun_aliases=()
 }
 
+_cmctl_upgrade_migrate-api-version()
+{
+    last_command="cmctl_upgrade_migrate-api-version"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--as=")
+    two_word_flags+=("--as")
+    local_nonpersistent_flags+=("--as")
+    local_nonpersistent_flags+=("--as=")
+    flags+=("--as-group=")
+    two_word_flags+=("--as-group")
+    local_nonpersistent_flags+=("--as-group")
+    local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
+    flags+=("--burst=")
+    two_word_flags+=("--burst")
+    local_nonpersistent_flags+=("--burst")
+    local_nonpersistent_flags+=("--burst=")
+    flags+=("--cache-dir=")
+    two_word_flags+=("--cache-dir")
+    local_nonpersistent_flags+=("--cache-dir")
+    local_nonpersistent_flags+=("--cache-dir=")
+    flags+=("--certificate-authority=")
+    two_word_flags+=("--certificate-authority")
+    local_nonpersistent_flags+=("--certificate-authority")
+    local_nonpersistent_flags+=("--certificate-authority=")
+    flags+=("--client-certificate=")
+    two_word_flags+=("--client-certificate")
+    local_nonpersistent_flags+=("--client-certificate")
+    local_nonpersistent_flags+=("--client-certificate=")
+    flags+=("--client-key=")
+    two_word_flags+=("--client-key")
+    local_nonpersistent_flags+=("--client-key")
+    local_nonpersistent_flags+=("--client-key=")
+    flags+=("--cluster=")
+    two_word_flags+=("--cluster")
+    local_nonpersistent_flags+=("--cluster")
+    local_nonpersistent_flags+=("--cluster=")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    local_nonpersistent_flags+=("--context")
+    local_nonpersistent_flags+=("--context=")
+    flags+=("--insecure-skip-tls-verify")
+    local_nonpersistent_flags+=("--insecure-skip-tls-verify")
+    flags+=("--kubeconfig=")
+    two_word_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig")
+    local_nonpersistent_flags+=("--kubeconfig=")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    flags_with_completion+=("--namespace")
+    flags_completion+=("__cmctl_handle_go_custom_completion")
+    two_word_flags+=("-n")
+    flags_with_completion+=("-n")
+    flags_completion+=("__cmctl_handle_go_custom_completion")
+    local_nonpersistent_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--qps=")
+    two_word_flags+=("--qps")
+    local_nonpersistent_flags+=("--qps")
+    local_nonpersistent_flags+=("--qps=")
+    flags+=("--request-timeout=")
+    two_word_flags+=("--request-timeout")
+    local_nonpersistent_flags+=("--request-timeout")
+    local_nonpersistent_flags+=("--request-timeout=")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--server")
+    local_nonpersistent_flags+=("--server=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--skip-stored-version-check")
+    local_nonpersistent_flags+=("--skip-stored-version-check")
+    flags+=("--tls-server-name=")
+    two_word_flags+=("--tls-server-name")
+    local_nonpersistent_flags+=("--tls-server-name")
+    local_nonpersistent_flags+=("--tls-server-name=")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    local_nonpersistent_flags+=("--token")
+    local_nonpersistent_flags+=("--token=")
+    flags+=("--user=")
+    two_word_flags+=("--user")
+    local_nonpersistent_flags+=("--user")
+    local_nonpersistent_flags+=("--user=")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_cmctl_upgrade()
+{
+    last_command="cmctl_upgrade"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("migrate-api-version")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _cmctl_version()
 {
     last_command="cmctl_version"
@@ -1594,6 +1836,10 @@ _cmctl_version()
     two_word_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group")
     local_nonpersistent_flags+=("--as-group=")
+    flags+=("--as-uid=")
+    two_word_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid")
+    local_nonpersistent_flags+=("--as-uid=")
     flags+=("--cache-dir=")
     two_word_flags+=("--cache-dir")
     local_nonpersistent_flags+=("--cache-dir")
@@ -1686,7 +1932,7 @@ _cmctl_root_command()
     commands+=("create")
     commands+=("deny")
     commands+=("experimental")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("x")
         aliashash["x"]="experimental"
     fi
@@ -1694,6 +1940,7 @@ _cmctl_root_command()
     commands+=("inspect")
     commands+=("renew")
     commands+=("status")
+    commands+=("upgrade")
     commands+=("version")
 
     flags=()
@@ -1724,6 +1971,7 @@ __start_cmctl()
     fi
 
     local c=0
+    local flag_parsing_disabled=
     local flags=()
     local two_word_flags=()
     local local_nonpersistent_flags=()
@@ -1733,8 +1981,8 @@ __start_cmctl()
     local command_aliases=()
     local must_have_one_flag=()
     local must_have_one_noun=()
-    local has_completion_function
-    local last_command
+    local has_completion_function=""
+    local last_command=""
     local nouns=()
     local noun_aliases=()
 

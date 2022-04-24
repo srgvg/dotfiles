@@ -731,6 +731,8 @@ _kind_export_kubeconfig()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--internal")
+    local_nonpersistent_flags+=("--internal")
     flags+=("--kubeconfig=")
     two_word_flags+=("--kubeconfig")
     local_nonpersistent_flags+=("--kubeconfig")
@@ -886,6 +888,10 @@ _kind_get_nodes()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--all-clusters")
+    flags+=("-A")
+    local_nonpersistent_flags+=("--all-clusters")
+    local_nonpersistent_flags+=("-A")
     flags+=("--name=")
     two_word_flags+=("--name")
     local_nonpersistent_flags+=("--name")
@@ -1125,7 +1131,7 @@ _kind_root_command()
 
 __start_kind()
 {
-    local cur prev words cword
+    local cur prev words cword split
     declare -A flaghash 2>/dev/null || :
     declare -A aliashash 2>/dev/null || :
     if declare -F _init_completion >/dev/null 2>&1; then
@@ -1141,11 +1147,13 @@ __start_kind()
     local flags_with_completion=()
     local flags_completion=()
     local commands=("kind")
+    local command_aliases=()
     local must_have_one_flag=()
     local must_have_one_noun=()
     local has_completion_function
     local last_command
     local nouns=()
+    local noun_aliases=()
 
     __kind_handle_word
 }

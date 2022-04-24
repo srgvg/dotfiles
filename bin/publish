@@ -8,47 +8,9 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
+set -x
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
-
-dropbox=$HOME/Dropbox/ginsys
-publoc=$dropbox/Public/misc
-publoc2=/dbox/Dropbox/${publoc/$dropbox}
-dropboxcmd="dropbox2 ginsys"
-
-function dropbox_file_status() {
-	local out
-	local status
-	local wait
-
-	sleep 1
-	wait=1
-	while [ $wait -eq 1 ]
-	do
-		out=$(${dropboxcmd} filestatus "${pubfile2}")
-		if [[ "${out}" =~ "syncing" ]]
-		then
-			status=(-1 "Syncing")
-			wait=1
-			sleep 3
-		elif [[ "${out}" =~ "File doesn\'t exist" ]]
-		then
-			status=(1 "File doesn't exist")
-			wait=0
-		elif [[ "${out}" =~ "up to date" ]]
-		then
-			status=(0 "Synced")
-			wait=0
-		else
-			status=(2 "Unknown error: ${out}")
-			wait=0
-		fi
-	done >/dev/null 2>&1
-	echo "${status[@]}"
-}
-
-
 
 file="${*:-$(xclip -selection clipboard -out)}"
 if [ ! -f "${file}" ]
@@ -57,37 +19,16 @@ then
 fi
 
 pubfilename=$(basename "${file}" | sed -r 's/\ +/_/g')
-pubfile="${publoc}/${pubfilename}"
-pubfile2="${publoc2}/${pubfilename}"
 
-# do not copy the file to Dropbox/Public if the file is already in Dropbox folder
-if [[ ! "$file" =~ "$dropbox" ]]
-then
-	notify_debug "Copying ${file} to ${pubfile}"
-	cp "${file}" "${pubfile}"
-fi
+pubinfo="$(pbincli send -t "${pubfilename}" -f "${file}")"
+puburl="$(echo -n "${pubinfo}" | grep ^Link: | awk '{ print $2}')"
+notify_debug "shared on ${puburl}"
 
-if ! ${dropboxcmd} sharelink "${pubfile2}"
+if ! [[ ${puburl:0:4} == http ]]
 then
-	docker restart dropbox-ginsys
-fi
-dropbox_puburl="$(${dropboxcmd} sharelink "${pubfile2}" | tr -d '\r')"
-notify_debug "shared on ${dropbox_puburl}"
-if ! [[ ${dropbox_puburl:0:4} == http ]]
-then
-	errexit "Dropbox Publish error \nsharelink failed, got: \n${dropbox_puburl}"
-fi
-
-bitly_url="$(bitly "${dropbox_puburl}" | tr -d '\n')"
-notify_debug "Got ${bitly_url} from Bitly"
-echo -n "${bitly_url}" | xclip -in -selection clipboard
-
-status=($(dropbox_file_status))
-if [ "${status[0]}" -eq 0 ]
-then
-	notify2 "Dropbox Published file $file \nuploaded to $dropbox_puburl\n\nshort url = $bitly_url"
+	errexit "Publish error \nsharelink failed, got: \n${pubinfo}"
 else
-	notify_error "Dropbox Publish error" "${status[1]}"
+	echo "${pubinfo}"
 fi
 
-exit "${status[0]}"
+echo -n "${puburl}" | xclip -in -selection clipboard

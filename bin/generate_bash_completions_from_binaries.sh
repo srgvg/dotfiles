@@ -21,7 +21,7 @@ hash hcloud >&/dev/null &&      hcloud completion bash              > ${complpat
 hash kind >&/dev/null &&        kind completion bash                > ${complpath}/kind${complext}
 hash oc >&/dev/null &&          oc completion bash                  > ${complpath}/oc${complext}
 hash scw >&/dev/null &&         scw autocomplete script shell=bash  > ${complpath}/scw${complext}
-hash starship >&/dev/null &&    starship completions                > ${complpath}/starship${complext}
+hash starship >&/dev/null &&    starship completions bash           > ${complpath}/starship${complext}
 hash velero >&/dev/null &&      velero completion bash              > ${complpath}/velero${complext}
 hash havener >&/dev/null &&     havener completion bash             > ${complpath}/havener${complext}
 hash kubescape >&/dev/null &&   kubescape completion bash           > ${complpath}/kubescape${complext}
@@ -33,10 +33,17 @@ hash k9s >&/dev/null &&         k9s completion bash                 > ${complpat
 hash arkade >&/dev/null &&      arkade completion bash              > ${complpath}/arkade${complext}
 hash krew >&/dev/null &&        krew completion bash                > ${complpath}/krew${complext}
 hash argocd >&/dev/null &&      argocd completion bash              > ${complpath}/argocd${complext}
-
+hash mizu >&/dev/null &&        mizu completion bash                > ${complpath}/mizu${complext}
+hash talosctl >&/dev/null &&    talosctl completion bash            > ${complpath}/talosctl${complext}
+hash clusterctl >&/dev/null &&  clusterctl completion bash          > ${complpath}/clusterctl${complext}
 hash kubectl >&/dev/null &&     kubectl completion bash             > ${complpath}/kubectl${complext}
-cat                                                                >> ${complpath}/kubectl${complext}  <<- EOF
-# autocomplete for kubecolor
+hash kubectl-plugin_completion >&/dev/null \
+                             && kubectl-plugin_completion completion bash \
+                                                                    > ${complpath}/kubectl-plugin_completion${complext}
+
+cat                                                                 > ${complpath}/kubecolor${complext}  <<- EOF
+# autocomplete for kubecolor, k alias
+source ${complpath}/kubectl${complext}
 complete -o default -F __start_kubectl kubecolor
 EOF
 

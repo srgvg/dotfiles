@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -x
+
+###############################################################################
+
+[ `id -u` -eq 0 ] || exec sudo $0 $*
+
+rmmod snd_usb_audio
+sleep 1
+rmmod snd_usbmidi_lib
+sleep 1
+rmmod uvcvideo
+sleep 1
+rmmod btusb
+sleep 1
+rmmod xhci_pci
+sleep 1
+rmmod xhci_hcd
+sleep 1
+rmmod hid_logitech_dj
+sleep 1
+rmmod usbhidsleep 1
+sleep 1
+rmmod snd_usb_audio
+sleep 1
+rmmod snd_usbmidi_lib
+sleep 1
+rmmod uvcvideo
+sleep 1
+rmmod btusb
+sleep 1
+rmmod usbcore
+
+sleep 5
+
+modprobe -a usbcore
+sleep 2 ; modprobe -a xhci_hcd
+sleep 2 ; modprobe -a xhci_pci
+sleep 2 ; modprobe -a core
+sleep 2 ; modprobe -a usbhid
+sleep 2 ; modprobe -a snd_usb_audio snd_usbmidi_lib uvcvideo btusb
+sleep 10

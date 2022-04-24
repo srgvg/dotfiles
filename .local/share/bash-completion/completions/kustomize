@@ -2,7 +2,7 @@
 
 __kustomize_debug()
 {
-    if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
+    if [[ -n ${BASH_COMP_DEBUG_FILE:-} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
     fi
 }
@@ -40,6 +40,12 @@ __kustomize_handle_go_custom_completion()
 {
     __kustomize_debug "${FUNCNAME[0]}: cur is ${cur}, words[*] is ${words[*]}, #words[@] is ${#words[@]}"
 
+    local shellCompDirectiveError=1
+    local shellCompDirectiveNoSpace=2
+    local shellCompDirectiveNoFileComp=4
+    local shellCompDirectiveFilterFileExt=8
+    local shellCompDirectiveFilterDirs=16
+
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
@@ -73,24 +79,50 @@ __kustomize_handle_go_custom_completion()
     __kustomize_debug "${FUNCNAME[0]}: the completion directive is: ${directive}"
     __kustomize_debug "${FUNCNAME[0]}: the completions are: ${out[*]}"
 
-    if [ $((directive & 1)) -ne 0 ]; then
+    if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
         # Error code.  No completion.
         __kustomize_debug "${FUNCNAME[0]}: received error from custom completion go code"
         return
     else
-        if [ $((directive & 2)) -ne 0 ]; then
+        if [ $((directive & shellCompDirectiveNoSpace)) -ne 0 ]; then
             if [[ $(type -t compopt) = "builtin" ]]; then
                 __kustomize_debug "${FUNCNAME[0]}: activating no space"
                 compopt -o nospace
             fi
         fi
-        if [ $((directive & 4)) -ne 0 ]; then
+        if [ $((directive & shellCompDirectiveNoFileComp)) -ne 0 ]; then
             if [[ $(type -t compopt) = "builtin" ]]; then
                 __kustomize_debug "${FUNCNAME[0]}: activating no file completion"
                 compopt +o default
             fi
         fi
+    fi
 
+    if [ $((directive & shellCompDirectiveFilterFileExt)) -ne 0 ]; then
+        # File extension filtering
+        local fullFilter filter filteringCmd
+        # Do not use quotes around the $out variable or else newline
+        # characters will be kept.
+        for filter in ${out[*]}; do
+            fullFilter+="$filter|"
+        done
+
+        filteringCmd="_filedir $fullFilter"
+        __kustomize_debug "File filtering command: $filteringCmd"
+        $filteringCmd
+    elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
+        # File completion for directories only
+        local subdir
+        # Use printf to strip any trailing newline
+        subdir=$(printf "%s" "${out[0]}")
+        if [ -n "$subdir" ]; then
+            __kustomize_debug "Listing directories in $subdir"
+            __kustomize_handle_subdirs_in_dir_flag "$subdir"
+        else
+            __kustomize_debug "Listing directories in ."
+            _filedir -d
+        fi
+    else
         while IFS='' read -r comp; do
             COMPREPLY+=("$comp")
         done < <(compgen -W "${out[*]}" -- "$cur")
@@ -133,13 +165,19 @@ __kustomize_handle_reply()
                     PREFIX=""
                     cur="${cur#*=}"
                     ${flags_completion[${index}]}
-                    if [ -n "${ZSH_VERSION}" ]; then
+                    if [ -n "${ZSH_VERSION:-}" ]; then
                         # zsh completion needs --flag= prefix
                         eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
                     fi
                 fi
             fi
-            return 0;
+
+            if [[ -z "${flag_parsing_disabled}" ]]; then
+                # If flag parsing is enabled, we have completed the flags and can return.
+                # If flag parsing is disabled, we may not know all (or any) of the flags, so we fallthrough
+                # to possibly call handle_go_custom_completion.
+                return 0;
+            fi
             ;;
     esac
 
@@ -159,10 +197,9 @@ __kustomize_handle_reply()
     local completions
     completions=("${commands[@]}")
     if [[ ${#must_have_one_noun[@]} -ne 0 ]]; then
-        completions=("${must_have_one_noun[@]}")
+        completions+=("${must_have_one_noun[@]}")
     elif [[ -n "${has_completion_function}" ]]; then
         # if a go completion function is provided, defer to that function
-        completions=()
         __kustomize_handle_go_custom_completion
     fi
     if [[ ${#must_have_one_flag[@]} -ne 0 ]]; then
@@ -179,13 +216,13 @@ __kustomize_handle_reply()
     fi
 
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
-		if declare -F __kustomize_custom_func >/dev/null; then
-			# try command name qualified custom func
-			__kustomize_custom_func
-		else
-			# otherwise fall back to unqualified for compatibility
-			declare -F __custom_func >/dev/null && __custom_func
-		fi
+        if declare -F __kustomize_custom_func >/dev/null; then
+            # try command name qualified custom func
+            __kustomize_custom_func
+        else
+            # otherwise fall back to unqualified for compatibility
+            declare -F __custom_func >/dev/null && __custom_func
+        fi
     fi
 
     # available in bash-completion >= 2, not always present on macOS
@@ -219,7 +256,7 @@ __kustomize_handle_flag()
 
     # if a command required a flag, and we found it, unset must_have_one_flag()
     local flagname=${words[c]}
-    local flagvalue
+    local flagvalue=""
     # if the word contained an =
     if [[ ${words[c]} == *"="* ]]; then
         flagvalue=${flagname#*=} # take in as flagvalue after the =
@@ -238,7 +275,7 @@ __kustomize_handle_flag()
 
     # keep flag value with flagname as flaghash
     # flaghash variable is an associative array which is only supported in bash > 3.
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         if [ -n "${flagvalue}" ] ; then
             flaghash[${flagname}]=${flagvalue}
         elif [ -n "${words[ $((c+1)) ]}" ] ; then
@@ -250,7 +287,7 @@ __kustomize_handle_flag()
 
     # skip the argument to a two word flag
     if [[ ${words[c]} != *"="* ]] && __kustomize_contains_word "${words[c]}" "${two_word_flags[@]}"; then
-			  __kustomize_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+        __kustomize_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
         c=$((c+1))
         # if we are looking for a flags value, don't show commands
         if [[ $c -eq $cword ]]; then
@@ -310,7 +347,7 @@ __kustomize_handle_word()
         __kustomize_handle_command
     elif __kustomize_contains_word "${words[c]}" "${command_aliases[@]}"; then
         # aliashash variable is an associative array which is only supported in bash > 3.
-        if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
             words[c]=${aliashash[${words[c]}]}
             __kustomize_handle_command
         else
@@ -344,34 +381,41 @@ _kustomize_build()
     local_nonpersistent_flags+=("--enable-exec")
     flags+=("--enable-helm")
     local_nonpersistent_flags+=("--enable-helm")
-    flags+=("--enable-managedby-label")
-    local_nonpersistent_flags+=("--enable-managedby-label")
     flags+=("--enable-star")
     local_nonpersistent_flags+=("--enable-star")
     flags+=("--env=")
     two_word_flags+=("--env")
     two_word_flags+=("-e")
+    local_nonpersistent_flags+=("--env")
     local_nonpersistent_flags+=("--env=")
+    local_nonpersistent_flags+=("-e")
     flags+=("--helm-command=")
     two_word_flags+=("--helm-command")
+    local_nonpersistent_flags+=("--helm-command")
     local_nonpersistent_flags+=("--helm-command=")
     flags+=("--load-restrictor=")
     two_word_flags+=("--load-restrictor")
+    local_nonpersistent_flags+=("--load-restrictor")
     local_nonpersistent_flags+=("--load-restrictor=")
     flags+=("--mount=")
     two_word_flags+=("--mount")
+    local_nonpersistent_flags+=("--mount")
     local_nonpersistent_flags+=("--mount=")
     flags+=("--network")
     local_nonpersistent_flags+=("--network")
     flags+=("--network-name=")
     two_word_flags+=("--network-name")
+    local_nonpersistent_flags+=("--network-name")
     local_nonpersistent_flags+=("--network-name=")
     flags+=("--output=")
     two_word_flags+=("--output")
     two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output")
     local_nonpersistent_flags+=("--output=")
+    local_nonpersistent_flags+=("-o")
     flags+=("--reorder=")
     two_word_flags+=("--reorder")
+    local_nonpersistent_flags+=("--reorder")
     local_nonpersistent_flags+=("--reorder=")
     flags+=("--stack-trace")
 
@@ -398,6 +442,7 @@ _kustomize_cfg_cat()
     local_nonpersistent_flags+=("--annotate")
     flags+=("--dest=")
     two_word_flags+=("--dest")
+    local_nonpersistent_flags+=("--dest")
     local_nonpersistent_flags+=("--dest=")
     flags+=("--exclude-non-local")
     local_nonpersistent_flags+=("--exclude-non-local")
@@ -405,22 +450,27 @@ _kustomize_cfg_cat()
     local_nonpersistent_flags+=("--format")
     flags+=("--function-config=")
     two_word_flags+=("--function-config")
+    local_nonpersistent_flags+=("--function-config")
     local_nonpersistent_flags+=("--function-config=")
     flags+=("--include-local")
     local_nonpersistent_flags+=("--include-local")
     flags+=("--recurse-subpackages")
     flags+=("-R")
     local_nonpersistent_flags+=("--recurse-subpackages")
+    local_nonpersistent_flags+=("-R")
     flags+=("--strip-comments")
     local_nonpersistent_flags+=("--strip-comments")
     flags+=("--style=")
     two_word_flags+=("--style")
+    local_nonpersistent_flags+=("--style")
     local_nonpersistent_flags+=("--style=")
     flags+=("--wrap-kind=")
     two_word_flags+=("--wrap-kind")
+    local_nonpersistent_flags+=("--wrap-kind")
     local_nonpersistent_flags+=("--wrap-kind=")
     flags+=("--wrap-version=")
     two_word_flags+=("--wrap-version")
+    local_nonpersistent_flags+=("--wrap-version")
     local_nonpersistent_flags+=("--wrap-version=")
     flags+=("--stack-trace")
 
@@ -448,6 +498,7 @@ _kustomize_cfg_count()
     flags+=("--recurse-subpackages")
     flags+=("-R")
     local_nonpersistent_flags+=("--recurse-subpackages")
+    local_nonpersistent_flags+=("-R")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -476,6 +527,7 @@ _kustomize_cfg_grep()
     flags+=("--recurse-subpackages")
     flags+=("-R")
     local_nonpersistent_flags+=("--recurse-subpackages")
+    local_nonpersistent_flags+=("-R")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -509,9 +561,11 @@ _kustomize_cfg_tree()
     local_nonpersistent_flags+=("--exclude-non-local")
     flags+=("--field=")
     two_word_flags+=("--field")
+    local_nonpersistent_flags+=("--field")
     local_nonpersistent_flags+=("--field=")
     flags+=("--graph-structure=")
     two_word_flags+=("--graph-structure")
+    local_nonpersistent_flags+=("--graph-structure")
     local_nonpersistent_flags+=("--graph-structure=")
     flags+=("--image")
     local_nonpersistent_flags+=("--image")
@@ -574,6 +628,7 @@ _kustomize_completion()
     flags+=("--help")
     flags+=("-h")
     local_nonpersistent_flags+=("--help")
+    local_nonpersistent_flags+=("-h")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -601,25 +656,31 @@ _kustomize_create()
 
     flags+=("--annotations=")
     two_word_flags+=("--annotations")
+    local_nonpersistent_flags+=("--annotations")
     local_nonpersistent_flags+=("--annotations=")
     flags+=("--autodetect")
     local_nonpersistent_flags+=("--autodetect")
     flags+=("--labels=")
     two_word_flags+=("--labels")
+    local_nonpersistent_flags+=("--labels")
     local_nonpersistent_flags+=("--labels=")
     flags+=("--nameprefix=")
     two_word_flags+=("--nameprefix")
+    local_nonpersistent_flags+=("--nameprefix")
     local_nonpersistent_flags+=("--nameprefix=")
     flags+=("--namespace=")
     two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
     local_nonpersistent_flags+=("--namespace=")
     flags+=("--namesuffix=")
     two_word_flags+=("--namesuffix")
+    local_nonpersistent_flags+=("--namesuffix")
     local_nonpersistent_flags+=("--namesuffix=")
     flags+=("--recursive")
     local_nonpersistent_flags+=("--recursive")
     flags+=("--resources=")
     two_word_flags+=("--resources")
+    local_nonpersistent_flags+=("--resources")
     local_nonpersistent_flags+=("--resources=")
     flags+=("--stack-trace")
 
@@ -645,6 +706,7 @@ _kustomize_edit_add_annotation()
     flags+=("--force")
     flags+=("-f")
     local_nonpersistent_flags+=("--force")
+    local_nonpersistent_flags+=("-f")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -655,6 +717,27 @@ _kustomize_edit_add_annotation()
 _kustomize_edit_add_base()
 {
     last_command="kustomize_edit_add_base"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kustomize_edit_add_buildmetadata()
+{
+    last_command="kustomize_edit_add_buildmetadata"
 
     command_aliases=()
 
@@ -710,18 +793,43 @@ _kustomize_edit_add_configmap()
 
     flags+=("--behavior=")
     two_word_flags+=("--behavior")
+    local_nonpersistent_flags+=("--behavior")
     local_nonpersistent_flags+=("--behavior=")
     flags+=("--disableNameSuffixHash")
     local_nonpersistent_flags+=("--disableNameSuffixHash")
     flags+=("--from-env-file=")
     two_word_flags+=("--from-env-file")
+    local_nonpersistent_flags+=("--from-env-file")
     local_nonpersistent_flags+=("--from-env-file=")
     flags+=("--from-file=")
     two_word_flags+=("--from-file")
+    local_nonpersistent_flags+=("--from-file")
     local_nonpersistent_flags+=("--from-file=")
     flags+=("--from-literal=")
     two_word_flags+=("--from-literal")
+    local_nonpersistent_flags+=("--from-literal")
     local_nonpersistent_flags+=("--from-literal=")
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kustomize_edit_add_generator()
+{
+    last_command="kustomize_edit_add_generator"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -746,6 +854,7 @@ _kustomize_edit_add_label()
     flags+=("--force")
     flags+=("-f")
     local_nonpersistent_flags+=("--force")
+    local_nonpersistent_flags+=("-f")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -769,30 +878,39 @@ _kustomize_edit_add_patch()
 
     flags+=("--annotation-selector=")
     two_word_flags+=("--annotation-selector")
+    local_nonpersistent_flags+=("--annotation-selector")
     local_nonpersistent_flags+=("--annotation-selector=")
     flags+=("--group=")
     two_word_flags+=("--group")
+    local_nonpersistent_flags+=("--group")
     local_nonpersistent_flags+=("--group=")
     flags+=("--kind=")
     two_word_flags+=("--kind")
+    local_nonpersistent_flags+=("--kind")
     local_nonpersistent_flags+=("--kind=")
     flags+=("--label-selector=")
     two_word_flags+=("--label-selector")
+    local_nonpersistent_flags+=("--label-selector")
     local_nonpersistent_flags+=("--label-selector=")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--namespace=")
     two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
     local_nonpersistent_flags+=("--namespace=")
     flags+=("--patch=")
     two_word_flags+=("--patch")
+    local_nonpersistent_flags+=("--patch")
     local_nonpersistent_flags+=("--patch=")
     flags+=("--path=")
     two_word_flags+=("--path")
+    local_nonpersistent_flags+=("--path")
     local_nonpersistent_flags+=("--path=")
     flags+=("--version=")
     two_word_flags+=("--version")
+    local_nonpersistent_flags+=("--version")
     local_nonpersistent_flags+=("--version=")
     flags+=("--stack-trace")
 
@@ -840,18 +958,23 @@ _kustomize_edit_add_secret()
     local_nonpersistent_flags+=("--disableNameSuffixHash")
     flags+=("--from-env-file=")
     two_word_flags+=("--from-env-file")
+    local_nonpersistent_flags+=("--from-env-file")
     local_nonpersistent_flags+=("--from-env-file=")
     flags+=("--from-file=")
     two_word_flags+=("--from-file")
+    local_nonpersistent_flags+=("--from-file")
     local_nonpersistent_flags+=("--from-file=")
     flags+=("--from-literal=")
     two_word_flags+=("--from-literal")
+    local_nonpersistent_flags+=("--from-literal")
     local_nonpersistent_flags+=("--from-literal=")
     flags+=("--namespace=")
     two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
     local_nonpersistent_flags+=("--namespace=")
     flags+=("--type=")
     two_word_flags+=("--type")
+    local_nonpersistent_flags+=("--type")
     local_nonpersistent_flags+=("--type=")
     flags+=("--stack-trace")
 
@@ -890,8 +1013,10 @@ _kustomize_edit_add()
     commands=()
     commands+=("annotation")
     commands+=("base")
+    commands+=("buildmetadata")
     commands+=("component")
     commands+=("configmap")
+    commands+=("generator")
     commands+=("label")
     commands+=("patch")
     commands+=("resource")
@@ -972,6 +1097,28 @@ _kustomize_edit_remove_annotation()
     flags+=("--ignore-non-existence")
     flags+=("-i")
     local_nonpersistent_flags+=("--ignore-non-existence")
+    local_nonpersistent_flags+=("-i")
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kustomize_edit_remove_buildmetadata()
+{
+    last_command="kustomize_edit_remove_buildmetadata"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -996,6 +1143,7 @@ _kustomize_edit_remove_label()
     flags+=("--ignore-non-existence")
     flags+=("-i")
     local_nonpersistent_flags+=("--ignore-non-existence")
+    local_nonpersistent_flags+=("-i")
     flags+=("--stack-trace")
 
     must_have_one_flag=()
@@ -1019,30 +1167,39 @@ _kustomize_edit_remove_patch()
 
     flags+=("--annotation-selector=")
     two_word_flags+=("--annotation-selector")
+    local_nonpersistent_flags+=("--annotation-selector")
     local_nonpersistent_flags+=("--annotation-selector=")
     flags+=("--group=")
     two_word_flags+=("--group")
+    local_nonpersistent_flags+=("--group")
     local_nonpersistent_flags+=("--group=")
     flags+=("--kind=")
     two_word_flags+=("--kind")
+    local_nonpersistent_flags+=("--kind")
     local_nonpersistent_flags+=("--kind=")
     flags+=("--label-selector=")
     two_word_flags+=("--label-selector")
+    local_nonpersistent_flags+=("--label-selector")
     local_nonpersistent_flags+=("--label-selector=")
     flags+=("--name=")
     two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
     local_nonpersistent_flags+=("--name=")
     flags+=("--namespace=")
     two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
     local_nonpersistent_flags+=("--namespace=")
     flags+=("--patch=")
     two_word_flags+=("--patch")
+    local_nonpersistent_flags+=("--patch")
     local_nonpersistent_flags+=("--patch=")
     flags+=("--path=")
     two_word_flags+=("--path")
+    local_nonpersistent_flags+=("--path")
     local_nonpersistent_flags+=("--path=")
     flags+=("--version=")
     two_word_flags+=("--version")
+    local_nonpersistent_flags+=("--version")
     local_nonpersistent_flags+=("--version=")
     flags+=("--stack-trace")
 
@@ -1101,6 +1258,7 @@ _kustomize_edit_remove()
 
     commands=()
     commands+=("annotation")
+    commands+=("buildmetadata")
     commands+=("label")
     commands+=("patch")
     commands+=("resource")
@@ -1122,6 +1280,27 @@ _kustomize_edit_remove()
 _kustomize_edit_set_annotation()
 {
     last_command="kustomize_edit_set_annotation"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kustomize_edit_set_buildmetadata()
+{
+    last_command="kustomize_edit_set_buildmetadata"
 
     command_aliases=()
 
@@ -1274,6 +1453,7 @@ _kustomize_edit_set()
 
     commands=()
     commands+=("annotation")
+    commands+=("buildmetadata")
     commands+=("image")
     commands+=("label")
     commands+=("nameprefix")
@@ -1345,17 +1525,22 @@ _kustomize_fn_run()
     flags+=("--env=")
     two_word_flags+=("--env")
     two_word_flags+=("-e")
+    local_nonpersistent_flags+=("--env")
     local_nonpersistent_flags+=("--env=")
+    local_nonpersistent_flags+=("-e")
     flags+=("--exec-path=")
     two_word_flags+=("--exec-path")
+    local_nonpersistent_flags+=("--exec-path")
     local_nonpersistent_flags+=("--exec-path=")
     flags+=("--fn-path=")
     two_word_flags+=("--fn-path")
+    local_nonpersistent_flags+=("--fn-path")
     local_nonpersistent_flags+=("--fn-path=")
     flags+=("--global-scope")
     local_nonpersistent_flags+=("--global-scope")
     flags+=("--image=")
     two_word_flags+=("--image")
+    local_nonpersistent_flags+=("--image")
     local_nonpersistent_flags+=("--image=")
     flags+=("--include-subpackages")
     local_nonpersistent_flags+=("--include-subpackages")
@@ -1363,20 +1548,25 @@ _kustomize_fn_run()
     local_nonpersistent_flags+=("--log-steps")
     flags+=("--mount=")
     two_word_flags+=("--mount")
+    local_nonpersistent_flags+=("--mount")
     local_nonpersistent_flags+=("--mount=")
     flags+=("--network")
     local_nonpersistent_flags+=("--network")
     flags+=("--results-dir=")
     two_word_flags+=("--results-dir")
+    local_nonpersistent_flags+=("--results-dir")
     local_nonpersistent_flags+=("--results-dir=")
     flags+=("--star-name=")
     two_word_flags+=("--star-name")
+    local_nonpersistent_flags+=("--star-name")
     local_nonpersistent_flags+=("--star-name=")
     flags+=("--star-path=")
     two_word_flags+=("--star-path")
+    local_nonpersistent_flags+=("--star-path")
     local_nonpersistent_flags+=("--star-path=")
     flags+=("--star-url=")
     two_word_flags+=("--star-url")
+    local_nonpersistent_flags+=("--star-url")
     local_nonpersistent_flags+=("--star-url=")
     flags+=("--stack-trace")
 
@@ -1424,12 +1614,15 @@ _kustomize_fn_source()
     two_word_flags+=("--function-config")
     flags_with_completion+=("--function-config")
     flags_completion+=("__kustomize_handle_filename_extension_flag yaml|json|yml")
+    local_nonpersistent_flags+=("--function-config")
     local_nonpersistent_flags+=("--function-config=")
     flags+=("--wrap-kind=")
     two_word_flags+=("--wrap-kind")
+    local_nonpersistent_flags+=("--wrap-kind")
     local_nonpersistent_flags+=("--wrap-kind=")
     flags+=("--wrap-version=")
     two_word_flags+=("--wrap-version")
+    local_nonpersistent_flags+=("--wrap-version")
     local_nonpersistent_flags+=("--wrap-version=")
     flags+=("--stack-trace")
 
@@ -1456,9 +1649,11 @@ _kustomize_fn_wrap()
     local_nonpersistent_flags+=("--env-only")
     flags+=("--wrap-kind=")
     two_word_flags+=("--wrap-kind")
+    local_nonpersistent_flags+=("--wrap-kind")
     local_nonpersistent_flags+=("--wrap-kind=")
     flags+=("--wrap-version=")
     two_word_flags+=("--wrap-version")
+    local_nonpersistent_flags+=("--wrap-version")
     local_nonpersistent_flags+=("--wrap-version=")
     flags+=("--stack-trace")
 
@@ -1485,9 +1680,11 @@ _kustomize_fn_xargs()
     local_nonpersistent_flags+=("--env-only")
     flags+=("--wrap-kind=")
     two_word_flags+=("--wrap-kind")
+    local_nonpersistent_flags+=("--wrap-kind")
     local_nonpersistent_flags+=("--wrap-kind=")
     flags+=("--wrap-version=")
     two_word_flags+=("--wrap-version")
+    local_nonpersistent_flags+=("--wrap-version")
     local_nonpersistent_flags+=("--wrap-version=")
     flags+=("--stack-trace")
 
@@ -1519,6 +1716,28 @@ _kustomize_fn()
 
     must_have_one_flag=()
     must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kustomize_help()
+{
+    last_command="kustomize_help"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
     noun_aliases=()
 }
 
@@ -1556,12 +1775,13 @@ _kustomize_root_command()
     commands+=("cfg")
     commands+=("completion")
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("init")
         aliashash["init"]="create"
     fi
     commands+=("edit")
     commands+=("fn")
+    commands+=("help")
     commands+=("version")
 
     flags=()
@@ -1579,7 +1799,7 @@ _kustomize_root_command()
 
 __start_kustomize()
 {
-    local cur prev words cword
+    local cur prev words cword split
     declare -A flaghash 2>/dev/null || :
     declare -A aliashash 2>/dev/null || :
     if declare -F _init_completion >/dev/null 2>&1; then
@@ -1589,17 +1809,20 @@ __start_kustomize()
     fi
 
     local c=0
+    local flag_parsing_disabled=
     local flags=()
     local two_word_flags=()
     local local_nonpersistent_flags=()
     local flags_with_completion=()
     local flags_completion=()
     local commands=("kustomize")
+    local command_aliases=()
     local must_have_one_flag=()
     local must_have_one_noun=()
-    local has_completion_function
-    local last_command
+    local has_completion_function=""
+    local last_command=""
     local nouns=()
+    local noun_aliases=()
 
     __kustomize_handle_word
 }

@@ -15,9 +15,11 @@ source "$HOME/bin/common.bash"
 
 starship -V
 
-bash <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOME/bin2 --yes
-if [ ! $? -eq 0 ]; then
-	echo "Error $? downloading startship to $HOMETMPDIR"
+sh <(curl -fsSL https://starship.rs/install.sh) --verbose --bin-dir $HOME/bin2 --yes ||:
+rc=$?
+if [ ! $rc -eq 0 ]; then
+	echo "Error $rc downloading startship to $HOMETMPDIR"
+	exit $rc
 fi
 
 starship -V

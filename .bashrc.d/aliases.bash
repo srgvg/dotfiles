@@ -43,7 +43,11 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 alias k="kubectl"
-#hash kubecolor >&/dev/null && alias k="kubecolor" || alias k="kubectl"
+if hash kubecolor >&/dev/null; then
+    alias k="kubecolor"
+    alias kubectl="kubecolor"
+fi
+complete -F _complete_alias k
 alias kailns="kail --current-ns"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
@@ -57,6 +61,7 @@ alias ls='ls --color=auto'
 alias locateh="locate --all --existing --follow --ignore-case /home/serge/"
 alias o='gnome-open'
 alias paste='xclip -out -selection c'
+alias pbin='pbincli send'
 alias ping1="ping -c 1 "
 alias ping3="ping -c 3 "
 alias pip='pip3'

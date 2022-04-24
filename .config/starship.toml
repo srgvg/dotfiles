@@ -2,12 +2,11 @@
 #
 add_newline = true
 scan_timeout = 10
+continuation_prompt = "▶▶ "
 format = """\
     $username\
     $hostname\
     $directory\
-    $gcloud\
-    $kubernetes\
     $vcsh\
     $git_branch\
     $git_state\
@@ -15,6 +14,9 @@ format = """\
     $git_status\
     $hg_branch\
     $docker_context\
+    $kubernetes\
+    $gcloud\
+    $aws\
     $package\
     $dotnet\
     $elixir\
@@ -32,7 +34,6 @@ format = """\
     $nix_shell\
     $conda\
     $memory_usage\
-    $aws\
     $env_var\
     $cmd_duration\
     ${custom.ansible}\
@@ -47,6 +48,15 @@ format = """\
 
 ###
 
+[aws]
+format = '[$symbol($profile )(\($region\) )]($style) '
+style = "bold blue"
+symbol = "AWS "
+
+[aws.region_aliases]
+#ap-southeast-2 = "au"
+#us-east-1 = "va"
+
 [character]      # The name of the module we are configuring is "character"
 success_symbol = "[➞](bold green) "     # The "symbol" segment is being set to "➜"
 error_symbol = "[➞](bold red) "
@@ -58,7 +68,7 @@ min_time = 3_000
 show_milliseconds = true
 style = "bold yellow"
 # https://github.com/starship/starship/pull/1019/files
-show_notifications = true
+show_notifications = false
 min_time_to_notify = 30_000
 
 [directory]
@@ -69,7 +79,7 @@ repo_root_style = "bold yellow"
 # The number of characters to use when applying fish shell pwd path logic.
 fish_style_pwd_dir_length = 10
 # Displays the logical path provided by the shell (PWD) instead of the path from the OS.
-use_logical_path = true
+use_logical_path = false
 style = "bold cyan"
 read_only = "🔒"
 read_only_style = "red"
@@ -148,12 +158,13 @@ format = "[@$hostname]($style) "
 
 [gcloud]
 format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
-symbol = "🌨️ "
+symbol = "GCP "
 
 [kubernetes]
 disabled = false
-symbol = "☸"
+#symbol = "☸"
 #symbol = "⛵"
+symbol = "K8S"
 format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 style = "cyan bold"
 #namespace_spaceholder = "none"
@@ -176,12 +187,12 @@ format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
 
 [status]
 disabled = false
-format = "[$symbol$status ($signal_number/$signal_name )($common_meaning )]($style)"
-symbol = "🔴"
-not_executable_symbol = "🚫"
-not_found_symbol = "🔍"
-sigint_symbol = "🧱"
-signal_symbol = "⚡"
+format = "[$symbol $status ($signal_number/$signal_name )($common_meaning )]($style)"
+symbol = "rc "
+not_executable_symbol = "NOEXEC"
+not_found_symbol = "NOTFOUND"
+sigint_symbol = "SIGINT"
+signal_symbol = "SIG"
 style = "bold red"
 recognize_signal_code = true
 map_symbol = true
@@ -200,7 +211,8 @@ disabled = false
 disabled = false
 #format = "[$time]($style) "
 time_format = "%T"
-format = "[🕙$time]($style) "
+#format = "[🕙$time]($style) "
+format = "[$time]($style) "
 use_12hr = false
 style = "bold yellow"
 # Sets the UTC offset to use. Range from -24 < x < 24.

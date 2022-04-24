@@ -715,8 +715,8 @@ bindsym $mod+$alt+Control+t		exec --no-startup-id switch-term-colors
 
 # Elgato light Office
 bindsym Control+XF86AudioMute				exec --no-startup-id elgato.sh toggle
-bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 2
-bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 2
+bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 5
+bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 5
 bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato.sh color --warmer 100
 bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato.sh color --cooler 100
 
@@ -787,15 +787,19 @@ bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
 # Fn-F10 XF86Search
 # Screenshot
 #bindsym Print							exec --no-startup-id screengrab select
-#bindsym XF86Search						exec --no-startup-id screengrab select
+#bindsym Print							exec --no-startup-id flameshot gui
+bindsym Print							exec --no-startup-id spectacle --region
+
 #bindsym Shift+Print						exec --no-startup-id screengrab window
-#bindsym Shift+XF86Search				exec --no-startup-id screengrab window
+bindsym Shift+Print						exec --no-startup-id spectacle --activewindow
+
 #bindsym Control+Print					exec --no-startup-id screengrab screen
-#bindsym Control+XF86Search				exec --no-startup-id screengrab screen
+bindsym Control+Print					exec --no-startup-id spectacle --current
+
 #bindsym Shift+Control+Print				exec --no-startup-id screengrab full
-#bindsym Shift+Control+XF86Search		exec --no-startup-id screengrab full
+bindsym Shift+Control+Print				exec --no-startup-id spectacle --fullscreen
+
 #bindsym $mod+Print						exec --no-startup-id publish
-bindsym Print							exec --no-startup-id flameshot gui
 
 # Fn-F10 XF86Bluetooth
 bindsym XF86Bluetooth					exec --no-start-up-if bluetooth toggle
@@ -931,8 +935,11 @@ for_window	[class="Skype"]									floating enable
 assign	[class="TelegramDesktop" id=134217734 instance="Telegram" title="Telegram"] $ws_chat
 for_window	[class="TelegramDesktop" id=134217734 instance="Telegram" title="Telegram"] layout tabbed
 
-assign	[class="discord" id=123731976 instance="discord" title="Chris | Totem Live Founder - Discord" window_role="browser-window"] $ws_chat
-for_window	[class="discord" id=123731976 instance="discord" title="Chris | Totem Live Founder - Discord" window_role="browser-window"] layout tabbed
+assign	[class="discord" instance="discord" window_role="browser-window"] $ws_chat
+for_window	[class="discord" instance="discord" window_role="browser-window"] layout tabbed
+
+assign [class="Mattermost" instance="mattermost" window_role="browser-window"] $ws_chat
+for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
 
 #######################################################################################################################
 #

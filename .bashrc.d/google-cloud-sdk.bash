@@ -2,7 +2,7 @@
 # /t/google-cloud-sdk/install.sh --rc-path ~/.bashrc.d/google-cloud-sdk.bash --usage-reporting false --command-completion true --path-update true
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc' ]; then . '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc'; fi
+#if [ -f '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc' ]; then . '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc'; fi
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/home/serge/Documents/Applications/google-cloud-sdk/completion.bash.inc' ]; then . '/home/serge/Documents/Applications/google-cloud-sdk/completion.bash.inc'; fi
