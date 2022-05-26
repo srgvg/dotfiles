@@ -14,19 +14,20 @@ k9s:
     fullScreenLogs: false
     textWrap: false
     showTime: false
-  currentContext: velleman-gcpk8s0
-  currentCluster: velleman-gcpk8s0
+  currentContext: autops-scw-k0
+  currentCluster: k0-scw-autops-eu
   clusters:
-    velleman-gcpk8s0:
+    k0-scw-autops-eu:
       namespace:
-        active: signumcloud
+        active: all
         favorites:
-        - signumcloud
+        - all
+        - flux-system
         - default
       view:
         active: po
       featureGates:
-        nodeShell: true
+        nodeShell: false
       shellPod:
         image: busybox:1.31
         command: []

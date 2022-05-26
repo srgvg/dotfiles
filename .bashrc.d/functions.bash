@@ -33,6 +33,20 @@ function apk() {
 	done | less --quit-if-one-screen --no-init
 }
 
+
+function asdf-installatest() {
+	plugin=${1:-}
+	[ -z "${plugin}" ] && echo "No plugin given" && return 1
+
+	echo asdf plugin add $plugin
+	asdf plugin add $plugin
+    echo asdf install $plugin latest
+    asdf install $plugin latest
+	echo asdf global $plugin latest
+	asdf global $plugin latest
+}
+
+
 function aswitch() {
 	# switch ansible versions 1-2
 	pushd ~/ansible

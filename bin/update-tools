@@ -11,49 +11,50 @@ set -o nounset
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-###############################################################################
+##############################################################################
 
 title() {
 	set +x
 	echo
-	echo "###############################################################################"
+	echo "################################################################################################################"
 	echo ${1}
-	echo "###############################################################################"
+	echo "################################################################################################################"
 	echo
 	set -x
 }
 
-#######################################################################################################################
+######################################################################################################################
 
-cd ~/tmp/
+mkdir ~/tmp/update-tools/ -p
+cd ~/tmp/update-tools/
 
-title starship ########################################################################################################
-/home/serge/bin2/starship -V
-starship-upgrade
-/home/serge/bin2/starship -V
+#title "starship #######################################################################################################"
+#/home/serge/bin2/starship -V
+#starship-upgrade
+#/home/serge/bin2/starship -V
 
-title kubie ###########################################################################################################
-/home/serge/bin2/kubie update
+#title "kubie ##########################################################################################################"
+#/home/serge/bin2/kubie update
 
-title kubetail ########################################################################################################
+title "kubetail #######################################################################################################"
 curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
 curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
 
-title lazykube ########################################################################################################
+title "lazykube #######################################################################################################"
 curl https://raw.githubusercontent.com/TNK-Studio/lazykube/main/scripts/install_update_linux.sh | sed s/sudo//g | DIR=$HOME/bin2/  bash -x
 
-title flux ############################################################################################################
-/home/serge/bin2/flux -v
-curl -s https://fluxcd.io/install.sh | bash -s ~/bin2/
-/home/serge/bin2/flux -v
+#title "flux ###########################################################################################################"
+#/home/serge/bin2/flux -v
+#curl -s https://fluxcd.io/install.sh | bash -s ~/bin2/
+#/home/serge/bin2/flux -v
 
-title vcluster ########################################################################################################
-/home/serge/bin2/vcluster upgrade
+#title "vcluster #######################################################################################################"
+#/home/serge/bin2/vcluster upgrade
 
-title kdash ###########################################################################################################
+title "kdash ##########################################################################################################"
 curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.sh | sed s@/usr/local/bin@/home/serge/bin2@ | bash -x
 
-title havener #########################################################################################################
+title "havener ########################################################################################################"
 curl -sL https://raw.githubusercontent.com/homeport/havener/main/scripts/download-latest.sh | sed 's@${HOME}/bin@${HOME}/bin2@' | bash -x
 
 #kubescape
@@ -62,16 +63,16 @@ curl -s https://raw.githubusercontent.com/armosec/kubescape/master/install.sh | 
 #kubecm https://kubecm.cloud/#/
 VERSION=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest | jq -r .tag_name)
 NAME=$(curl -s https://api.github.com/repos/sunny0826/kubecm/releases/latest | jq -r .name)
-curl -L https://github.com/sunny0826/kubecm/releases/download/${VERSION}/${NAME}_Linux_x86_64.tar.gz | tar -zxvf - kubecm && mv kubecm $HOME/bin2
+curl -L https://github.com/sunny0826/kubecm/releases/download/${VERSION}/${NAME}_Linux_x86_64.tar.gz | tar -zxvf - kubecm && mv -v kubecm $HOME/bin2
 
-title kubescape #######################################################################################################
+title "kubescape ######################################################################################################"
 VERSION=$(curl -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
 curl -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
 
-title k9s #############################################################################################################
-VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
-curl -L https://github.com/derailed/k9s/releases/download/${VERSION}/k9s_Linux_x86_64.tar.gz -o $HOME/tmp/k9s_Linux_x86_64.tar.gz && \
-	tar -xvf $HOME/tmp/k9s_Linux_x86_64.tar.gz && mv $HOME/tmp/k9s $HOME/bin2/k9s
+#title "k9s ############################################################################################################"
+#VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
+#curl -L https://github.com/derailed/k9s/releases/download/${VERSION}/k9s_Linux_x86_64.tar.gz -o $HOME/tmp/k9s_Linux_x86_64.tar.gz && \
+#	tar -xvf $HOME/tmp/k9s_Linux_x86_64.tar.gz && mv -v $HOME/tmp/k9s $HOME/bin2/k9s
 
 
 
@@ -83,97 +84,110 @@ curl -L https://github.com/derailed/k9s/releases/download/${VERSION}/k9s_Linux_x
 #curl -L -o $HOME/.bashrc.d/completions-kubeswitch.bash https://raw.githubusercontent.com/danielfoehrKn/kubeswitch/master/script/_switch.bash
 #chmod -v +x $HOME/bin2/switch{,er}
 
-title kubectl #########################################################################################################
-curl -L -o $HOME/bin2/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x $HOME/bin2/kubectl
+#title "kubectl ########################################################################################################"
+#curl -L -o $HOME/bin2/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x $HOME/bin2/kubectl
 
-title clusterctl ######################################################################################################
-VERSION=$(curl --silent "https://api.github.com/repos/kubernetes-sigs/cluster-api/releases/latest" | jq -r .tag_name)
-curl -Lo $HOME/bin2/clusterctl "https://github.com/kubernetes-sigs/cluster-api/releases/download/${VERSION}/clusterctl-linux-amd64"
-chmod +x $HOME/bin2/clusterctl
+#title "clusterctl #####################################################################################################"
+#VERSION=$(curl --silent "https://api.github.com/repos/kubernetes-sigs/cluster-api/releases/latest" | jq -r .tag_name)
+#curl -Lo $HOME/bin2/clusterctl "https://github.com/kubernetes-sigs/cluster-api/releases/download/${VERSION}/clusterctl-linux-amd64"
+#chmod +x $HOME/bin2/clusterctl
 
-mv $HOME/bin2/kustomize $HOME/bin2/kustomize.old ; \
-  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s $HOME/Documents/Applications/bin/
+#mv -v $HOME/bin2/kustomize $HOME/bin2/kustomize.old ; \
+#  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s $HOME/Documents/Applications/bin/
 																													# not bin2 as script does funky stuff with the symlink
 
-title certmanager cli #################################################################################################
+title "certmanager cli ################################################################################################"
 OS=$(go env GOOS); ARCH=$(go env GOARCH); curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-$OS-$ARCH.tar.gz
 tar xzf cmctl.tar.gz
-mv cmctl /$HOME/bin2
+mv -v cmctl /$HOME/bin2
 rm cmctl.tar.gz
 
-title datree ##########################################################################################################
+title "datree #########################################################################################################"
 curl https://get.datree.io | sed s@/usr/local/bin@$HOME/bin2@ | /bin/bash
 
-title scaleway cli ####################################################################################################
-curl -o $HOME/bin2/scw -L $(curl -s https://api.github.com/repos/scaleway/scaleway-cli/releases/latest  | jq -r '.assets[]|select(.name|endswith("linux-x86_64")).browser_download_url')
+#title "scaleway cli ###################################################################################################"
+#curl -o $HOME/bin2/scw -L $(curl -s https://api.github.com/repos/scaleway/scaleway-cli/releases/latest  | jq -r '.assets[]|select(.name|endswith("linux-x86_64")).browser_download_url')
 
-title krew plugins ####################################################################################################
-(
-  set -x; cd "$(mktemp -d)" &&
-  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-  KREW="krew-${OS}_${ARCH}" &&
-  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-  tar zxvf "${KREW}.tar.gz" &&
-  ./"${KREW}" install krew
-)
+title "krew plugins ###################################################################################################"
+#(
+#  set -x; cd "$(mktemp -d)" &&
+#  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+#  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+#  KREW="krew-${OS}_${ARCH}" &&
+#  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+#  tar zxvf "${KREW}.tar.gz" &&
+#  ./"${KREW}" install krew
+#)
 krew upgrade
 
-title arkade ##########################################################################################################
-mkdir $HOME/.arkade/bin -p
-curl -SLfs https://dl.get-arkade.dev | sed -e 's@BINLOCATION="/usr/local/bin"@BINLOCATION="$HOME/.arkade/bin"@' -e 's@rm "$targetFile"@echo not rm "$targetFile"@' | sh
-ls $HOME/.arkade/bin | xargs -n1 arkade get
-ls -l $HOME/.arkade/bin
+#title "arkade #########################################################################################################"
+#mkdir $HOME/.arkade/bin -p
+#curl -SLfs https://dl.get-arkade.dev | sed -e 's@BINLOCATION="/usr/local/bin"@BINLOCATION="$HOME/.arkade/bin"@' -e 's@rm "$targetFile"@echo not rm "$targetFile"@' | sh
+#ls $HOME/.arkade/bin | xargs -n1 arkade get
+#ls -l $HOME/.arkade/bin
 
-title microconfig https://github.com/microconfig/microconfig ##########################################################
+title "microconfig https://github.com/microconfig/microconfig #########################################################"
 URL=$(curl -s https://api.github.com/repos/microconfig/microconfig/releases/latest | jq -r .assets[].browser_download_url | grep linux)
 curl -SLfs -o latest.zip ${URL}
 unzip latest
 chmod -v +x microconfig
 mv -v microconfig $HOME/bin2
 
-title argocd ##########################################################################################################
-URL=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest  | jq -r .assets[].browser_download_url | grep linux)
-curl -SLfs -o $HOME/bin2/argocd ${URL}
-chmod +x $HOME/bin2/argocd
+#title "argocd #########################################################################################################"
+#URL=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest  | jq -r .assets[].browser_download_url | grep linux)
+#curl -SLfs -o $HOME/bin2/argocd ${URL}
+#chmod +x $HOME/bin2/argocd
 
-#argocd-autpilot
-VERSION=$(curl --silent "https://api.github.com/repos/argoproj-labs/argocd-autopilot/releases/latest" | jq -r .tag_name)
-curl -L --output - https://github.com/argoproj-labs/argocd-autopilot/releases/download/$VERSION/argocd-autopilot-linux-amd64.tar.gz | tar zx
-mv ./argocd-autopilot-* $HOME/bin2/argocd-autopilot
+##argocd-autpilot
+#VERSION=$(curl --silent "https://api.github.com/repos/argoproj-labs/argocd-autopilot/releases/latest" | jq -r .tag_name)
+#curl -L --output - https://github.com/argoproj-labs/argocd-autopilot/releases/download/$VERSION/argocd-autopilot-linux-amd64.tar.gz | tar zx
+#mv -v ./argocd-autopilot-* $HOME/bin2/argocd-autopilot
+#
+#title "argocd - check the installation ################################################################################"
+#/home/serge/bin2/argocd-autopilot version
 
-title argocd - check the installation #################################################################################
-/home/serge/bin2/argocd-autopilot version
-
-title silver-surfer, kubedd ###########################################################################################
+title "silver-surfer, kubedd ##########################################################################################"
 VERSION=$(curl --silent "https://api.github.com/repos/devtron-labs/silver-surfer/releases/latest" | jq -r .tag_name)
 curl -L --output - https://github.com/devtron-labs/silver-surfer/releases/download/${VERSION}/silver-surfer_${VERSION/v}_linux_amd64.tar.gz | tar zx
-mv ./kubedd $HOME/bin2/kubedd
+mv -v ./kubedd $HOME/bin2/kubedd
 
-title kubeval #########################################################################################################
+title "kubeval ########################################################################################################"
 wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
 tar xf kubeval-linux-amd64.tar.gz
-mv kubeval $HOME/bin2/
+mv -v kubeval $HOME/bin2/
 
-title trivy ###########################################################################################################
+title "trivy ##########################################################################################################"
 curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin2
 
-title jless ###########################################################################################################
-VERSION=$(curl --silent "https://api.github.com/repos/PaulJuliusMartinez/jless/releases"  | jq .[].tag_name | sort -n | tail -n1 | sed 's/"//g')
-curl -OL https://github.com/PaulJuliusMartinez/jless/releases/download/${VERSION}/jless-${VERSION}-x86_64-unknown-linux-gnu.zip
-unzip jless-${VERSION}-x86_64-unknown-linux-gnu.zip
-mv ./jless $HOME/bin2/
+#title "jless ##########################################################################################################"
+#VERSION=$(curl --silent "https://api.github.com/repos/PaulJuliusMartinez/jless/releases"  | jq .[].tag_name | sort -n | tail -n1 | sed 's/"//g')
+#curl -OL https://github.com/PaulJuliusMartinez/jless/releases/download/${VERSION}/jless-${VERSION}-x86_64-unknown-linux-gnu.zip
+#unzip jless-${VERSION}-x86_64-unknown-linux-gnu.zip
+#mv -v ./jless $HOME/bin2/
 
-title mizu ############################################################################################################
-curl -Lo mizu github.com/up9inc/mizu/releases/latest/download/mizu_linux_amd64 && chmod 755 mizu && mv mizu $HOME/bin2
+title "mizu ###########################################################################################################"
+curl -Lo mizu github.com/up9inc/mizu/releases/latest/download/mizu_linux_amd64 && chmod 755 mizu && mv -v mizu $HOME/bin2
 
-title talosctl ########################################################################################################
+title "talosctl #######################################################################################################"
 VERSION=$(curl --silent "https://api.github.com/repos/siderolabs/talos/releases/latest" | jq -r .tag_name)
 curl -Lo $HOME/bin2/talosctl https://github.com/siderolabs/talos/releases/download/${VERSION}/talosctl-linux-amd64
 
-title crossplane.io ###################################################################################################
-curl -sLo $HOME/bin2/kubectl-crossplane https://releases.crossplane.io/stable/current/bin/linux_amd64/crank
-chmod +x $HOME/bin2/kubectl-crossplane
+#title "crossplane.io ##################################################################################################"
+#curl -sLo $HOME/bin2/kubectl-crossplane https://releases.crossplane.io/stable/current/bin/linux_amd64/crank
+#chmod +x $HOME/bin2/kubectl-crossplane
 
-title update completions ##############################################################################################
+title "hcloud #########################################################################################################"
+VERSION=$(curl --silent "https://api.github.com/repos/hetznercloud/cli/releases/latest"  | jq .tag_name | sed 's/"//g')
+wget https://github.com/hetznercloud/cli/releases/download/${VERSION}/hcloud-linux-amd64.tar.gz
+tar -xvzf hcloud-linux-amd64.tar.gz
+chmod +x hcloud
+mv -v hcloud $HOME/bin2/hcloud
+
+title "autok3s ########################################################################################################"
+curl -sS https://rancher-mirror.rancher.cn/autok3s/install.sh  | BINLOCATION=/home/serge/bin2/ sh
+
+title "update completions #############################################################################################"
 $HOME/bin/generate_bash_completions_from_binaries.sh
+
+title "cleanup ########################################################################################################"
+rm -rfv ~/tmp/update-tools/

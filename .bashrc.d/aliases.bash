@@ -69,6 +69,7 @@ alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
 alias r='ranger'
 alias shredit='shred --verbose --iterations 5 --zero --remove'
+alias showpath="readlink -f"
 alias ssh-nc="ssh -S none"
 alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"

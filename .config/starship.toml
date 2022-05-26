@@ -1,8 +1,25 @@
 ###
 #
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
 add_newline = true
-scan_timeout = 10
+
+# Timeout for starship to scan files (in milliseconds).
+scan_timeout = 30
+
 continuation_prompt = "▶▶ "
+
+# Timeout for commands executed by starship (in milliseconds).
+command_timeout = 500
+
+# Configure the format of the prompt.
+## Use custom format
+#format = """
+#[┌───────────────────>](bold green)
+#[│](bold green)$directory$rust$package
+#[└─>](bold green) """
 format = """\
     $username\
     $hostname\
