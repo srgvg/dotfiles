@@ -175,7 +175,7 @@
 
 [commit]
 
-	gpgsign = true
+	gpgsign = false
 	verbose = true
 
 
@@ -256,6 +256,7 @@
 [gpg]
 
 	program = gpg
+	#format = ssh
 
 
 [init]
@@ -330,7 +331,7 @@
 	name = Serge van Ginderachter
     email = serge@vanginderachter.be
 	#signingkey = D08FC082B8E46E8E
-    signingkey = 3148E9B9232D65E5
+	#signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFog6XphTxiKCV2GcGF35e2BuLrv7o6d+zDvTAdE/+q5 serge@minos
 
 
 [rebase]
@@ -352,4 +353,8 @@
 [includeIf "gitdir:~/src/ginsys/"]
 
 	path = ~/.gitconfig.d/ginsys
+
+[includeIf "gitdir:~/src/equans/"]
+
+	path = ~/.gitconfig.d/equans
 

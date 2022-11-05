@@ -1,1 +1,19 @@
-/home/serge/Applications/mattermost/mattermost-desktop
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+while sleep 1
+do
+	$HOME/Applications/mattermost/mattermost-desktop ||:
+done

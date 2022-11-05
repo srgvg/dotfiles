@@ -378,6 +378,7 @@ _civo_apikey_current()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -411,6 +412,7 @@ _civo_apikey_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -444,6 +446,7 @@ _civo_apikey_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -479,6 +482,7 @@ _civo_apikey_save()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -512,6 +516,7 @@ _civo_apikey_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -584,6 +589,7 @@ _civo_apikey()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -621,6 +627,7 @@ _civo_completion_bash()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -654,6 +661,7 @@ _civo_completion_fish()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -687,6 +695,7 @@ _civo_completion_powershell()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -720,6 +729,7 @@ _civo_completion_zsh()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -757,6 +767,7 @@ _civo_completion()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -790,6 +801,7 @@ _civo_diskimage_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -830,6 +842,7 @@ _civo_diskimage()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -863,6 +876,7 @@ _civo_domain_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -896,6 +910,7 @@ _civo_domain_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -959,6 +974,7 @@ _civo_domain_record_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -992,6 +1008,7 @@ _civo_domain_record_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1026,6 +1043,7 @@ _civo_domain_record_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1060,6 +1078,7 @@ _civo_domain_record_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1123,6 +1142,7 @@ _civo_domain_record()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1156,6 +1176,7 @@ _civo_domain_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1217,6 +1238,7 @@ _civo_domain()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1260,6 +1282,7 @@ _civo_firewall_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1293,6 +1316,7 @@ _civo_firewall_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1326,6 +1350,7 @@ _civo_firewall_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1401,14 +1426,11 @@ _civo_firewall_rule_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
     must_have_one_flag=()
-    must_have_one_flag+=("--action=")
-    must_have_one_flag+=("-a")
-    must_have_one_flag+=("--direction=")
-    must_have_one_flag+=("-d")
     must_have_one_flag+=("--startport=")
     must_have_one_flag+=("-s")
     must_have_one_noun=()
@@ -1440,6 +1462,7 @@ _civo_firewall_rule_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1473,6 +1496,7 @@ _civo_firewall_rule_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1529,6 +1553,7 @@ _civo_firewall_rule()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1562,6 +1587,7 @@ _civo_firewall_update()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1630,6 +1656,7 @@ _civo_firewall()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1663,6 +1690,7 @@ _civo_help()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1722,12 +1750,18 @@ _civo_instance_create()
     local_nonpersistent_flags+=("--publicip")
     local_nonpersistent_flags+=("--publicip=")
     local_nonpersistent_flags+=("-p")
+    flags+=("--script=")
+    two_word_flags+=("--script")
+    local_nonpersistent_flags+=("--script")
+    local_nonpersistent_flags+=("--script=")
     flags+=("--size=")
     two_word_flags+=("--size")
     two_word_flags+=("-i")
     local_nonpersistent_flags+=("--size")
     local_nonpersistent_flags+=("--size=")
     local_nonpersistent_flags+=("-i")
+    flags+=("--skip-shebang-check")
+    local_nonpersistent_flags+=("--skip-shebang-check")
     flags+=("--sshkey=")
     two_word_flags+=("--sshkey")
     two_word_flags+=("-k")
@@ -1755,6 +1789,7 @@ _civo_instance_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1788,6 +1823,7 @@ _civo_instance_firewall()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1821,6 +1857,7 @@ _civo_instance_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1854,6 +1891,7 @@ _civo_instance_password()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1887,6 +1925,7 @@ _civo_instance_public-ip()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1920,6 +1959,7 @@ _civo_instance_reboot()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1953,6 +1993,7 @@ _civo_instance_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -1986,6 +2027,7 @@ _civo_instance_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2019,6 +2061,7 @@ _civo_instance_size()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2052,6 +2095,7 @@ _civo_instance_soft-reboot()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2085,6 +2129,7 @@ _civo_instance_start()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2122,6 +2167,7 @@ _civo_instance_stop()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2155,6 +2201,7 @@ _civo_instance_tag()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2206,6 +2253,7 @@ _civo_instance_update()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2239,6 +2287,7 @@ _civo_instance_upgrade()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2363,6 +2412,303 @@ _civo_instance()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_assign()
+{
+    last_command="civo_ip_assign"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--instance=")
+    two_word_flags+=("--instance")
+    two_word_flags+=("-i")
+    local_nonpersistent_flags+=("--instance")
+    local_nonpersistent_flags+=("--instance=")
+    local_nonpersistent_flags+=("-i")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--instance=")
+    must_have_one_flag+=("-i")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_delete()
+{
+    last_command="civo_ip_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_ls()
+{
+    last_command="civo_ip_ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_rename()
+{
+    last_command="civo_ip_rename"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_reserve()
+{
+    last_command="civo_ip_reserve"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip_unassign()
+{
+    last_command="civo_ip_unassign"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_ip()
+{
+    last_command="civo_ip"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("assign")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("attach")
+        aliashash["attach"]="assign"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("free")
+        aliashash["free"]="delete"
+        command_aliases+=("remove")
+        aliashash["remove"]="delete"
+        command_aliases+=("rm")
+        aliashash["rm"]="delete"
+        command_aliases+=("unallocate")
+        aliashash["unallocate"]="delete"
+    fi
+    commands+=("ls")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="ls"
+        command_aliases+=("list")
+        aliashash["list"]="ls"
+    fi
+    commands+=("rename")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("change")
+        aliashash["change"]="rename"
+        command_aliases+=("update")
+        aliashash["update"]="rename"
+    fi
+    commands+=("reserve")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="reserve"
+        command_aliases+=("allocate")
+        aliashash["allocate"]="reserve"
+        command_aliases+=("new")
+        aliashash["new"]="reserve"
+    fi
+    commands+=("unassign")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("detach")
+        aliashash["detach"]="unassign"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2402,6 +2748,7 @@ _civo_kubernetes_applications_add()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2437,6 +2784,7 @@ _civo_kubernetes_applications_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2476,6 +2824,7 @@ _civo_kubernetes_applications_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2511,6 +2860,7 @@ _civo_kubernetes_applications_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2570,6 +2920,7 @@ _civo_kubernetes_applications()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2625,6 +2976,7 @@ _civo_kubernetes_config()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2707,12 +3059,6 @@ _civo_kubernetes_create()
     local_nonpersistent_flags+=("-s")
     flags+=("--switch")
     local_nonpersistent_flags+=("--switch")
-    flags+=("--version=")
-    two_word_flags+=("--version")
-    two_word_flags+=("-v")
-    local_nonpersistent_flags+=("--version")
-    local_nonpersistent_flags+=("--version=")
-    local_nonpersistent_flags+=("-v")
     flags+=("--wait")
     flags+=("-w")
     local_nonpersistent_flags+=("--wait")
@@ -2728,6 +3074,7 @@ _civo_kubernetes_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2761,6 +3108,7 @@ _civo_kubernetes_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2806,6 +3154,7 @@ _civo_kubernetes_node-pool_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2840,6 +3189,7 @@ _civo_kubernetes_node-pool_delete()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2880,6 +3230,7 @@ _civo_kubernetes_node-pool_scale()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2931,6 +3282,7 @@ _civo_kubernetes_node-pool()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -2970,6 +3322,7 @@ _civo_kubernetes_recycle()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3006,6 +3359,7 @@ _civo_kubernetes_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3046,6 +3400,7 @@ _civo_kubernetes_rename()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3079,6 +3434,7 @@ _civo_kubernetes_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3113,6 +3469,7 @@ _civo_kubernetes_size()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3135,12 +3492,6 @@ _civo_kubernetes_upgrade()
     flags_with_completion=()
     flags_completion=()
 
-    flags+=("--version=")
-    two_word_flags+=("--version")
-    two_word_flags+=("-v")
-    local_nonpersistent_flags+=("--version")
-    local_nonpersistent_flags+=("--version=")
-    local_nonpersistent_flags+=("-v")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -3152,12 +3503,11 @@ _civo_kubernetes_upgrade()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
     must_have_one_flag=()
-    must_have_one_flag+=("--version=")
-    must_have_one_flag+=("-v")
     must_have_one_noun=()
     noun_aliases=()
 }
@@ -3187,6 +3537,7 @@ _civo_kubernetes_versions()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3310,6 +3661,7 @@ _civo_kubernetes()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3343,6 +3695,7 @@ _civo_loadbalancer_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3376,6 +3729,7 @@ _civo_loadbalancer_show()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3423,6 +3777,7 @@ _civo_loadbalancer()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3456,6 +3811,7 @@ _civo_network_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3489,6 +3845,7 @@ _civo_network_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3522,6 +3879,7 @@ _civo_network_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3555,6 +3913,7 @@ _civo_network_update()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3618,6 +3977,621 @@ _civo_network()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_create()
+{
+    last_command="civo_objectstore_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--owner-access-key=")
+    two_word_flags+=("--owner-access-key")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--owner-access-key")
+    local_nonpersistent_flags+=("--owner-access-key=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--owner-name=")
+    two_word_flags+=("--owner-name")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--owner-name")
+    local_nonpersistent_flags+=("--owner-name=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--size=")
+    two_word_flags+=("--size")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--size")
+    local_nonpersistent_flags+=("--size=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    local_nonpersistent_flags+=("-w")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_create()
+{
+    last_command="civo_objectstore_credential_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-key=")
+    two_word_flags+=("--access-key")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--access-key")
+    local_nonpersistent_flags+=("--access-key=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--secret-access-key=")
+    two_word_flags+=("--secret-access-key")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--secret-access-key")
+    local_nonpersistent_flags+=("--secret-access-key=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    local_nonpersistent_flags+=("-w")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_delete()
+{
+    last_command="civo_objectstore_credential_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_export()
+{
+    last_command="civo_objectstore_credential_export"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-key=")
+    two_word_flags+=("--access-key")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--access-key")
+    local_nonpersistent_flags+=("--access-key=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    local_nonpersistent_flags+=("--format")
+    local_nonpersistent_flags+=("--format=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--access-key=")
+    must_have_one_flag+=("-a")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_ls()
+{
+    last_command="civo_objectstore_credential_ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_secret()
+{
+    last_command="civo_objectstore_credential_secret"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-key=")
+    two_word_flags+=("--access-key")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--access-key")
+    local_nonpersistent_flags+=("--access-key=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--access-key=")
+    must_have_one_flag+=("-a")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential_update()
+{
+    last_command="civo_objectstore_credential_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--access-key=")
+    two_word_flags+=("--access-key")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--access-key")
+    local_nonpersistent_flags+=("--access-key=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--secret-key=")
+    two_word_flags+=("--secret-key")
+    two_word_flags+=("-k")
+    local_nonpersistent_flags+=("--secret-key")
+    local_nonpersistent_flags+=("--secret-key=")
+    local_nonpersistent_flags+=("-k")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_credential()
+{
+    last_command="civo_objectstore_credential"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("new")
+        aliashash["new"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("destroy")
+        aliashash["destroy"]="delete"
+        command_aliases+=("remove")
+        aliashash["remove"]="delete"
+        command_aliases+=("rm")
+        aliashash["rm"]="delete"
+    fi
+    commands+=("export")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("export-credentials")
+        aliashash["export-credentials"]="export"
+    fi
+    commands+=("ls")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="ls"
+        command_aliases+=("list")
+        aliashash["list"]="ls"
+    fi
+    commands+=("secret")
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("change")
+        aliashash["change"]="update"
+        command_aliases+=("edit")
+        aliashash["edit"]="update"
+        command_aliases+=("modify")
+        aliashash["modify"]="update"
+        command_aliases+=("update")
+        aliashash["update"]="update"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_delete()
+{
+    last_command="civo_objectstore_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_ls()
+{
+    last_command="civo_objectstore_ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_resize()
+{
+    last_command="civo_objectstore_resize"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--size=")
+    two_word_flags+=("--size")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--size")
+    local_nonpersistent_flags+=("--size=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore_show()
+{
+    last_command="civo_objectstore_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_objectstore()
+{
+    last_command="civo_objectstore"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("new")
+        aliashash["new"]="create"
+    fi
+    commands+=("credential")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("credentials")
+        aliashash["credentials"]="credential"
+        command_aliases+=("creds")
+        aliashash["creds"]="credential"
+        command_aliases+=("key")
+        aliashash["key"]="credential"
+        command_aliases+=("keys")
+        aliashash["keys"]="credential"
+        command_aliases+=("user")
+        aliashash["user"]="credential"
+        command_aliases+=("users")
+        aliashash["users"]="credential"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("destroy")
+        aliashash["destroy"]="delete"
+        command_aliases+=("remove")
+        aliashash["remove"]="delete"
+        command_aliases+=("rm")
+        aliashash["rm"]="delete"
+    fi
+    commands+=("ls")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="ls"
+        command_aliases+=("list")
+        aliashash["list"]="ls"
+    fi
+    commands+=("resize")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("change")
+        aliashash["change"]="resize"
+        command_aliases+=("edit")
+        aliashash["edit"]="resize"
+        command_aliases+=("modify")
+        aliashash["modify"]="resize"
+        command_aliases+=("update")
+        aliashash["update"]="resize"
+    fi
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("get")
+        aliashash["get"]="show"
+        command_aliases+=("info")
+        aliashash["info"]="show"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3651,6 +4625,7 @@ _civo_permissions_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3691,6 +4666,7 @@ _civo_permissions()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3724,6 +4700,7 @@ _civo_quota()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3757,6 +4734,7 @@ _civo_region_current()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3790,6 +4768,7 @@ _civo_region_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3839,6 +4818,7 @@ _civo_region()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3878,6 +4858,7 @@ _civo_size_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3918,6 +4899,7 @@ _civo_size()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3957,6 +4939,7 @@ _civo_sshkey_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -3992,6 +4975,7 @@ _civo_sshkey_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4025,6 +5009,7 @@ _civo_sshkey_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4081,6 +5066,7 @@ _civo_sshkey()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4114,6 +5100,7 @@ _civo_teams_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4147,6 +5134,7 @@ _civo_teams_delete()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4180,6 +5168,7 @@ _civo_teams_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4213,6 +5202,7 @@ _civo_teams_rename()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4268,6 +5258,7 @@ _civo_teams()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4301,6 +5292,7 @@ _civo_update()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4342,6 +5334,7 @@ _civo_version()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4379,6 +5372,7 @@ _civo_volume_attach()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4424,6 +5418,7 @@ _civo_volume_create()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4463,6 +5458,7 @@ _civo_volume_detach()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4485,6 +5481,10 @@ _civo_volume_ls()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--dangling")
+    flags+=("-d")
+    local_nonpersistent_flags+=("--dangling")
+    local_nonpersistent_flags+=("-d")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -4496,6 +5496,7 @@ _civo_volume_ls()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4529,6 +5530,7 @@ _civo_volume_remove()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4599,6 +5601,7 @@ _civo_volume()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 
@@ -4647,6 +5650,11 @@ _civo_root_command()
         command_aliases+=("instances")
         aliashash["instances"]="instance"
     fi
+    commands+=("ip")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ips")
+        aliashash["ips"]="ip"
+    fi
     commands+=("kubernetes")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("k3s")
@@ -4669,6 +5677,17 @@ _civo_root_command()
         aliashash["net"]="network"
         command_aliases+=("networks")
         aliashash["networks"]="network"
+    fi
+    commands+=("objectstore")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("bucket")
+        aliashash["bucket"]="objectstore"
+        command_aliases+=("buckets")
+        aliashash["buckets"]="objectstore"
+        command_aliases+=("object")
+        aliashash["object"]="objectstore"
+        command_aliases+=("objects")
+        aliashash["objects"]="objectstore"
     fi
     commands+=("permissions")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
@@ -4725,6 +5744,7 @@ _civo_root_command()
     flags+=("--pretty")
     flags+=("--region=")
     two_word_flags+=("--region")
+    flags+=("--version")
     flags+=("--yes")
     flags+=("-y")
 

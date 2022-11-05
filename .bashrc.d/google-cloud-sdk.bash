@@ -1,8 +1,12 @@
-## https://cloud.google.com/sdk/docs/install
-# /t/google-cloud-sdk/install.sh --rc-path ~/.bashrc.d/google-cloud-sdk.bash --usage-reporting false --command-completion true --path-update true
+# gcloud installed and managed by asdf
+hash asdf || exit
+
+# https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
+export USE_GKE_GCLOUD_AUTH_PLUGIN=False
 
 # The next line updates PATH for the Google Cloud SDK.
-#if [ -f '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc' ]; then . '/home/serge/Documents/Applications/google-cloud-sdk/path.bash.inc'; fi
+## already included with asdf PATH
+#if [ -f $(asdf where gcloud)/path.bash.inc ]; then . $(asdf where gcloud)/path.bash.inc; fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/home/serge/Documents/Applications/google-cloud-sdk/completion.bash.inc' ]; then . '/home/serge/Documents/Applications/google-cloud-sdk/completion.bash.inc'; fi
+if [ -f $(asdf where gcloud)/completion.bash.inc ]; then . $(asdf where gcloud)/completion.bash.inc; fi

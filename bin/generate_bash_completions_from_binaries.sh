@@ -36,6 +36,10 @@ hash argocd >&/dev/null &&      argocd completion bash              > ${complpat
 hash mizu >&/dev/null &&        mizu completion bash                > ${complpath}/mizu${complext}
 hash talosctl >&/dev/null &&    talosctl completion bash            > ${complpath}/talosctl${complext}
 hash clusterctl >&/dev/null &&  clusterctl completion bash          > ${complpath}/clusterctl${complext}
+hash nova >&/dev/null &&        nova completion bash                > ${complpath}/nova${complext}
+hash kanctl >&/dev/null &&      kanctl completion bash              > ${complpath}/kanctl${complext}
+hash kando >&/dev/null &&       kando completion bash               > ${complpath}/kando${complext}
+
 hash kubectl-plugin_completion >&/dev/null \
                              && kubectl-plugin_completion completion bash \
                                                                     > ${complpath}/kubectl-plugin_completion${complext}
@@ -48,6 +52,8 @@ source ${complpath}/kubectl${complext}
 complete -o default -F __start_kubectl kubecolor
 EOF
 
-KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
+KUBIE_VERSION=$( (kubie --version || echo "kubie 0.17.2" ) | sed 's/kubie /v/')
 curl --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
                                                                     >  ${complpath}/kubie${complext}
+
+ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext}

@@ -1,0 +1,23 @@
+KUBECONFIG=$(ls $HOME/.kube/config*yaml | xargs | sed 's/ /:/g')
+
+function ksc() {
+  config=$(kubesess ${1:+"-v "$1} context);
+  # Prepend the $KUBECONFIG with new config
+  export KUBECONFIG=$config;
+}
+
+function kscd() {
+  kubesess ${1:+"-v "$1} default-context;
+  # Reset the $KUBECONFIG with default
+  export KUBECONFIG=$(ls $HOME/.kube/config*yaml | xargs | sed 's/ /:/g');
+}
+
+function ksn() {
+  config=$(kubesess ${1:+"-v "$1} namespace);
+  # Prepend the $KUBECONFIG with new config
+  export KUBECONFIG=$config;
+}
+
+function ksnd() {
+  kubesess ${1:+"-v "$1} default-namespace;
+}

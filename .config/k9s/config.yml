@@ -6,6 +6,7 @@ k9s:
   logoless: false
   crumbsless: false
   readOnly: false
+  noExitOnCtrlC: false
   noIcons: false
   logger:
     tail: 100
@@ -14,22 +15,22 @@ k9s:
     fullScreenLogs: false
     textWrap: false
     showTime: false
-  currentContext: autops-scw-k0
-  currentCluster: k0-scw-autops-eu
+  currentContext: ginsys-lan-kube
+  currentCluster: default
   clusters:
-    k0-scw-autops-eu:
+    default:
       namespace:
-        active: all
+        active: paperless-ngx
+        lockFavorites: false
         favorites:
-        - all
-        - flux-system
+        - paperless-ngx
         - default
       view:
         active: po
       featureGates:
         nodeShell: false
       shellPod:
-        image: busybox:1.31
+        image: busybox:1.35.0
         command: []
         args: []
         namespace: default

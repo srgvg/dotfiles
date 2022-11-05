@@ -1,6 +1,6 @@
 # The search path for the cd command. This is a colon-separated list of directories in which the
 # shell looks for destination directories specified by the cd command.
-CDPATH=".:~/src:~/src/autops:~/Documents:~"
+CDPATH=".:~/src:~/src/autops:~/Documents:~:~/src/autops/infra/opsmaster/k8s/clusters/:~/src/autops/k8s/manifests/"
 
 # don't put duplicate lines in the history. See bash(1) for more options
 # ... or force ignoredups and ignorespace
