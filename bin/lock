@@ -29,7 +29,15 @@ LOCKSLEEP=5
 # SYSTEMDSERVICE is set to yes in the systemd service unit file
 SYSTEMDSERVICE=${SYSTEMDSERVICE:-no}
 MYUID="$(id -u "${USER}")"
-PIDPATH=/run/user/${MYUID:-1000}/i3lock
+if [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK}" =~ 'i3' ]]
+then
+	PIDPATH=/run/user/${MYUID:-1000}/i3lock
+elif [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK}" =~ 'sway' ]]
+then
+	PIDPATH=/run/user/${MYUID:-1000}/swaylock
+else
+	notify-error "no i3 nor sway detected"
+fi
 PIDFILE=${PIDPATH}/pid
 install -g serge -o serge -m 700 -d "${PIDPATH}"
 
@@ -124,9 +132,19 @@ function perform_lock() {
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s"
 		time2 sleep ${LOCKSLEEP} &
 	else
-		notify "Running i3lock"
-		time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
-			|| notify-error "i3lock exited with exit code $?" &
+		if [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK}" =~ 'i3' ]]
+		then
+			notify "Running i3lock"
+			time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
+				|| notify-error "i3lock exited with exit code $?" &
+		elif [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK}" =~ 'sway' ]]
+		then
+			notify "Running swaylock"
+			time2 swaylock --show-failed-attempts --tiling --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
+				|| notify-error "swaylock exited with exit code $?" &
+		else
+			notify-error "no i3 nor sway detected"
+		fi
 	fi
 
 	# get and set i3lock pid

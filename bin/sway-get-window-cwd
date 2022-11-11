@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+# i3-get-window-criteria - Get criteria for use with i3 config commands
+
+# source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
+
+# To use, run this script, then click on a window.
+# Output is in the format: [<name>=<value> <name>=<value> ...]
+
+# Known problem: when WM_NAME is used as fallback for the 'title="<string>"'
+# criterion, quotes in "<string>" are not escaped properly. This is a problem
+# with the output of `xprop`,
+# reported upstream: https://bugs.freedesktop.org/show_bug.cgi?id=66807
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+set -x
+
+app_pid="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).pid' || echo -n 0 | sed s/null/0/ | cut -d: -f2 )"
+if [ ${app_pid} -gt 1 ] 2>/dev/null
+then
+	child_pid="$( pgrep -P ${app_pid} | tail -n1 )"
+	cwd="$(pwdx ${child_pid} | cut -d: -f2 | xargs -n1)"
+	if ! [[ "${cwd}" = /home* ]]
+	then
+		cwd=$HOME
+	fi
+fi
+echo -n "${cwd}"

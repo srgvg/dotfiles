@@ -175,7 +175,7 @@
 
 [commit]
 
-	gpgsign = false
+	gpgsign = true
 	verbose = true
 
 
@@ -189,7 +189,7 @@
 	quotepath = false
 	#pager = diff-so-fancy | less --tabs=4 -RFX
 	# https://veronneau.org/a-better-git-diff.html
-	pager =  /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
+	#pager = diff-highlight | less --tabs=4 -RFX
 	# -X:           don't talk to X11 on startup
 	# -R:           read only mode
 	# -n:           don't use a swap file
@@ -256,7 +256,6 @@
 [gpg]
 
 	program = gpg
-	#format = ssh
 
 
 [init]
@@ -331,7 +330,7 @@
 	name = Serge van Ginderachter
     email = serge@vanginderachter.be
 	#signingkey = D08FC082B8E46E8E
-	#signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFog6XphTxiKCV2GcGF35e2BuLrv7o6d+zDvTAdE/+q5 serge@minos
+    signingkey = 3148E9B9232D65E5
 
 
 [rebase]
@@ -353,8 +352,4 @@
 [includeIf "gitdir:~/src/ginsys/"]
 
 	path = ~/.gitconfig.d/ginsys
-
-[includeIf "gitdir:~/src/equans/"]
-
-	path = ~/.gitconfig.d/equans
 

@@ -18,10 +18,7 @@ PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/
 PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE)}"
 
 # include firefox google profile for youtube stuff
-PLAYERS=$(/usr/bin/playerctl --list-all | grep -v firefox ||: ;
-			for player in $(/usr/bin/playerctl --list-all | grep firefox  );
-			do  echo -n "${player} "; (wmctrl -lp ||:) | grep ${player/*instance} | awk '{$1=$2=$3=$4=""; print}' | xargs;
-			done)
+PLAYERS=$(/usr/bin/playerctl --list-all | grep -v firefox ||: ; for player in $(/usr/bin/playerctl --list-all | grep firefox  ); do  echo -n "${player} "; wmctrl -lp | grep ${player/*instance} | awk '{$1=$2=$3=$4=""; print}' | xargs; done)
 if ! echo "${PLAYERS}" | grep -q ${PLAYERCTL_ACTIVE_PLAYER}
 then
 	PLAYERCTL_ACTIVE_PLAYER=""
@@ -33,7 +30,7 @@ fi
 
 notify_debug "current players, active first: ${PLAYERS}"
 
-selected_player="$(echo "$PLAYERS" |  (rofi -dmenu -p "Select audio player: " -l 20 ||:) | awk '{print $1}')"
+selected_player="$(echo "$PLAYERS" |  (rofi -dmenu -p "Select audio player: " -l 20 || wofi -dmenu -p "Select audio player: " -l 20||:) | awk '{print $1}')"
 if [ -n "${selected_player}" ]
 then
 	notify_debug "selected player: ${selected_player}"

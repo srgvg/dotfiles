@@ -60,13 +60,13 @@ while [ $try -lt "$sink_count" ]; do
 		for sink_input in $(list_inputs); do
 			pactl move-sink-input "$sink_input" "$next_sink_id"
 		done
-		notify-send "Audio on ${next_sink#*:::}"
+		dunstify "Audio on ${next_sink#*:::}"
 		exit 0
 	else
-		notify-send "Audio failed to be set on ${next_sink#*:::}" \
+		dunstify "Audio failed to be set on ${next_sink#*:::}" \
 			"trying next sink"
 	fi
 done
 
-notify-send "No available Audio sinks"
+dunstify "No available Audio sinks"
 exit 1

@@ -1,0 +1,205 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 expandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+## Parameters
+SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default}" # no trailing slash!
+SETBG_LOOP_DELAY="${SETBG_LOOP_DELAY:-900}"
+p1="${1:-}"
+p2="${2:-}"
+
+
+## Functions
+
+checktarget() {
+	# verify the kind of target we have
+	local _target
+	_target=${1:-}
+    notify_debug "Verifying target '${_target}'"
+    if [ ! -r "${_target}" ] || [ ! -f "${_target}" ]
+	then
+		if [ -r "$HOME/${_target}" ]
+		then
+				target="$HOME/${_target}"
+		elif [ -r "${BACKGROUND_PICTURES}/${_target}" ]
+		then
+				target="${BACKGROUND_PICTURES}/${_target}"
+		else
+			deeptarget=$(find ${BACKGROUND_PICTURES} -maxdepth 3 \
+				-name $(basename ${_target}) -type d 2>/dev/null \
+				| grep ${_target} 2>/dev/null || : | sort | head -n 1 )
+			if [ -r "${deeptarget}" ]
+				then target="${deeptarget}"
+			else
+				notify_error "setbg: cannot find target ${_target}"
+			fi
+		fi
+	else
+		target=${_target}
+	fi
+    notify_debug "Resolved target '${_target}' to '${target}'"
+    background="$(readlink -e "${target}")"
+}
+
+pickpic() {
+   ## pick a picture
+    # get picture according to target
+    # target is set to a file/dir we can read
+    if [ -d "${target}" ]
+    then # if directory, the pick a random picture
+        pictures="${target}"
+        # disable shell expansion for the iregex
+        set -o noglob
+       # disable pipefail - when head quits, find doesn't like loosing its reader
+       set +o pipefail
+        # Pick random picture
+        background="$(find -L ${pictures} \
+				-type f \
+				\( -iregex '.*.jpg' -o -iregex '.*.png' \) | sort -R | head -n 1)"
+        # reenable options
+        set +o noglob
+
+    else # a file, should be a picture
+        background="${target}"
+    fi
+    background=$(readlink -e "${background}")
+    notify_debug "Selecting background '${background}'"
+}
+
+displaybg() {
+    # set the background
+    #/usr/bin/feh --bg-fill --recursive --randomize "${background}"
+    oldpid="$( pgrep swaybg | xargs -n 1)"
+    swaybg --color '#000000' --mode fill --output '*' --image "${background}" &
+    newpid=$!
+    kill ${oldpid}
+    notify_debug "Set the background"
+    #wait ${newpid}
+}
+
+trap_loop() {
+	echo
+    notify_debug "Set the next background..."
+    trap - SIGINT # clear the trap so we can really stop the loop here
+    sleep 0.5
+}
+
+loop() {
+    notify_debug "Starting setbg in loop mode"
+    while true
+    do
+		echo -n "$(date +%H:%M) "
+        setbg ${target}
+        # press ctrl-c to change wallpaper, or twice to exit
+		set +o errexit # errexit overrides trap
+        trap trap_loop SIGINT
+        sleep ${SETBG_LOOP_DELAY}
+    done
+}
+
+loopnext() {
+	pgrep --full "setsbg loop" >/dev/null && pkill -SIGINT --parent $(pgrep --full "setsbg loop" | head -n 1)
+}
+
+showpath() {
+    # show which picture is used
+    notify_debug "Show which picture is used"
+	file="$(readlink --canonicalize ${background})"
+	filename=$(basename "${file}")
+	dirname=$(dirname "${file}")
+	echo "${dirname}/${filename}"
+}
+
+notifypath() {
+    # show and notify which picture is used
+	showpath
+	dirname=$(dirname "${file}" | sed s@/home/serge/Dropbox/Media/Pictures/@@)
+	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}\n\n${filename}" video-display setbg
+}
+
+setbg() {
+    checktarget $1
+    pickpic
+    displaybg
+    showpath
+}
+
+lock() {
+    checktarget $1
+	pickpic
+	echo ${background}
+	rm -f "${LOCK_SCREEN_IMAGE}"
+	cp --dereference "$(realpath --canonicalize-existing ${background})" "${LOCK_SCREEN_IMAGE}"
+}
+
+defaultbg() {
+	$HOME/bin/loop							# stop current loop
+    target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
+    setbg ${target}							# pick and set a background
+}
+
+showbg() {
+	:
+}
+
+main() {
+	local action
+
+    if [ -z "$p1" ]				## ZERO PARAMETERS
+    then						# default action
+		p1="${SETBG_DEFAULT_BACKGROUND}"					# show which background
+	fi
+
+    if [ -z "$p2" ]			## ONE PARAMETER
+    then						#	action without argument, or
+		case ${p1} in			#	just a target
+			'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
+				loopnext || defaultbg
+				;;
+			'lock'|'loop')		# these need a parameter
+				notify_error "setbg: The action '${p1}' needs a parameter"
+				;;
+			'next')
+				loopnext
+				;;
+			'def*')				# default
+				defaultbg
+				;;
+			'show')
+				showbg
+				;;
+			*)					# must be a target
+				target="${p1}"
+				setbg "${target}"
+				;;
+		esac
+	else						## TWO PARAMERS
+        action="${p1}"			#   action with
+        target="${p2}"			#   parameter
+		case ${action} in
+			'lock')				# generate a lock screen with given target
+				lock ${target}
+				;;
+			'loop')
+				loop
+				;;
+			*)
+				notify_error "setbg: Unknown action: ${action}"
+				;;
+			esac
+    fi
+}
+
+cd ~
+main
+

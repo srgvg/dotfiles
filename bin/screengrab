@@ -12,28 +12,28 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-screenshotdir="$HOME/tmp"
-imagefile="${screenshotdir}/$(date +%Y%m%d%H%M%S).png"
-util="/usr/bin/maim --delay 0.2 --format=png --quality 7 --quiet"
+screenshotdir="$HOME/t"
+imagefile="${screenshotdir}/$(date +%Y%m%d-%H%M%S).png"
+util="/usr/bin/grimshot save"
 
 action="${1:-select}"
 notify_debug "Got action '${action}'"
 case ${action} in
     select)
-        options="--select --bordersize 5 --highlight --color 0.3,0.4,0.6,0.4"
+        options="area"
         ;;
     window)
-        options="--window $(xdotool getactivewindow 2>/dev/null)"
+        options="active"
         ;;
     screen)
-		options="--geometry $(curdispcoor 2>/dev/null)"
+	options="output"
         ;;
     full)
-        options=""
+        options="screen"
         ;;
 	*)
-		errexit "Unknown action ${action}"
-		;;
+	errexit "Unknown action ${action}"
+	;;
 esac
 grabcommand="${util} ${options} ${imagefile}"
 notify_debug "executing ${grabcommand}"

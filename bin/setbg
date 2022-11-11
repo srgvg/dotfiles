@@ -79,7 +79,8 @@ pickpic() {
 
 displaybg() {
     # set the background
-    /usr/bin/feh --bg-fill --recursive --randomize "${background}"
+    #/usr/bin/feh --bg-fill --recursive --randomize "${background}"
+    swaymsg output "*" "${background}" fill
     notify_debug "Set the background"
 }
 

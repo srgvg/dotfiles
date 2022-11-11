@@ -31,7 +31,6 @@ alias gls='git lol'
 alias gld='git lold'
 alias glt='git lolt'
 alias grep='grep --color=auto'
-alias greph='ack --passthru --color'
 alias grepr='grep --line-number --initial-tab --recursive'
 hash kubecm >&/dev/null && alias ngron="gron --ungron"
 alias gsmu='git submodule update'
@@ -43,45 +42,36 @@ alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
-
-# kubectl begin
 alias k="kubectl"
 if hash kubecolor >&/dev/null; then
     alias k="kubecolor"
     alias kubectl="kubecolor"
 fi
 complete -F _complete_alias k
-alias krc="kubectl config rename-context"
-complete -F _complete_alias krc
 alias kailns="kail --current-ns"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
-# kubectl end
-
+alias ksw="switcher"
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'
-alias lessc='less -r'
 alias ls='ls --color=auto'
 alias locateh="locate --all --existing --follow --ignore-case /home/serge/"
-alias o='gnome-open'
-alias paste='xclip -out -selection c'
+alias o='xdg-open'
+alias paste='wl-paste --no-newline --primary'
 alias pbin='pbincli send'
 alias ping1="ping -c 1 "
 alias ping3="ping -c 3 "
-alias pip='pip3'
 alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
-alias r='ranger'
-alias rp='realpath'
+alias r="ranger"
 alias shredit='shred --verbose --iterations 5 --zero --remove'
 alias showpath="readlink -f"
 alias ssh-nc="ssh -S none"
 alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
-alias svn-addall='svn add `svn status | grep ? | cut -d\  -f2- | xargs`'
 alias swappy="/sbin/sysctl vm.swappiness"
 alias sysl="tail -n 200 -f /var/log/syslog"
 alias trsh="transfer.sh"

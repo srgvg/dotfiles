@@ -6,7 +6,6 @@ k9s:
   logoless: false
   crumbsless: false
   readOnly: false
-  noExitOnCtrlC: false
   noIcons: false
   logger:
     tail: 100
@@ -15,22 +14,22 @@ k9s:
     fullScreenLogs: false
     textWrap: false
     showTime: false
-  currentContext: ginsys-lan-kube
-  currentCluster: default
+  currentContext: totem-do-k0
+  currentCluster: totem-do-k0
   clusters:
-    default:
+    totem-do-k0:
       namespace:
-        active: paperless-ngx
-        lockFavorites: false
+        active: all
         favorites:
-        - paperless-ngx
+        - all
+        - kapex
         - default
       view:
-        active: po
+        active: pod
       featureGates:
         nodeShell: false
       shellPod:
-        image: busybox:1.35.0
+        image: busybox:1.31
         command: []
         args: []
         namespace: default

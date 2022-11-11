@@ -14,13 +14,13 @@ source "$HOME/bin/common.bash"
 
 t=1
 
-notify-send -u low          "Don't be bothered $RANDOM" \
+dunstify -u low          "Don't be bothered $RANDOM" \
                             "There's a man walking down the street"
 sleep $t
 
-notify-send -u normal       "Have a look $RANDOM" \
+dunstify -u normal       "Have a look $RANDOM" \
                             "There's a woman walking down the street"
 sleep $t
 
-notify-send -u critical     "Watch out! $RANDOM" \
+dunstify -u critical     "Watch out! $RANDOM" \
                             "There\'s a hot chick in bikini at your window"

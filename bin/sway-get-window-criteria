@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+# i3-get-window-criteria - Get criteria for use with i3 config commands
+
+# source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
+
+# To use, run this script, then click on a window.
+# Output is in the format: [<name>=<value> <name>=<value> ...]
+
+# Known problem: when WM_NAME is used as fallback for the 'title="<string>"'
+# criterion, quotes in "<string>" are not escaped properly. This is a problem
+# with the output of `xprop`,
+# reported upstream: https://bugs.freedesktop.org/show_bug.cgi?id=66807
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+
+app_id="app_id=\"$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).app_id'| sed s/null// )\""
+window_properties="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).window_properties | to_entries|map("\(.key)=\(.value|tostring)")|.[]' | grep -v title ||: | sed -e s/=/=\"/ -e s/$/\"/)"
+
+echo "${app_id} ${window_properties}" | xargs
+echo "[${app_id} ${window_properties}]" | xargs | wl-copy
+notify_desktop_always low "Sway Window Properties" "${app_id}\n${window_properties}"

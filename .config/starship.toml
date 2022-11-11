@@ -92,16 +92,17 @@ min_time_to_notify = 30_000
 disabled = false
 truncation_length = 5
 truncate_to_repo = false
-repo_root_style = "bold yellow"
 # The number of characters to use when applying fish shell pwd path logic.
-fish_style_pwd_dir_length = 10
+#fish_style_pwd_dir_length = 10
 # Displays the logical path provided by the shell (PWD) instead of the path from the OS.
-use_logical_path = false
-style = "bold cyan"
+use_logical_path = true
 read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
 format = "[$path]($style)[ $read_only]($read_only_style) "
+style = "bold cyan"
+repo_root_style = "bold yellow"
+repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 home_symbol = "~"
 
 #[directory.substitutions]
@@ -181,7 +182,7 @@ symbol = "GCP "
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "k8s"
+symbol = "K8S"
 format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 style = "cyan bold"
 #namespace_spaceholder = "none"
