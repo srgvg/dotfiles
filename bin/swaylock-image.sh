@@ -21,7 +21,7 @@ source "$HOME/bin/common.bash"
 IMAGES=""
 PICTURE=$HOME/Pictures/Backgrounds/default/joseph-barrientos-eUMEWE-7Ewg.png
 LOCK=$HOME/Documents/Pictures/icons/i3lock/lock.png
-LOCKARGS="$*"
+LOCKARGS="-f -c 000000"
 
 IMAGE=/tmp/lock.png
 composite -gravity center $LOCK $PICTURE $IMAGE

@@ -24,8 +24,6 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-set -x
-
 app_pid="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).pid' || echo -n 0 | sed s/null/0/ | cut -d: -f2 )"
 if [ ${app_pid} -gt 1 ] 2>/dev/null
 then
@@ -36,4 +34,7 @@ then
 		cwd=$HOME
 	fi
 fi
-echo -n "${cwd}"
+if [ -n "${cwd:-}" ]
+then
+	echo -n "${cwd}"
+fi
