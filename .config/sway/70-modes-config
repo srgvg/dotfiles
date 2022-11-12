@@ -1,0 +1,83 @@
+#######################################################################################################################
+#
+# Modes
+#
+#
+# Control swaynag with the keyboard
+#
+
+set $nag exec swaynagmode
+mode "nag" {
+  bindsym {
+    Ctrl+d    mode "default"
+
+    Ctrl+c    $nag --exit
+    q         $nag --exit
+    Escape    $nag --exit
+
+    Return    $nag --confirm
+
+    Tab       $nag --select prev
+    Shift+Tab $nag --select next
+
+    Left      $nag --select next
+    Right     $nag --select prev
+
+    Up        $nag --select next
+    Down      $nag --select prev
+  }
+}
+
+
+# resize window (you can also use the mouse for that)
+#
+set $mode_resize Resize Window
+bindsym $mod+Control+$Alt+r mode "$mode_resize"
+mode "$mode_resize" {
+		# These bindings trigger as soon as you enter the resize mode
+
+		# Pressing left will shrink the window’s width.
+		# Pressing right will grow the window’s width.
+		# Pressing up will shrink the window’s height.
+		# Pressing down will grow the window’s height.
+		bindsym j resize shrink width 10 px or 10 ppt
+		bindsym k resize grow height 10 px or 10 ppt
+		bindsym l resize shrink height 10 px or 10 ppt
+		bindsym semicolon resize grow width 10 px or 10 ppt
+
+		# same bindings, but for the arrow keys
+		bindsym Left resize shrink width 10 px or 10 ppt
+		bindsym Down resize grow height 10 px or 10 ppt
+		bindsym Up resize shrink height 10 px or 10 ppt
+		bindsym Right resize grow width 10 px or 10 ppt
+
+		# back to normal: Enter or Escape
+		bindsym Return mode "default"
+		bindsym Escape mode "default"
+		bindsym $mod+Control+$Alt+r mode "default"
+}
+
+set $mode_moveit Move Window
+bindsym $mod+Control+$Alt+m mode "$mode_moveit"
+mode "$mode_moveit" {
+		bindsym Up move up			50px
+		bindsym Left move left		50px
+		bindsym Down move down		50px
+		bindsym Right move right	50px
+		# back to normal: Enter or Escape
+		bindsym Return mode "default"
+		bindsym Escape mode "default"
+		bindsym $mod+Control+$Alt+m mode "default"
+}
+
+set $mode_system x Exit | [Shift] d [de-]activate Debugging
+bindsym $mod+Control+$Alt+q mode "$mode_system"
+mode "$mode_system" {
+	bindsym x exit
+	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
+	bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
+	# back to normal: Enter or Escape
+	bindsym Return mode "default"
+	bindsym Escape mode "default"
+	bindsym $mod+Control+$Alt+q mode "default"
+}

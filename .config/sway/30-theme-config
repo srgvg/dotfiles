@@ -1,0 +1,94 @@
+#######################################################################################################################
+#
+## default background
+#
+#output "*" bg $HOME/Pictures/Backgrounds/default/borg_cube.png fill
+output "*" bg $HOME/.swaybg fill
+
+#
+#######################################################################################################################
+#
+# gaps
+#
+# smart_gaps on|off|toggle|inverse_outer
+smart_gaps on
+#     If smart_gaps are on gaps will only be enabled if a workspace has more than one
+#     child. If smart_gaps are inverse_outer outer gaps will only be enabled if a
+#     workspace has exactly one child.
+#
+# gaps inner|outer|horizontal|vertical|top|right|bottom|left <amount>
+#     Sets default amount pixels of inner or outer gap, where the inner affects spac‐
+#     ing around each view and outer affects the spacing around each workspace. Outer
+#     gaps are in addition to inner gaps. To reduce or remove outer gaps, outer gaps
+#     can be set to a negative value. outer gaps can also be specified per side with
+#     top, right, bottom, and left or per direction with horizontal and vertical.
+#
+#     This affects new workspaces only, and is used when the workspace doesn't have
+#     its own gaps settings (see: workspace <ws> gaps ...). 
+#
+gaps inner 1
+gaps outer -1
+
+# smart_borders on|no_gaps|off
+#     If smart_borders are on, borders will only be enabled if the workspace has more than one visible child. If smart_borders is set to no_gaps, borders will only be enabled if
+#     the workspace has more than one visible child and gaps equal to zero.
+smart_borders on
+#
+#######################################################################################################################
+#
+## parameters
+#
+
+set $dark               #000000
+set $light              #FFFFFF
+set $lessdark           #333333
+set $lesslight          #BBBBBB
+set $red                #FF0000
+set $IGNORED            #000000
+
+# custom overrides
+set $focus              #3250FF
+
+#######################################################################################################################
+#
+## Colors, borders, layout, fonts
+#
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below. ISO 10646 = Unicode
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# The font above is very space-efficient, that is, it looks good, sharp and
+# clear in small sizes. However, if you need a lot of unicode glyphs or
+# right-to-left text rendering, you should instead use pango for rendering and
+# chose a FreeType font, such as:
+font pango:FontAwesome Solid 14, Monospace 14
+
+# To set the cursor theme and size:
+#seat seat0 xcursor_theme my_cursor_theme my_cursor_size
+#
+#######################################################################################################################
+#
+## Client Container Colors
+#
+
+# !! border colour is the color for the 2 horizontal lines of the titlebar; the
+# !! border of the whole container is the same as the background of the title bar
+# The cleanest is to keep border and background the same
+#
+## client windows		border				background			text				indicator (indicates vertical or horizontal split)
+#
+# A client which is not the focused one of its container.
+client.unfocused		$lessdark			$lessdark			$lesslight			$dark
+
+# A client currently focused in its container, but does not have focus now.
+client.focused_inactive 	$lesslight			$lesslight			$lessdark			$dark
+
+# A client which currently has the focus.
+client.focused			$focus				$focus				$light				$lesslight
+
+# A client which has its urgency hint activated.
+client.urgent			$red				$red				$light				$red
+
+#Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
+client.placeholder		$IGNORED			$dark				$lesslight			$IGNORED
+

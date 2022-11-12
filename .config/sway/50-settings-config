@@ -1,0 +1,89 @@
+#######################################################################################################################
+#
+## workspace and window properties
+#
+
+# When a new window appears, it will be focused. The no_focus directive allows
+# preventing this from happening
+no_focus [window_role="pop-up"]
+
+# mouse settings
+focus_follows_mouse yes
+
+# mouse_warping output|container|none
+#     If output is specified, the mouse will be moved to new outputs as you move focus
+#     between them. If container is specified, the mouse will be moved to the middle
+#     of the container on switch. Default is output.
+mouse_warping output
+
+# Focus on window activation
+# smart: (default) If the window requesting focus is on an active workspace, it
+# will receive the focus. Otherwise, the urgency hint will be set.
+# urgent: The window will always be marked urgent, but the focus will not be stolen.
+# focus: The window will always be focused and not be marked urgent.
+# none: The window will neither be focused, nor be marked urgent.
+#focus_on_window_activation smart|urgent|focus|none
+focus_on_window_activation smart
+
+# If activated, marks on windows are drawn in their window decoration. However,
+# any mark starting with an underscore in its name (_) will not be drawn even
+# if this option is activated.
+show_marks yes
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# <default|stacking|tabbed>
+workspace_layout default
+
+# split orientation <horizontal|vertical|auto>
+default_orientation auto
+
+# popup_during_fullscreen <smart|ignore|leave_fullscreen>
+popup_during_fullscreen smart
+
+# When being in a tabbed or stacked container, the first container will be
+# focused when you use focus down on the last container — the focus wraps. If
+# however there is another stacked/tabbed container in that direction, focus
+# will be set on that container. This is the default behavior so you can
+# navigate to all your windows without having to use focus parent.
+# If you want the focus to always wrap and you are aware of using focus parent
+# to switch to different containers, you can use the force_focus_wrapping
+# configuration directive. After enabling it, the focus will always wrap.
+# force_focus_wrapping <yes|no>
+focus_wrapping no
+
+# This configuration directive enables automatic workspace back_and_forth when
+# switching to the workspace that is currently focused.
+workspace_auto_back_and_forth yes
+
+# If an application on another workspace sets an urgency hint, switching to
+# this workspace may lead to immediate focus of the application, which also
+# means the window decoration color would be immediately resetted to
+# client.focused. This may make it unnecessarily hard to tell which window
+# originally raised the event. In order to prevent this, you can tell i3 to
+# delay resetting the urgency state by a certain time using the
+# force_display_urgency_hint directive.
+# Setting the value to 0 disables this feature. The default is 500ms.
+force_display_urgency_hint 3000 ms
+
+# <none|vertical|horizontal|both|smart> :
+hide_edge_borders smart
+
+# By default, when switching focus to a window on a different output (e.g.
+# focusing a window on workspace 3 on output VGA-1, coming from workspace 2 on
+# LVDS-1), the mouse cursor is warped to the center of that window.
+# With the mouse_warping option, you can control when the mouse cursor should
+# be warped. none disables warping entirely, whereas output is the default
+# behavior described above.
+#mouse_warping output|none
+
+#######################################################################################################################
+#
+## Client default rules, seems to be put after the assignments & rules
+#
+
+# new window default border <normal|1pixel|none|pixel> :
+default_border	$defaultborder
+default_floating_border	$defaultborder
+

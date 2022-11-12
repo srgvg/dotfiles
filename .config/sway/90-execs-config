@@ -1,0 +1,52 @@
+#######################################################################################################################
+#
+# service like execs
+#
+
+# https://elis.nu/blog/2021/02/detailed-setup-of-screen-sharing-in-sway/
+exec_always dbus-update-activation-environment WAYLAND_DISPLAY
+
+# By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
+# A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
+exec_always pkill wl-paste ; wl-paste --primary --no-newline --watch clipman store &
+
+exec_always pkill swayidle ;  \
+	swayidle -d -w \
+	lock "dunstctl set-paused true & $lockscreen"  \
+	unlock "dunstctl set-paused false & pkill wl-paste ; wl-paste --primary --no-newline --watch clipman store" \
+	before-sleep 'playerctl pause & $lockscreen ; swaymsg "output * dpms off"'  \
+	after-resume 'swaymsg "output * dpms on" ; pkill wl-paste ; wl-paste --primary --no-newline --watch clipman store &' \
+	timeout 3600 '$lockscreen'  \
+	timeout 3900 'swaymsg "output * dpms off"'  \
+	resume 'swaymsg "output * dpms on"'  \
+	idlehint 1500 \
+	2>&1 | tee --append $HOME/logs/swayidle.log
+
+#
+# settings
+#
+
+exec --no-startup-id "nmcli radio wifi off" # disable wifi
+exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
+exec --no-startup-id "nmcli radio wwan off"
+
+#exec_always --no-startup-id "setsbg redisplay"
+#
+## startup
+#
+
+# tray stuff
+exec_always "pgrep nm-applet || nm-applet --indicator &"
+exec_always "pgrep pasystray || pasystray &"
+exec_always "pgrep blueman-applet || blueman-applet &"
+exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-applet &"
+exec_always "pgrep -f SynologyDrive.app/bin/cloud-drive-ui || /home/serge/bin/synology-drive &"
+exec_always "pgrep vorta || vorta --daemonize &"
+exec_always "pgrep nextcloud || nextcloud --background"
+
+# desktop stuff
+#
+exec_always "pgrep signal-desktop || signal-desktop &"
+exec_always "~/bin/mattermost-desktop &"
+exec_always "/usr/bin/slack &"
+

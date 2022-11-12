@@ -1,0 +1,35 @@
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t; max_line_length: 119
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+#######################################################################################################################
+#
+# sway config file (v4)
+#
+# Default available at ~/.config/sway/config and edit it to your liking.
+#
+# Read `man 5 sway` for a complete reference.
+# Debian page: https://wiki.debian.org/sway
+#
+#######################################################################################################################
+#
+xwayland enable
+
+#
+#######################################################################################################################
+#
+## early
+
+# Manage Sway-specific daemons with systemd
+# create a sway-session.target and let those daemons/services wanted by sway-session.target.
+# This systemd target should be a user target (see systemd/User). For example:
+# see ~/.config/systemd/user/sway-session.target
+exec_always "systemctl --user import-environment; systemctl --user start sway-session.target"
+
+
+#
+#######################################################################################################################
+#
+## include configs
+
+include /etc/sway/config.d/*
+include ~/.config/sway/*-config
