@@ -1,18 +1,18 @@
 {
     "layer": "top", // Waybar at top layer
     "position": "top", // Waybar position (top|bottom|left|right)
-    "output": "DP-3",
+    "output": "DP-2",
     "height": 30, // Waybar height (to be removed for auto height)
 
     // "width": 1280, // Waybar width
-    "spacing": 1, // Gaps between modules (4px)
+    "spacing": 6, // Gaps between modules (4px)
     "mode": "dock",
 
 
     // Choose the order of the modules
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
-    "modules-center": ["custom/media"],
-    "modules-right": ["network", "temperature", "cpu", "memory", "pulseaudio", "keyboard-state", "tray", "clock"],
+    "modules-center": [],
+    "modules-right": ["custom/media", "network", "temperature", "cpu", "memory", "pulseaudio", "keyboard-state", "tray", "clock"],
 
 
     // Modules configuration
@@ -108,7 +108,7 @@
     "custom/media": {
         "format": "{icon} {}",
         "return-type": "",
-        "max-length": 40,
+        "max-length": 100,
         "format-icons": {
             "spotify": "",
             "default": "🎜"

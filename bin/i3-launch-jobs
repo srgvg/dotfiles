@@ -15,6 +15,16 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+	signal-desktop
+	mattermost-desktop
+	slack
+	teams
+	discord
+	telegram
+	vorta
+	nextcloud
+	/home/serge/bin/synology-drive
+	$HOME/bin2/firefox.real
 EOF
 )
 
@@ -64,7 +74,7 @@ then
 	notify_debug "Check if there is an attached screen"
 	if pgrep -f "screen -D -r i3jobs" >/dev/null
 	then
-		wmctrl -a i3jobs
+		: #wmctrl -a i3jobs
 	else
 		notify "start a terminal and attach"
 		alacritty --class i3jobs --title i3jobs --command screen -D -r i3jobs & >/dev/null 2>&1

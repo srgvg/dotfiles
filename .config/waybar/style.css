@@ -81,7 +81,8 @@ window#waybar.chromium {
 }
 
 #clock {
-    background-color: #3250FF;;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #battery {
@@ -116,68 +117,90 @@ label:focus {
 }
 
 #cpu {
-    background-color: #cc2200;
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #memory {
-    background-color: #cc2200;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #disk {
-    background-color: #964B00;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #backlight {
-    background-color: #90b1b1;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #network {
-    background-color: #2980b9;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #network.disconnected {
     background-color: #f53c3c;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #pulseaudio {
-    background-color: #f1c40f;
-    color: #000000;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
 }
 
 #pulseaudio.muted {
     background-color: #90b1b1;
+    box-shadow: inset 0 -3px #ffffff;
     color: #2a5c45;
 }
 
 #custom-media {
-    background-color: #66cc99;
-    color: #2a5c45;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
     min-width: 100px;
 }
 
 #custom-media.custom-spotify {
     background-color: #66cc99;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #custom-media.custom-vlc {
     background-color: #ffa000;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #temperature {
-    background-color: #00cc00;
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #temperature.critical {
     background-color: #f0932b;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #tray {
-    background-color: #3250FF;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
+/*
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
+*/
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
@@ -185,51 +208,41 @@ label:focus {
 }
 
 #idle_inhibitor {
-    background-color: #2d3436;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #idle_inhibitor.activated {
-    background-color: #ecf0f1;
+    background-color: #000000;;
     color: #2d3436;
-}
-
-#mpd {
-    background-color: #66cc99;
-    color: #2a5c45;
-}
-
-#mpd.disconnected {
-    background-color: #f53c3c;
-}
-
-#mpd.stopped {
-    background-color: #90b1b1;
-}
-
-#mpd.paused {
-    background-color: #51a37a;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #language {
-    background: #00b093;
+    background-color: #000000;;
     color: #740864;
     padding: 0 5px;
     margin: 0 5px;
     min-width: 16px;
+    box-shadow: inset 0 -3px #ffffff;
 }
 
 #keyboard-state {
-    background: #3250FF;
-    color: #000000;
+    background: #000000;
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
     padding: 0 0px;
     margin: 0 5px;
     min-width: 16px;
 }
 
+/*
 #keyboard-state > label {
-    padding: 0 5px;
+    padding: 0 0px;
 }
 
 #keyboard-state > label.locked {
-    background: rgba(0, 0, 0, 0.2);
+    background-color: #000000;;
 }
+*/

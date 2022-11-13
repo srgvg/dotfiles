@@ -6,6 +6,12 @@
 # https://elis.nu/blog/2021/02/detailed-setup-of-screen-sharing-in-sway/
 exec_always dbus-update-activation-environment WAYLAND_DISPLAY
 
+
+#exec_alway pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+#exec_alway pgrep lxpolkit || lxpolkit
+exec_always pgrep -f polkit-mate-authentication-agent-1 || /usr/lib/x86_64-linux-gnu/polkit-mate/polkit-mate-authentication-agent-1
+
+
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
 exec_always pkill wl-paste ; wl-paste --primary --no-newline --watch clipman store &
@@ -36,17 +42,13 @@ exec --no-startup-id "nmcli radio wwan off"
 #
 
 # tray stuff
+#
 exec_always "pgrep nm-applet || nm-applet --indicator &"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-applet &"
-exec_always "pgrep -f SynologyDrive.app/bin/cloud-drive-ui || /home/serge/bin/synology-drive &"
-exec_always "pgrep vorta || vorta --daemonize &"
-exec_always "pgrep nextcloud || nextcloud --background"
 
 # desktop stuff
 #
-exec_always "pgrep signal-desktop || signal-desktop &"
-exec_always "~/bin/mattermost-desktop &"
-exec_always "/usr/bin/slack &"
+exec_always "$HOME/bin/i3-launch-jobs"
 

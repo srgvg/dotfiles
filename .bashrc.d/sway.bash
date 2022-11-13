@@ -10,3 +10,4 @@ export XDG_SESSION_TYPE=wayland
 
 export TERMINAL="alacritty"
 export MOZ_ENABLE_WAYLAND=1 
+export WLR_DRM_NO_MODIFIERS=1

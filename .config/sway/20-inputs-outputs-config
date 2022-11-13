@@ -7,11 +7,17 @@ input "type:keyboard" {
 	xkb_numlock "enabled"
 }
 
-set $secondary DP-2
-set $primary DP-3
+set $primary DP-2
+set $secondary DP-3
 
-set $secondary DP-2
-set $primary DP-3
+output $primary enable
+output $primary dpms on
+output $primary pos 1080 240 res 3440x1440
+output $secondary enable
+output $secondary dpms on
+output $secondary pos 0 0 res 3840x2160
+output $secondary scale 2
+output $secondary transform 270
 
 ## Automatically putting workspaces on specific screens
 workspace 0     output $secondary
@@ -37,8 +43,3 @@ workspace 19    output $primary
 workspace 20    output $primary
 workspace 21    output $primary
 workspace 22    output $primary
-
-output $secondary pos 0 0 res 3840x2160
-output $secondary scale 2
-output $secondary transform 270
-output $primary pos 1080 240 res 3440x1440
