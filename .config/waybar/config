@@ -5,14 +5,14 @@
     "height": 30, // Waybar height (to be removed for auto height)
 
     // "width": 1280, // Waybar width
-    "spacing": 6, // Gaps between modules (4px)
+    "spacing": 7, // Gaps between modules (4px)
     "mode": "dock",
 
 
     // Choose the order of the modules
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
-    "modules-center": [],
-    "modules-right": ["custom/media", "network", "temperature", "cpu", "memory", "pulseaudio", "keyboard-state", "tray", "clock"],
+    "modules-center": ["custom/media"],
+    "modules-right": ["network", "pulseaudio", "temperature", "cpu", "memory", "pulseaudio", "tray", "clock"],
 
 
     // Modules configuration

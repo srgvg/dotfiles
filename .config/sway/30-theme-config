@@ -42,9 +42,10 @@ smart_borders on
 set $dark               #000000
 set $light              #FFFFFF
 set $lessdark           #333333
+set $grey 		#545454
 set $lesslight          #BBBBBB
 set $red                #FF0000
-set $IGNORED            #000000
+set $ignored            #000000
 
 # custom overrides
 set $focus              #3250FF
@@ -71,24 +72,51 @@ font pango:FontAwesome Solid 14, Monospace 14
 ## Client Container Colors
 #
 
-# !! border colour is the color for the 2 horizontal lines of the titlebar; the
-# !! border of the whole container is the same as the background of the title bar
-# The cleanest is to keep border and background the same
+# client.<class> <border> <background> <text> [<indicator> [<child_border>]]
+#     Configures the color of window borders and title bars. The first three colors are required. When omitted indicator will use a sane default and child_border will use the color
+#     set for background. Colors may be specified in hex, either as #RRGGBB or #RRGGBBAA.
 #
-## client windows		border				background			text				indicator (indicates vertical or horizontal split)
+#     The meaning of each color is:
 #
-# A client which is not the focused one of its container.
-client.unfocused		$lessdark			$lessdark			$lesslight			$dark
-
-# A client currently focused in its container, but does not have focus now.
-client.focused_inactive 	$lesslight			$lesslight			$lessdark			$dark
-
-# A client which currently has the focus.
-client.focused			$focus				$focus				$light				$lesslight
-
-# A client which has its urgency hint activated.
-client.urgent			$red				$red				$light				$red
-
-#Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-client.placeholder		$IGNORED			$dark				$lesslight			$IGNORED
-
+#     border
+#         The border around the title bar.
+#
+#     background
+#         The background of the title bar.
+#
+#     text
+#         The text color of the title bar.
+#
+#     indicator
+#         The color used to indicate where a new view will open. In a tiled container, this would paint the right border of the current view if a new view would be opened to the
+#         right.
+#
+#     child_border
+#         The border around the view itself.
+#
+## client windows		border		background	text		indicator 	child_border
+## client windows		border		background	text		indicator 	child_border
+## client windows		border		background	text		indicator 	child_border
+#
+#     The available classes are:
+#
+#     client.focused
+#         The window that has focus.
+client.focused			$focus		$focus		$light		$light 		$focus
+#
+#     client.focused_inactive
+#         The most recently focused view within a container which is not focused.
+client.focused_inactive		$dark		$lesslight	$dark		$lesslight	$lesslight
+#
+#     client.focused_tab_title
+#         A view that has focused descendant container. Tab or stack container title that is the parent of the focused container but is not directly focused. Defaults to 
+#         focused_inactive if not specified and does not use the indicator and child_border colors.
+#client.focused_tab_title	$lesslight	$lesslight	$lessdark	$ignored	$ignored
+#
+#     client.unfocused
+client.unfocused		$lesslight	$lessdark	$lesslight	$lesslight	$lessdark
+#         A view that does not have focus.
+#
+#     client.urgent
+#         A view with an urgency hint. Note: Native Wayland windows do not support urgency. Urgency only works for Xwayland windows.
+client.urgent			$red		$red		$light		$light		$red

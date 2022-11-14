@@ -1,4 +1,7 @@
-input "type:keyboard" {
+# https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
+# swaymsg -t get_inputs | jq -r '.[].identifier' | grep -i keyboard
+#input "type:keyboard" {
+input "1241:662:USB-HID_Keyboard" {
 	xkb_layout "us"
 	xkb_variant "euro"
 	xkb_model "pc105"

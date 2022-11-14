@@ -16,7 +16,7 @@
 #for_window [ con_id="(?!__focused__)" ] border $noborder
 
 # https://github.com/swaywm/sway/wiki#is-an-application-using-xwayland
-for_window [shell=".*"] title_format "<b>%title</b> (%app_id) [%shell :: %class :: %instance]"
+for_window [shell=".*"] title_format "<b>%title</b> (%app_id %shell %class %instance)"
 
 #######################################################################################################################
 #
@@ -122,61 +122,22 @@ for_window [class="Mattermost" instance="mattermost" window_role="browser-window
 # large screen tools
 #
 # Zoom
-#assign		[class="zoom" instance="zoom"] $ws_tool0
-
-# Remote Desktop Client
-#assign [class="Remmina" instance="remmina"]		$ws_tool0
-for_window [class="org.remmina.Remmina" instance="org.remmina.Remmina"] floating disable, layout layout0
-
-# Teamviewer
-#assign [class="TeamViewer" instance="TeamViewer"] $ws_tool0
-for_window [class="TeamViewer" instance="TeamViewer"]	  floating enable
-
-# Wireshark
-#assign [class="Wireshark" instance="wireshark"] $ws_tool1
-
-# Gimp
-#assign		[class="Gimp" instance="gimp"] $ws_tool1
-
-# Virtualbox
-#assign [class="(VirtualBox|Virt-manager)"]	   $ws_tool0
-
-# Pycharm
-for_window	[class="jetbrains-pycharm-ce" instance="sun-awt-X11-XFramePeer"] floating disable
+#assign		[app_id="zoom"] $ws_tool0
 
 
 #######################################################################################################################
 #
 # side tools
 #
-# KeePass
-# https://faq.i3wm.org/question/2067/focus-on-a-window-of-a-certain-class-unless-it-has-a-certain-title.1.html
-assign		[class="KeepassXC" instance="keepassxc" title="KeePassXC"]	$ws_util
-for_window	[class="KeepassXC" instance="keepassxc"]										layout splitv
-for_window  [class="KeepassXC" instance="keepassxc" title="Move entries to recycle bin?"]	resize set 70ppt 100ppt
-for_window  [class="Bitwarden" instance="bitwarden" title="Bitwarden" window_role="browser-window"] layout splitv
-assign		[class="Bitwarden" instance="bitwarden" title="Bitwarden" window_role="browser-window"] $ws_util
-#for_window	[title="KeePassXC-Browser"]														floating enable
-
-for_window	[class="Gufw.py" instance="gufw.py" title="Firewall$"]							floating disable, layout splitv
-assign		[class="Gufw.py" instance="gufw.py" title="Firewall$"]							$ws_util
-
 
 # Music
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
 
 ### https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window	[class="Spotify"]					move to workspace $ws_music
-for_window	[instance="spotify"]				move to workspace $ws_music
-
-assign		[class="spt" instance="spt"]										$ws_music
-for_window	[class="spt" instance="spt"]										layout splitv
+for_window	[class="Spotify"]	move to workspace $ws_music
+for_window	[instance="spotify"]	move to workspace $ws_music
 
 # tools
-assign		[class="vorta"]						$ws_util
-for_window	[class="vorta"]						layout splitv
-assign		[instance="i3jobs"]				$ws_util
-for_window  [class="Gtick" instance="gtick" title="GTick"] floating enable
-for_window  [class="Dnssec-trigger-panel"] floating enable
+assign		[app_id="i3jobs"]				$ws_util
 

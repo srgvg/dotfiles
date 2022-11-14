@@ -15,12 +15,13 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+	/usr/bin/dunst -verbosity -print --startup_notification -verbosity mesg
 	signal-desktop
 	mattermost-desktop
 	slack
-	teams
+	/usr/share/teams/teams --disable-namespace-sandbox --disable-setuid-sandbox
 	discord
-	telegram
+	$HOME/bin2/telegram
 	vorta
 	nextcloud
 	/home/serge/bin/synology-drive
@@ -46,11 +47,12 @@ function i3-launch-job() {
     notify "Checking for \"$*\" ... "
 	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs)
     then
-		notify "              ... already running (${_pid})"
+	notify "              ... already running (${_pid})"
     else
         notify "              ... starting"
+        notify "              ..... $*"
         # shellcheck disable=SC2048
-		launch-screen i3jobs add $* | sed -e 's/^/ -   /'
+	launch-screen i3jobs add $* | sed -e 's/^/                -   /'
     fi
 }
 
@@ -67,6 +69,7 @@ do
 		fi
 	fi
 	i3-launch-job $line
+	echo
 done
 
 if ifinteractive

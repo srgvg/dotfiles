@@ -12,7 +12,8 @@ alias bi="bash-it"
 # https://benaaron.dev/blog/bitwarden-cli/
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'
 alias bwl='export BW_SESSION='
-alias copy='xclip -in -selection c'
+alias copy='wl-copy'
+alias paste='wl-paste'
 alias diff='diff --unified --color'
 alias dL='dpkg -L'
 alias dS='dpkg -S'

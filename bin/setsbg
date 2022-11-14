@@ -115,24 +115,23 @@ loopnext() {
 showpath() {
     # show which picture is used
     notify_debug "Show which picture is used"
-	file="$(readlink --canonicalize ${background})"
-	filename=$(basename "${file}")
-	dirname=$(dirname "${file}")
-	echo "${dirname}/${filename}"
+    files="$(ps a | grep swaybg.* | grep -v grep\ | sed 's/.*--image.*\s//' | xargs -n1)"
+    for file in $files
+    do
+        if [ -r "$file" ]
+        then
+                echo "${file}"
+        fi
+    done
 }
 
 notifypath() {
     # show and notify which picture is used
-	showpath
-	dirname=$(dirname "${file}" | sed s@/home/serge/Dropbox/Media/Pictures/@@)
-	notify_desktop low "${BASH_SOURCE[1]}" "${dirname}\n\n${filename}" video-display setbg
+    notify_desktop low "${BASH_SOURCE[1]}" "$(showpath)" video-display setbg
 }
 
-setbg() {
-    checktarget $1
-    pickpic
-    displaybg
-    showpath
+showbg() {
+    swayimg --window=#000000 --scale=optimal --fullscreen --info $(showpath)
 }
 
 lock() {
@@ -147,10 +146,6 @@ defaultbg() {
 	$HOME/bin/loop							# stop current loop
     target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
     setbg ${target}							# pick and set a background
-}
-
-showbg() {
-	:
 }
 
 main() {
