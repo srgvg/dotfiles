@@ -13,7 +13,9 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 screenshotdir="$HOME/t"
-imagefile="${screenshotdir}/$(date +%Y%m%d-%H%M%S).png"
+filename="$(date +%Y%m%d-%H%M%S)"
+imagefile="${screenshotdir}/${filename}.png"
+swappyimagefile="${screenshotdir}/${filename}-swappy.png"
 util="/usr/bin/grimshot save"
 
 action="${1:-select}"
@@ -42,11 +44,14 @@ if ifdebug3
 then
 	grabcommand="echo ${grabcommand}"
 fi
-echo ${grabcommand}
+notify2 "${grabcommand}"
 if ${grabcommand}
 then
 	notify2 "Screenshot ${action} saved to ${imagefile}"
-	echo -n ${imagefile} | xclip -in -selection clipboard
+	echo -n ${imagefile} | wl-copy
 else
 	errexit "Screenshot ${action} failed"
 fi
+
+notify2 "swappy --file ${imagefile} --output-file ${swappyimagefile}"
+swappy --file "${imagefile}" --output-file - | tee "${swappyimagefile}" | wl-copy

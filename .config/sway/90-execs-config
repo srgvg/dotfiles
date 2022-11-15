@@ -5,16 +5,19 @@
 
 # https://elis.nu/blog/2021/02/detailed-setup-of-screen-sharing-in-sway/
 exec_always dbus-update-activation-environment WAYLAND_DISPLAY
+# https://github.com/flameshot-org/flameshot/blob/master/docs/Sway%20and%20wlroots%20support.md
+exec hash dbus-update-activation-environment 2>/dev/null && \
+     dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
 
 
-#exec_alway pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec_always pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
 #exec_alway pgrep lxpolkit || lxpolkit
-exec_always pgrep -f polkit-mate-authentication-agent-1 || /usr/lib/x86_64-linux-gnu/polkit-mate/polkit-mate-authentication-agent-1
+#exec_always pgrep -f polkit-mate-authentication-agent-1 || /usr/lib/x86_64-linux-gnu/polkit-mate/polkit-mate-authentication-agent-1
 
 
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
-exec_always pkill wl-paste ; wl-paste --primary --no-newline --watch clipman store &
+exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy 
 
 exec_always pkill swayidle ;  \
 	swayidle -d -w \

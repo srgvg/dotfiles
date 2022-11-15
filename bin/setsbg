@@ -88,6 +88,13 @@ displaybg() {
     #wait ${newpid}
 }
 
+setbg() {
+    checktarget $1
+    pickpic
+    displaybg
+    showpath
+}
+
 trap_loop() {
 	echo
     notify_debug "Set the next background..."
@@ -96,13 +103,13 @@ trap_loop() {
 }
 
 loop() {
-    notify_debug "Starting setbg in loop mode"
+    notify_debug "Starting setsbg in loop mode"
     while true
     do
-		echo -n "$(date +%H:%M) "
+	echo -n "$(date +%H:%M) "
         setbg ${target}
         # press ctrl-c to change wallpaper, or twice to exit
-		set +o errexit # errexit overrides trap
+	set +o errexit # errexit overrides trap
         trap trap_loop SIGINT
         sleep ${SETBG_LOOP_DELAY}
     done
@@ -135,7 +142,7 @@ showbg() {
 }
 
 lock() {
-    checktarget $1
+    	checktarget $1
 	pickpic
 	echo ${background}
 	rm -f "${LOCK_SCREEN_IMAGE}"

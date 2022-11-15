@@ -125,7 +125,7 @@ init_screen() {
 	fi
 	}
 execute_screen() {
-	init_screen
+    init_screen
     notify_debug "Executing: screen $options $command"
     screen $options $command
     }
@@ -133,11 +133,11 @@ execute_screen() {
 main() {
     if not_empty "$@"
 	then
-		notify_debug "launching with parameters '$*'"
+	notify_debug "launching with parameters '$*'"
         check_options "$@"
         build_screen_options "$@"
         if [ -n "$options$command" ]
-		then
+	then
             execute_screen
         else
             echo "no command given"

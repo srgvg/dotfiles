@@ -15,7 +15,7 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-	/usr/bin/dunst -verbosity -print --startup_notification -verbosity mesg
+	/usr/bin/dunst -print -startup_notification -verbosity info
 	signal-desktop
 	mattermost-desktop
 	slack
@@ -24,8 +24,9 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	$HOME/bin2/telegram
 	vorta
 	nextcloud
+	syncthing-gtk --minimized --verbose
 	/home/serge/bin/synology-drive
-	$HOME/bin2/firefox.real
+	/home/serge/Documents/Applications/firefox/firefox
 EOF
 )
 

@@ -59,7 +59,7 @@ alias ksw="switcher"
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'
 alias ls='ls --color=auto'
-alias locateh="locate --all --existing --follow --ignore-case /home/serge/"
+alias locate="locate --existing --ignore-case"
 alias o='xdg-open'
 alias paste='wl-paste --no-newline --primary'
 alias pbin='pbincli send'
@@ -68,12 +68,12 @@ alias ping3="ping -c 3 "
 alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
 alias r="ranger"
+alias rp="realpath"
 alias shredit='shred --verbose --iterations 5 --zero --remove'
 alias showpath="readlink -f"
 alias ssh-nc="ssh -S none"
 alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
-alias swappy="/sbin/sysctl vm.swappiness"
 alias sysl="tail -n 200 -f /var/log/syslog"
 alias trsh="transfer.sh"
 alias vs="vcsh status"

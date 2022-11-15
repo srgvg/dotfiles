@@ -12,7 +12,7 @@
     // Choose the order of the modules
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["custom/media"],
-    "modules-right": ["network", "pulseaudio", "temperature", "cpu", "memory", "pulseaudio", "tray", "clock"],
+    "modules-right": ["pulseaudio", "network", "temperature", "cpu", "memory", "tray", "clock"],
 
 
     // Modules configuration
@@ -53,14 +53,14 @@
         }
     },
     "tray": {
-        "icon-size": 21,
+        "icon-size": 22,
         "spacing": 14,
         "show-passive-items": true,
         "reverse-direction": true
     },
     "clock": {
         "timezone": "Europe/Brussels",
-        "format": "{:%Y-%m-%d   %H:%M }",
+        "format": "<b>{:%Y-%m-%d   %H:%M }</b>",
     },
     "cpu": {
         "format": "{usage}% ",
@@ -106,7 +106,7 @@
         "on-click": "pavucontrol"
     },
     "custom/media": {
-        "format": "{icon} {}",
+        "format": "<b>{icon} {}</b>",
         "return-type": "",
         "max-length": 100,
         "format-icons": {
