@@ -1,1 +1,0 @@
-../buddylist.pl
