@@ -165,10 +165,10 @@ bindsym $mod+Control+Up workspace prev
 bindsym $mod+Control+Right workspace next
 
 # switch to other output
-bindsym $mod+Control+Alt+Left focus output left
-bindsym $mod+Control+Alt+Down focus output down
-bindsym $mod+Control+Alt+Up focus output up
-bindsym $mod+Control+Alt+Right focus output right
+bindsym $mod+Alt+Left focus output left
+bindsym $mod+Alt+Down focus output down
+bindsym $mod+Alt+Up focus output up
+bindsym $mod+Alt+Right focus output right
 
 # move container to the next and previous workspace
 bindsym $mod+Shift+Control+Left move workspace to output left
@@ -262,32 +262,25 @@ bindsym $mod+$Alt+b		exec --no-startup-id setsbg next
 bindsym $mod+Control+$Alt+b	exec --no-startup-id setsbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
-bindsym $mod+p			exec presentation-mode
-bindsym $mod+Shift+p		exec presentation-mode start2
+#bindsym $mod+p			exec presentation-mode
+#bindsym $mod+Shift+p		exec presentation-mode start2
 
 # Launch Printer config
 bindsym $mod+Control+p		exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
-bindsym $mod+n			exec i3-nmcli
+#bindsym $mod+n			exec i3-nmcli
 bindsym $mod+Control+n		exec nm-toggle-wifi
 
 
 # custom shit
-bindsym $mod+Alt+Control+t		exec --no-startup-id switch-term-colors
+#bindsym $mod+Alt+Control+t		exec --no-startup-id switch-term-colors
 
 #######################################################################################################################
 #
 # volume and media controls, special keys
 #
 ## Fn XF86WakeUp
-
-# Elgato light Office
-bindsym Control+XF86AudioMute				exec --no-startup-id elgato.sh toggle
-bindsym Control+XF86AudioLowerVolume		exec --no-startup-id elgato.sh brightness --dimmer 5
-bindsym Control+XF86AudioRaiseVolume		exec --no-startup-id elgato.sh brightness --brighter 5
-bindsym Shift+Control+XF86AudioLowerVolume	exec --no-startup-id elgato.sh color --warmer 100
-bindsym Shift+Control+XF86AudioRaiseVolume	exec --no-startup-id elgato.sh color --cooler 100
 
 # Fn-F1  XF86AudioMute
 bindsym XF86AudioMute			exec --no-startup-id i3-volume toggle
@@ -301,11 +294,12 @@ bindsym Shift+XF86AudioLowerVolume	exec --no-startup-id sonos volume -10
 bindsym Shift+XF86AudioRaiseVolume	exec --no-startup-id sonos volume +10
 
 
-bindsym $mod+Control+comma		exec --no-startup-id i3-volume down
-bindsym $mod+Control+period		exec --no-startup-id i3-volume up
-bindsym $mod+Shift+Control+comma	exec --no-startup-id sonos volume -10
-bindsym $mod+Shift+Control+period	exec --no-startup-id sonos volume +10
-bindsym $mod+Control+slash		exec --no-startup-id i3-volume toggle
+# Elgato light Office
+bindsym $mod+Control+slash		exec --no-startup-id elgato.sh toggle
+bindsym $mod+Control+comma		exec --no-startup-id elgato.sh brightness --dimmer 5
+bindsym $mod+Control+period		exec --no-startup-id elgato.sh brightness --brighter 5
+bindsym $mod+Shift+Control+comma	exec --no-startup-id elgato.sh color --warmer 100
+bindsym $mod+Shift+Control+period	exec --no-startup-id elgato.sh color --cooler 100
 
 bindsym XF86AudioPrev			exec --no-startup-id playerctl previous
 bindsym XF86AudioPlay			exec --no-startup-id playerctl play-pause

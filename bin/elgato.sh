@@ -14,4 +14,4 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 elgato $@
-notify_desktop low "Elgato Desktop Light" "$((elgato lights | grep 'power: off' || elgato lights | grep -e brightness -e color) | xargs)" night-light-symbolic
+notify_desktop_always low "Elgato Desktop Light" "$((elgato lights | grep 'power: off' || elgato lights | grep -e brightness -e color) | xargs)" night-light-symbolic

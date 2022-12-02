@@ -12,11 +12,13 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-screenshotdir="$HOME/t"
+screenshotdir="$HOME/t/grabs"
 filename="$(date +%Y%m%d-%H%M%S)"
 imagefile="${screenshotdir}/${filename}.png"
 swappyimagefile="${screenshotdir}/${filename}-swappy.png"
 util="/usr/bin/grimshot save"
+
+mkdir -p $screenshotdir
 
 action="${1:-select}"
 notify_debug "Got action '${action}'"

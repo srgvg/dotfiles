@@ -14,18 +14,17 @@ k9s:
     fullScreenLogs: false
     textWrap: false
     showTime: false
-  currentContext: totem-do-k0
-  currentCluster: totem-do-k0
+  currentContext: viumore-az-onepanelcluster
+  currentCluster: onepanel-cluster-kubernetesv1-21
   clusters:
-    totem-do-k0:
+    onepanel-cluster-kubernetesv1-21:
       namespace:
-        active: all
+        active: onepanel
         favorites:
-        - all
-        - kapex
+        - onepanel
         - default
       view:
-        active: pod
+        active: storagestate
       featureGates:
         nodeShell: false
       shellPod:

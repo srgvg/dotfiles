@@ -450,6 +450,26 @@ _datree_config()
     noun_aliases=()
 }
 
+_datree_docs()
+{
+    last_command="datree_docs"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _datree_help()
 {
     last_command="datree_help"
@@ -497,6 +517,8 @@ _datree_kustomize_test()
     local_nonpersistent_flags+=("--output")
     local_nonpersistent_flags+=("--output=")
     local_nonpersistent_flags+=("-o")
+    flags+=("--permissive-schema")
+    local_nonpersistent_flags+=("--permissive-schema")
     flags+=("--policy=")
     two_word_flags+=("--policy")
     two_word_flags+=("-p")
@@ -507,6 +529,10 @@ _datree_kustomize_test()
     two_word_flags+=("--policy-config")
     local_nonpersistent_flags+=("--policy-config")
     local_nonpersistent_flags+=("--policy-config=")
+    flags+=("--quiet")
+    local_nonpersistent_flags+=("--quiet")
+    flags+=("--save-rendered")
+    local_nonpersistent_flags+=("--save-rendered")
     flags+=("--schema-location=")
     two_word_flags+=("--schema-location")
     local_nonpersistent_flags+=("--schema-location")
@@ -517,6 +543,10 @@ _datree_kustomize_test()
     local_nonpersistent_flags+=("--schema-version")
     local_nonpersistent_flags+=("--schema-version=")
     local_nonpersistent_flags+=("-s")
+    flags+=("--skip-validation=")
+    two_word_flags+=("--skip-validation")
+    local_nonpersistent_flags+=("--skip-validation")
+    local_nonpersistent_flags+=("--skip-validation=")
     flags+=("--verbose")
     local_nonpersistent_flags+=("--verbose")
 
@@ -592,6 +622,8 @@ _datree_test()
     local_nonpersistent_flags+=("--output")
     local_nonpersistent_flags+=("--output=")
     local_nonpersistent_flags+=("-o")
+    flags+=("--permissive-schema")
+    local_nonpersistent_flags+=("--permissive-schema")
     flags+=("--policy=")
     two_word_flags+=("--policy")
     two_word_flags+=("-p")
@@ -602,6 +634,10 @@ _datree_test()
     two_word_flags+=("--policy-config")
     local_nonpersistent_flags+=("--policy-config")
     local_nonpersistent_flags+=("--policy-config=")
+    flags+=("--quiet")
+    local_nonpersistent_flags+=("--quiet")
+    flags+=("--save-rendered")
+    local_nonpersistent_flags+=("--save-rendered")
     flags+=("--schema-location=")
     two_word_flags+=("--schema-location")
     local_nonpersistent_flags+=("--schema-location")
@@ -612,8 +648,32 @@ _datree_test()
     local_nonpersistent_flags+=("--schema-version")
     local_nonpersistent_flags+=("--schema-version=")
     local_nonpersistent_flags+=("-s")
+    flags+=("--skip-validation=")
+    two_word_flags+=("--skip-validation")
+    local_nonpersistent_flags+=("--skip-validation")
+    local_nonpersistent_flags+=("--skip-validation=")
     flags+=("--verbose")
     local_nonpersistent_flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_datree_upgrade()
+{
+    last_command="datree_upgrade"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
 
     must_have_one_flag=()
     must_have_one_noun=()
@@ -649,10 +709,16 @@ _datree_root_command()
     commands=()
     commands+=("completion")
     commands+=("config")
+    commands+=("docs")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("documentation")
+        aliashash["documentation"]="docs"
+    fi
     commands+=("help")
     commands+=("kustomize")
     commands+=("publish")
     commands+=("test")
+    commands+=("upgrade")
     commands+=("version")
 
     flags=()

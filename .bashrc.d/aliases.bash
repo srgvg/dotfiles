@@ -55,6 +55,7 @@ alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
+alias krew='kubectl-krew'
 alias ksw="switcher"
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# source: https://gist.github.com/subnut/f897726d3e4a3b307162fdde2fe88cc5
+
 # Copyright 2022 Subhaditya Nath
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of

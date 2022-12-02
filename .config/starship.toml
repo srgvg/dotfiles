@@ -53,7 +53,6 @@ format = """\
     $memory_usage\
     $env_var\
     $cmd_duration\
-    ${custom.ansible}\
     $line_break\
     $jobs\
     $time\
@@ -62,6 +61,7 @@ format = """\
     $character\
 """
 #    ${custom.bgfill}\
+#    ${custom.ansible}\
 
 ###
 
@@ -175,17 +175,18 @@ style = "dimmed gray"
 format = "[@$hostname]($style) "
 
 [gcloud]
-format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
-symbol = "GCP "
+style = "cyan"
+format = "[($symbol\\[$account(@$domain)(/$project)(/$region))\\]]($style) "
+symbol = "gcp"
 
 [kubernetes]
+# https://starship.rs/config/#kubernetes
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "K8S"
-format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-style = "cyan bold"
-#namespace_spaceholder = "none"
+symbol = "k8s"
+format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
+style = "bright-blue"
 
 [kubernetes.context_aliases]
 #"k3s0.office.ginsys.net" = "home"

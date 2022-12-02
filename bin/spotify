@@ -14,9 +14,11 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 ARGS="$*"
-launch_spotify="/usr/bin/spotify --force-device-scale-factor=1.2 $ARGS"
+#launch_spotify="/usr/bin/spotify --force-device-scale-factor=1.2 $ARGS"
+launch_spotify="/usr/bin/spotify $ARGS"
 
 # if no spotify window
+# still works in wayland as spotify runs in X
 if ! xwininfo -root -children | grep spotify >/dev/null
 then
 	# also if spotify process exists

@@ -64,7 +64,7 @@ case $TYPE in
 esac
 
 # formerly using xclip - gives trouble when this script is redirected to not stdout
-echo -n $pass | xsel --clipboard --input
+echo -n $pass | wl-copy
 notify_desktop low "Password copied to clipboard" "${msg}" stock_lock pwgen
 if [ -t 1 ]; then
 	echo "${pass}"
