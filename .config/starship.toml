@@ -43,7 +43,6 @@ format = """\
     $java\
     $julia\
     $nodejs\
-    $php\
     $python\
     $ruby\
     $rust\
@@ -185,8 +184,12 @@ disabled = false
 #symbol = "☸"
 #symbol = "⛵"
 symbol = "k8s"
-format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
+#format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
+#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
+#format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
+format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 style = "bright-blue"
+#namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]
 #"k3s0.office.ginsys.net" = "home"
