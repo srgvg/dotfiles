@@ -21,54 +21,56 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """\
-    $username\
-    $hostname\
+    $time\
     $directory\
     $vcsh\
     $git_branch\
     $git_state\
     $git_commit\
     $git_status\
-    $hg_branch\
-    $docker_context\
+    $jobs\
+    $status\
+    $cmd_duration\
+    $line_break\
+    \
+    $username\
+    $hostname\
     $kubernetes\
     $gcloud\
     $aws\
+    $azure\
     $package\
-    $dotnet\
-    $elixir\
-    $elm\
     $golang\
-    $haskell\
-    $java\
-    $julia\
     $nodejs\
-    $php\
     $python\
     $ruby\
     $rust\
     $terraform\
-    $nix_shell\
     $conda\
-    $memory_usage\
-    $env_var\
-    $cmd_duration\
-    ${custom.ansible}\
     $line_break\
-    $jobs\
-    $time\
+    \
     ${custom.sudo}\
-    $status\
     $character\
 """
+right_format = """
+"""
+
 #    ${custom.bgfill}\
+#    ${custom.ansible}\
 
 ###
 
 [aws]
-format = '[$symbol($profile )(\($region\) )]($style) '
-style = "bold blue"
-symbol = "AWS "
+format = "[($symbol$profile(/$region))]($style) "
+style = "bold cyan"
+symbol = "AWS|"
+
+[azure]
+disabled = true
+format = 'on [$symbol($username@$subscription)]($style) '
+#symbol = 'ﴃ '
+symbol = 'AZ|'
+style = 'blue bold'
 
 [aws.region_aliases]
 #ap-southeast-2 = "au"
@@ -92,16 +94,17 @@ min_time_to_notify = 30_000
 disabled = false
 truncation_length = 5
 truncate_to_repo = false
-repo_root_style = "bold yellow"
 # The number of characters to use when applying fish shell pwd path logic.
-fish_style_pwd_dir_length = 10
+#fish_style_pwd_dir_length = 10
 # Displays the logical path provided by the shell (PWD) instead of the path from the OS.
-use_logical_path = false
-style = "bold cyan"
+use_logical_path = true
 read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
 format = "[$path]($style)[ $read_only]($read_only_style) "
+style = "bold cyan"
+repo_root_style = "bold yellow"
+repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 home_symbol = "~"
 
 #[directory.substitutions]
@@ -174,17 +177,22 @@ style = "dimmed gray"
 format = "[@$hostname]($style) "
 
 [gcloud]
+style = "bold cyan"
 format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
-symbol = "GCP "
+symbol = "GCP|"
 
 [kubernetes]
+# https://starship.rs/config/#kubernetes
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "k8s"
+symbol = "K8S|"
+#format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
+#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
-format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-style = "cyan bold"
+#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
+format = "[${symbol}${context}(/$namespace)]($style) "
+style = "bright-blue"
 #namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]

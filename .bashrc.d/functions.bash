@@ -46,6 +46,21 @@ function asdf-installatest() {
 	asdf global $plugin latest
 }
 
+function asdf-update-all() {
+	echo asdf update
+	asdf update
+	echo asdf plugin update --all
+	asdf plugin update --all
+	missing_plugins="$(asdf latest --all 2>/dev/null | grep missing | grep -v unknown | awk '{print $1}' | xargs )"
+	echo updating plugins $missing_plugins
+	for plugin in $missing_plugins
+	do
+		echo asdf install $plugin latest
+		asdf install $plugin latest
+		echo asdf global $plugin latest
+		asdf global $plugin latest
+	done
+}
 
 function aswitch() {
 	# switch ansible versions 1-2
