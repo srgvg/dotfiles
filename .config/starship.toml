@@ -21,53 +21,56 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """\
-    $username\
-    $hostname\
+    $time\
     $directory\
     $vcsh\
     $git_branch\
     $git_state\
     $git_commit\
     $git_status\
-    $hg_branch\
-    $docker_context\
+    $jobs\
+    $status\
+    $cmd_duration\
+    $line_break\
+    \
+    $username\
+    $hostname\
     $kubernetes\
     $gcloud\
     $aws\
+    $azure\
     $package\
-    $dotnet\
-    $elixir\
-    $elm\
     $golang\
-    $haskell\
-    $java\
-    $julia\
     $nodejs\
     $python\
     $ruby\
     $rust\
     $terraform\
-    $nix_shell\
     $conda\
-    $memory_usage\
-    $env_var\
-    $cmd_duration\
     $line_break\
-    $jobs\
-    $time\
+    \
     ${custom.sudo}\
-    $status\
     $character\
 """
+right_format = """
+"""
+
 #    ${custom.bgfill}\
 #    ${custom.ansible}\
 
 ###
 
 [aws]
-format = '[$symbol($profile )(\($region\) )]($style) '
-style = "bold blue"
-symbol = "AWS "
+format = "[($symbol$profile(/$region))]($style) "
+style = "bold cyan"
+symbol = "AWS|"
+
+[azure]
+disabled = true
+format = 'on [$symbol($username@$subscription)]($style) '
+#symbol = 'ﴃ '
+symbol = 'AZ|'
+style = 'blue bold'
 
 [aws.region_aliases]
 #ap-southeast-2 = "au"
@@ -174,20 +177,21 @@ style = "dimmed gray"
 format = "[@$hostname]($style) "
 
 [gcloud]
-style = "cyan"
-format = "[($symbol\\[$account(@$domain)(/$project)(/$region))\\]]($style) "
-symbol = "gcp"
+style = "bold cyan"
+format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
+symbol = "GCP|"
 
 [kubernetes]
 # https://starship.rs/config/#kubernetes
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "k8s"
+symbol = "K8S|"
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
-format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
+#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
+format = "[${symbol}${context}(/$namespace)]($style) "
 style = "bright-blue"
 #namespace_spaceholder = "none"
 

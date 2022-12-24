@@ -13,8 +13,8 @@ exec hash dbus-update-activation-environment 2>/dev/null && \
 # https://wiki.archlinux.org/title/KDE_Wallet#Unlocking_KWallet_automatically_in_a_window_manager
 exec /usr/share/libpam-kwallet-common/pam_kwallet_init
 
-exec_always pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
-#exec_alway pgrep lxpolkit || lxpolkit
+#exec_always pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec_always pgrep lxpolkit || lxpolkit
 #exec_always pgrep -f polkit-mate-authentication-agent-1 || /usr/lib/x86_64-linux-gnu/polkit-mate/polkit-mate-authentication-agent-1
 
 

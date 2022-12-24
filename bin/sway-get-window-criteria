@@ -24,10 +24,14 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-
-app_id="app_id=\"$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).app_id'| sed s/null// )\""
-window_properties="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).window_properties | to_entries|map("\(.key)=\(.value|tostring)")|.[]' | grep -v title ||: | sed -e s/=/=\"/ -e s/$/\"/)"
-
-echo "${app_id} ${window_properties}" | xargs
-echo "[${app_id} ${window_properties}]" | xargs | wl-copy
-notify_desktop_always low "Sway Window Properties" "${app_id}\n${window_properties}"
+props="$( 
+	swaymsg -t get_tree | jq -r '..|try select(.focused == true)' \
+		| jq 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' \
+		| grep -e{name,app_id,shell}=
+	swaymsg -t get_tree | jq -r '..|try select(.focused == true).window_properties' \
+		| sed 's/null/\{\}/' \
+	    | jq 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' 
+	)"
+echo -n $props
+notify_desktop_always low "Sway Window Properties" "${props}"
+echo -n $props | wl-copy

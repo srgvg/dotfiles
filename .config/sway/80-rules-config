@@ -91,8 +91,9 @@ for_window [class="System-config-printer.py" instance="system-config-printer" ]	
 #assign		[class="Firefox" instance="Navigator" window_role="^(?!GtkFileChooserDialog)"] $ws_www
 for_window [class="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
 for_window [app_id="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
-for_window [app_id="firefox" title="^About Mozilla Firefox"] floating_enable
-for_window [app_id="firefox" title="^Picture-in-Picture$"] floating enable; sticky enable
+for_window [app_id="firefox" title="About Mozilla Firefox"] floating_enable
+for_window [app_id="firefox" title="Firefox — Sharing Indicator"] floating_enable
+for_window [app_id="firefox" title="Picture-in-Picture$"] floating enable; sticky enable
 
 
 #######################################################################################################################
@@ -124,8 +125,6 @@ for_window [class="Mattermost" instance="mattermost" window_role="browser-window
 #
 # large screen tools
 #
-# Zoom
-#assign		[app_id="zoom"] $ws_tool0
 
 
 #######################################################################################################################

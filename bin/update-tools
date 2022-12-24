@@ -97,5 +97,23 @@ curl -sS https://rancher-mirror.rancher.cn/autok3s/install.sh  | BINLOCATION=/ho
 title "update completions #############################################################################################"
 $HOME/bin/generate_bash_completions_from_binaries.sh
 
+title "asdf ########################################################################################################"
+title "asdf ########################################################################################################"
+
+asdf update
+for plugin in $(asdf plugin-list|xargs)
+do 	
+title "asdf - ${plugin} ##########################################################################"
+	asdf plugin-update ${plugin} 
+	asdf install ${plugin} latest
+done
+
+
+title "generate bash completions######################################################################################"
+$HOME/bin/generate_bash_completions_from_binaries.sh
+
 title "cleanup ########################################################################################################"
+cd $HOME
+ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) ~/.krew
 rm -rfv ~/tmp/update-tools/
+

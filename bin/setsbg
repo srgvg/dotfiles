@@ -80,7 +80,7 @@ pickpic() {
 displaybg() {
     # set the background
     #/usr/bin/feh --bg-fill --recursive --randomize "${background}"
-    oldpid="$( pgrep swaybg | xargs -n 1)"
+    oldpid="$( pgrep swaybg || echo -n 0 | xargs -n 1)"
     swaybg --color '#000000' --mode fill --output '*' --image "${background}" &
     newpid=$!
     kill ${oldpid}
@@ -138,6 +138,7 @@ notifypath() {
 }
 
 showbg() {
+    notifypath
     swayimg --window=#000000 --scale=optimal --fullscreen --info $(showpath)
 }
 
