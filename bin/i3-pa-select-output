@@ -50,7 +50,7 @@ function sinkname() {
 
 function selectsink() {
 	local _selectedsink
-	_selectedsink=$(outputsnames | (rofi -dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
+	_selectedsink=$(outputsnames | (rofi -dmenu -p "Select audio output: " -l 20 || wofi -dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
 	notify_debug "selected sink: ${_selectedsink}"
 	echo ${_selectedsink}
 }
