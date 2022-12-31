@@ -9,7 +9,10 @@ add_newline = true
 # Timeout for starship to scan files (in milliseconds).
 scan_timeout = 30
 
-continuation_prompt = "▶▶ "
+##continuation_prompt = "[∙](bright-black) "
+#continuation_prompt = "▶▶ "
+continuation_prompt = "[└───➞](bold green)  "
+
 
 # Timeout for commands executed by starship (in milliseconds).
 command_timeout = 500
@@ -21,18 +24,10 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """\
-    $time\
-    $directory\
-    $vcsh\
-    $git_branch\
-    $git_state\
-    $git_commit\
-    $git_status\
-    $jobs\
-    $status\
-    $cmd_duration\
+    [┌──────────────────────────────────────────────────────────────────────────────────────────](bold green)\
     $line_break\
     \
+    [│ ](bold green)\
     $username\
     $hostname\
     $kubernetes\
@@ -49,7 +44,24 @@ format = """\
     $conda\
     $line_break\
     \
+    [│ ](bold green)\
+    $time\
+    $directory\
+    $vcsh\
+    $git_branch\
+    $git_state\
+    $git_commit\
+    $git_status\
+    $line_break\
+    \
+    [│ ](bold green)\
+    $jobs\
+    $status\
+    $cmd_duration\
     ${custom.sudo}\
+    $line_break\
+    \
+    [└](bold green)(bold green)\
     $character\
 """
 right_format = """
@@ -61,16 +73,16 @@ right_format = """
 ###
 
 [aws]
-format = "[($symbol$profile(/$region))]($style) "
-style = "bold cyan"
-symbol = "AWS|"
+format = "[\\[($symbol $profile(/$region))\\]]($style) "
+style = "bold red"
+symbol = "AWS"
 
 [azure]
 disabled = true
-format = 'on [$symbol($username@$subscription)]($style) '
+format = 'on [\\[$symbol ($username@$subscription)\\]]($style) '
 #symbol = 'ﴃ '
-symbol = 'AZ|'
-style = 'blue bold'
+symbol = 'AZ'
+style = 'bold blue'
 
 [aws.region_aliases]
 #ap-southeast-2 = "au"
@@ -102,7 +114,7 @@ read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
 format = "[$path]($style)[ $read_only]($read_only_style) "
-style = "bold cyan"
+style = "bold blue"
 repo_root_style = "bold yellow"
 repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 home_symbol = "~"
@@ -122,10 +134,11 @@ format = "$symbol[$repo]($style) "
 
 [git_branch]
 disabled = false
+always_show_remote = true
 # The format for the module. Use "$branch" to refer to the current branch name.
 symbol = ""
-style = "bold purple"
-format = "[$symbol $branch $remote_name:$remote_branch]($style) "
+style = "green"
+format = "[$symbol$branch(:$remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
 # The symbol used to indicate a branch name was truncated. You can use "" for no symbol
@@ -142,15 +155,15 @@ cherry_pick = "CHERRY-PICKING"
 bisect = "BISECTING"
 am = "AM"
 am_or_rebase = "AM/REBASE"
-style = "bold purple"
+style = "green"
 format = "\\([$state( $progress_current/$progress_total)]($style)\\) "
 
 [git_commit]
 disabled = false
 tag_disabled = false
-commit_hash_length = 7
-#format = "[\\($hash\\)]($style) [\\($tag\\)]($style)"
-style = "bold purple"
+commit_hash_length = 10
+format = "[\\(($tag/)($hash)\\)]($style)"
+style = "green"
 only_detached = false
 tag_symbol = "🏷 "
 
@@ -166,7 +179,7 @@ modified = "!${count}"
 staged = "+${count}"
 renamed = "»${count}"
 deleted = "✘${count}"
-style = "bold purple"
+style = "bold green"
 # $all_status ~ $conflicted$stashed$deleted$renamed$modified$staged$untracked
 # ahead_behind	Displays diverged ahead or behind format string based on the current status of the repo
 format = "[${all_status}${ahead_behind}]($style) "
@@ -177,22 +190,22 @@ style = "dimmed gray"
 format = "[@$hostname]($style) "
 
 [gcloud]
-style = "bold cyan"
-format = "[($symbol$account(@$domain)(/$project)(/$region))]($style) "
-symbol = "GCP|"
+style = "bold green"
+format = "[\\[($symbol $account(@$domain)(/$project)(/$region))\\]]($style) "
+symbol = "GCP"
 
 [kubernetes]
 # https://starship.rs/config/#kubernetes
 disabled = false
-#symbol = "☸"
+symbol = "☸"
 #symbol = "⛵"
-symbol = "K8S|"
+#symbol = "K8S"
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-format = "[${symbol}${context}(/$namespace)]($style) "
-style = "bright-blue"
+format = "[ ${symbol} ${context}(/$namespace)]($style) "
+style = "bold bg:blue black"
 #namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]
