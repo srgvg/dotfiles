@@ -22,17 +22,17 @@ exec_always pgrep lxpolkit || lxpolkit
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
 #exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy 
 
-exec_always pkill swayidle ;  \
-	swayidle -d -w \
-	lock "dunstctl set-paused true & $lockscreen"  \
-	unlock "dunstctl set-paused false" \
-	before-sleep 'playerctl pause & $lockscreen ; swaymsg "output * dpms off"'  \
-	after-resume 'swaymsg "output * dpms on"' \
-	timeout 3600 '$lockscreen'  \
-	timeout 3900 'swaymsg "output * dpms off"'  \
-	resume 'swaymsg "output * dpms on"'  \
-	idlehint 1500 \
-	2>&1 | tee $HOME/logs/swayidle.log
+#exec_always pkill swayidle ;  \
+#	swayidle -d -w \
+#	lock "dunstctl set-paused true & $lockscreen"  \
+#	unlock "dunstctl set-paused false" \
+#	before-sleep 'playerctl pause & $lockscreen ; swaymsg "output * dpms off"'  \
+#	after-resume 'swaymsg "output * dpms on"' \
+#	timeout 3600 '$lockscreen'  \
+#	timeout 3900 'swaymsg "output * dpms off"'  \
+#	resume 'swaymsg "output * dpms on"'  \
+#	idlehint 1500 \
+#	2>&1 | tee $HOME/logs/swayidle.log
 
 #
 # settings
@@ -57,4 +57,3 @@ exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-a
 # desktop stuff
 #
 exec_always "sleep 3 && $HOME/bin/i3-launch-jobs ; sleep 1 && swaymsg 'focus output $primary'"
-exec_always "pkill -f cloud-drive ; synology-drive"

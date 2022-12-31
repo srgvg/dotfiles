@@ -14,32 +14,33 @@ complpath="$HOME/.local/share/bash-completion/completions"
 complext=""
 
 completion_bash_commands=(
+    argocd
+    arkade
     civo
-    doctl
-    flux
-    helm
-    hcloud
-    kind
-    oc
-    velero
-    havener
-    kubescape
-    kubecm
-    kustomize
+    clusterctl
     cmctl
     datree
+    doctl
+    flux
+    havener
+    hcloud
+    helm
     k9s
-    arkade
-    krew
-    argocd
-    mizu
-    talosctl
-    clusterctl
-    nova
     kanctl
     kando
     kind
+    kind
+    krew
+    kubecm
+    kubectl
     kubectl-plugin_completion
+    kubescape
+    kustomize
+    mizu
+    nova
+    oc
+    talosctl
+    velero
 )
 completions_bash_commands=(
     starship

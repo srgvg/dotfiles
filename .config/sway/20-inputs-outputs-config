@@ -9,6 +9,23 @@ input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard" {
 	xkb_capslock "disabled"
 	xkb_numlock "enabled"
 }
+input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard_Consumer_Control" {
+	xkb_layout "us"
+	xkb_variant "euro"
+	xkb_model "pc105"
+	xkb_options "compose:caps,lv3:ralt_switch,eurosign:e,nbsp:level3n"
+	xkb_capslock "disabled"
+	xkb_numlock "enabled"
+}
+input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard_System_Control" {
+	xkb_layout "us"
+	xkb_variant "euro"
+	xkb_model "pc105"
+	xkb_options "compose:caps,lv3:ralt_switch,eurosign:e,nbsp:level3n"
+	xkb_capslock "disabled"
+	xkb_numlock "enabled"
+}
+seat seat0 keyboard_grouping smart
 
 set $primary DP-2
 set $secondary DP-3

@@ -80,10 +80,10 @@ pickpic() {
 displaybg() {
     # set the background
     #/usr/bin/feh --bg-fill --recursive --randomize "${background}"
-    oldpid="$( pgrep swaybg || echo -n 0 | xargs -n 1)"
+    oldpid="$( pgrep swaybg ||:  | xargs -n 1)"
     swaybg --color '#000000' --mode fill --output '*' --image "${background}" &
     newpid=$!
-    kill ${oldpid}
+    kill ${oldpid} ||:
     notify_debug "Set the background"
     #wait ${newpid}
 }
@@ -122,7 +122,7 @@ loopnext() {
 showpath() {
     # show which picture is used
     notify_debug "Show which picture is used"
-    files="$(ps a | grep swaybg.* | grep -v grep\ | sed 's/.*--image.*\s//' | xargs -n1)"
+    files="$(ps a | grep swaybg.* | grep -- --image | grep -v grep\ | sed 's/.*--image.*\s//' | xargs -n1)"
     for file in $files
     do
         if [ -r "$file" ]

@@ -15,8 +15,10 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+    swayidle.sh
 	pasystray --debug --notify=none --notify=sink
 	/usr/bin/dunst -print -verbosity debug
+	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing.log --log-max-old-files=2 --log-max-size=5242880
 	syncthing-gtk --minimized --verbose
 	spotify --show-console
 	vorta
@@ -64,12 +66,12 @@ function i3-launch-job() {
 echo "$JOBS" | while read -r line
 do
 	# make sure we replace an existing setbg loop
-	if [[ $line =~ "setbg loop" ]]
+	if [[ "$line" =~ "setsbg loop" ]] || [[ "$line" =~ "setbg loop" ]]
 	then
-		if _pid=$(pgrep -P ${I3SCREENPID} -f "setbg loop")
+		if _pid=$(pgrep -P ${I3SCREENPID} -f "bg loop")
 		then
 			kill -9 ${_pid}
-			notify_debug "Killed existing setbg loop (${_pid})"
+			notify_debug "Killed existing set(s)bg loop (${_pid})"
 		fi
 	fi
 	i3-launch-job $line
