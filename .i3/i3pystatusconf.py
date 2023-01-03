@@ -26,7 +26,7 @@ status.register(
 status.register(
     "shell",
     hints={"separator": False, "separator_block_width": 3},
-    ignore_empty_stdout=True,
+    #ignore_empty_stdout=True,
     color=COLIN,
     command="i3pystatus-commands wifi",
     interval=2,
@@ -41,19 +41,19 @@ status.register(
     num_off="_",
 )
 
-status.register(
-    "backlight",
-    hints={"separator": False, "separator_block_width": 3},
-    color=COLIN,
-    transforms={
-        "percentage": lambda cdict: round(
-            (cdict["brightness"] / cdict["max_brightness"]) * 10
-        )
-    },
-    format="{percentage}",
-    format_no_backlight="",
-    interval=2,
-)
+#status.register(
+#    "backlight",
+#    hints={"separator": False, "separator_block_width": 3},
+#    color=COLIN,
+#    transforms={
+#        "percentage": lambda cdict: round(
+#            (cdict["brightness"] / cdict["max_brightness"]) * 10
+#        )
+#    },
+#    format="{percentage}",
+#    format_no_backlight="",
+#    interval=2,
+#)
 
 # status.register("updates",
 #                 format="APT: {count}",
@@ -62,7 +62,7 @@ status.register(
 
 status.register(
     "pulseaudio",
-    sink=None,
+    #sink=None,
     color_unmuted=COLAU,
     color_muted="",
     format="🔊 {volume}%",
@@ -81,21 +81,21 @@ status.register(
 status.register(
     "shell",
     hints={"separator": False, "separator_block_width": 5},
-    ignore_empty_stdout=True,
+    #ignore_empty_stdout=True,
     color=COLAU,
     command="i3pystatus-commands audio_current_sink",
     interval=3,
 )
 
 status.register("shell",
-               ignore_empty_stdout=True,
+               #ignore_empty_stdout=True,
                color=COLAU,
                command="i3pystatus-commands audio_sonos_volume",
                interval=2)
 
 status.register(
     "shell",
-    ignore_empty_stdout=True,
+    #ignore_empty_stdout=True,
     color=COLAU,
     command="i3pystatus-commands now_playing",
     interval=3,

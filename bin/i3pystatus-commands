@@ -129,4 +129,5 @@ case ${1:-} in
 		;;
 esac
 
+[ -z "${output}" ] && output="."
 echo -n "${output}"
