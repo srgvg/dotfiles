@@ -138,7 +138,7 @@ always_show_remote = true
 # The format for the module. Use "$branch" to refer to the current branch name.
 symbol = ""
 style = "green"
-format = "[$symbol$branch(:$remote_name(/$remote_branch))]($style)"
+format = "[$symbol $branch(:$remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
 # The symbol used to indicate a branch name was truncated. You can use "" for no symbol
@@ -147,7 +147,6 @@ only_attached = true
 
 [git_state]
 disabled = false
-#tag_disabled = false
 rebase = "REBASING"
 merge = "MERGING"
 revert = "REVERTING"
@@ -156,13 +155,13 @@ bisect = "BISECTING"
 am = "AM"
 am_or_rebase = "AM/REBASE"
 style = "green"
-format = "\\([$state( $progress_current/$progress_total)]($style)\\) "
+format = "\\([ $state($progress_current/$progress_total)]($style)\\) "
 
 [git_commit]
 disabled = false
 tag_disabled = false
 commit_hash_length = 10
-format = "[\\(($tag/)($hash)\\)]($style)"
+format = "[ \\(($tag/)($hash)\\)]($style)"
 style = "green"
 only_detached = false
 tag_symbol = "🏷 "
@@ -182,7 +181,7 @@ deleted = "✘${count}"
 style = "bold green"
 # $all_status ~ $conflicted$stashed$deleted$renamed$modified$staged$untracked
 # ahead_behind	Displays diverged ahead or behind format string based on the current status of the repo
-format = "[${all_status}${ahead_behind}]($style) "
+format = "[( ${all_status})( ${ahead_behind})]($style) "
 
 [hostname]
 ssh_only = false

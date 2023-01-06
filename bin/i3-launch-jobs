@@ -24,7 +24,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	vorta
 	signal-desktop
 	mattermost-desktop
-	nextcloud
+	run-flatpak.sh com.nextcloud.desktopclient.nextcloud
 	#wl-paste --primary --watch wl-copy
 	#wl-paste -t text --watch clipman store
 	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
