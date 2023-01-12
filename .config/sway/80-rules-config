@@ -88,7 +88,6 @@ for_window [class="System-config-printer.py" instance="system-config-printer" ]	
 #
 # Browsers
 #
-#assign		[class="Firefox" instance="Navigator" window_role="^(?!GtkFileChooserDialog)"] $ws_www
 for_window [class="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
 for_window [app_id="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
 for_window [app_id="firefox" title="About Mozilla Firefox"] floating_enable
@@ -106,9 +105,16 @@ assign		[instance="IRCWINDOW"]									$ws_chat
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
 
-assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
+# flatpak com.microsoft.Teams
+assign	   [class="Microsoft Teams" instance="microsoft teams"  window_role="browser-window"] $ws_chat
 for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
+assign	   [class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
+
+
+# flatpak com.github.IsmaelMartinez.teams_for_linux
+assign  [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] $ws_chat
+for_window [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] layout tabbed, border $defaultborder
 
 for_window	[class="Skype"]									floating enable
 
@@ -136,9 +142,13 @@ for_window [class="Mattermost" instance="mattermost" window_role="browser-window
 assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
 
+assign	[class="Spotify" ] $ws_music
+assign	[instance="spotify"] $ws_music
+assign	[title="Spotify"] $ws_music
 ### https://github.com/i3/i3/issues/2060#issuecomment-155179472
-assign		[class="Spotify" instance="spotify"] 	$ws_music
-for_window	[class="Spotify" instance="spotify"]	move to workspace $ws_music
+for_window	[class="Spotify" ] move to workspace $ws_music
+for_window	[instance="spotify"] move to workspace $ws_music
+for_window	[title="Spotify"] move to workspace $ws_music
 
 # tools
 assign		[app_id="i3jobs"]				$ws_util

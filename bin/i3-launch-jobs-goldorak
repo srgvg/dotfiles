@@ -16,22 +16,22 @@ source "$HOME/bin/common.bash"
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     swayidle.sh
+	/home/serge/Documents/Applications/firefox/firefox
 	pasystray --debug --notify=none --notify=sink
 	/usr/bin/dunst -print -verbosity debug
 	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing.log --log-max-old-files=2 --log-max-size=5242880
 	syncthing-gtk --minimized --verbose
-	spotify --show-console
 	vorta
-	signal-desktop
-	mattermost-desktop
-	run-flatpak.sh com.nextcloud.desktopclient.nextcloud
+	runflatpak.sh spotify --show-console
+	runflatpak.sh signal
+	runflatpak.sh telegram
+	runflatpak.sh mattermost
+	runflatpak.sh nextcloud
+	runflatpak.sh teams
+	runflatpak.sh slack
 	#wl-paste --primary --watch wl-copy
 	#wl-paste -t text --watch clipman store
 	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
-	/home/serge/Documents/Applications/firefox/firefox
-	#slack
-	#discord
-	#$HOME/bin2/telegram
 EOF
 )
 

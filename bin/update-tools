@@ -11,124 +11,72 @@ set -o nounset
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-##############################################################################
+######################################################################################################################
+######################################################################################################################
 
 title() {
-	set +x
 	echo
 	echo "################################################################################################################"
-	echo ${1}
+	echo "# ${1}"
 	echo "################################################################################################################"
 	echo
-	set -x
 }
 
+######################################################################################################################
 ######################################################################################################################
 
 mkdir ~/tmp/update-tools/ -p
 cd ~/tmp/update-tools/
 
-title "kubetail #######################################################################################################"
-curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
-curl https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
+######################################################################################################################
 
-title "lazykube #######################################################################################################"
-curl https://raw.githubusercontent.com/TNK-Studio/lazykube/main/scripts/install_update_linux.sh | sed s/sudo//g | DIR=$HOME/bin2/  bash -x
+title "kubetail" 
+curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
+curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
 
-title "kdash ##########################################################################################################"
-curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.sh | sed s@/usr/local/bin@/home/serge/bin2@ | bash -x
+######################################################################################################################
 
-title "havener ########################################################################################################"
-curl -sL https://raw.githubusercontent.com/homeport/havener/main/scripts/download-latest.sh | sed 's@${HOME}/bin@${HOME}/bin2@' | bash -x
+title "kubescape"
+VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
+curl --connect-timeout 5 -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
 
-title "kubescape ######################################################################################################"
-VERSION=$(curl -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
-curl -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
+######################################################################################################################
 
-title "certmanager cli ################################################################################################"
-OS=$(go env GOOS); ARCH=$(go env GOARCH); curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-$OS-$ARCH.tar.gz
-tar xzf cmctl.tar.gz
-mv -v cmctl /$HOME/bin2
-rm cmctl.tar.gz
+title "mizu"
+curl --connect-timeout 5 -Lo mizu github.com/up9inc/mizu/releases/latest/download/mizu_linux_amd64 && chmod 755 mizu && mv -v mizu $HOME/bin2
 
-title "datree #########################################################################################################"
-curl https://get.datree.io | sed s@/usr/local/bin@$HOME/bin2@ | /bin/bash
-
-title "krew plugins ###################################################################################################"
-krew upgrade
-
-title "microconfig https://github.com/microconfig/microconfig #########################################################"
-URL=$(curl -s https://api.github.com/repos/microconfig/microconfig/releases/latest | jq -r .assets[].browser_download_url | grep linux)
-curl -SLfs -o latest.zip ${URL}
-unzip latest
-chmod -v +x microconfig
-mv -v microconfig $HOME/bin2
-
-title "silver-surfer, kubedd ##########################################################################################"
-VERSION=$(curl --silent "https://api.github.com/repos/devtron-labs/silver-surfer/releases/latest" | jq -r .tag_name)
-curl -L --output - https://github.com/devtron-labs/silver-surfer/releases/download/${VERSION}/silver-surfer_${VERSION/v}_linux_amd64.tar.gz | tar zx
-mv -v ./kubedd $HOME/bin2/kubedd
-
-title "kubeval ########################################################################################################"
-wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-tar xf kubeval-linux-amd64.tar.gz
-mv -v kubeval $HOME/bin2/
-
-title "trivy ##########################################################################################################"
-curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin2
-
-title "mizu ###########################################################################################################"
-curl -Lo mizu github.com/up9inc/mizu/releases/latest/download/mizu_linux_amd64 && chmod 755 mizu && mv -v mizu $HOME/bin2
-
-title "talosctl #######################################################################################################"
-VERSION=$(curl --silent "https://api.github.com/repos/siderolabs/talos/releases/latest" | jq -r .tag_name)
-curl -Lo $HOME/bin2/talosctl https://github.com/siderolabs/talos/releases/download/${VERSION}/talosctl-linux-amd64
-
-title "hcloud #########################################################################################################"
-VERSION=$(curl --silent "https://api.github.com/repos/hetznercloud/cli/releases/latest"  | jq .tag_name | sed 's/"//g')
-wget https://github.com/hetznercloud/cli/releases/download/${VERSION}/hcloud-linux-amd64.tar.gz
-tar -xvzf hcloud-linux-amd64.tar.gz
-chmod +x hcloud
-mv -v hcloud $HOME/bin2/hcloud
-
-title "autok3s ########################################################################################################"
-curl -sS https://rancher-mirror.rancher.cn/autok3s/install.sh  | BINLOCATION=/home/serge/bin2/ sh
-
-title "update completions #############################################################################################"
-$HOME/bin/generate_bash_completions_from_binaries.sh
-
-title "asdf ########################################################################################################"
-title "asdf ########################################################################################################"
-
-asdf update
-for plugin in $(asdf plugin-list|xargs)
-do 	
-title "asdf - ${plugin} ##########################################################################"
-	asdf plugin-update ${plugin} 
-	asdf install ${plugin} latest
-done
-
-
-title "generate bash completions######################################################################################"
-$HOME/bin/generate_bash_completions_from_binaries.sh
-
-title "asdf ########################################################################################################"
-title "asdf ########################################################################################################"
-
-asdf update
-for plugin in $(asdf plugin-list|xargs)
-do 	
-title "asdf - ${plugin} ##########################################################################"
-	asdf plugin-update ${plugin} 
-	asdf install ${plugin} latest
-done
-
-
-title "generate bash completions######################################################################################"
-$HOME/bin/generate_bash_completions_from_binaries.sh
+######################################################################################################################
 
 title "cleanup ########################################################################################################"
 cd $HOME
-ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) ~/.krew
 rm -rfv ~/tmp/update-tools/
+
+######################################################################################################################
+
+title "asdf ########################################################################################################"
+asdf update
+for plugin in $(asdf plugin-list|xargs)
+do 	
+title "asdf - ${plugin} ##########################################################################"
+	asdf plugin-update ${plugin} 
+	asdf install ${plugin} latest
+done
+
+######################################################################################################################
+
+title "krew"
+cd $HOME
+ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) ~/.krew
+krew update && krew upgrade
+
+######################################################################################################################
+
+title "generate bash completions"
+$HOME/bin/generate_bash_completions_from_binaries.sh
+
+######################################################################################################################
+
+title "end"
+
+######################################################################################################################
 

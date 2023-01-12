@@ -24,7 +24,7 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """\
-    [┌──────────────────────────────────────────────────────────────────────────────────────────](bold green)\
+    [┌──────────────────────────────────────](bold green)\
     $line_break\
     \
     [│ ](bold green)\
@@ -55,10 +55,10 @@ format = """\
     $line_break\
     \
     [│ ](bold green)\
-    $jobs\
-    $status\
     $cmd_duration\
-    ${custom.sudo}\
+    $status\
+    $jobs\
+    $sudo\
     $line_break\
     \
     [└](bold green)(bold green)\
@@ -235,6 +235,12 @@ style = "bold red"
 recognize_signal_code = true
 map_symbol = true
 
+[sudo]
+format = '[$symbol]($style)'
+symbol = '❢'
+style = "bold fg:bright-red"
+disabled = false
+
 [terraform]
 format = "[${symbol}tf $version]($style) "
 version_format = "v${raw}"
@@ -268,24 +274,8 @@ format = "[$user]($style)"
 
 ###
 
-[custom.ansible]
-description = "Ansible version"
-command = "echo -n $(ansible --version 2>/dev/null | grep ^ansible | awk '{ print $2 }') $(which ansible | sed -e s@$HOME/@@ -e s@/bin/ansible@@ -e s@/.virtual_env@@) "
-when = """ test -n "${ANSIBLE_HOME}" """
-files = [ "ansible.cfg" ]
-shell = "/bin/bash"
-symbol = "Ⓐ "
-format = "[$symbol$output]($style) "
-
-[custom.sudo]
-description = "valid sudo timestamp marker"
-command = "echo -n '!'"
-format = "[$symbol$output]($style) "
-style = "bold fg:bright-red"
-when = "sudo -vn &>/dev/null"
-
 [custom.bgfill]
-command = "echo ."
+command = "echo "
 style="fg:black bg:bright-black"
 when="true"
 shell="sh"
