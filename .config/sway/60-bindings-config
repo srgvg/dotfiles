@@ -1,0 +1,359 @@
+#######################################################################################################################
+#
+# Window management
+#
+# show wayland app_id in title
+bindsym $mod+Alt+t title_format %title [%app_id]
+
+# split in horizontal orientation
+bindsym $mod+h split h
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+bindsym $mod+Shift+f fullscreen toggle global
+
+# Toggle between stacking/tabbed/splith/splitv:
+bindsym $mod+e layout toggle splith splitv
+bindsym $mod+w layout tabbed
+
+# Show border or not
+bindsym $mod+b border toggle
+
+# Set window sticky
+bindsym $mod+s sticky toggle
+
+# toggle tiling / floating
+#bindsym $mod+Control+space floating toggle
+bindsym $mod+t floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# vertical mouse buttons
+# 1 - left
+# 2 - middle
+# 3 - right
+# 8 - back
+# 9 - forward
+# 10  scroll wheel button
+#
+bindsym --whole-window $mod+button2					exec setsbg next
+bindsym --whole-window $mod+Alt+Control+button2				exec showbg
+
+
+# https://i3wm.org/docs/user-contributed/swapping-workspaces.html
+#bindsym $mod+Control+s exec i3swap
+
+#######################################################################################################################
+#
+# Navigation
+#
+
+#
+## numbers - named workspaces
+#
+
+# switch to workspace
+bindsym $mod+grave workspace 0
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+bindsym $mod+0 workspace 10
+bindsym $mod+F1 workspace 11
+bindsym $mod+F2 workspace 12
+bindsym $mod+F3 workspace 13
+bindsym $mod+F4 workspace 14
+bindsym $mod+F5 workspace 15
+bindsym $mod+F6 workspace 16
+bindsym $mod+F7 workspace 17
+bindsym $mod+F8 workspace 18
+bindsym $mod+F9 workspace 19
+bindsym $mod+F10 workspace 20
+bindsym $mod+F11 workspace 21
+bindsym $mod+F12 workspace 22
+
+# move focused container to workspace
+bindsym $mod+Control+grave move container to workspace 0
+bindsym $mod+Control+1 move container to workspace 1
+bindsym $mod+Control+2 move container to workspace 2
+bindsym $mod+Control+3 move container to workspace 3
+bindsym $mod+Control+4 move container to workspace 4
+bindsym $mod+Control+5 move container to workspace 5
+bindsym $mod+Control+6 move container to workspace 6
+bindsym $mod+Control+7 move container to workspace 7
+bindsym $mod+Control+8 move container to workspace 8
+bindsym $mod+Control+9 move container to workspace 9
+bindsym $mod+Control+0 move container to workspace 10
+bindsym $mod+Control+F1 move container to workspace 11
+bindsym $mod+Control+F2 move container to workspace 12
+bindsym $mod+Control+F3 move container to workspace 13
+bindsym $mod+Control+F4 move container to workspace 14
+bindsym $mod+Control+F5 move container to workspace 15
+bindsym $mod+Control+F6 move container to workspace 16
+bindsym $mod+Control+F7 move container to workspace 17
+bindsym $mod+Control+F8 move container to workspace 18
+bindsym $mod+Control+F9 move container to workspace 19
+bindsym $mod+Control+F10 move container to workspace 20
+bindsym $mod+Control+F11 move container to workspace 21
+bindsym $mod+Control+F12 move container to workspace 22
+
+# move focused container to workspace
+bindsym $mod+Shift+grave move container to workspace 0
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+bindsym $mod+Shift+F1 move container to workspace 11
+bindsym $mod+Shift+F2 move container to workspace 12
+bindsym $mod+Shift+F3 move container to workspace 13
+bindsym $mod+Shift+F4 move container to workspace 14
+bindsym $mod+Shift+F5 move container to workspace 15
+bindsym $mod+Shift+F6 move container to workspace 16
+bindsym $mod+Shift+F7 move container to workspace 17
+bindsym $mod+Shift+F8 move container to workspace 18
+bindsym $mod+Shift+F9 move container to workspace 19
+bindsym $mod+Shift+F10 move container to workspace 20
+bindsym $mod+Shift+F11 move container to workspace 21
+bindsym $mod+Shift+F12 move container to workspace 22
+
+#
+## tab
+#
+
+# switch container focus
+bindsym $mod+Tab		focus next siblings
+bindsym $mod+Shift+Tab		focus prev siblings
+
+# switch to the next and previous workspace
+bindsym $mod+Control+Tab workspace next
+bindsym $mod+Control+Shift+Tab workspace prev
+
+#
+## left right down up
+#
+
+# switch container focus
+bindsym $mod+Left focus left
+bindsym $mod+Right focus right
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+
+# move focused container
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# switch to the next and previous workspace
+bindsym $mod+Control+Left workspace prev
+bindsym $mod+Control+Down workspace next
+bindsym $mod+Control+Up workspace prev
+bindsym $mod+Control+Right workspace next
+
+# switch to other output
+bindsym $mod+Alt+Left focus output left
+bindsym $mod+Alt+Down focus output down
+bindsym $mod+Alt+Up focus output up
+bindsym $mod+Alt+Right focus output right
+
+# move container to the next and previous workspace
+bindsym $mod+Shift+Control+Left move workspace to output left
+bindsym $mod+Shift+Control+Down move workspace to output down
+bindsym $mod+Shift+Control+Up move workspace to output up
+bindsym $mod+Shift+Control+Right move workspace to output right
+
+#
+## PageUp PageDwn
+#
+
+# focus the parent/child container
+bindsym $mod+Prior focus parent
+bindsym $mod+Next focus child
+
+# Move the focused container to the next output
+bindsym $mod+Control+Prior move container to output left
+bindsym $mod+Control+Next move container to output right
+
+# Move the current workspace to the next output
+bindsym $mod+Shift+Prior move workspace to output left
+bindsym $mod+Shift+Next move workspace to output right
+
+#
+## Scratchpad things
+#
+# Make the currently focused window a scratchpad
+bindsym $mod+Control+Escape border normal, mark scratchpad, move scratchpad
+bindsym $mod+Shift+Escape unmark scratchpad
+# Show the first scratchpad window
+bindsym $mod+Escape scratchpad show
+# quickswitch select scratchpad window
+bindsym $mod+$Alt+Escape exec i3-quickswitch --prompt --scratchpad
+
+
+#######################################################################################################################
+#
+## Key command assignments & application launchers
+#
+# xmodmap -pke
+
+# start a terminal
+bindsym $mod+Return		exec $terminal
+# start a floating terminal
+bindsym $mod+Control+Return	exec $terminalfl
+
+# kill focused window except..
+#bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator|Alacritty).*$"]	kill
+bindsym $mod+x [con_id="__focused__"] 	kill
+
+bindsym $mod+Control+$Alt+x exec swaymsg -t get_tree | \
+          jq '.. | select(.type?) | select(.focused==true).pid' | \
+          xargs -L 1 kill -9
+
+
+# quickswitch
+bindsym $mod+q	exec sway-list-windows.py
+
+# run launcher
+#bindsym $mod+r	exec wofi  --gtk-dark --show run,drun
+bindsym $mod+r	exec kickoff
+
+# get sway window criteria
+bindsym $mod+g	exec sway-get-window-criteria
+
+# reload the configuration file
+bindsym $mod+Shift+r			reload
+
+# set workspaces on default screens
+bindsym $mod+Control+r			exec i3-move-workspaces
+
+# Lock Screen / Suspend / Poweroff
+bindsym Pause				exec $lockscreen
+bindsym $mod+l				exec $lock
+bindsym $mod+Pause			exec $suspend
+bindsym $mod+Control+l			exec $suspend
+
+# start some tools
+bindsym $mod+c				exec gnome-calculator
+bindsym $mod+Control+d	exec nautilus --new-window
+bindsym $mod+d		exec nemo
+
+# start browsers
+bindsym $mod+o			exec firefox
+bindsym $mod+Control+o		exec firefox --private-window
+
+# Show current Background filename
+bindsym $mod+Control+b		exec setsbg show
+bindsym $mod+Shift+Control+b	exec setsbg showpic
+bindsym $mod+$Alt+b		exec setsbg next
+bindsym $mod+Control+$Alt+b	exec setsbg
+
+# Toggle Presentation mode (disable screen saver and notifications)
+#bindsym $mod+p			exec presentation-mode
+#bindsym $mod+Shift+p		exec presentation-mode start2
+
+# Launch Printer config
+bindsym $mod+Control+p		exec /usr/share/system-config-printer/system-config-printer.py
+
+# dmenu networkmanager script
+#bindsym $mod+n			exec i3-nmcli
+bindsym $mod+Control+n		exec nm-toggle-wifi
+
+
+# custom shit
+#bindsym $mod+Alt+Control+t		exec switch-term-colors
+
+#######################################################################################################################
+#
+# volume and media controls, special keys
+#
+## Fn XF86WakeUp
+
+# Fn-F1  XF86AudioMute
+bindsym XF86AudioMute			exec i3-volume local toggle
+bindsym Control+XF86AudioMute		exec i3-volume sonos toggle
+bindsym $mod+XF86AudioMute		exec i3-volume local set 50
+bindsym $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
+
+# Fn-F2  XF86AudioLowerVolume
+# Fn-F3  XF86AudioRaiseVolume
+bindsym XF86AudioLowerVolume		exec i3-volume local down
+bindsym XF86AudioRaiseVolume		exec i3-volume local up
+bindsym Control+XF86AudioLowerVolume	exec i3-volume sonos down
+bindsym Control+XF86AudioRaiseVolume	exec i3-volume sonos up
+
+
+# Elgato light Office
+bindsym $mod+Control+slash		exec elgato.sh toggle
+bindsym $mod+Control+comma		exec elgato.sh brightness --dimmer 5
+bindsym $mod+Control+period		exec elgato.sh brightness --brighter 5
+bindsym $mod+Shift+Control+comma	exec elgato.sh color --warmer 100
+bindsym $mod+Shift+Control+period	exec elgato.sh color --cooler 100
+
+bindsym XF86AudioPrev			exec playerctl previous
+bindsym XF86AudioPlay			exec playerctl play-pause
+bindsym Shift+XF86AudioPlay		exec playerctl stop
+bindsym XF86AudioNext			exec playerctl next
+
+bindsym $mod+XF86AudioLowerVolume	exec playerctl previous
+bindsym $mod+XF86AudioRaiseVolume	exec playerctl next
+
+bindsym $mod+comma		exec playerctl previous
+bindsym $mod+period		exec playerctl next
+bindsym $mod+slash		exec playerctl play-pause
+bindsym $mod+Shift+slash	exec playerctl stop
+
+bindsym $mod+m			exec pavucontrol
+bindsym $mod+Shift+m		exec pa-rotate-sinks
+bindsym $mod+Alt+m		exec i3-pa-select-output
+bindsym $mod+Control+m		exec i3-playerctl-select-player
+
+# Fn-F4  XF86AudioMicMute
+bindsym XF86AudioMicMute				exec ponymix  --source --device 389 toggle
+
+# Fn-F5  XF86MonBrightnessDown
+#bindsym XF86MonBrightnessDown			exec i3-brightness down
+#bindsym Shift+XF86MonBrightnessDown		exec i3-brightness set 20
+#bindsym $mod+bracketleft				exec i3-brightness down
+#bindsym $mod+Shift+bracketleft			exec i3-brightness set 20
+
+# Fn-F6  XF86MonBrightnessUp
+#bindsym XF86MonBrightnessUp				exec i3-brightness up
+#bindsym Shift+XF86MonBrightnessUp		exec i3-brightness set 100
+#bindsym $mod+bracketright				exec i3-brightness up
+#bindsym $mod+Shift+bracketright			exec i3-brightness set 100
+
+## Fn-F7 XF86Display
+
+# Fn-F8 XF86WLAN
+bindsym XF86WLAN		exec nm-toggle-wifi
+
+# Fn-F9  XF86Tools
+
+# Fn-F10 XF86Search
+# Screenshot
+bindsym Print			exec screengrab select
+bindsym Shift+Print		exec screengrab select window
+bindsym Control+Print		exec screengrab screen
+bindsym Shift+Control+Print	exec screengrab full
+
+# Fn-F10 XF86Bluetooth
+bindsym XF86Bluetooth 		exec --no-start-up-id bluetooth toggle
+
+# Fn-F11 XF86LaunchA
+# Fn-F12 XF86Explorer
+# Fn-F12 XLookupString
+# Fn-F12 XF86Favorites

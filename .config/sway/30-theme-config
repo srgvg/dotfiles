@@ -1,0 +1,122 @@
+#######################################################################################################################
+#
+## default background
+#
+#output "*" bg $HOME/Pictures/Backgrounds/default/borg_cube.png fill
+output "*" bg $HOME/.swaybg fill
+
+#
+#######################################################################################################################
+#
+# gaps
+#
+# smart_gaps on|off|toggle|inverse_outer
+smart_gaps on
+#     If smart_gaps are on gaps will only be enabled if a workspace has more than one
+#     child. If smart_gaps are inverse_outer outer gaps will only be enabled if a
+#     workspace has exactly one child.
+#
+# gaps inner|outer|horizontal|vertical|top|right|bottom|left <amount>
+#     Sets default amount pixels of inner or outer gap, where the inner affects spac‐
+#     ing around each view and outer affects the spacing around each workspace. Outer
+#     gaps are in addition to inner gaps. To reduce or remove outer gaps, outer gaps
+#     can be set to a negative value. outer gaps can also be specified per side with
+#     top, right, bottom, and left or per direction with horizontal and vertical.
+#
+#     This affects new workspaces only, and is used when the workspace doesn't have
+#     its own gaps settings (see: workspace <ws> gaps ...). 
+#
+gaps inner 1
+gaps outer -1
+
+# smart_borders on|no_gaps|off
+#     If smart_borders are on, borders will only be enabled if the workspace has more than one visible child. If smart_borders is set to no_gaps, borders will only be enabled if
+#     the workspace has more than one visible child and gaps equal to zero.
+smart_borders on
+#
+#######################################################################################################################
+#
+## parameters
+#
+
+set $dark               #000000
+set $light              #FFFFFF
+set $lessdark           #333333
+set $grey 		#545454
+set $lesslight          #BBBBBB
+set $red                #FF0000
+set $ignored            #000000
+
+# custom overrides
+set $focus              #3250FF
+
+#######################################################################################################################
+#
+## Colors, borders, layout, fonts
+#
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below. ISO 10646 = Unicode
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# The font above is very space-efficient, that is, it looks good, sharp and
+# clear in small sizes. However, if you need a lot of unicode glyphs or
+# right-to-left text rendering, you should instead use pango for rendering and
+# chose a FreeType font, such as:
+font pango:FontAwesome Solid 14, Monospace 14
+
+# To set the cursor theme and size:
+#seat seat0 xcursor_theme my_cursor_theme my_cursor_size
+#
+#######################################################################################################################
+#
+## Client Container Colors
+#
+
+# client.<class> <border> <background> <text> [<indicator> [<child_border>]]
+#     Configures the color of window borders and title bars. The first three colors are required. When omitted indicator will use a sane default and child_border will use the color
+#     set for background. Colors may be specified in hex, either as #RRGGBB or #RRGGBBAA.
+#
+#     The meaning of each color is:
+#
+#     border
+#         The border around the title bar.
+#
+#     background
+#         The background of the title bar.
+#
+#     text
+#         The text color of the title bar.
+#
+#     indicator
+#         The color used to indicate where a new view will open. In a tiled container, this would paint the right border of the current view if a new view would be opened to the
+#         right.
+#
+#     child_border
+#         The border around the view itself.
+#
+## client windows		border		background	text		indicator 	child_border
+## client windows		border		background	text		indicator 	child_border
+## client windows		border		background	text		indicator 	child_border
+#
+#     The available classes are:
+#
+#     client.focused
+#         The window that has focus.
+client.focused			$focus		$focus		$light		$light 		$focus
+#
+#     client.focused_inactive
+#         The most recently focused view within a container which is not focused.
+client.focused_inactive		$dark		$lesslight	$dark		$lesslight	$lesslight
+#
+#     client.focused_tab_title
+#         A view that has focused descendant container. Tab or stack container title that is the parent of the focused container but is not directly focused. Defaults to 
+#         focused_inactive if not specified and does not use the indicator and child_border colors.
+#client.focused_tab_title	$lesslight	$lesslight	$lessdark	$ignored	$ignored
+#
+#     client.unfocused
+client.unfocused		$lesslight	$lessdark	$lesslight	$lesslight	$lessdark
+#         A view that does not have focus.
+#
+#     client.urgent
+#         A view with an urgency hint. Note: Native Wayland windows do not support urgency. Urgency only works for Xwayland windows.
+client.urgent			$red		$red		$light		$light		$red

@@ -101,6 +101,14 @@ function dl() {
 	dpkg -l | grep -i $(for n in ${*:-^}; do echo -n " -e $n"; done)
 }
 
+function gcloud-project() {
+	if [ -n "${1:-}" ]; then 
+		gcloud config set project ${1}
+	else
+		gcloud config configurations list
+	fi
+}
+
 function ka() {
 	#kubectl $* --all-namespaces
 	kubecolor $* --all-namespaces

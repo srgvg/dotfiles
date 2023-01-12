@@ -1,0 +1,194 @@
+* {
+    /* `otf-font-awesome` is required to be installed for icons */
+    font-family: FontAwesome, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+}
+
+window#waybar {
+    /*
+     * background-color: rgba(43, 48, 59, 0.5);
+     */
+    background-color: #000000;
+    border-bottom: 3px solid rgba(100, 114, 125, 0.5);
+    color: #ffffff;
+    transition-property: background-color;
+    transition-duration: .5s;
+    opacity: 0.8;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+window#waybar.empty {
+    background-color: #000000;
+}
+
+#window {
+    color: #ffffff;
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+    padding: 0 30px;
+    opacity: 0.8;
+}
+
+.modules-left {
+	/*
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+    */
+}
+
+.modules-center {
+}
+
+.modules-right {
+}
+
+#workspaces button {
+    padding: 0 5px;
+    background-color: transparent;
+    color: #ffffff;
+    /* Use box-shadow instead of border so the text isn't offset */
+    box-shadow: inset 0 -3px transparent;
+    /* Avoid rounded borders under each workspace name */
+    /*border: none;
+    border-radius: 0;*/
+}
+
+/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
+#workspaces button:hover {
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 -3px #ffffff;
+}
+
+#workspaces button.focused {
+    background-color: #696969;
+    box-shadow: inset 0 -3px #ffffff;
+}
+
+#workspaces button.urgent {
+    background-color: #eb4d4b;
+}
+
+#mode {
+    background-color: #64727D;
+    border-bottom: 3px solid #ffffff;
+}
+
+#workspaces {
+    margin: 0 4px;
+}
+
+/* If workspaces is the leftmost module, omit left margin */
+.modules-left > widget:first-child > #workspaces {
+    margin-left: 0;
+}
+
+/* If workspaces is the rightmost module, omit right margin */
+.modules-right > widget:last-child > #workspaces {
+    margin-right: 0;
+}
+
+#clock {
+    background-color: #000000;;
+    color: #ffffff;
+    box-shadow: inset 0 -3px #ffffff;
+}
+
+#battery {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+@keyframes blink {
+    to {
+        background-color: #ffffff;
+        color: #000000;
+    }
+}
+
+label:focus {
+    background-color: #000000;
+}
+
+#cpu {
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#memory {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#disk {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#backlight {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#network {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#network.disconnected {
+    background-color: #f53c3c;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#pulseaudio {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#pulseaudio.muted {
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #696969;
+}
+
+#custom-media {
+    color: #ffffff;
+    box-shadow: inset 0 -3px #ffffff;
+    min-width: 100px;
+    padding: 0 30px;
+}
+
+#temperature {
+    background-color: #000000;
+    box-shadow: inset 0 -3px #ffffff;
+}
+
+#temperature.critical {
+    background-color: #f0932b;
+    box-shadow: inset 0 -3px #ffffff;
+}
+
+#tray {
+    background-color: #000000;;
+    box-shadow: inset 0 -3px #ffffff;
+    color: #ffffff;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: #eb4d4b;
+}
+

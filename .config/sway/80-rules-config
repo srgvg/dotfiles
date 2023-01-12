@@ -1,0 +1,145 @@
+#######################################################################################################################
+#
+# When using multiple commands, separate them by using a , (a comma) instead of a semicolon. Criteria apply only until the next semicolon,
+# so if you use a semicolon to separate commands, only the first one will be executed for the matched window(s).
+#
+## Window assignments & rules
+#
+# Assignments are processed by i3 in the order in which they appear in the
+# config file. The first one which matches the window wins and later
+# assignments are not considered.
+#
+# !!! Maar volgens mij is het omgekeerd. !!!
+#
+#for_window [ class=".*" ]	border $defaultborder
+#for_window [ con_id="__focused__" ] border $defaultborder
+#for_window [ con_id="(?!__focused__)" ] border $noborder
+
+# https://github.com/swaywm/sway/wiki#is-an-application-using-xwayland
+for_window [shell=".*"] title_format "<b>%title</b> (%app_id %shell %class %instance)"
+
+#######################################################################################################################
+#
+# various rules
+#
+# float windows
+#
+for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
+for_window [title="(?:Open|Save) (?:File|Folder|As)"] floating
+for_window [title="chromeIPass"] floating enable
+for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
+for_window [app_id="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
+for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
+#for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
+for_window [title="Pages Unresponsive"] floating enable
+for_window [class="feh" instance="feh"] floating enable
+for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"] resize set 700 700
+for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
+for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
+
+for_window [app_id="alacritty-floating"] floating enable
+for_window [app_id="alacritty-floating"] opacity 0.9
+for_window [app_id="alacritty-tiled"] opacity 0.9
+for_window [app_id=org.gnome.Calculator ] floating enable
+
+for_window [class="Gedit" instance="gedit"] border $defaultborder
+
+# http://build.i3wm.org/docs/userguide.html#_list_of_commands
+# (!) window_* seems to not take PCRE's
+#for_window [window_type="normal"]
+#for_window [window_type="dialog"]
+#for_window [window_type="utility"]
+#for_window [window_type="toolbar"]
+#for_window [window_type="splash"]
+#for_window [window_type="menu"]
+#for_window [window_type="dropdown_menu"]
+#for_window [window_type="popup_menu"]
+#for_window [window_type="tooltip"]
+#for_window [window_type="notification"]
+
+#######################################################################################################################
+#
+# Don’t focus window upon opening
+#
+no_focus [window_role="pop-up"]
+
+#######################################################################################################################
+#
+# terminals
+
+#######################################################################################################################
+#
+# Tools
+#
+#for_window [app_id="nemo"]								floating enable
+for_window [app_id=org.gnome.Nautilus ] floating enable
+for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
+for_window [class="Totem" instance="totem"]												floating enable, border pixel 4
+for_window [class="Gnome-control-center" instance="gnome-control-center"]				floating enable
+# xev
+for_window [title="Event Tester"]														floating enable
+for_window [instance="libreoffice"]														border normal
+for_window [class="Files" instance="small"]												floating enable, resize set 700 300
+for_window [class="Alarm-clock-applet" instance="alarm-clock-applet"]					floating enable
+for_window [class="flameshot" instance="flameshot"]										floating enable
+for_window [class="System-config-printer.py" instance="system-config-printer" ]			floating disable
+
+#######################################################################################################################
+#
+# Browsers
+#
+#assign		[class="Firefox" instance="Navigator" window_role="^(?!GtkFileChooserDialog)"] $ws_www
+for_window [class="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
+for_window [app_id="firefox"] inhibit_idle fullscreen; max_render_time off; border $defaultborder
+for_window [app_id="firefox" title="About Mozilla Firefox"] floating_enable
+for_window [app_id="firefox" title="Firefox — Sharing Indicator"] floating_enable
+for_window [app_id="firefox" title="Picture-in-Picture$"] floating enable; sticky enable
+
+
+#######################################################################################################################
+#
+# chat
+#
+assign		[window_role="irc"]										$ws_chat
+assign		[instance="IRCWINDOW"]									$ws_chat
+
+assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
+for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
+
+assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
+for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
+for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
+
+for_window	[class="Skype"]									floating enable
+
+assign	[class="discord" instance="discord"] $ws_chat
+for_window	[class="discord" instance="discord"] layout tabbed
+
+assign	[app_id="appimagekit_f49d2060ea798ce2d53e5a3b68e3cb6c-Telegram_Desktop]"] $ws_chat
+for_window	[app_id="appimagekit_f49d2060ea798ce2d53e5a3b68e3cb6c-Telegram_Desktop"] layout tabbed
+
+assign [class="Mattermost" instance="mattermost" window_role="browser-window"] $ws_chat
+for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
+
+#######################################################################################################################
+#
+# large screen tools
+#
+
+
+#######################################################################################################################
+#
+# side tools
+#
+
+# Music
+assign		[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
+for_window	[class="(Spotify|nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
+
+### https://github.com/i3/i3/issues/2060#issuecomment-155179472
+assign		[class="Spotify" instance="spotify"] 	$ws_music
+for_window	[class="Spotify" instance="spotify"]	move to workspace $ws_music
+
+# tools
+assign		[app_id="i3jobs"]				$ws_util
+

@@ -212,7 +212,7 @@ function notify_desktop() {
 
 	if  ! ifinteractive
 	then
-		notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
+		dunstify --urgency="${urgency}" --icon="${icon}" --appname="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
 	else
 		notify_debug "${summary} ${body}"
 	fi
@@ -232,7 +232,7 @@ function notify_desktop_always() {
 	parse_notify_desktop "$@"
 
 	notify_debug "${summary} ${body}"
-	notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
+	dunstify --urgency="${urgency}" --icon="${icon}" --appname="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
 	set_xtrace
 }
 

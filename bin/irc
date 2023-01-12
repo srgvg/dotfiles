@@ -19,7 +19,7 @@ on_exit() {
 	if [ ${IRC_EXIT:=$?} -gt 0 ]
 	then
 		notify_error_desktop "ssh-tmux-weechat exited with error ${IRC_EXIT}"
-		notify-send --urgency=critical --icon=dialog-info --app-name=ssh-tmux-weechat "IRC Error" "exited with error ${IRC_EXIT}"
+		dunstify --urgency=critical --icon=dialog-info --app-name=ssh-tmux-weechat "IRC Error" "exited with error ${IRC_EXIT}"
 	fi
     # stop the control master
     ssh ${IRC_HOST} -O exit

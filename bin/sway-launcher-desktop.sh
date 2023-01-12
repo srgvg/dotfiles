@@ -1,0 +1,1 @@
+/home/serge/src/util/sway-launcher-desktop/sway-launcher-desktop.sh

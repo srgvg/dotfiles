@@ -1,0 +1,59 @@
+#######################################################################################################################
+#
+# service like execs
+#
+
+# https://elis.nu/blog/2021/02/detailed-setup-of-screen-sharing-in-sway/
+exec_always dbus-update-activation-environment WAYLAND_DISPLAY
+# https://github.com/flameshot-org/flameshot/blob/master/docs/Sway%20and%20wlroots%20support.md
+exec hash dbus-update-activation-environment 2>/dev/null && \
+     dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
+
+
+# https://wiki.archlinux.org/title/KDE_Wallet#Unlocking_KWallet_automatically_in_a_window_manager
+exec /usr/share/libpam-kwallet-common/pam_kwallet_init
+
+#exec_always pgrep -f polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec_always pgrep lxpolkit || lxpolkit
+#exec_always pgrep -f polkit-mate-authentication-agent-1 || /usr/lib/x86_64-linux-gnu/polkit-mate/polkit-mate-authentication-agent-1
+
+
+# By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
+# A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
+#exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy 
+
+#exec_always pkill swayidle ;  \
+#	swayidle -d -w \
+#	lock "dunstctl set-paused true & $lockscreen"  \
+#	unlock "dunstctl set-paused false" \
+#	before-sleep 'playerctl pause & $lockscreen ; swaymsg "output * dpms off"'  \
+#	after-resume 'swaymsg "output * dpms on"' \
+#	timeout 3600 '$lockscreen'  \
+#	timeout 3900 'swaymsg "output * dpms off"'  \
+#	resume 'swaymsg "output * dpms on"'  \
+#	idlehint 1500 \
+#	2>&1 | tee $HOME/logs/swayidle.log
+
+#
+# settings
+#
+
+exec --no-startup-id "nmcli radio wifi off" # disable wifi
+exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
+exec --no-startup-id "nmcli radio wwan off"
+
+#exec_always --no-startup-id "setsbg redisplay"
+#
+## startup
+#
+
+# tray stuff
+#
+exec_always "pgrep nm-applet || nm-applet --indicator &"
+#exec_always "pgrep pasystray || pasystray --debug --notify=all &"
+exec_always "pgrep blueman-applet || blueman-applet &"
+exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-applet &"
+
+# desktop stuff
+#
+exec_always "sleep 3 && $HOME/bin/i3-launch-jobs ; sleep 1 && swaymsg 'focus output $primary'"

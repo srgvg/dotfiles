@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+# list of jobs to execute in screen
+## filter comments and empty lines
+JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+	arandr-autoconfig-daemonized
+	#autocutsel -verbose -selection CLIPBOARD
+	#autocutsel -verbose -selection PRIMARY
+	loop autops
+	mattermost-desktop-restart
+EOF
+)
+
+_job=${*:-}
+if [ -n "${_job}" ]
+then
+	notify_debug "Replacing default job list with '${_job}'"
+	JOBS="${_job}"
+fi
+
+I3SCREENPID=$(pgrep -f "SCREEN -S i3jobs" 2>/dev/null || echo 0)
+
+function i3-launch-job() {
+    if [ -z "$*" ]
+    then
+        notify_error "Nothing to launch"
+        return
+    fi
+    notify "Checking for \"$*\" ... "
+	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs)
+    then
+		notify "              ... already running (${_pid})"
+    else
+        notify "              ... starting"
+        # shellcheck disable=SC2048
+		launch-screen i3jobs add $* | sed -e 's/^/ -   /'
+    fi
+}
+
+# launch the jobs
+echo "$JOBS" | while read -r line
+do
+	# make sure we replace an existing setbg loop
+	if [[ $line =~ "setbg loop" ]]
+	then
+		if _pid=$(pgrep -P ${I3SCREENPID} -f "setbg loop")
+		then
+			kill -9 ${_pid}
+			notify_debug "Killed existing setbg loop (${_pid})"
+		fi
+	fi
+	i3-launch-job $line ||:
+done
+
+if ifinteractive
+then
+	notify_debug "Check if there is an attached screen"
+	if pgrep -f "screen -D -r i3jobs" >/dev/null
+	then
+		wmctrl -a i3jobs
+	else
+		notify "start a terminal and attach"
+		alacritty --class i3jobs --title i3jobs --command screen -D -r i3jobs & >/dev/null 2>&1
+	fi
+fi

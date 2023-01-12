@@ -14,21 +14,27 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 #DEBUG=1
-#COMMAND="/usr/bin/gnome-terminal --geometry 100x40+0+0"
-COMMAND="$HOME/.cargo/bin/alacritty"
+#TERMINAL="/usr/bin/gnome-terminal --geometry 100x40+0+0"
+TERMINAL="${TERMINAL:-alacritty}"
+TERMINAL_COMMAND="${TERMINAL_COMMAND:-$TERMINAL -e}"
 
-if [ "$(basename $0)" = "termf" ]
+CARGS="$*"
+
+if [ -z "$CARGS" ]
 then
-	#COMMAND="$COMMAND --role gnome-terminal-floating"
-	COMMAND="$COMMAND --class alacritty-floating"
+	if [ "$(basename $0)" = "termf" ]
+	then
+		#TERMINAL="$TERMINAL --role gnome-terminal-floating"
+		TERMINAL="$TERMINAL --class alacritty-floating"
+	else
+		PWD="$(sway-get-window-cwd ||:)"
+		[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ] && PWD="$HOME"
+		#TERMINAL="$TERMINAL --role gnome-terminal-tiled"
+		TERMINAL="$TERMINAL --class alacritty-tiled"
+		TERMINAL="$TERMINAL --working-directory=${PWD}"
+	fi
 else
-	PWD="$(xcwd ||:)"
-	# firefox spawns /snap/keepassxc/.../usr/bin/keepassxc-proxy
-	# which gets picked up by xcwd
-	[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ]&& PWD="$HOME"
-	#COMMAND="$COMMAND --role gnome-terminal-tiled"
-	COMMAND="$COMMAND --class alacritty-tiled"
-	COMMAND="$COMMAND --working-directory=${PWD}"
+	TERMINAL="$TERMINAL $CARGS"
 fi
 
 if ifdebug1
@@ -36,7 +42,7 @@ then
 	mkdir -p ~/t/term/
 	filename=$HOME/t/term/$(date +%Y%m%d-%H%M%S).trace.log
 	ln -nfs $filename ~/t/term/latest.trace.log
-	exec strace -o $filename -tt -T -y -yy -f $COMMAND
+	exec strace -o $filename -tt -T -y -yy -f $TERMINAL
 else
-	exec $COMMAND
+	exec $TERMINAL $CARGS
 fi

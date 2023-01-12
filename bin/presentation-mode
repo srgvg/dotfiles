@@ -17,9 +17,9 @@ function start() {
 	if [ -z "${ACTIVATED}" ]
 	then
 		if [ "${1:-}" != "keep-notif" ]; then
-			killall -SIGUSR1 dunst  # disable OSD notifications
+			dunstctl set-paused false  # disable OSD notifications
+			dunstify "dunst notifications" paused
 		fi
-		xset -dpms              # disable dpms
 		xset s off              # disable scren saver blanking
     	eval "${RUNTRAY}" &
 	fi
@@ -28,8 +28,8 @@ function start() {
 
 function stop() {
 
-	killall -SIGUSR2 dunst  # re-enable OSD notifications
-	xset +dpms              # re-enable dpms
+	dunstctl set-paused true  # re-enable OSD notifications
+	dunstify "dunst notifications" enabled
 	xset s                  # re-enable screen saver blanking
 	if [ -n "${ACTIVATED}" ]
 	then
