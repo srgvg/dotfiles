@@ -34,6 +34,11 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
 EOF
 )
+if [ -f "${0}-$(hostname)" ]
+then
+	source "${0}-$(hostname)"
+fi
+
 
 _job=${*:-}
 if [ -n "${_job}" ]
