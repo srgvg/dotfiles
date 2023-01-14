@@ -29,5 +29,5 @@ for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .
 do
     LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
 done
-swaylock $LOCKARGS
-rm $IMAGE
+swaylock $LOCKARGS &
+sleep 1

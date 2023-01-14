@@ -13,18 +13,4 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-lockscreen="$HOME/bin/swaylock.sh"
-
-swayidle -d -w \
-  lock "dunstctl set-paused true"  \
-  lock "$lockscreen"  \
-  unlock "dunstctl set-paused false" \
-  before-sleep "playerctl pause"  \
-  before-sleep "${lockscreen}"  \
-  before-sleep "swaymsg 'output * dpms off'"  \
-  before-sleep "elgato.sh off"  \
-  after-resume "swaymsg 'output * dpms on'" \
-  timeout 1800 "$lockscreen"  \
-  timeout 2700 "swaymsg 'output * dpms off'"  \
-  idlehint 1500 \
-  2>&1 | tee $HOME/logs/swayidle.log
+swayidle -d -w -C "$HOME/.swayidle/config" 2>&1 | tee $HOME/logs/swayidle.log
