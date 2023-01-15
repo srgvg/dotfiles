@@ -28,6 +28,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	runflatpak.sh mattermost
 	runflatpak.sh nextcloud
 	runflatpak.sh teams
+	runflatpak.sh Microsoft Teams
 	runflatpak.sh slack
 	#wl-paste --primary --watch wl-copy
 	#wl-paste -t text --watch clipman store

@@ -13,4 +13,4 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-swayidle -d -w -C "$HOME/.swayidle/config" 2>&1 | tee $HOME/logs/swayidle.log
+swayidle -d -w -C "$HOME/.swayidle/config" 2>&1 | tee --append $HOME/logs/swayidle.log
