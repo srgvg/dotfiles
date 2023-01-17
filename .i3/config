@@ -1038,13 +1038,13 @@ exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
 exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
 exec_always "pgrep blueman-applet || blueman-applet &"
-exec_always "pgrep slack || nice -n 10 slack &"
-exec_always "pgrep signal-desktop || nice -n 10 signal-desktop &"
-exec_always "pgrep -f /usr/share/teams/teams || nice -n 10 teams &"
+#exec_always "pgrep slack || nice -n 10 slack &"
+#exec_always "pgrep signal-desktop || nice -n 10 signal-desktop &"
+#exec_always "pgrep -f /usr/share/teams/teams || nice -n 10 teams &"
 #exec_always "/home/serge/bin/spotify &"
 #exec		"vlc &"
-exec		"firefox &"
-exec_always "nextcloud"
+#exec		"firefox &"
+#exec_always "nextcloud"
 
 
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
@@ -1053,7 +1053,7 @@ exec		--no-startup-id "vorta"
 exec		--no-startup-id "autocutsel -verbose -selection CLIPBOARD"
 exec		--no-startup-id "bato"
 exec		--no-startup-id "i3-battery-indicator"
-#exec		--no-startup-id "sleep 10; i3-launch-jobs loop default"
+exec		--no-startup-id "sleep 10; i3-launch-jobs"
 exec		--no-startup-id "syndaemon -dkRi 0.5"
 
 ## One-off always run jobs
