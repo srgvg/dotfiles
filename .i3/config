@@ -927,8 +927,11 @@ assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
 
 assign		[class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
-for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
+for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
+assign     [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] $ws_chat
+for_window [class="teams-for-linux" title="Microsoft Teams Notification"] floating enable
+for_window [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] layout tabbed, border $defaultborder
 
 for_window	[class="Skype"]									floating enable
 
@@ -1036,7 +1039,7 @@ exec_always --no-startup-id "pkill picom; sleep 2; picom -b"
 exec_always "pgrep pasystray || pasystray &"
 exec_always "pgrep nm-applet || nm-applet &"
 exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
-exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
+#exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 #exec_always "pgrep slack || nice -n 10 slack &"
 #exec_always "pgrep signal-desktop || nice -n 10 signal-desktop &"

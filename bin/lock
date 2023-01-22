@@ -19,6 +19,7 @@ set -o pipefail
 	FORCE_DEBUG_LOGGING="TRUE"
 DEBUG=2
 set -x
+export MY_WM="${MY_WM:-i3}"
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -31,14 +32,15 @@ LOCKSLEEP=5
 SYSTEMDSERVICE=${SYSTEMDSERVICE:-no}
 #MYUID="$(id -u "${USER}")"
 MYUID="1000"
-if [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK}" =~ 'sway' ]]
-then
-	PIDPATH=/run/user/${MYUID:-1000}/swaylock
-elif [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK}" =~ 'i3' ]]
+if [ "${MY_WM}" = "i3" ] || ( [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK:-}" =~ 'i3' ]] )
 then
 	PIDPATH=/run/user/${MYUID:-1000}/i3lock
-#else
-#	notify_error "no i3 nor sway detected"
+elif [ "${MY_WM}" = "sway" ] || ( [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK:-}" =~ 'sway' ]] )
+then
+	PIDPATH=/run/user/${MYUID:-1000}/swaylock
+else
+	notify "no i3 nor sway detected"
+	PIDPATH=/run/user/${MYUID:-1000}/systemdlock
 fi
 PIDFILE=${PIDPATH}/pid
 install -g serge -o serge -m 700 -d "${PIDPATH}"
@@ -134,18 +136,18 @@ function perform_lock() {
 		notify "Now is when we would run i3lock, sleeping for ${LOCKSLEEP}s"
 		time2 sleep ${LOCKSLEEP} &
 	else
-		if [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK}" =~ 'i3' ]]
+		if [ "${MY_WM}" = "i3" ] || ( [[ -n "${I3SOCK:-}" ]] && [[ "${I3SOCK:-}" =~ 'i3' ]] )
 		then
 			notify "Running i3lock"
 			time2 i3lock --show-failed-attempts --tiling --nofork --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
 				|| notify_error "i3lock exited with exit code $?" &
-		elif [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK}" =~ 'sway' ]]
+		elif [ "${MY_WM}" = "sway" ] || ( [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK:-}" =~ 'sway' ]] )
 		then
 			notify "Running swaylock"
 			time2 swaylock --show-failed-attempts --tiling --ignore-empty-password --image "${LOCK_SCREEN_IMAGE}" \
 				|| notify_error "swaylock exited with exit code $?" &
 		else
-			notify_error "no i3 nor sway detected"
+			notify "no i3 nor sway detected"
 		fi
 	fi
 
