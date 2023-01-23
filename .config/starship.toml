@@ -1,10 +1,52 @@
 ###
+# https://starship.rs/advanced-config/#style-strings
+# 
+# Style strings are a list of words, separated by whitespace. The words are not case sensitive (i.e. bold and BoLd are considered the same string). Each word can be one of the following:
+# 
+#     bold
+#     italic
+#     underline
+#     dimmed
+#     inverted
+#     blink
+#     hidden
+#     strikethrough
+#     bg:<color>
+#     fg:<color>
+#     <color>
+#     none
+# 
+# where <color> is a color specifier (discussed below). fg:<color> and <color> currently do the same thing, though this may change in the future. inverted swaps the background and foreground colors. The order of words in the string does not matter.
+# 
+# The none token overrides all other tokens in a string if it is not part of a bg: specifier, so that e.g. fg:red none fg:blue will still create a string with no styling. bg:none sets the background to the default color so fg:red bg:none is equivalent to red or fg:red and bg:green fg:red bg:none is also equivalent to fg:red or red. It may become an error to use none in conjunction with other tokens in the future.
+# 
+# A color specifier can be one of the following:
+# 
+#   * One of the standard terminal colors: 
+#
+#	black, 
+#	red, 
+#	green, 
+#	blue, 
+#	yellow, 
+#	purple, 
+#	cyan, 
+#	white. 
+
+# 	You can optionally prefix these with bright- to get the bright version (e.g. bright-white).
+#
+#   * A # followed by a six-digit hexadecimal number. This specifies an RGB color hex code
+# 
+#   * A number between 0-255. This specifies an 8-bit ANSI Color Code
+# 
+# 
+###
 #
 # Get editor completions based on the config schema
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Inserts a blank line between shell prompts
-add_newline = true
+add_newline = false
 
 # Timeout for starship to scan files (in milliseconds).
 scan_timeout = 30
@@ -23,13 +65,23 @@ command_timeout = 500
 #[┌───────────────────>](bold green)
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
-format = """\
+format = """(\
     [┌──────────────────────────────────────](bold green)\
     $line_break\
     \
     [│ ](bold green)\
+    $time\
     $username\
     $hostname\
+    $directory\
+    $vcsh\
+    $git_branch\
+    $git_state\
+    $git_commit\
+    $git_status\
+    $line_break\
+    \
+    [│ ](bold green)\
     $kubernetes\
     $gcloud\
     $aws\
@@ -45,16 +97,6 @@ format = """\
     $line_break\
     \
     [│ ](bold green)\
-    $time\
-    $directory\
-    $vcsh\
-    $git_branch\
-    $git_state\
-    $git_commit\
-    $git_status\
-    $line_break\
-    \
-    [│ ](bold green)\
     $cmd_duration\
     $status\
     $jobs\
@@ -62,7 +104,7 @@ format = """\
     $line_break\
     \
     [└](bold green)(bold green)\
-    $character\
+    )$character\
 """
 right_format = """
 """
@@ -71,22 +113,6 @@ right_format = """
 #    ${custom.ansible}\
 
 ###
-
-[aws]
-format = "[\\[($symbol $profile(/$region))\\]]($style) "
-style = "bold red"
-symbol = "AWS"
-
-[azure]
-disabled = true
-format = 'on [\\[$symbol ($username@$subscription)\\]]($style) '
-#symbol = 'ﴃ '
-symbol = 'AZ'
-style = 'bold blue'
-
-[aws.region_aliases]
-#ap-southeast-2 = "au"
-#us-east-1 = "va"
 
 [character]      # The name of the module we are configuring is "character"
 success_symbol = "[➞](bold green) "     # The "symbol" segment is being set to "➜"
@@ -114,7 +140,7 @@ read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
 format = "[$path]($style)[ $read_only]($read_only_style) "
-style = "bold blue"
+style = "bold bright-yellow"
 repo_root_style = "bold yellow"
 repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 home_symbol = "~"
@@ -188,27 +214,43 @@ ssh_only = false
 style = "dimmed gray"
 format = "[@$hostname]($style) "
 
-[gcloud]
-style = "bold green"
-format = "[\\[($symbol $account(@$domain)(/$project)(/$region))\\]]($style) "
-symbol = "GCP"
-
 [kubernetes]
 # https://starship.rs/config/#kubernetes
 disabled = false
-symbol = "☸"
+#symbol = "☸"
 #symbol = "⛵"
-#symbol = "K8S"
+symbol = "\\[K8S\\]"
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-format = "[ ${symbol} ${context}(/$namespace)]($style) "
-style = "bold bg:blue black"
+format = "[${symbol} ${context}(/[$namespace](bold bright-yellow))]($style) "
+style = "yellow"
 #namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]
 #"k3s0.office.ginsys.net" = "home"
+
+[gcloud]
+style = "bold blue"
+format = "[($symbol $account(@$domain)(/$project)(/$region))]($style) "
+symbol = "\\[GCP\\]"
+
+[aws]
+format = "[\\[($symbol $profile(/$region))\\]]($style) "
+style = "bold red"
+symbol = "\\[AWS\\]"
+
+[aws.region_aliases]
+#ap-southeast-2 = "au"
+#us-east-1 = "va"
+
+[azure]
+disabled = true
+format = '[$symbol $username@$subscription]($style) '
+#symbol = 'ﴃ '
+symbol = "\\[AZR\\]"
+style = 'bold blue'
 
 [package]
 disabled = true

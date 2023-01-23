@@ -290,24 +290,30 @@ bindsym $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
 # Fn-F2  XF86AudioLowerVolume
 # Fn-F3  XF86AudioRaiseVolume
+
+# Elgato light Office
+bindsym $mod+Control+slash			exec elgato.sh toggle
+bindsym $mod+Control+XF86AudioPlay		exec elgato.sh toggle
+bindsym $mod+Control+comma			exec elgato.sh brightness --dimmer 5
+bindsym $mod+Control+period			exec elgato.sh brightness --brighter 5
+bindsym $mod+Shift+Control+comma		exec elgato.sh color --warmer 100
+bindsym $mod+Shift+Control+period		exec elgato.sh color --cooler 100
+
+bindsym $mod+Control+XF86AudioLowerVolume	exec elgato.sh brightness --dimmer 5
+bindsym $mod+Control+XF86AudioRaiseVolume	exec elgato.sh brightness --brighter 5
+bindsym $mod+Control+Shift+XF86AudioLowerVolume	exec elgato.sh color --warmer 100
+bindsym $mod+Control+Shift+XF86AudioRaiseVolume	exec elgato.sh color --cooler 100
+
+# audio/music
 bindsym XF86AudioLowerVolume		exec i3-volume local down
 bindsym XF86AudioRaiseVolume		exec i3-volume local up
 bindsym Control+XF86AudioLowerVolume	exec i3-volume sonos down
 bindsym Control+XF86AudioRaiseVolume	exec i3-volume sonos up
 
-
-# Elgato light Office
-bindsym $mod+Control+slash		exec elgato.sh toggle
-bindsym $mod+Control+comma		exec elgato.sh brightness --dimmer 5
-bindsym $mod+Control+period		exec elgato.sh brightness --brighter 5
-bindsym $mod+Shift+Control+comma	exec elgato.sh color --warmer 100
-bindsym $mod+Shift+Control+period	exec elgato.sh color --cooler 100
-
 bindsym XF86AudioPrev			exec playerctl previous
 bindsym XF86AudioPlay			exec playerctl play-pause
 bindsym Shift+XF86AudioPlay		exec playerctl stop
 bindsym XF86AudioNext			exec playerctl next
-
 bindsym $mod+XF86AudioLowerVolume	exec playerctl previous
 bindsym $mod+XF86AudioRaiseVolume	exec playerctl next
 
