@@ -1,3 +1,9 @@
 #!/bin/bash
-echo -n '¯\_(ツ)_/¯' | tee /dev/tty | wl-copy
+if [ "${MY_WM}" = "sway" ]
+then
+    _copy='wl-copy'
+else
+    _copy='xclip -in -selection clipboard'
+fi
+echo -n '¯\_(ツ)_/¯' | tee /dev/tty | $_copy
 echo

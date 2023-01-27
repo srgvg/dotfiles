@@ -62,17 +62,17 @@ set_from_resource $secondary i3.output.secondary None
 set_from_resource $third i3.output.third None
 
 # Automatically putting workspaces on specific screens
-workspace 0		output $output0
+workspace 0		output $output1
 workspace 1		output $output0
 workspace 2		output $output0
 workspace 3		output $output0
 workspace 4		output $output0
 workspace 5		output $output0
-workspace 6		output $output1
-workspace 7		output $output1
-workspace 8		output $output1
-workspace 9		output $output1
-workspace 10	output $output1
+workspace 6		output $output0
+workspace 7		output $output0
+workspace 8		output $output0
+workspace 9		output $output0
+workspace 10	output $output0
 workspace 11	output $output0
 workspace 12	output $output0
 workspace 13	output $output0
@@ -1033,31 +1033,13 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 #exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
 exec --no-startup-id "sleep 10 && arandr-autoconfig --post i3-move-workspaces --once"
 
-# Desktop Apps
-#exec_always --no-startup-id "pkill xcompmgr ; xcompmr &"
-exec_always --no-startup-id "pkill picom; sleep 2; picom -b"
-exec_always "pgrep pasystray || pasystray &"
-exec_always "pgrep nm-applet || nm-applet &"
-exec_always "pgrep system-config-printer-applet || system-config-printer-applet &"
-#exec_always "pgrep signal-desktop || nice -n 20 signal-desktop &"
-exec_always "pgrep blueman-applet || blueman-applet &"
-#exec_always "pgrep slack || nice -n 10 slack &"
-#exec_always "pgrep signal-desktop || nice -n 10 signal-desktop &"
-#exec_always "pgrep -f /usr/share/teams/teams || nice -n 10 teams &"
-#exec_always "/home/serge/bin/spotify &"
-#exec		"vlc &"
-#exec		"firefox &"
-#exec_always "nextcloud"
-
-
 # i3wm desktop managing stuff runing in a screen - long running user services where I might want to interact
 #exec_always --no-startup-id "i3-launch-jobs"
-exec		--no-startup-id "vorta"
-exec		--no-startup-id "autocutsel -verbose -selection CLIPBOARD"
 exec		--no-startup-id "bato"
 exec		--no-startup-id "i3-battery-indicator"
 exec		--no-startup-id "sleep 10; i3-launch-jobs"
 exec		--no-startup-id "syndaemon -dkRi 0.5"
+exec		--no-startup-id "setbg /home/serge/Documents/Pictures/Backgrounds/companies/autops/autops-01.jpg"
 
 ## One-off always run jobs
 exec_always --no-startup-id "xset dpms 900 1800 3600 s blank s 300 60 s on"
