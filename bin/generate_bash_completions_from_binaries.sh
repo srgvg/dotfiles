@@ -90,6 +90,7 @@ hash kubecolor >&/dev/null && cat > ${complpath}/kubecolor${complext} <<- EOF
 # autocomplete for kubecolor, k alias
 source ${complpath}/kubectl${complext}
 complete -o default -F __start_kubectl kubecolor
+complete -o default -F __start_kubectl k
 EOF
 #
 KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')

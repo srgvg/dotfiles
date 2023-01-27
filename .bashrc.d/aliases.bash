@@ -44,10 +44,10 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 alias k="kubectl"
-if hash kubecolor >&/dev/null; then
-    alias k="kubecolor"
-    alias kubectl="kubecolor"
-fi
+#if hash kubecolor >&/dev/null; then
+#    alias k="kubecolor"
+#    alias kubectl="kubecolor"
+#fi
 complete -F _complete_alias k
 alias kailns="kail --current-ns"
 alias kneat="kubectl-neat"

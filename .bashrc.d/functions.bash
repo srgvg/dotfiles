@@ -111,7 +111,7 @@ function gcloud-project() {
 
 function ka() {
 	#kubectl $* --all-namespaces
-	kubecolor $* --all-namespaces
+	k $* --all-namespaces
 }
 
 function manswitch() {
