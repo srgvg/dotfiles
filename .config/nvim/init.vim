@@ -226,7 +226,7 @@ colorscheme molokai
 set wildmenu
 
 " mouse support
-set mouse=a
+set mouse=nvi
 
 set mousemodel=popup
 set t_Co=256

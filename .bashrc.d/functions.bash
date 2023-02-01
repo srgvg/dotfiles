@@ -105,7 +105,7 @@ function gcloud-project() {
 	if [ -n "${1:-}" ]; then 
 		gcloud config set project ${1}
 	else
-		gcloud config configurations list
+		gcloud projects list
 	fi
 }
 

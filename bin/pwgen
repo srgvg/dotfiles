@@ -12,6 +12,13 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+if [ "${MY_WM}" = "sway" ]
+then
+    copy='wl-copy'
+else
+    copy='xclip -in -selection clipboard'
+fi
+
 pwgen='/usr/bin/pwgen -N1 --remove-chars='\'\"\{\}\[\]\(\)\;
 
 case ${1:-} in
@@ -64,7 +71,7 @@ case $TYPE in
 esac
 
 # formerly using xclip - gives trouble when this script is redirected to not stdout
-echo -n $pass | wl-copy
+echo -n $pass | $copy
 notify_desktop low "Password copied to clipboard" "${msg}" stock_lock pwgen
 if [ -t 1 ]; then
 	echo "${pass}"
