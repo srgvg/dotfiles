@@ -1,7 +1,6 @@
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-  picom -b
   pasystray --debug --notify=none --notify=sink
   system-config-printer-applet
   nm-applet
