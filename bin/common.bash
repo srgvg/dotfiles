@@ -43,7 +43,9 @@ function set_xtrace() {
 }
 
 function ifinteractive() {
-	[[ -t 0  ]]
+	# https://stackoverflow.com/questions/3214935/can-a-bash-script-tell-if-its-being-run-via-cron
+	# 1 is STDOUT
+	[ -t 1  ]
 }
 
 function _time() {

@@ -45,6 +45,7 @@ then
   export TERMINAL="alacritty"
   export MOZ_ENABLE_WAYLAND=1 
   export WLR_DRM_NO_MODIFIERS=1
+  systemctl --user import-environment XDG_SESSION_TYPE XDG_CURRENT_DESKTOP
 elif [[ "${wm}" =~ "i3" ]]
 then 
   export MY_WM="i3"

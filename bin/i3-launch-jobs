@@ -16,11 +16,6 @@ source "$HOME/bin/common.bash"
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     swayidle.sh
-	/home/serge/Documents/Applications/firefox/firefox
-	pasystray --debug --notify=none --notify=sink
-	/usr/bin/dunst -print -verbosity debug
-	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing.log --log-max-old-files=2 --log-max-size=5242880
-	vorta
 	runflatpak.sh spotify --show-console
 	runflatpak.sh signal
 	runflatpak.sh telegram
@@ -30,6 +25,12 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	runflatpak.sh Microsoft Teams
 	runflatpak.sh slack
 	runflatpak.sh Discord
+	/usr/bin/dunst -print -verbosity debug
+	/home/serge/.local/bin/vorta
+	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing.log --log-max-old-files=2 --log-max-size=5242880
+	/home/serge/Documents/Applications/firefox/firefox
+	pasystray --debug --notify=none --notify=sink
+	alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
 	#wl-paste --primary --watch wl-copy
 	#wl-paste -t text --watch clipman store
 	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
@@ -61,7 +62,7 @@ function i3-launch-job() {
     then
 	notify "              ... already running (${_pid})"
     else
-        notify "              ... starting"
+        notify "              ... !! STARTING UP !!"
         notify "              ..... $*"
         # shellcheck disable=SC2048
 	launch-screen i3jobs add $* | sed -e 's/^/                -   /'
@@ -69,6 +70,7 @@ function i3-launch-job() {
 }
 
 # launch the jobs
+SLEEP_COUNTER=0
 echo "$JOBS" | while read -r line
 do
 	# make sure we replace an existing setbg loop
@@ -80,7 +82,15 @@ do
 			notify_debug "Killed existing set(s)bg loop (${_pid})"
 		fi
 	fi
-	i3-launch-job $line
+	if ifinteractive
+	then
+		echo DEBUG IN TERMINAL
+		i3-launch-job $line
+	else
+		echo DEBUG NOT NOT NOT IN TERMINAL
+		sleep ${SLEEP_COUNTER} && i3-launch-job $line
+		((SLEEP_COUNTER=SLEEP_COUNTER+1))
+	fi
 	echo
 done
 
