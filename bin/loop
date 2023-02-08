@@ -12,6 +12,9 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-set -x
-i3-launch-jobs setsbg loop ${1:-}
-set +x
+if [ "${MY_WM}" = "sway" ]
+then
+	i3-launch-jobs setsbg loop ${1:-}
+else
+	i3-launch-jobs setbg loop ${1:-}
+fi
