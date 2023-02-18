@@ -68,6 +68,8 @@ alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
 alias krew='kubectl-krew'
 alias ksw="switcher"
+# https://fluxcd.io/flux/faq/#what-is-the-behavior-of-kustomize-used-by-flux
+alias kustomize-build-flux="kustomize build --load-restrictor=LoadRestrictionsNone"
 # l
 alias li3='launch-screen i3jobs'
 alias l='ls -lh'

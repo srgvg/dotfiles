@@ -1,0 +1,35 @@
+# https://www.reddit.com/r/swaywm/comments/q90v6l/sharing_some_for_window_rules/
+
+for_window [app_id="telegramdesktop"] floating enable
+for_window [app_id="image-roll"] floating enable; border pixel 1
+for_window [app_id="telegramdesktop" title="Telegram"] floating disable
+for_window [class="Anydesk"] inhibit_idle visible; border none; move container to workspace number 2
+for_window [app_id="org.remmina.Remmina"] inhibit_idle visible; border none; move container to workspace number 2
+for_window [class="clonehero"] inhibit_idle visible; border none
+for_window [class="Microsoft Teams - Preview"] floating disable
+for_window [app_id="Alacritty_floating"] floating enable
+for_window [instance="chromium"] inhibit_idle fullscreen; border none; max_render_time off
+for_window [app_id="pavucontrol"] sticky enable; floating enable
+for_window [instance="crx_nckgahadagoaajjgafhacjanaoiihapd"] floating enable
+for_window [app_id="mpv"] inhibit_idle visible; border none; max_render_time off
+for_window [app_id="vlc"] inhibit_idle visible; border none; max_render_time off
+for_window [app_id="galculator"] floating enable; sticky enable
+for_window [app_id="ksysguard"] floating enable; sticky enable
+for_window [class="Nightly"] inhibit_idle fullscreen; border none; max_render_time off
+for_window [class="Wfica"] border none; inhibit_idle visible
+for_window [class="Nxplayer.bin"] border none
+for_window [class="Steam"] floating enable; max_render_time off
+for_window [title="^(File|Folder)\s*Already Exists\s*—\s*" app_id="dolphin|org.kde.ark"] floating enable
+for_window [title="^(Copying|Moving)\s*—\s*Dolphin" app_id="dolphin"] inhibit_idle open; floating enable
+for_window [title="^Extracting\s" app_id="(dolphin|org.kde.ark)"] inhibit_idle open; floating enable
+for_window [title="^Information\s*—\s*Dolphin" app_id="dolphin"] floating enable
+for_window [title="^Loading archive" app_id="org.kde.ark"] floating enable
+for_window [class=".*.exe"] inhibit_idle fullscreen; floating enable; border none
+for_window [class="gamescope"] inhibit_idle fullscreen; floating enable; border none
+for_window [class="steam_app.*"] inhibit_idle fullscreen; floating enable; border none
+for_window [instance="yakyak"] floating enable
+for_window [app_id="stoken-gui"] floating enable; sticky enable
+for_window [title="MAX - Iridium"] floating enable; sticky enable; border pixel 1
+for_window [title="MAX - Chromium"] floating enable; sticky enable; border pixel 1
+for_window [title="https:\/\/max.niceincontact.com\/index.html - Chromium"] floating enable; sticky enable; border pixel 1
+for_window [title="(?:Open|Save) (?:File|Folder|As)"] floating enable; sticky enable

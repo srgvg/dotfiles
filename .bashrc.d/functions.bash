@@ -62,29 +62,6 @@ function asdf-update-all() {
 	done
 }
 
-function aswitch() {
-	# switch ansible versions 1-2
-	pushd ~/ansible
-	currentrev=$(git describe --tags)
-	if [[ $currentrev =~ .*v1.* ]]
-	then
-		git co v2.1.0.0-1
-		git submodule update
-		rm -rf v2/
-		# shellcheck disable=SC2046
-		rm $(git ls-files --others)
-	elif [[ $currentrev =~ .*v2.* ]]
-	then
-		git co v1.9.6-1
-		git submodule update
-		# shellcheck disable=SC2046
-		rm $(git ls-files --others)
-	fi
-	# shellcheck disable=SC1091
-	source hacking/env-setup >/dev/null 2>&1
-	popd
-}
-
 function b64() {
 	echo -n $* | base64 -w 0
 }
@@ -114,10 +91,42 @@ function ka() {
 	k $* --all-namespaces
 }
 
+function kustomize-build-flux-apply-dry() {
+	kustomize-flux-build ${1:-./} | kubectl apply --server-side --dry-run=server -f-
+}
+
+function mkcd() {
+	if [ "$#" -eq 1 ]; then
+		mkdir -pv $1
+		cd $1
+	else
+		echo missing target dir to create
+	fi
+}
+
 function manswitch() {
   # This will take you to the relevant part of the man page,
   # so you can see the description of the switch underneath.
   man $1 | less -p "^ +$2";
+}
+
+function mv() {
+# https://gist.github.com/premek/6e70446cfc913d3c929d7cdbfe896fef
+# Usage: mv oldfilename
+# If you call mv without the second parameter it will prompt you to edit the filename on command line.
+# Original mv is called when it's called with more than one argument.
+# It's useful when you want to change just a few letters in a long name.
+#
+# Also see:
+# - imv from renameutils
+# - Ctrl-W Ctrl-Y Ctrl-Y (cut last word, paste, paste)
+  if [ "$#" -ne 1 ] || [ ! -e "$1" ]; then
+    command mv "$@"
+    return
+  fi
+
+  read -ei "$1" newfilename
+  command mv -v -- "$1" "$newfilename"
 }
 
 function up() {
@@ -142,31 +151,4 @@ function wcc() {
   echo "${#string}"
 }
 
-# https://gist.github.com/premek/6e70446cfc913d3c929d7cdbfe896fef
-# Usage: mv oldfilename
-# If you call mv without the second parameter it will prompt you to edit the filename on command line.
-# Original mv is called when it's called with more than one argument.
-# It's useful when you want to change just a few letters in a long name.
-#
-# Also see:
-# - imv from renameutils
-# - Ctrl-W Ctrl-Y Ctrl-Y (cut last word, paste, paste)
-function mv() {
-  if [ "$#" -ne 1 ] || [ ! -e "$1" ]; then
-    command mv "$@"
-    return
-  fi
-
-  read -ei "$1" newfilename
-  command mv -v -- "$1" "$newfilename"
-}
-
-function mkcd() {
-	if [ "$#" -eq 1 ]; then
-		mkdir -pv $1
-		cd $1
-	else
-		echo missing target dir to create
-	fi
-}
 

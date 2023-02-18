@@ -46,7 +46,7 @@ if ifdebug3
 then
 	grabcommand="echo ${grabcommand}"
 fi
-notify2 "${grabcommand}"
+notify_debug "${grabcommand}"
 if ${grabcommand}
 then
 	notify2 "Screenshot ${action} saved to ${imagefile}"

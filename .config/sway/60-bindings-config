@@ -293,14 +293,14 @@ bindsym $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
 # Elgato light Office
 bindsym $mod+Control+slash			exec elgato.sh toggle
-bindsym $mod+Control+XF86AudioPlay		exec elgato.sh toggle
+bindsym $mod+Control+XF86AudioPlay	exec elgato.sh toggle
 bindsym $mod+Control+comma			exec elgato.sh brightness --dimmer 5
 bindsym $mod+Control+period			exec elgato.sh brightness --brighter 5
-bindsym $mod+Shift+Control+comma		exec elgato.sh color --warmer 100
-bindsym $mod+Shift+Control+period		exec elgato.sh color --cooler 100
+bindsym $mod+Shift+Control+comma	exec elgato.sh color --warmer 100
+bindsym $mod+Shift+Control+period	exec elgato.sh color --cooler 100
 
-bindsym $mod+Control+XF86AudioLowerVolume	exec elgato.sh brightness --dimmer 5
-bindsym $mod+Control+XF86AudioRaiseVolume	exec elgato.sh brightness --brighter 5
+bindsym $mod+Control+XF86AudioLowerVolume	    exec elgato.sh brightness --dimmer 5
+bindsym $mod+Control+XF86AudioRaiseVolume	    exec elgato.sh brightness --brighter 5
 bindsym $mod+Control+Shift+XF86AudioLowerVolume	exec elgato.sh color --warmer 100
 bindsym $mod+Control+Shift+XF86AudioRaiseVolume	exec elgato.sh color --cooler 100
 
@@ -324,8 +324,9 @@ bindsym $mod+Shift+slash	exec playerctl stop
 
 bindsym $mod+m			exec pavucontrol
 bindsym $mod+Shift+m	exec pa-rotate-sinks
-bindsym $mod+Alt+m		exec i3-pa-select-output
-bindsym $mod+Control+m	exec i3-playerctl-select-player
+bindsym $mod+Control+m	exec i3-pa-select-output
+bindsym $mod+Alt+m		exec i3-playerctl-select-player
+>>>>>>> 9d559c9 (goldorak)
 
 # Fn-F4  XF86AudioMicMute
 bindsym XF86AudioMicMute				exec ponymix  --source --device 389 toggle
