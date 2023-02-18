@@ -98,3 +98,8 @@ curl --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_V
                                                                     >  ${complpath}/kubie${complext}
 #
 ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext}
+
+####################
+
+# gcloud
+echo "source $HOME/.asdf/installs/gcloud/$(gcloud version 2>/dev/null | grep "Google Cloud SDK" | sed 's/Google Cloud SDK //')/completion.bash.inc" > ${complpath}/gcloud${complext}

@@ -751,10 +751,10 @@ bindsym $mod+period						exec --no-startup-id playerctl next
 bindsym $mod+slash						exec --no-startup-id playerctl play-pause
 bindsym $mod+Shift+slash				exec --no-startup-id playerctl stop
 
-bindsym $mod+$alt+m						exec pavucontrol
-bindsym $mod+Control+m					exec --no-startup-id pa-rotate-sinks
-bindsym $mod+Shift+m					exec --no-startup-id i3-pa-select-output
-bindsym $mod+m							exec --no-startup-id i3-playerctl-select-player
+bindsym $mod+m							exec pavucontrol
+bindsym $mod+Shift+m					exec --no-startup-id pa-rotate-sinks
+bindsym $mod+Alt+m						exec --no-startup-id i3-pa-select-output
+bindsym $mod+Control+m					exec --no-startup-id i3-playerctl-select-player
 
 # Fn-F4  XF86AudioMicMute
 bindsym XF86AudioMicMute				exec --no-startup-id ponymix  --source --device 1 toggle
