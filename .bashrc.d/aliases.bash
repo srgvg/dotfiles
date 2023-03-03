@@ -54,6 +54,9 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 # k
+alias kb="kustomize build"
+alias kbf="kustomize-build-flux"
+alias kbfad="kustomize-build-flux-apply-dry"
 alias k="kubectl"
 #if hash kubecolor >&/dev/null; then
 #    alias k="kubecolor"
