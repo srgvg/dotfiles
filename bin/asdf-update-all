@@ -13,21 +13,23 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-echo asdf update
+echo "### asdf update"
 asdf update
+echo
 
-echo asdf plugin update --all
+echo "### asdf plugin update --all"
 asdf plugin update --all
+echo
 
 plugins="$(asdf plugin-list)"
-echo updating plugins $plugins
+echo "### updating plugins $plugins"
+echo
 
 for plugin in $plugins
 do
-    echo asdf install $plugin latest
+    echo "## asdf install $plugin latest"
     asdf install $plugin latest ||:
-	echo
-    echo asdf global $plugin latest
+    echo "# asdf global $plugin latest"
     asdf global $plugin latest ||:
-	echo
+	echo; echo
 done

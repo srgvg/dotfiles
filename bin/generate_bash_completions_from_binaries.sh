@@ -94,7 +94,7 @@ complete -o default -F __start_kubectl k
 EOF
 #
 KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
-curl --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
+curl -L --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
                                                                     >  ${complpath}/kubie${complext}
 #
 ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext}
