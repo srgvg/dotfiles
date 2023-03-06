@@ -94,9 +94,7 @@ format = """(\
     $rust\
     $terraform\
     $conda\
-    $line_break\
     \
-    [│ ](bold green)\
     $cmd_duration\
     $status\
     $jobs\
@@ -224,23 +222,26 @@ symbol = "\\[K8S\\]"
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-format = "[${symbol} [$context](underline bold bright-cyan)(/[$namespace](bold bright-cyan))]($style) "
-style = "cyan"
+#format = "[${symbol} [$context](underline bold bright-cyan)(/[$namespace](bold bright-cyan))]($style) "
+format = "[${symbol} [$context](bold blue)( / [$namespace](underline bold bright-blue)) \n[│ ](bold green)]($style)"
+style = "bold bright-blue"
 #namespace_spaceholder = "none"
 
 [kubernetes.context_aliases]
 #"k3s0.office.ginsys.net" = "home"
 
 [gcloud]
-style = "bold blue"
-format = "[($symbol $account(@$domain)(/$project)(/$region))]($style) "
+style = "bold cyan"
+format = "[($symbol $account(@$domain)( / [$project](underline bold cyan))( / $region)) \n[│ ](bold green)]($style)"
 symbol = "\\[GCP\\]"
+# \n[│ ](bold green) 
 
 [aws]
-format = "[\\[($symbol $profile(/$region))\\]]($style) "
-style = "bold red"
+format = "[\\[($symbol $profile(/$region))\\]\n[│ ](bold green)]($style) "
+style = "bold yellow"
 symbol = "\\[AWS\\]"
 
+# \n[│ ](bold green) 
 [aws.region_aliases]
 #ap-southeast-2 = "au"
 #us-east-1 = "va"
