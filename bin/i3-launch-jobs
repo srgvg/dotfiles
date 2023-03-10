@@ -25,7 +25,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	runflatpak.sh Microsoft Teams
 	runflatpak.sh slack
 	runflatpak.sh Discord
-	/usr/bin/dunst -print -verbosity debug
+	/usr/bin/dunst -print -verbosity info --startup_notification true
 	/home/serge/.local/bin/vorta
 	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing.log --log-max-old-files=2 --log-max-size=5242880
 	/home/serge/Documents/Applications/firefox/firefox

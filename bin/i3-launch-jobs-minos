@@ -9,7 +9,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
   arandr-autoconfig-daemonized
   autocutsel -verbose -selection CLIPBOARD
   #autocutsel -verbose -selection PRIMARY
-  /usr/bin/dunst -print -verbosity debug
+  /usr/bin/dunst -print -verbosity info --startup_notification true
   /home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$(hostname).log --log-max-old-files=2 --log-max-size=5242880
   vorta
   runflatpak.sh spotify --show-console
