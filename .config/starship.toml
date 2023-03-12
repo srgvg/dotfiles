@@ -82,10 +82,10 @@ format = """(\
     $line_break\
     \
     [│ ](bold green)\
-    $kubernetes\
     $gcloud\
     $aws\
     $azure\
+    $kubernetes\
     $package\
     $golang\
     $nodejs\
@@ -217,7 +217,7 @@ format = "[@$hostname]($style) "
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "\\[K8S\\]"
+symbol = "\\[k8s\\]"
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
