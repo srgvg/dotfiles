@@ -66,7 +66,7 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """(\
-    [┌───────────────────────────────────────](bold green)\
+    [┌──────────────────────────────────────────────────────────────────────────────](bold green)\
     $line_break\
     \
     [│ ](bold green)\
@@ -82,10 +82,10 @@ format = """(\
     $line_break\
     \
     [│ ](bold green)\
+    $kubernetes\
     $gcloud\
     $aws\
     $azure\
-    $kubernetes\
     $package\
     $golang\
     $nodejs\
@@ -137,7 +137,7 @@ use_logical_path = true
 read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
-format = "[$path]($style)[ $read_only]($read_only_style) "
+format = " [$path]($style)[ $read_only]($read_only_style) "
 style = "bold bright-yellow"
 repo_root_style = "bold yellow"
 repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
@@ -208,16 +208,16 @@ style = "bold green"
 format = "[( ${all_status})( ${ahead_behind})]($style) "
 
 [hostname]
-ssh_only = false
-style = "dimmed gray"
-format = "[@$hostname]($style) "
+ssh_only = true
+style = "bold green"
+format = "[@$hostname$ssh_symbol]($style)"
 
 [kubernetes]
 # https://starship.rs/config/#kubernetes
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "\\[k8s\\]"
+symbol = "\\[K8S\\]"
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
