@@ -102,6 +102,8 @@ alias ssh-nc="ssh -S none"
 alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
 alias sysl="tail -n 200 -f /var/log/syslog"
+# t
+alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
 # v
 alias vs="vcsh status"
 alias v="vcsh"

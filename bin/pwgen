@@ -41,14 +41,14 @@ esac
 
 case $TYPE in
 	lo*)
-		L=${PL:-20}
+		L=${PL:-15}
 		pass=$($pwgen --no-capitalize --ambiguous --no-vowels $L 1)
 		msg="type $TYPE with character length $L"
 		notify_debug "${msg}"
 		;;
     no*)
 		L=${PL:-35}
-		pass=$($pwgen --capitalize --numerals $L 1)
+		pass=$($pwgen --capitalize --numerals --symbols $L 1)
 		msg="type $TYPE with length $L"
 		notify_debug "${msg}"
 		;;
