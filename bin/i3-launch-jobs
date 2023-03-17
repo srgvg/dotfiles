@@ -31,6 +31,7 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 	/home/serge/Documents/Applications/firefox/firefox
 	pasystray --debug --notify=none --notify=sink
 	alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
+	/usr/bin/syncthing-gtk --minimized
 	#wl-paste --primary --watch wl-copy
 	#wl-paste -t text --watch clipman store
 	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
