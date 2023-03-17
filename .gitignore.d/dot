@@ -1,10 +1,5 @@
-# exclude all
-/*
-
-# include specific files or dirs
-# dir needs trailing slash to include subfiles
-!/.adobe
-!/.autorandr
+/.*
+.gitignore
 !/.bash_completion
 !/.bash_completion.d/
 !/.bash_logout
@@ -12,14 +7,13 @@
 !/.bashrc
 !/.bashrc.d/
 !/.config/dunst/
-!/.config/gnome-session/sessions/
 !/.config/gtk-2.0/
 !/.config/gtk-3.0/
 !/.config/i3status/
+!/.config/nvim/
 !/.config/pip/
 !/.config/pulse/
 !/.config/ranger/
-!/.local/share/remmina
 !/.config/picom.conf
 !/.config/sway/
 !/.config/ranger/bookmarks
@@ -27,30 +21,24 @@
 !/.config/terminator/
 !/.config/user-dirs.dirs
 !/.editorconfig
-!/.face
-.fonts/**/.uuid
 !/.gitconfig
 !/.gitignore.d/dot
 !/.gitmodules
 !/.gtkrc-2.0
 !/.gtkrc-2.0.mine
 !/.i3/
-#!/.local/
 !/.local/etc
-#!/.local/share
-!/.local/share/applications
+!/.local/share/applications/
 !/.local/share/applications/mimeapps.list
 !/.local/share/bash-completion
-!/.local/share/bash-completion/completions
 !/.local/share/bash-completion/completions/**
-!/.local/share/doc
+!/.local/share/doc/
 !/.local/share/doc/**
-!/.local/share/icons
+!/.local/share/icons/
 !/.local/share/icons/**
-!/.local/share/fonts
+!/.local/share/fonts/
 !/.local/share/fonts/**
-!/.local/share/remmina
-!/.local/man
+!/.local/man/
 !/.local/man/**
 !/.local/share/nautilus/
 !/.local/share/nemo/
@@ -60,20 +48,19 @@
 !/.screenlayout/
 !/.screenrc
 !/.selected_editor
-!/.spf13-vim-3/
-!/.SpaceVim.d/
 !/.vimrc*
 !/.vim/
-/.vim/bundle/
-/.vim/.netrwhist
-!/.weechat/
-/.weechat/fileaway.available
-/.weechat/sec.conf
-!/bin/
-!/etc/defaults
-!/lib/
+/bins/
+/Documents/
+/etc/
+/go/
+/logs/
+/src/
+/Sync/
+/t/
+/Videos/
+/Work/
 
-
-# keep last to be sure to be ignored
+# keep last to be sure to be ignored*
 __pycache__
 *.pyc
