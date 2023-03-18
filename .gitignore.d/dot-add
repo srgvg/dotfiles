@@ -1,0 +1,27 @@
+#!/bin/bash
+
+IFS='\n' read -r -d '' forceadds <<-EOF
+    .config/dunst/
+    .config/gtk-2.0/
+    .config/gtk-3.0/
+    .config/nvim/autoload/
+    .config/nvim/init.vim
+    .config/pip/
+    .config/pulse/daemon.conf
+    .config/ranger/
+    .config/picom.conf
+    .config/sway/
+    .config/remmina
+    .config/user-dirs.dirs
+    .local/etc
+    .local/share/applications/
+    .local/share/bash-completion
+    .local/share/doc/
+    .local/share/icons/
+    .local/man/
+    .local/share/nautilus/
+    .local/share/nemo/
+EOF
+
+cd $HOME
+vcsh run dot git add --force ${forceadds}
