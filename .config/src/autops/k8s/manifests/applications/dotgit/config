@@ -22,3 +22,23 @@
 [remote "enperas"]
 	url = git@gitlab.com:enperas-com/ops/autops-applications.git
 	fetch = +refs/heads/*:refs/remotes/enperas/*
+[branch "vel-k3s0"]
+	remote = velleman
+	merge = refs/heads/k3s0
+	rebase = true
+[branch "vel-k3s1"]
+	remote = velleman
+	merge = refs/heads/k3s1
+	rebase = true
+[branch "vel-k3s2"]
+	remote = velleman
+	merge = refs/heads/k3s2
+	rebase = true
+[branch "vel-signum-test"]
+	remote = velleman
+	merge = refs/heads/signum-test
+	rebase = true
+[branch "vel-signum-prod"]
+	remote = velleman
+	merge = refs/heads/signum-prod
+	rebase = true
