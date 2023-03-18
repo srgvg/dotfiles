@@ -1,0 +1,20 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@gitlab.com:enperas-com/devs/quadrant.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+	rebase = true
+[branch "feature/QUAD-180-single-quadrant-instance"]
+	remote = origin
+	merge = refs/heads/feature/QUAD-180-single-quadrant-instance
+	rebase = true
+[branch "dockerstartup"]
+	remote = origin
+	merge = refs/heads/dockerstartup
+	rebase = true

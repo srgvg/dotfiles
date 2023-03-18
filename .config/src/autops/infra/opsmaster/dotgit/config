@@ -1,0 +1,12 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "gitlab"]
+	url = git@gitlab.com:autops/infra/opsmaster.git
+	fetch = +refs/heads/*:refs/remotes/gitlab/*
+[branch "master"]
+	remote = gitlab
+	merge = refs/heads/master
+	rebase = true

@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "totem"]
+	url = git@gitlab.com:totem-tech/ops.git
+	fetch = +refs/heads/*:refs/remotes/totem/*
+[branch "main"]
+	remote = totem
+	merge = refs/heads/main
+	rebase = true
+[remote "autops"]
+	url = git@gitlab.com:autops/cust/totem/totem-ops.git
+	fetch = +refs/heads/*:refs/remotes/autops/*

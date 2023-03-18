@@ -1,0 +1,12 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@gitlab.com:autops/k8s/manifests/autoapps.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "trunk"]
+	remote = origin
+	merge = refs/heads/trunk
+	rebase = true

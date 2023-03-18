@@ -1,0 +1,13 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "velleman"]
+	url = git@github.com:Velleman/opsmaster.git
+	gh-resolved = base
+	fetch = +refs/heads/*:refs/remotes/velleman/*
+[branch "master"]
+	remote = velleman
+	merge = refs/heads/master
+	rebase = true

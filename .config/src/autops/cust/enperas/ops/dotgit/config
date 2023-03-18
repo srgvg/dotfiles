@@ -1,0 +1,23 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "enperas"]
+	url = git@gitlab.com:enperas-com/ops/autops.git
+	fetch = +refs/heads/*:refs/remotes/enperas/*
+[branch "main"]
+	remote = enperas
+	merge = refs/heads/main
+	rebase = true
+[remote "autops"]
+	url = git@gitlab.com:autops/cust/enperas/enperas-infrastructure.git
+	fetch = +refs/heads/*:refs/remotes/autops/*
+[branch "secretsannotation"]
+	remote = enperas
+	merge = refs/heads/secretsannotation
+	rebase = true
+[branch "main2"]
+	remote = enperas
+	merge = refs/heads/main2
+	rebase = true

@@ -1,0 +1,24 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "autops"]
+	url = git@gitlab.com:autops/k8s/manifests/applications.git
+	fetch = +refs/heads/*:refs/remotes/autops/*
+[branch "trunk"]
+	remote = autops
+	merge = refs/heads/trunk
+	rebase = true
+[remote "velleman"]
+	url = git@github.com:Velleman/opsmaster-autops-applications.git
+	fetch = +refs/heads/*:refs/remotes/velleman/*
+[remote "viumore"]
+	url = git@gitlab.com:viumore/autops/opsmaster-autops-applications.git
+	fetch = +refs/heads/*:refs/remotes/viumore/*
+[remote "ginsys"]
+	url = git@github.com:ginsys/opsmaster-autops-applications.git
+	fetch = +refs/heads/*:refs/remotes/ginsys/*
+[remote "enperas"]
+	url = git@gitlab.com:enperas-com/ops/autops-applications.git
+	fetch = +refs/heads/*:refs/remotes/enperas/*
