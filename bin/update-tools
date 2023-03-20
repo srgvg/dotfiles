@@ -37,8 +37,8 @@ curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/
 ##########################################################################################################
 
 title "kubescape"
-VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/armosec/kubescape/releases/latest | jq -r .tag_name)
-curl --connect-timeout 5 -L https://github.com/armosec/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
+VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/kubescape/kubescape/releases/latest | jq -r .tag_name)
+curl --connect-timeout 5 -L https://github.com/kubescape/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
 
 ##########################################################################################################
 
@@ -72,7 +72,7 @@ asdf-update-all
 ##########################################################################################################
 
 title "generate bash completions"
-$HOME/bin/generate_bash_completions_from_binaries.sh
+$HOME/bin/generate-bash-completions.sh
 
 ##########################################################################################################
 
