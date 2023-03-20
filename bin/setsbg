@@ -129,13 +129,18 @@ showpath() {
 }
 
 notifypath() {
+    local _path
+    _path="$(showpath)"
     # show and notify which picture is used
-    notify_desktop low "${BASH_SOURCE[1]}" "$(showpath)" video-display setbg
+    notify_desktop low "${BASH_SOURCE[1]}" "${_path}" video-display setbg
 }
 
 showbg() {
+    if ! ifinteractive
+    then
+        swayimg --window=#000000 --scale=optimal --fullscreen --info $(showpath)
+    fi
     notifypath
-    swayimg --window=#000000 --scale=optimal --fullscreen --info $(showpath)
 }
 
 lock() {

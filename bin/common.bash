@@ -216,7 +216,7 @@ function notify_desktop() {
 	then
 		dunstify --urgency="${urgency}" --icon="${icon}" --appname="${app}" "${summary}" "${body}" -h string:x-canonical-private-synchronous:"${app}" ||:
 	else
-		notify_debug "${summary} ${body}"
+		notify "${summary} ${body}"
 	fi
 	set_xtrace
 }
