@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+execmode=""
+location=${1:-}
+mode=${2:-ug=rwx,o=rx}
+dirmode=$( echo -n ${mode} | sed s/x//g)
+
+if [ -z "${location}" ]
+then
+	echo First parameter location must given,
+	echo second parameter mode
+	echo default is ${mode} for files
+	echo default is ${dirmode} for dirs
+	echo use mode u=rwx,og= for secure files
+	echo
+	execmode=echo
+elif [ ! -d "${location}" ]
+then
+	echo wrong location ${location}
+	exit 1
+fi
+
+umask 0000
+${execmode} find ${location}   -type d -exec chmod -v ${mode} {} \;
+${execmode} find ${location} ! -type d -exec chmod -v ${dirmode} {} \;
