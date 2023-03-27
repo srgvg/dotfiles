@@ -13,7 +13,7 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-app_name="${1:-}"
+app_name="${*:-}"
 shift
 
 if [ -z "${app_name}" ] 
@@ -22,7 +22,8 @@ then
 	exit 1
 fi
 
-app_id="$(flatpak list --columns=name,application | grep -i ^"${app_name}" | head -n1 | awk '{print $NF}')"
+# NF is number of fields, so it always prints the last column (first column can have spaces...)
+app_id="$(flatpak list --columns=name,application | grep -i "${app_name}" | head -n1 | awk '{print $NF}')"
 if [ -z "${app_id}" ] 
 then
 	echo Application ${app_name} not found.

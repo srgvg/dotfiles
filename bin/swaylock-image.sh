@@ -19,15 +19,22 @@ source "$HOME/bin/common.bash"
 # corrupter (https://github.com/r00tman/corrupter)
 
 IMAGES=""
-PICTURE=$HOME/Pictures/Backgrounds/default/joseph-barrientos-eUMEWE-7Ewg.png
+#PICTURE=$HOME/Pictures/Backgrounds/default/joseph-barrientos-eUMEWE-7Ewg.png
+#PICTURE=$HOME/Pictures/Backgrounds/default/borg_cube.png
+PICTURE=$HOME/Pictures/Backgrounds/default/cloud-header-1509665408632.png
+#PICTURE=$HOME/Pictures/Backgrounds/default/the_moon.png
 LOCK=$HOME/Documents/Pictures/icons/i3lock/lock.png
 LOCKARGS="-f -c 000000"
 
-IMAGE=/tmp/lock.png
-composite -gravity center $LOCK $PICTURE $IMAGE
+CACHEDIR=$HOME/.cache/lock
+mkdir -p $CACHEDIR
+PICTURENAME=i$(basename $PICTURE)
+IMAGE=$CACHEDIR/${PICTURENAME%%.png}-lock.png
+[ -f ${IMAGE} ] || composite -gravity center $LOCK $PICTURE $IMAGE
 for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name'`
 do
     LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
 done
+
 swaylock $LOCKARGS &
 sleep 1

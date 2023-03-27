@@ -111,10 +111,13 @@ for_window [class="Microsoft Teams" instance="microsoft teams" window_role="brow
 assign	   [class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
-
 # flatpak com.github.IsmaelMartinez.teams_for_linux
 assign  [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] $ws_chat
 for_window [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] layout tabbed, border $defaultborder
+
+# flatpak whatsapp app_id=com.ktechpit.whatsie
+assign     [app_id="whatsapp-for-linux"] $ws_chat
+for_window [app_id="whatsapp-for-linux"] layout tabbed, border $defaultborder
 
 for_window	[class="Skype"]									floating enable
 

@@ -242,9 +242,9 @@ bindsym $mod+Control+r			exec i3-move-workspaces
 
 # Lock Screen / Suspend / Poweroff
 bindsym Pause				exec $lockscreen
-bindsym $mod+l				exec $lock
+bindsym $mod+l				exec $lockscreen
 bindsym $mod+Pause			exec $suspend
-bindsym $mod+Control+l			exec $suspend
+bindsym $mod+Control+l		exec $suspend
 
 # start some tools
 bindsym $mod+c				exec gnome-calculator
@@ -352,7 +352,7 @@ bindsym XF86WLAN		exec nm-toggle-wifi
 # Fn-F10 XF86Search
 # Screenshot
 bindsym Print			exec screengrab select
-bindsym Shift+Print		exec screengrab select window
+bindsym Shift+Print		exec screengrab window
 bindsym Control+Print		exec screengrab screen
 bindsym Shift+Control+Print	exec screengrab full
 
