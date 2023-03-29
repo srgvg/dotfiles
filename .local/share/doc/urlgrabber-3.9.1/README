@@ -1,0 +1,31 @@
+urlgrabber -- A high-level cross-protocol url-grabber
+
+INSTALLATION INSTRUCTIONS
+
+If you want to install urlgrabber on your system, simply open the package 
+and run:
+
+   python setup.py install
+   
+Take a look at the install options by doing
+
+   python setup.py install --help
+   
+With no arguments, distutils will add all modules to a 'urlgrabber'
+package under your python site-packages directory. 
+
+You can build rpms by running
+
+   python setup.py bdist_rpm 
+
+The rpms (both source and "binary") will be specific to the current
+distrubution/version and may not be portable to others.  This is
+because they will be built for the currently installed python.
+
+keepalive.py and byterange.py are generic urllib2 extension modules and
+can be used to add keepalive and range support to any urllib2 
+application.
+
+As of version 2.9.x, urlgrabber is no longer tested with python
+versions less than 2.2.  It will probably work with 2.0, but will
+almost certainly NOT work under prior python versions.
