@@ -791,7 +791,7 @@ bindsym XF86WLAN						exec --no-startup-id nm-toggle-wifi
 bindsym Print							exec --no-startup-id spectacle --region
 
 #bindsym Shift+Print						exec --no-startup-id screengrab window
-bindsym Shift+Print						exec --no-startup-id spectacle --activewindow
+bindsym Shift+Print						exec --no-startup-id spectacle -u
 
 #bindsym Control+Print					exec --no-startup-id screengrab screen
 bindsym Control+Print					exec --no-startup-id spectacle --current
