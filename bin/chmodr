@@ -15,18 +15,19 @@ source "$HOME/bin/common.bash"
 
 execmode=""
 location=${1:-}
-mode=${2:-ug=rwx,o=rx}
-dirmode=$( echo -n ${mode} | sed s/x//g)
+dirmode=${2:-ug=rwx,o=rx}
+filemode=$( echo -n ${dirmode} | sed s/x//g)
 
 if [ -z "${location}" ]
 then
 	echo First parameter location must given,
 	echo second parameter mode
-	echo default is ${mode} for files
+	echo default is ${filemode} for files
 	echo default is ${dirmode} for dirs
 	echo use mode u=rwx,og= for secure files
 	echo
 	execmode=echo
+	location="."
 elif [ ! -d "${location}" ]
 then
 	echo wrong location ${location}
@@ -34,5 +35,5 @@ then
 fi
 
 umask 0000
-${execmode} find ${location}   -type d -exec chmod -v ${mode} {} \;
-${execmode} find ${location} ! -type d -exec chmod -v ${dirmode} {} \;
+${execmode} find -L ${location}   -type d -exec chmod -v ${dirmode} {} \;
+${execmode} find -L ${location} ! -type d -exec chmod -v ${filemode} {} \;

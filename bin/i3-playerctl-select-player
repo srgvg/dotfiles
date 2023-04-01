@@ -8,7 +8,6 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
@@ -21,7 +20,7 @@ PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIV
 PLAYERS=$(	/usr/bin/playerctl --list-all | grep -v firefox ||: 
 			for player in $(/usr/bin/playerctl --list-all | grep firefox ||: )
 			do  
-				echo -n "${player} "; wmctrl -lp | grep ${player/*instance} | awk '{$1=$2=$3=$4=""; print}' | xargs
+				echo -n "${player} "; wmctrl -lp | grep ${player/*instance} ||: | awk '{$1=$2=$3=$4=""; print}' | xargs
 			done
 		)
 if ! echo "${PLAYERS}" | grep -q ${PLAYERCTL_ACTIVE_PLAYER}

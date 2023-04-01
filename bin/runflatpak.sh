@@ -13,8 +13,9 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-app_name="${*:-}"
+app_name="${1:-}"
 shift
+app_args="${*:-}"
 
 if [ -z "${app_name}" ] 
 then
@@ -35,10 +36,10 @@ then
 	echo flatpak "${app_id}" is already running
 	sleep 5
 else
-	echo flatpak run --verbose "${app_id}" $*
+	echo flatpak run --verbose "${app_id}" ${app_args}
 	echo =========================================================================
 	echo 
-	flatpak run --verbose "${app_id}" $*
+	flatpak run --verbose "${app_id}" ${app_args}
 	
 	# because they sometimes go to background
 	while flatpak ps | grep -q "${app_id}"
