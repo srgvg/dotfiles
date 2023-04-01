@@ -14,6 +14,7 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 execmode=""
+verbose="--verbose"
 location=${1:-}
 dirmode=${2:-ug=rwx,o=rx}
 filemode=$( echo -n ${dirmode} | sed s/x//g)
@@ -32,8 +33,11 @@ elif [ ! -d "${location}" ]
 then
 	echo wrong location ${location}
 	exit 1
+elif [ "${location}" = "." ]
+then
+	verbose="--changes"
 fi
 
 umask 0000
-${execmode} find -L ${location}   -type d -exec chmod -v ${dirmode} {} \;
-${execmode} find -L ${location} ! -type d -exec chmod -v ${filemode} {} \;
+${execmode} find -L ${location}   -type d -exec chmod ${verbose} ${dirmode} {} \;
+${execmode} find -L ${location} ! -type d -exec chmod ${verbose} ${filemode} {} \;
