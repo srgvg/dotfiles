@@ -1,5 +1,23 @@
 #!/bin/bash
-set -x
-lock &
-sleep 2
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# always log
+# shellcheck disable=SC2034
+[ -z "${SYSTEMDSERVICE:-}" ] && [ "${DEBUG:-0}" -eq 0 ] &&
+	FORCE_DEBUG_LOGGING="TRUE"
+DEBUG=2
+export MY_WM="${MY_WM:-i3}"
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+$HOME/bin/lock &
+
+sleep 3
 systemctl suspend
