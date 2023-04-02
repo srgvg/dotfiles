@@ -19,13 +19,13 @@ source "$HOME/bin/common.bash"
 # corrupter (https://github.com/r00tman/corrupter)
 
 IMAGES=""
-PICTURE="$(LOCK_DEFAULT_LOCKSCREEN)"
+PICTURE="$(ls ${LOCK_DEFAULT_LOCKSCREEN} | head -n1)"
 LOCK=$HOME/Documents/Pictures/icons/i3lock/lock.png
 LOCKARGS="-f -c 000000"
 
 CACHEDIR=$HOME/.cache/lock
 mkdir -p $CACHEDIR
-PICTURENAME=i$(basename $PICTURE)
+PICTURENAME=$(basename $PICTURE)
 IMAGE=$CACHEDIR/${PICTURENAME%%.png}-lock.png
 [ -f ${IMAGE} ] || composite -gravity center $LOCK $PICTURE $IMAGE
 for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name'`
