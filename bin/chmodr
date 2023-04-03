@@ -39,5 +39,8 @@ then
 fi
 
 umask 0000
-${execmode} find -L ${location}   -type d -exec chmod ${verbose} ${dirmode} {} \;
-${execmode} find -L ${location} ! -type d -exec chmod ${verbose} ${filemode} {} \;
+echo -e '\n================================================================================\m'
+${execmode} find -L ${location}   -type d -exec chmod ${verbose} ${dirmode} {} \;   || echo error, exit code $?
+echo -e '\n================================================================================\m'
+${execmode} find -L ${location} ! -type d -exec chmod ${verbose} ${filemode} {} \;  || echo error, exit code $?
+echo -e '\n================================================================================\m'
