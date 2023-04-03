@@ -47,6 +47,12 @@ curl --connect-timeout 5 -Lo mizu github.com/up9inc/mizu/releases/latest/downloa
 
 ##########################################################################################################
 
+title "kubeshark"
+VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/kubeshark/kubeshark/releases/latest | jq -r .tag_name)
+curl --connect-timeout 5 -L https://github.com/kubeshark/kubeshark/releases/download/${VERSION}/kubeshark_linux_amd64 -o $HOME/bin2/kubeshark && chmod +x $HOME/bin2/kubeshark
+
+##########################################################################################################
+
 title "cleanup ########################################################################################################"
 cd $HOME
 rm -rfv ~/tmp/update-tools/

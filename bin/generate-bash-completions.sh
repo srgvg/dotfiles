@@ -35,6 +35,7 @@ completion_bash_commands=(
     kubectl
     kubectl-plugin_completion
     kubescape
+    kubeshark
     kustomize
     nova
     oc
