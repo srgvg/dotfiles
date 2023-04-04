@@ -80,7 +80,7 @@ function _check_debug_logging() {
 		LOGFILE="$(readlink -f "$0" | sed -e 's@/home/serge/@@' \
 					-e 's@/@_@g' -e 's@ @@g').log"
 		LOGFILE="$LOGS_PATH/${LOGFILE}"
-		exec &> >(tee >(sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" >"${LOGFILE}"))
+		exec &> >(tee >(sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | ts >"${LOGFILE}"))
 
 		if ifdebug3
 		then
