@@ -138,7 +138,7 @@ notifypath() {
 showbg() {
     if ! ifinteractive
     then
-        swayimg --window=#000000 --scale=optimal --fullscreen --info $(showpath)
+        swayimg --window='#000000' --scale=optimal --fullscreen --info $(showpath) &
     fi
     notifypath
 }
