@@ -78,7 +78,7 @@ asdf-update-all
 ##########################################################################################################
 
 title "generate bash completions"
-$HOME/bin/generate-bash-completions.sh
+$HOME/bin/update-bash-completions.sh
 
 ##########################################################################################################
 
@@ -86,6 +86,13 @@ title "update flatpak"
 
 flatpak update --assumeyes --noninteractive
 flatpak update --assumeyes --noninteractive --user
+
+##########################################################################################################
+
+title "add gitignores"
+
+$HOME/.gitignore.d/dot-add
+$HOME/.gitignore.d/sdot-add
 
 ##########################################################################################################
 
