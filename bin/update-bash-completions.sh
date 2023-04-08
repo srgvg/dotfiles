@@ -16,6 +16,7 @@ complext=""
 completion_bash_commands=(
     argocd
     arkade
+    cilium
     civo
     clusterctl
     cmctl
@@ -25,6 +26,7 @@ completion_bash_commands=(
     havener
     hcloud
     helm
+    hubble
     k9s
     kanctl
     kando
@@ -38,7 +40,6 @@ completion_bash_commands=(
     kubeshark
     kustomize
     nova
-    oc
     talosctl
     velero
 )
@@ -58,7 +59,10 @@ generate_completion_bash() {
             echo "source <($command completion bash)" > ${complpath}/${command}${complext}
         else
             $command completion bash > ${complpath}/${command}${complext}
+            chmod 644 ${complpath}/${command}${complext}
         fi
+    else
+        rm -f ${complpath}/${command}${complext}
     fi
 }
 
@@ -67,6 +71,9 @@ generate_completions_bash() {
     if hash $command >&/dev/null
     then
         $command completions bash > ${complpath}/${command}${complext}
+        chmod 644 ${complpath}/${command}${complext}
+    else
+        rm -f ${complpath}/${command}${complext}
     fi
 }
 
@@ -89,22 +96,28 @@ done
 # scw
 echo -n .
 # https://github.com/scaleway/scaleway-cli/issues/1959#issuecomment-1451964559
+command=scw
 scw autocomplete script shell=bash \
     | sed -E 's#(_?)\/([^ \n]*)scw#\1scw#g' \
     > ${complpath}/scw${complext} || echo scw NOK
+    chmod 644 ${complpath}/${command}${complext}
 
 # gcloud
 echo -n .
+command=gcloud
 echo "source $HOME/.asdf/installs/gcloud/$(gcloud version 2>/dev/null \
     | grep "Google Cloud SDK" \
     | sed 's/Google Cloud SDK //')/completion.bash.inc" \
     > ${complpath}/gcloud${complext} || echo gcloud NOK
+    chmod 644 ${complpath}/${command}${complext}
 
 # kubie
 echo .
 KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
+command=kubie
 curl -L --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
     >  ${complpath}/kubie${complext} || echo kubie NOK
+    chmod 644 ${complpath}/${command}${complext}
 
 ####################
 
