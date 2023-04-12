@@ -531,12 +531,20 @@ _starship() {
             return 0
             ;;
         starship__preset)
-            opts="-l -h --list --help no-nerd-font pure-preset no-empty-icons pastel-powerline bracketed-segments tokyo-night no-runtime-versions nerd-font-symbols plain-text-symbols"
+            opts="-o -l -h --output --list --help tokyo-night nerd-font-symbols no-runtime-versions pastel-powerline pure-preset no-empty-icons plain-text-symbols bracketed-segments no-nerd-font"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --output)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -o)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

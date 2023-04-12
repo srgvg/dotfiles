@@ -13,15 +13,17 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
+cd $HOME
 
-file=${1:-}
-pdfout="${2:-${file%.*}-restricted.pdf}"
-pdfout="${pdfout%.*}.pdf"
+vcsh foreach remote update --prune
+vcsh foreach pull
+vcsh foreach myinfo
 
-echo gs -sDEVICE=pdfwrite \
-     -dCompatibilityLevel=1.4 \
-     -dDownsampleColorImages=true \
-     -dColorImageResolution=150 \
-     -dNOPAUSE \
-     -dBATCH \
-     -sOutputFile="${pdfout}" "${file}"
+if [ "${1:-}" = "commit" ]
+then
+	echo "Committing all..."
+	vcsh foreach add --all
+	vcsh foreach commit -m "update from $HOSTNAME"
+	vcsh foreach pushall
+	vcsh foreach myinfo
+fi

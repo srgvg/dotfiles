@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+
+inputfile=${1:-}
+compress=${2:-ebook}
+
+if [ -d "${inputfile}" ]
+then
+	echo Bad input file "${inputfile}" >&2
+	exit 1
+fi
+
+if [ "${compress}" = "prepress" ]
+then
+	dpi=300
+elif [ "${compress}" = "ebook" ]
+then
+	dpi=150
+elif [ "${compress}" = "screen" ]
+then
+	dpi=72
+else
+	echo Wrong compression "${compress}" >&2
+	exit 2
+fi
+
+outputfile="${inputfile%.*}_${dpi}dpi.pdf"
+
+echo Compressing "${inputfile}" to ${compress} / ${dpi} dpi:
+
+gs \
+	-sDEVICE=pdfwrite \
+	-dCompatibilityLevel=1.4 \
+	-dPDFSETTINGS=/${compress} \
+	-dNOPAUSE \
+	-dQUIET \
+	-dBATCH \
+	-sOutputFile="${outputfile}" \
+	"${inputfile}"
+echo "${outputfile}"
