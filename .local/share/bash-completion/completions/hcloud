@@ -3540,6 +3540,31 @@ _hcloud_placement-group()
     noun_aliases=()
 }
 
+_hcloud_primary-ip_add-label()
+{
+    last_command="hcloud_primary-ip_add-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--overwrite")
+    flags+=("-o")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
 _hcloud_primary-ip_assign()
 {
     last_command="hcloud_primary-ip_assign"
@@ -3740,6 +3765,31 @@ _hcloud_primary-ip_list()
     noun_aliases=()
 }
 
+_hcloud_primary-ip_remove-label()
+{
+    last_command="hcloud_primary-ip_remove-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    flags+=("-a")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
 _hcloud_primary-ip_set-rdns()
 {
     last_command="hcloud_primary-ip_set-rdns"
@@ -3825,6 +3875,7 @@ _hcloud_primary-ip()
     command_aliases=()
 
     commands=()
+    commands+=("add-label")
     commands+=("assign")
     commands+=("create")
     commands+=("delete")
@@ -3832,6 +3883,7 @@ _hcloud_primary-ip()
     commands+=("disable-protection")
     commands+=("enable-protection")
     commands+=("list")
+    commands+=("remove-label")
     commands+=("set-rdns")
     commands+=("unassign")
     commands+=("update")
@@ -5590,6 +5642,10 @@ _hcloud_root_command()
     commands+=("image")
     commands+=("iso")
     commands+=("load-balancer")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("loadbalancer")
+        aliashash["loadbalancer"]="load-balancer"
+    fi
     commands+=("load-balancer-type")
     commands+=("location")
     commands+=("network")

@@ -52,7 +52,7 @@ completions_bash_commands=(
 generate_completion_bash() {
     command=$1
     source=${2:-}
-    if hash $command >&/dev/null
+    if hash $command >&/dev/null || type -a $command >&/dev/null
     then
         if [ -n "${source}" ]
         then
@@ -62,18 +62,22 @@ generate_completion_bash() {
             chmod 644 ${complpath}/${command}${complext}
         fi
     else
+        echo -e "\n$command not found"
         rm -f ${complpath}/${command}${complext}
+        return 1
     fi
 }
 
 generate_completions_bash() {
     command=$1
-    if hash $command >&/dev/null
+    if hash $command >&/dev/null || type -a $command >&/dev/null
     then
         $command completions bash > ${complpath}/${command}${complext}
         chmod 644 ${complpath}/${command}${complext}
     else
+        echo -e "\n$command not found"
         rm -f ${complpath}/${command}${complext}
+        return 1
     fi
 }
 
@@ -82,14 +86,15 @@ generate_completions_bash() {
 for command in ${completion_bash_commands[@]}
 do
     echo -n .
-    generate_completion_bash $command || echo $command NOK
+    generate_completion_bash $command
 done
 for command in ${completions_bash_commands[@]}
 do
     echo -n .
-    generate_completions_bash $command || echo $command NOK
+    generate_completions_bash $command
 done
 
+#######################################################################################################################
 #######################################################################################################################
 # custom....
 #
