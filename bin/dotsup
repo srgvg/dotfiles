@@ -15,14 +15,21 @@ source "$HOME/bin/common.bash"
 
 cd $HOME
 
-vcsh foreach remote update --prune
-vcsh foreach pull
-vcsh foreach myinfo
-
-if [ "${1:-}" = "commit" ]
+if [ -z "${1:-}" ]
 then
-	echo "Committing all..."
+	vcsh foreach remote update --prune
+	vcsh foreach pull
+	vcsh foreach myinfo
+elif [ "${1:-}" = "add" ]
+then
+	echo "Adding ..."
 	vcsh foreach add --all
+	$HOME/.gitignore.d/dot-add
+	$HOME/.gitignore.d/sdot-add
+	vcsh foreach myinfo
+elif [ "${1:-}" = "commit" ]
+then
+	echo "Committing ..."
 	vcsh foreach commit -m "update from $HOSTNAME"
 	vcsh foreach pushall
 	vcsh foreach myinfo

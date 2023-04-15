@@ -1,0 +1,45 @@
+#!/bin/bash
+
+IFS='\n' read -r -d '' forceadds <<-EOF
+    .config/gandi/
+    .config/mopidy/mopidy.conf
+    .aws/
+    .cert/
+    .config/gandi/
+    .config/gcloud/
+    .config/gotify/
+    .config/hcloud/
+    .config/mopidy/
+    .config/scw/
+    .gitignore.d/sdot*
+    .gnupg/
+    .kube/config-*.yaml
+    .kube/kubie.yaml
+    .remmina/
+    .s3cfg
+    .src/
+    .ssh/
+    .talos/
+    bins/
+    etc/
+EOF
+
+cd $HOME
+for entry in ${forceadds}
+do
+    vcsh run sdot git add --force ${entry} ||:
+done
+
+IFS='\n' read -r -d '' forceremoves <<-EOF
+    .config/gcloud/cache/
+    .config/gcloud/logs/
+    .ssh/*_known_hosts
+    .ssh/known_hosts*
+EOF
+ 
+cd $HOME
+for entry in ${forceremoves}
+do
+    vcsh run sdot git rm -r --cached --quiet ${entry} ||:
+done
+
