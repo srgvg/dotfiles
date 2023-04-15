@@ -15,7 +15,6 @@ complext=""
 
 completion_bash_commands=(
     argocd
-    arkade
     cilium
     civo
     clusterctl
@@ -23,17 +22,13 @@ completion_bash_commands=(
     datree
     doctl
     flux
-    havener
     hcloud
     helm
     hubble
     k9s
-    kanctl
-    kando
     kind
     kind
     krew
-    kubecm
     kubectl
     kubectl-plugin_completion
     kubescape
@@ -41,7 +36,6 @@ completion_bash_commands=(
     kustomize
     nova
     talosctl
-    velero
 )
 completions_bash_commands=(
     starship
