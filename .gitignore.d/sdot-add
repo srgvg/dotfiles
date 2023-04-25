@@ -33,6 +33,7 @@ done
 IFS='\n' read -r -d '' forceremoves <<-EOF
     .config/gcloud/cache/
     .config/gcloud/logs/
+    .config/gcloud/.last*
     .ssh/*_known_hosts
     .ssh/known_hosts*
 EOF

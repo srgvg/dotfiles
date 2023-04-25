@@ -17,20 +17,42 @@ cd $HOME
 
 if [ -z "${1:-}" ]
 then
+	echo "--------------------------------"
+	echo "Update ..."
+	echo "--------------------------------"
 	vcsh foreach remote update --prune
+	echo "--------------------------------"
+	echo "Pull ..."
+	echo "--------------------------------"
 	vcsh foreach pull
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
 	vcsh foreach myinfo
 elif [ "${1:-}" = "add" ]
 then
+	echo "--------------------------------"
 	echo "Adding ..."
+	echo "--------------------------------"
 	vcsh foreach add --all
 	$HOME/.gitignore.d/dot-add
 	$HOME/.gitignore.d/sdot-add
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
 	vcsh foreach myinfo
 elif [ "${1:-}" = "commit" ]
 then
+	echo "--------------------------------"
 	echo "Committing ..."
+	echo "--------------------------------"
 	vcsh foreach commit -m "update from $HOSTNAME"
+	echo "--------------------------------"
+	echo "Pushing ..."
+	echo "--------------------------------"
 	vcsh foreach pushall
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
 	vcsh foreach myinfo
 fi
