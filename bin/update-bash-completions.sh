@@ -57,7 +57,7 @@ generate_completion_bash() {
         fi
     else
         echo -e "\n$command not found"
-        rm -f ${complpath}/${command}${complext}
+        echo consider: rm -f ${complpath}/${command}${complext}
         return 1
     fi
 }
@@ -70,7 +70,7 @@ generate_completions_bash() {
         chmod 644 ${complpath}/${command}${complext}
     else
         echo -e "\n$command not found"
-        rm -f ${complpath}/${command}${complext}
+        echo consider: rm -f ${complpath}/${command}${complext}
         return 1
     fi
 }
