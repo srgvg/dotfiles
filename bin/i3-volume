@@ -25,7 +25,9 @@ elif [ "$action" = "local" ]; then
 	shift
 	action=${1:-get}
 else
-	device=""
+	device="pa"
+	device2="$(pa-default long)"
+	action=${1:-get}
 fi
 value=${2:-50}
 steppa=5
