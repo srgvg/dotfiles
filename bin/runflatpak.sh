@@ -14,13 +14,12 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 app_name="${1:-}"
-shift
+shift ||:
 app_args="${*:-}"
 
 if [ -z "${app_name}" ] 
 then
-	echo Application ${app_name} not given.
-	exit 1
+	app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
 fi
 
 # NF is number of fields, so it always prints the last column (first column can have spaces...)
@@ -39,11 +38,11 @@ else
 	echo flatpak run --verbose "${app_id}" ${app_args}
 	echo =========================================================================
 	echo 
-	flatpak run --verbose "${app_id}" ${app_args}
+	i3-launch-jobs flatpak run --verbose "${app_id}" ${app_args}
 	
-	# because they sometimes go to background
-	while flatpak ps | grep -q "${app_id}"
-	do
-		sleep 5
-	done
+	## because they sometimes go to background
+	#while flatpak ps | grep -q "${app_id}"
+	#do
+	#	sleep 5
+	#done
 fi
