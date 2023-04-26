@@ -22,6 +22,7 @@ completion_bash_commands=(
     datree
     doctl
     flux
+    go-chromecast
     hcloud
     helm
     hubble
