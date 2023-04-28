@@ -33,3 +33,5 @@ do
     asdf global $plugin latest ||:
 	echo; echo
 done
+
+asdf plugin-list > $HOME/.config/asdf-plugin-list
