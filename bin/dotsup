@@ -28,19 +28,18 @@ then
 	echo "--------------------------------"
 	echo "Info ..."
 	echo "--------------------------------"
-	vcsh foreach myinfo
+	vcsh foreach status --short --branch --verbose --show-stash
 elif [ "${1:-}" = "add" ]
 then
 	echo "--------------------------------"
 	echo "Adding ..."
 	echo "--------------------------------"
 	vcsh foreach add --all
-	$HOME/.gitignore.d/dot-add
-	$HOME/.gitignore.d/sdot-add
+	$HOME/bin/dotsadd
 	echo "--------------------------------"
 	echo "Info ..."
 	echo "--------------------------------"
-	vcsh foreach myinfo
+	vcsh foreach status --short --branch --verbose --show-stash
 elif [ "${1:-}" = "commit" ]
 then
 	echo "--------------------------------"
@@ -54,5 +53,5 @@ then
 	echo "--------------------------------"
 	echo "Info ..."
 	echo "--------------------------------"
-	vcsh foreach myinfo
+	vcsh foreach status --short --branch --verbose --show-stash
 fi
