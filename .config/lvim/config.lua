@@ -10,9 +10,9 @@ vim.opt.relativenumber = true
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
-    enabled = true,
-    pattern = "*.lua",
-    timeout = 1000,
+  enabled = true,
+  pattern = "*.lua",
+  timeout = 1000,
 }
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -24,6 +24,10 @@ lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 
 -- lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>"
 -- lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
+
+lvim.keys.normal_mode["<S-x>"] = ":BufferKill<CR>"
+lvim.keys.normal_mode["<S-s>"] = ":g/\\s$/norm $diw"
+
 
 -- -- Use which-key to add extra bindings with the leader-key prefix
 -- lvim.builtin.which_key.mappings["W"] = { "<cmd>noautocmd w<cr>", "Save without formatting" }
@@ -106,7 +110,11 @@ lvim.builtin.treesitter.auto_install = true
 --       cmd = "TroubleToggle",
 --     },
 -- }
-
+lvim.plugins = {
+  {
+    "editorconfig/editorconfig-vim",
+  }
+}
 -- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>
 -- vim.api.nvim_create_autocmd("FileType", {
 --   pattern = "zsh",
@@ -115,9 +123,3 @@ lvim.builtin.treesitter.auto_install = true
 --     require("nvim-treesitter.highlight").attach(0, "bash")
 --   end,
 -- })
-
-
--- --------------------------------------------------------------------------------------------------------------------
--- my own custom stuff
-lvim.keys.normal_mode["<S-x>"] = ":BufferKill<CR>"
-lvim.keys.normal_mode["<S-s>"] = ":g/\\s$/norm $diw"
