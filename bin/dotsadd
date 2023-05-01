@@ -19,14 +19,14 @@ IFS='\n' read -r -d '' dotadds <<-EOF
     .bash_profile
     .bashrc
     .bashrc.d/
-    .config/asdf-plugin-list    
+    .config/asdf-plugin-list
     .config/dunst/dunstrc
     .config/dunst/dunstrc.d_*
     .config/gtk-2.0/
     .config/gtk-3.0/
     .config/htop/htoprc
-    .config/nvim/autoload/
-    .config/nvim/init.vim
+    .config/nvim/
+    .config/nvim.bootstrap/
     .config/pip/
     .config/pulse/daemon.conf
     .config/ranger/
@@ -56,8 +56,11 @@ IFS='\n' read -r -d '' dotadds <<-EOF
 EOF
 
 IFS='\n' read -r -d '' dotremoves <<-EOF
+    .config/nvim.bootstrap/plugged/
 EOF
- 
+
+###############################################################################
+
 IFS='\n' read -r -d '' sdotadds <<-EOF
     .config/gandi/
     .config/mopidy/mopidy.conf
@@ -89,7 +92,6 @@ IFS='\n' read -r -d '' sdotremoves <<-EOF
     .ssh/*_known_hosts
     .ssh/known_hosts*
 EOF
- 
 
 ###############################################################################
 
@@ -102,12 +104,12 @@ do
 	do
 	    vcsh run ${repo} git add --force ${entry} ||:
 	done
-	
+
 	_entries="${repo}removes"
 	for entry in ${!_entries}
 	do
 	    vcsh run ${repo} git rm -r --cached --quiet ${entry} ||:
 	done
-	
+
 done
 
