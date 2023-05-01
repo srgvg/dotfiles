@@ -1,6 +1,6 @@
 # editor
-export VISUAL=vim
-export EDITOR=vim
+export VISUAL=lvim
+export EDITOR=lvim
 
 # Debian packaging
 export DEBFULLNAME="Serge van Ginderachter"
