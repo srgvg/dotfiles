@@ -1,4 +1,5 @@
 " vim-bootstrap 2023-01-26 08:14:59
+" https://vim-bootstrap.com/
 
 "*****************************************************************************
 "" Vim-Plug core
@@ -76,7 +77,7 @@ Plug 'honza/vim-snippets'
 "" Custom bundles
 "*****************************************************************************
 
-" 
+"
 
 
 " c
@@ -153,6 +154,7 @@ Plug 'leafgarland/typescript-vim'
 Plug 'HerringtonDarkholme/yats.vim'
 
 
+Plug 'neovim/nvim-lspconfig'
 "*****************************************************************************
 "*****************************************************************************
 
@@ -222,7 +224,7 @@ let no_buffers_menu=1
 colorscheme molokai
 
 
-" Better command line completion 
+" Better command line completion
 set wildmenu
 
 " mouse support
@@ -247,7 +249,7 @@ else
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
 
-  
+
 endif
 
 
@@ -711,7 +713,7 @@ let g:yats_host_keyword = 1
 
 
 
-" 
+"
 
 
 "*****************************************************************************
@@ -761,3 +763,12 @@ else
   let g:airline_symbols.readonly = ''
   let g:airline_symbols.linenr = ''
 endif
+
+
+"*****************************************************************************
+"*****************************************************************************
+"" Custom - manually addes
+"*****************************************************************************
+"*****************************************************************************
+
+Plug 'neovim/nvim-lspconfig'

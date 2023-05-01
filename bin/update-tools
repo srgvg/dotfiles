@@ -30,7 +30,7 @@ cd ~/tmp/update-tools/
 
 ##########################################################################################################
 
-title "kubetail" 
+title "kubetail"
 curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
 curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
 
@@ -88,6 +88,15 @@ GC_URL=$(wget https://api.github.com/repos/vishen/go-chromecast/releases/latest 
 wget $GC_URL -O ./go-chromecast.tgz
 tar xzf ./go-chromecast.tgz -C $HOME/bin2/
 chmod +x $HOME/bin2/go-chromecast
+
+
+##########################################################################################################
+
+title "kubedialog  ########################################################################################################"
+
+wget https://raw.githubusercontent.com/vaniacer/kube-dialog/master/kd
+chmod +  kd
+cp kd $HOME/bin/kube-dialog
 
 ##########################################################################################################
 

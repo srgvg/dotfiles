@@ -119,6 +119,9 @@ curl -L --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBI
     >  ${complpath}/kubie${complext} || echo kubie NOK
     chmod 644 ${complpath}/${command}${complext}
 
+# golang
+wget https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -O ${complpath}/go${complext} 
+
 ####################
 
 ln -vnfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext}
