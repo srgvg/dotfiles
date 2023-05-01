@@ -130,7 +130,7 @@ function dotsadd() {
 cd $HOME
 action="${1:-add}"
 
-if [ "${action}" = "up" ]
+if [ "${action}" = "up" ] || [ "${action}" = "pull" ]
 then
 	echo "--------------------------------"
 	echo "Update ..."
