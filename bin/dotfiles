@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+#set -x
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+dotadds="
+    .bash_completion
+    .bash_logout
+    .bash_profile
+    .bashrc
+    .bashrc.d/
+    .config/asdf-plugin-list
+    .config/dunst/dunstrc
+    .config/dunst/dunstrc.d_*
+    .config/gtk-2.0/
+    .config/gtk-3.0/
+    .config/helm/repositories.yaml
+    .config/htop/htoprc
+    .config/krew-index-list
+    .config/krew-list
+    .config/nvim/
+    .config/nvim.bootstrap/
+    .config/pip/
+    .config/pulse/daemon.conf
+    .config/ranger/
+    .config/picom.conf
+    .config/sway/
+    .config/remmina
+    .config/user-dirs.dirs
+    .editorconfig
+    .gitconfig
+    .gitignore.d/dot
+    .i3/
+    .local/etc
+    .local/share/applications/
+    .local/share/bash-completion
+    .local/share/doc/
+    .local/share/icons/
+    .local/man/
+    .local/share/nautilus/
+    .local/share/nemo/
+    .pam_environment
+    .pastebinit.xml
+    .profile
+    .screenlayout
+    .screenrc
+    .selected_editor
+    bin/
+	src/autops/cust/enperas/.envrc
+	src/autops/cust/equans/.envrc
+	src/autops/cust/viumore/.envrc
+	src/autops/cust/velleman/.envrc
+	src/autops/.envrc
+	src/ginsys/opsmaster/hwconfig/kube/.envrc
+	src/mateco/.envrc
+"
+
+dotremoves="
+    .config/nvim.bootstrap/plugged/
+"
+
+###############################################################################
+
+sdotadds="
+    .config/gandi/
+    .config/mopidy/mopidy.conf
+    .aws/
+    .cert/
+    .config/gandi/
+    .config/gcloud/
+    .config/gotify/
+    .config/hcloud/
+    .config/mopidy/
+    .config/scw/
+    .gitignore.d/sdot
+    .gnupg/
+    .kube/config-*.yaml
+    .kube/kubie.yaml
+    .remmina/
+    .s3cfg
+    .src/
+    .ssh/
+    .talos/
+    bins/
+    etc/
+"
+
+sdotremoves="
+    .config/gcloud/cache/
+    .config/gcloud/logs/
+    .config/gcloud/.last*
+    .ssh/*_known_hosts
+    .ssh/known_hosts*
+"
+
+###############################################################################
+
+function dotsadd() {
+	cd $HOME
+
+	for repo in dot sdot
+	do
+		_entries="${repo}adds"
+		for entry in ${!_entries}
+		do
+		    vcsh run ${repo} git add --force ${entry} ||:
+		done
+
+		_entries="${repo}removes"
+		for entry in ${!_entries}
+		do
+		    vcsh run ${repo} git rm -r --force --cached --quiet ${entry} ||:
+		done
+	done
+}
+
+###############################################################################
+
+cd $HOME
+action="${1:-add}"
+
+if [ "${action}" = "up" ]
+then
+	echo "--------------------------------"
+	echo "Update ..."
+	echo "--------------------------------"
+	vcsh foreach remote update --prune
+	echo "--------------------------------"
+	echo "Pull ..."
+	echo "--------------------------------"
+	vcsh foreach pull
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+elif [ "${action}" = "add" ]
+then
+	echo "--------------------------------"
+	echo "Adding ..."
+	echo "--------------------------------"
+	vcsh foreach add --all
+	dotsadd
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+elif [ "${action}" = "commit" ]
+then
+	echo "--------------------------------"
+	echo "Committing ..."
+	echo "--------------------------------"
+	vcsh foreach commit -m "update from $HOSTNAME"
+	echo "--------------------------------"
+	echo "Pushing ..."
+	echo "--------------------------------"
+
+	vcsh foreach pushall
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+fi

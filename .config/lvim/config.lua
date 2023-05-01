@@ -2,7 +2,6 @@
  THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
  `lvim` is the global options object
 ]]
-
 -- vim options
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
@@ -11,9 +10,9 @@ vim.opt.relativenumber = true
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
-  enabled = true,
-  pattern = "*.lua",
-  timeout = 1000,
+    enabled = true,
+    pattern = "*.lua",
+    timeout = 1000,
 }
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -116,3 +115,9 @@ lvim.builtin.treesitter.auto_install = true
 --     require("nvim-treesitter.highlight").attach(0, "bash")
 --   end,
 -- })
+
+
+-- --------------------------------------------------------------------------------------------------------------------
+-- my own custom stuff
+lvim.keys.normal_mode["<S-x>"] = ":BufferKill<CR>"
+lvim.keys.normal_mode["<S-s>"] = ":g/\\s$/norm $diw"
