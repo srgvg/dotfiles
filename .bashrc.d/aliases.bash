@@ -105,7 +105,7 @@ alias sysl="tail -n 200 -f /var/log/syslog"
 # t
 alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
 # v
-alias vs="vcsh status"
+alias vs="vcsh status --terse"
 alias v="vcsh"
 # w
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"
