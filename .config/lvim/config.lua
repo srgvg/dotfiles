@@ -10,9 +10,9 @@ vim.opt.relativenumber = true
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
-  enabled = true,
-  pattern = "*.lua",
-  timeout = 1000,
+    enabled = true,
+    pattern = "*.lua",
+    timeout = 1000,
 }
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
@@ -111,9 +111,9 @@ lvim.builtin.treesitter.auto_install = true
 --     },
 -- }
 lvim.plugins = {
-  {
-    "editorconfig/editorconfig-vim",
-  }
+    {
+        "editorconfig/editorconfig-vim",
+    }
 }
 -- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>
 -- vim.api.nvim_create_autocmd("FileType", {
@@ -123,3 +123,11 @@ lvim.plugins = {
 --     require("nvim-treesitter.highlight").attach(0, "bash")
 --   end,
 -- })
+--
+-- folding powered by treesitter
+-- https://github.com/nvim-treesitter/nvim-treesitter#folding
+-- look for foldenable: https://github.com/neovim/neovim/blob/master/src/nvim/options.lua
+-- Vim cheatsheet, look for folds keys: https://devhints.io/vim
+vim.opt.foldmethod = "expr"                     -- default is "normal"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()" -- default is ""
+vim.opt.foldenable = false                      -- if this option is true and fold method option is other than normal, every time a document is opened everything will be folded.
