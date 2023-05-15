@@ -28,14 +28,14 @@ JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     #/opt/safing/portmaster/portmaster-start notifier --data=/opt/safing/portmaster
 	runflatpak.sh spotify --show-console
 	runflatpak.sh signal
-	runflatpak.sh telegram
 	runflatpak.sh mattermost
+	runflatpak.sh com.github.eneshecan.WhatsAppForLinux
 	runflatpak.sh nextcloud
 	runflatpak.sh teams
 	runflatpak.sh Microsoft Teams
-	runflatpak.sh slack
-	runflatpak.sh Discord
-	runflatpak.sh com.github.eneshecan.WhatsAppForLinux
+	#runflatpak.sh slack
+	#runflatpak.sh Discord
+	#runflatpak.sh telegram
 EOF
 )
 if [ -f "${0}-$(hostname)" ]

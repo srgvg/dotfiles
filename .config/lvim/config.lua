@@ -6,6 +6,7 @@
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
 vim.opt.relativenumber = true
+vim.opt.wrap = true
 
 -- general
 lvim.log.level = "info"
@@ -78,6 +79,7 @@ lvim.builtin.treesitter.auto_install = true
 -- end
 
 -- -- linters, formatters and code actions <https://www.lunarvim.org/docs/languages#lintingformatting>
+lvim.format_on_save.enabled = true
 -- local formatters = require "lvim.lsp.null-ls.formatters"
 -- formatters.setup {
 --   { command = "stylua" },

@@ -83,7 +83,7 @@ alias o='xdg-open'
 # p
 if [ "${MY_WM}" = "sway" ]
 then
-    alias paste='wl-paste --no-newline --primary'
+    alias paste='wl-paste --no-newline'
 else
     alias paste='xclip -out -selection clipboard'
 fi
