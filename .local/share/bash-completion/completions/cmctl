@@ -1990,10 +1990,6 @@ _cmctl_root_command()
     flags_with_completion=()
     flags_completion=()
 
-    flags+=("--log-flush-frequency=")
-    two_word_flags+=("--log-flush-frequency")
-    local_nonpersistent_flags+=("--log-flush-frequency")
-    local_nonpersistent_flags+=("--log-flush-frequency=")
 
     must_have_one_flag=()
     must_have_one_noun=()
