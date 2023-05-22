@@ -168,7 +168,41 @@ then
 	echo "--------------------------------"
 	echo "Pushing ..."
 	echo "--------------------------------"
-
+	vcsh foreach pushall
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+elif [ "${action}" = "all" ]
+then
+	echo "--------------------------------"
+	echo "Update ..."
+	echo "--------------------------------"
+	vcsh foreach remote update --prune
+	echo "--------------------------------"
+	echo "Pull ..."
+	echo "--------------------------------"
+	vcsh foreach pull
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+	echo "--------------------------------"
+	echo "Adding ..."
+	echo "--------------------------------"
+	vcsh foreach add --all
+	dotsadd
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+	echo "--------------------------------"
+	echo "Committing ..."
+	echo "--------------------------------"
+	vcsh foreach commit -m "update from $HOSTNAME"
+	echo "--------------------------------"
+	echo "Pushing ..."
+	echo "--------------------------------"
 	vcsh foreach pushall
 	echo "--------------------------------"
 	echo "Info ..."
