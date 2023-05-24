@@ -3736,6 +3736,94 @@ _civo_kubernetes_node-pool_delete()
     noun_aliases=()
 }
 
+_civo_kubernetes_node-pool_instance-delete()
+{
+    last_command="civo_kubernetes_node-pool_instance-delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--instance-id=")
+    two_word_flags+=("--instance-id")
+    two_word_flags+=("-i")
+    local_nonpersistent_flags+=("--instance-id")
+    local_nonpersistent_flags+=("--instance-id=")
+    local_nonpersistent_flags+=("-i")
+    flags+=("--node-pool-id=")
+    two_word_flags+=("--node-pool-id")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--node-pool-id")
+    local_nonpersistent_flags+=("--node-pool-id=")
+    local_nonpersistent_flags+=("-p")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--instance-id=")
+    must_have_one_flag+=("-i")
+    must_have_one_flag+=("--node-pool-id=")
+    must_have_one_flag+=("-p")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_kubernetes_node-pool_instance-ls()
+{
+    last_command="civo_kubernetes_node-pool_instance-ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--node-pool-id=")
+    two_word_flags+=("--node-pool-id")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--node-pool-id")
+    local_nonpersistent_flags+=("--node-pool-id=")
+    local_nonpersistent_flags+=("-p")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_kubernetes_node-pool_scale()
 {
     last_command="civo_kubernetes_node-pool_scale"
@@ -3798,6 +3886,20 @@ _civo_kubernetes_node-pool()
         aliashash["delete"]="delete"
         command_aliases+=("rm")
         aliashash["rm"]="delete"
+    fi
+    commands+=("instance-delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("instance-remove")
+        aliashash["instance-remove"]="instance-delete"
+        command_aliases+=("instance-rm")
+        aliashash["instance-rm"]="instance-delete"
+    fi
+    commands+=("instance-ls")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("instance-all")
+        aliashash["instance-all"]="instance-ls"
+        command_aliases+=("instance-list")
+        aliashash["instance-list"]="instance-ls"
     fi
     commands+=("scale")
 
