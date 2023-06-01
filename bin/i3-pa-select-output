@@ -52,9 +52,9 @@ function selectsink() {
 	local _selectedsink
 	if [ "${MY_WM}" = "sway" ]
 	then
-		_selectedsink=$(outputsnames | (rofi -dmenu -p "Select audio output: " -l 20 || wofi -dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
+		_selectedsink=$(outputsnames | (wofi --dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
 	else
-		_selectedsink=$(outputsnames | (rofi -dmenu -p "Select audio output: " -l 20 || rofi -dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
+		_selectedsink=$(outputsnames | (rofi -dmenu -p "Select audio output: " -l 20 || wofi --dmenu -p "Select audio output: " -l 20 ||:) | awk '{print $1}')
 	fi
 
 	notify_debug "selected sink: ${_selectedsink}"

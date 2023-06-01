@@ -15,26 +15,28 @@ source "$HOME/bin/common.bash"
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-	/home/serge/Documents/Applications/firefox/firefox
-    swayidle.sh
-	/usr/bin/dunst -print -verbosity info
+
+	/home/serge/bin/swayidle.sh
 	/home/serge/.local/bin/vorta
 	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
-	pasystray --debug --notify=none --notify=sink
-	alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
-	#wl-paste --primary --watch wl-copy
-	#wl-paste -t text --watch clipman store
-	#wl-paste -p -t text --watch clipman store -P --histpath=$HOME/.local/share/clipman-primary.json
+	/usr/bin/dunst -print -verbosity info
+	/usr/bin/pasystray --debug --notify=none --notify=sink
+	/usr/bin/alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
+
+	/home/serge/Documents/Applications/firefox/firefox
+
+	runflatpak.sh nextcloud
 	runflatpak.sh signal
 	runflatpak.sh mattermost
-	runflatpak.sh com.github.eneshecan.WhatsAppForLinux
-	runflatpak.sh nextcloud
-	#runflatpak.sh spotify --show-console
-	#runflatpak.sh teams
-	#runflatpak.sh Microsoft Teams
-	#runflatpak.sh slack
-	#runflatpak.sh Discord
-	#runflatpak.sh telegram
+
+	# runflatpak.sh com.github.eneshecan.WhatsAppForLinux
+	# runflatpak.sh spotify --show-console
+	# runflatpak.sh teams
+	# runflatpak.sh Microsoft Teams
+	# runflatpak.sh slack
+	# runflatpak.sh Discord
+	# runflatpak.sh telegram
+
 EOF
 )
 if [ -f "${0}-$(hostname)" ]
