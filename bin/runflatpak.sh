@@ -17,14 +17,14 @@ app_name="${1:-}"
 shift ||:
 app_args="${*:-}"
 
-if [ -z "${app_name}" ] 
+if [ -z "${app_name}" ]
 then
 	app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
 fi
 
 # NF is number of fields, so it always prints the last column (first column can have spaces...)
 app_id="$(flatpak list --columns=name,application | grep -i "${app_name}" | head -n1 | awk '{print $NF}')"
-if [ -z "${app_id}" ] 
+if [ -z "${app_id}" ]
 then
 	echo Application ${app_name} not found.
 	exit 1
@@ -37,12 +37,23 @@ then
 else
 	echo flatpak run --verbose "${app_id}" ${app_args}
 	echo =========================================================================
-	echo 
-	i3-launch-jobs flatpak run --verbose "${app_id}" ${app_args}
-	
+	echo
+	flatpak run --verbose "${app_id}" ${app_args}
+
 	## because they sometimes go to background
-	#while flatpak ps | grep -q "${app_id}"
-	#do
-	#	sleep 5
-	#done
+	if flatpak ps | grep -q "${app_id}"
+	then
+		pid="$(flatpak ps --columns=application,child-pid | grep com.spotify.Client | awk '{print $2}')"
+		while flatpak ps | grep -q "${app_id}"
+		do
+			sleep 5
+		done
+		if test -d /proc/${pid}
+		then
+			while test -d /proc/${pid}
+			do
+				sleep 5
+			done
+		fi
+	fi
 fi

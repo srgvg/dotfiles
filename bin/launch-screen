@@ -8,7 +8,6 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
@@ -127,17 +126,18 @@ init_screen() {
 execute_screen() {
     init_screen
     notify_debug "Executing: screen $options $command"
+    echo screen $options timestamp $command
     screen $options $command
     }
 
 main() {
     if not_empty "$@"
 	then
-	notify_debug "launching with parameters '$*'"
+		notify_debug "launching with parameters '$*'"
         check_options "$@"
         build_screen_options "$@"
         if [ -n "$options$command" ]
-	then
+		then
             execute_screen
         else
             echo "no command given"

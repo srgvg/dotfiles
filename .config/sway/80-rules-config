@@ -27,13 +27,8 @@ for_window [shell=".*"] title_format "<b>%title</b> (%app_id %shell %class %inst
 for_window [window_role="task_dialog|app|bubble|pop-up|page-info|Preferences"] floating enable
 for_window [title="(?:Open|Save) (?:File|Folder|As)"] floating
 for_window [title="chromeIPass"] floating enable
-for_window [title="Steam - Update*|Event Tester|Taakbeheer -*"] floating enable
-for_window [app_id="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|sun-awt-X11-XFramePeer|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
-for_window [instance="paman|qtpass|vitetris|xfontsel|xfd|gpicsview|gufw.py|Toplevel|gvim|arandr|blueman-manager|blueman-services|lxappearance|catfish|pavucontrol|pavumeter|transmission-gtk|xpad|galculator|engrampa|eom|net-minecraft-bootstrap-Bootstrap|guvcview|gpicview|simplescreenrecorder|radiotray|mate-search-tool|qtfm|yad|gsimplecal|deluge|WiFi-Menu|mate-dictionary|system-config-printer.py|dconf-editor|stalonetray"] floating enable
-#for_window [instance="crx_dcklljkfaobhfnaedpcomheadfemjkji|crx_aohghmighlieiainnegkcijnfilokake|crx_aohghmighlieiainnegkcijnfilokake|crx_pkclgpgponpjmpfokoepglboejdobkpl|crx_hjaaapkoiljkjpgpfgckfielajkdjhik|ald.mindbrain.io"] floating disable #jb live|google books|docs|inbox|netflix
 for_window [title="Pages Unresponsive"] floating enable
 for_window [class="feh" instance="feh"] floating enable
-for_window [class="Pavucontrol" instance="pavucontrol" title="Volume Control"] resize set 700 700
 for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
 
@@ -142,6 +137,9 @@ for_window [class="Mattermost" instance="mattermost" window_role="browser-window
 #
 
 # Music
+assign      [app_id="pavucontrol" shell="xdg_shell"]                                            $ws_music
+for_window  [app_id="pavucontrol" shell="xdg_shell"]                                            layout splitv, floating disable
+
 assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
 

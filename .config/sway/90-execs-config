@@ -19,8 +19,8 @@ exec_always pgrep lxpolkit || lxpolkit
 
 
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
-# A "clipboard manager" must be installed to make the clipboard's content shared amongst windows. 
-#exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy 
+# A "clipboard manager" must be installed to make the clipboard's content shared amongst windows.
+#exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy
 
 #exec_always pkill swayidle ;  \
 #	swayidle -d -w \
@@ -51,6 +51,7 @@ exec --no-startup-id "nmcli radio wwan off"
 #
 exec_always "pgrep nm-applet || nm-applet --indicator &"
 #exec_always "pgrep pasystray || pasystray --debug --notify=all &"
+exec_always "pgrep pavucontrol || pavucontrol &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-applet &"
 
