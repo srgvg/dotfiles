@@ -108,16 +108,16 @@ status.register(
 #                 format_no_player="🎶◾",
 #                 hide_no_player=False)
 
-status.register(
-    "battery",
-    format=" {percentage:.0f}% {consumption:.1f}W {remaining:%E%hh:%Mm} {status}",
-    critical_level_percentage=10,
-    alert=True,
-    alert_percentage=5,
-    status={"DIS": "", "CHR": "", "FULL": "",},
-    charging_color="#ff7700",
-    full_color=COLHW,
-)
+#status.register(
+#    "battery",
+#    format=" {percentage:.0f}% {consumption:.1f}W {remaining:%E%hh:%Mm} {status}",
+#    critical_level_percentage=10,
+#    alert=True,
+#    alert_percentage=15,
+#    status={"DIS": "", "CHR": "", "FULL": "",},
+#    charging_color="#ff7700",
+#    full_color=COLHW,
+#)
 
 # status.register("temp",
 #                color=COLHW,
