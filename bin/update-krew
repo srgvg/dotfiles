@@ -16,5 +16,5 @@ source "$HOME/bin/common.bash"
 kubectl-krew update
 kubectl-krew upgrade
 kubectl-krew completion bash > "$HOME/.local/share/bash-completion/completions/kubectl-krew"
-kubectl-krew index list > $HOME/.config/krew-index-list
-kubectl-krew list > $HOME/.config/krew-list
+[ "${HOSTNAME}" = "goldorak" ] & kubectl-krew index list > $HOME/.config/krew-index-list
+[ "${HOSTNAME}" = "goldorak" ] & kubectl-krew list > $HOME/.config/krew-list

@@ -34,4 +34,4 @@ do
 	echo; echo
 done
 
-asdf plugin-list > $HOME/.config/asdf-plugin-list
+[ "${HOSTNAME}" = "goldorak" ] && asdf plugin-list > $HOME/.config/asdf-plugin-list
