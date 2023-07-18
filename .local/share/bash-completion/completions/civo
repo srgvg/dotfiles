@@ -906,6 +906,39 @@ _civo_database_delete()
     noun_aliases=()
 }
 
+_civo_database_engine()
+{
+    last_command="civo_database_engine"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_database_ls()
 {
     last_command="civo_database_ls"
@@ -942,6 +975,39 @@ _civo_database_ls()
 _civo_database_show()
 {
     last_command="civo_database_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_database_size()
+{
+    last_command="civo_database_size"
 
     command_aliases=()
 
@@ -1051,6 +1117,17 @@ _civo_database()
         command_aliases+=("rm")
         aliashash["rm"]="delete"
     fi
+    commands+=("engine")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="engine"
+        command_aliases+=("engines")
+        aliashash["engines"]="engine"
+        command_aliases+=("software")
+        aliashash["software"]="engine"
+        command_aliases+=("softwares")
+        aliashash["softwares"]="engine"
+    fi
     commands+=("ls")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("all")
@@ -1064,6 +1141,13 @@ _civo_database()
         aliashash["get"]="show"
         command_aliases+=("inspect")
         aliashash["inspect"]="show"
+    fi
+    commands+=("size")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="size"
+        command_aliases+=("sizes")
+        aliashash["sizes"]="size"
     fi
     commands+=("update")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
@@ -3824,6 +3908,39 @@ _civo_kubernetes_node-pool_instance-ls()
     noun_aliases=()
 }
 
+_civo_kubernetes_node-pool_ls()
+{
+    last_command="civo_kubernetes_node-pool_ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_kubernetes_node-pool_scale()
 {
     last_command="civo_kubernetes_node-pool_scale"
@@ -3900,6 +4017,13 @@ _civo_kubernetes_node-pool()
         aliashash["instance-all"]="instance-ls"
         command_aliases+=("instance-list")
         aliashash["instance-list"]="instance-ls"
+    fi
+    commands+=("ls")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("all")
+        aliashash["all"]="ls"
+        command_aliases+=("list")
+        aliashash["list"]="ls"
     fi
     commands+=("scale")
 

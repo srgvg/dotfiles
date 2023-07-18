@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+online_nodes_1=$(
+	kubectl get nodes -o json | \
+	jq -r '.items[]|select(.status.conditions[-1].type=="Ready").metadata.name'
+)
+online_nodes_2=$(kubectl get nodes | grep \ Ready | awk '{print $1}')
+
+online_nodes=$(echo ${online_nodes_1} ${online_nodes_2} | xargs -n1 | sort -uV | xargs )
+
+for node in ${online_nodes}
+do
+     echo ===== $node =====
+     kubectl get pods --field-selector=spec.nodeName=$node
+     echo
+ done

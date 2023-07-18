@@ -21,7 +21,8 @@ OUTPUTPDF=${1%.*}.stamp.pdf
 shift
 
 echo | \
-	enscript -b "$*" -F Courier-Bold18 -o- | \
+    enscript -e~ -b "||$*" \
+    -F Courier-Bold32 -f Courier-Bold32 -o- | \
 	ps2pdf - | \
 	pdftk $INPUTPDF stamp - output $OUTPUTPDF
 
