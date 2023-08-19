@@ -93,6 +93,15 @@ cp kd $HOME/bin/kube-dialog
 
 ##########################################################################################################
 
+title "jqp"
+VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/noahgorstein/jqp/releases/latest | jq -r .tag_name)
+_VERSION=${VERSION/v}
+curl --connect-timeout 5 -L https://github.com/noahgorstein/jqp/releases/download/${VERSION}/jqp_${_VERSION}_Linux_x86_64.tar.gz -o ~/tmp/update-tools/jqp.tgz
+tar -xvzf ~/tmp/update-tools/jqp.tgz
+mv ~/tmp/update-tools/jqp $HOME/bin2/jqp && chmod +x $HOME/bin2/jqp
+
+##########################################################################################################
+
 title "asdf ########################################################################################################"
 $HOME/bin/update-asdf
 

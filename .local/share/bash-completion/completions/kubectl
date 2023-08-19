@@ -16,7 +16,7 @@
 
 __kubectl_debug()
 {
-    if [[ -n ${BASH_COMP_DEBUG_FILE:-} ]]; then
+    if [[ -n ${BASH_COMP_DEBUG_FILE-} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
     fi
 }
@@ -43,7 +43,7 @@ __kubectl_get_completion_results() {
     lastChar=${lastParam:$((${#lastParam}-1)):1}
     __kubectl_debug "lastParam ${lastParam}, lastChar ${lastChar}"
 
-    if [ -z "${cur}" ] && [ "${lastChar}" != "=" ]; then
+    if [[ -z ${cur} && ${lastChar} != = ]]; then
         # If the last parameter is complete (there is a space following it)
         # We add an extra empty parameter so we can indicate this to the go method.
         __kubectl_debug "Adding extra empty parameter"
@@ -53,7 +53,7 @@ __kubectl_get_completion_results() {
     # When completing a flag with an = (e.g., kubectl -n=<TAB>)
     # bash focuses on the part after the =, so we need to remove
     # the flag part from $cur
-    if [[ "${cur}" == -*=* ]]; then
+    if [[ ${cur} == -*=* ]]; then
         cur="${cur#*=}"
     fi
 
@@ -65,7 +65,7 @@ __kubectl_get_completion_results() {
     directive=${out##*:}
     # Remove the directive
     out=${out%:*}
-    if [ "${directive}" = "${out}" ]; then
+    if [[ ${directive} == "${out}" ]]; then
         # There is not directive specified
         directive=0
     fi
@@ -79,22 +79,36 @@ __kubectl_process_completion_results() {
     local shellCompDirectiveNoFileComp=4
     local shellCompDirectiveFilterFileExt=8
     local shellCompDirectiveFilterDirs=16
+    local shellCompDirectiveKeepOrder=32
 
-    if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
+    if (((directive & shellCompDirectiveError) != 0)); then
         # Error code.  No completion.
         __kubectl_debug "Received error from custom completion go code"
         return
     else
-        if [ $((directive & shellCompDirectiveNoSpace)) -ne 0 ]; then
-            if [[ $(type -t compopt) = "builtin" ]]; then
+        if (((directive & shellCompDirectiveNoSpace) != 0)); then
+            if [[ $(type -t compopt) == builtin ]]; then
                 __kubectl_debug "Activating no space"
                 compopt -o nospace
             else
                 __kubectl_debug "No space directive not supported in this version of bash"
             fi
         fi
-        if [ $((directive & shellCompDirectiveNoFileComp)) -ne 0 ]; then
-            if [[ $(type -t compopt) = "builtin" ]]; then
+        if (((directive & shellCompDirectiveKeepOrder) != 0)); then
+            if [[ $(type -t compopt) == builtin ]]; then
+                # no sort isn't supported for bash less than < 4.4
+                if [[ ${BASH_VERSINFO[0]} -lt 4 || ( ${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 4 ) ]]; then
+                    __kubectl_debug "No sort directive not supported in this version of bash"
+                else
+                    __kubectl_debug "Activating keep order"
+                    compopt -o nosort
+                fi
+            else
+                __kubectl_debug "No sort directive not supported in this version of bash"
+            fi
+        fi
+        if (((directive & shellCompDirectiveNoFileComp) != 0)); then
+            if [[ $(type -t compopt) == builtin ]]; then
                 __kubectl_debug "Activating no file completion"
                 compopt +o default
             else
@@ -108,7 +122,7 @@ __kubectl_process_completion_results() {
     local activeHelp=()
     __kubectl_extract_activeHelp
 
-    if [ $((directive & shellCompDirectiveFilterFileExt)) -ne 0 ]; then
+    if (((directive & shellCompDirectiveFilterFileExt) != 0)); then
         # File extension filtering
         local fullFilter filter filteringCmd
 
@@ -121,13 +135,12 @@ __kubectl_process_completion_results() {
         filteringCmd="_filedir $fullFilter"
         __kubectl_debug "File filtering command: $filteringCmd"
         $filteringCmd
-    elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
+    elif (((directive & shellCompDirectiveFilterDirs) != 0)); then
         # File completion for directories only
 
-        # Use printf to strip any trailing newline
         local subdir
-        subdir=$(printf "%s" "${completions[0]}")
-        if [ -n "$subdir" ]; then
+        subdir=${completions[0]}
+        if [[ -n $subdir ]]; then
             __kubectl_debug "Listing directories in $subdir"
             pushd "$subdir" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1 || return
         else
@@ -142,7 +155,7 @@ __kubectl_process_completion_results() {
     __kubectl_handle_special_char "$cur" =
 
     # Print the activeHelp statements before we finish
-    if [ ${#activeHelp[*]} -ne 0 ]; then
+    if ((${#activeHelp[*]} != 0)); then
         printf "\n";
         printf "%s\n" "${activeHelp[@]}"
         printf "\n"
@@ -166,17 +179,17 @@ __kubectl_extract_activeHelp() {
     local endIndex=${#activeHelpMarker}
 
     while IFS='' read -r comp; do
-        if [ "${comp:0:endIndex}" = "$activeHelpMarker" ]; then
+        if [[ ${comp:0:endIndex} == $activeHelpMarker ]]; then
             comp=${comp:endIndex}
             __kubectl_debug "ActiveHelp found: $comp"
-            if [ -n "$comp" ]; then
+            if [[ -n $comp ]]; then
                 activeHelp+=("$comp")
             fi
         else
             # Not an activeHelp line but a normal completion
             completions+=("$comp")
         fi
-    done < <(printf "%s\n" "${out}")
+    done <<<"${out}"
 }
 
 __kubectl_handle_completion_types() {
@@ -232,7 +245,7 @@ __kubectl_handle_standard_completion_case() {
     done < <(printf "%s\n" "${completions[@]}")
 
     # If there is a single completion left, remove the description text
-    if [ ${#COMPREPLY[*]} -eq 1 ]; then
+    if ((${#COMPREPLY[*]} == 1)); then
         __kubectl_debug "COMPREPLY[0]: ${COMPREPLY[0]}"
         comp="${COMPREPLY[0]%%$tab*}"
         __kubectl_debug "Removed description from single completion, which is now: ${comp}"
@@ -249,8 +262,8 @@ __kubectl_handle_special_char()
     if [[ "$comp" == *${char}* && "$COMP_WORDBREAKS" == *${char}* ]]; then
         local word=${comp%"${comp##*${char}}"}
         local idx=${#COMPREPLY[*]}
-        while [[ $((--idx)) -ge 0 ]]; do
-            COMPREPLY[$idx]=${COMPREPLY[$idx]#"$word"}
+        while ((--idx >= 0)); do
+            COMPREPLY[idx]=${COMPREPLY[idx]#"$word"}
         done
     fi
 }
@@ -276,7 +289,7 @@ __kubectl_format_comp_descriptions()
 
             # Make sure we can fit a description of at least 8 characters
             # if we are to align the descriptions.
-            if [[ $maxdesclength -gt 8 ]]; then
+            if ((maxdesclength > 8)); then
                 # Add the proper number of spaces to align the descriptions
                 for ((i = ${#comp} ; i < longest ; i++)); do
                     comp+=" "
@@ -288,8 +301,8 @@ __kubectl_format_comp_descriptions()
 
             # If there is enough space for any description text,
             # truncate the descriptions that are too long for the shell width
-            if [ $maxdesclength -gt 0 ]; then
-                if [ ${#desc} -gt $maxdesclength ]; then
+            if ((maxdesclength > 0)); then
+                if ((${#desc} > maxdesclength)); then
                     desc=${desc:0:$(( maxdesclength - 1 ))}
                     desc+="…"
                 fi
@@ -310,9 +323,9 @@ __start_kubectl()
     # Call _init_completion from the bash-completion package
     # to prepare the arguments properly
     if declare -F _init_completion >/dev/null 2>&1; then
-        _init_completion -n "=:" || return
+        _init_completion -n =: || return
     else
-        __kubectl_init_completion -n "=:" || return
+        __kubectl_init_completion -n =: || return
     fi
 
     __kubectl_debug
