@@ -211,6 +211,10 @@ function post_lock() {
 	fi
 
 	delpid
+	if [ "${MY_WM}" = "sway" ] || ( [[ -n "${SWAYSOCK:-}" ]] && [[ "${SWAYSOCK:-}" =~ 'sway' ]] )
+	then
+		swaymsg 'output * dpms on'
+	fi
 }
 
 function setpid() {

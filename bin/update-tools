@@ -130,6 +130,11 @@ update-krew
 
 ##########################################################################################################
 
+title "kubedash"
+curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.sh | sed "s@EXE_DEST_DIR=\"/usr/local/bin\"@EXE_DEST_DIR=\"$HOME/bin2\"@" | bash
+
+##########################################################################################################
+
 title "generate bash completions"
 $HOME/bin/update-bash-completions.sh
 
