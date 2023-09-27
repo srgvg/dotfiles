@@ -20,4 +20,6 @@ source "$HOME/bin/common.bash"
 $HOME/bin/lock &
 
 sleep 4
-systemctl suspend
+#systemctl suspend
+#systemctl hibernate
+systemctl suspend-then-hibernate
