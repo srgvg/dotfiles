@@ -134,7 +134,7 @@ function dotsadd() {
 cd $HOME
 action="${1:-add}"
 
-if [ "${action}" = "up" ] || [ "${action}" = "pull" ]
+if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 then
 	echo "--------------------------------"
 	echo "Update ..."
@@ -148,7 +148,8 @@ then
 	echo "Info ..."
 	echo "--------------------------------"
 	vcsh foreach status --short --branch --verbose --show-stash
-elif [ "${action}" = "add" ]
+fi
+if [ "${action}" = "add" ] || [ "${action}" = "all" ]
 then
 	echo "--------------------------------"
 	echo "Adding ..."
@@ -159,43 +160,9 @@ then
 	echo "Info ..."
 	echo "--------------------------------"
 	vcsh foreach status --short --branch --verbose --show-stash
-elif [ "${action}" = "commit" ]
+fi
+if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Committing ..."
-	echo "--------------------------------"
-	vcsh foreach commit -m "update from $HOSTNAME"
-	echo "--------------------------------"
-	echo "Pushing ..."
-	echo "--------------------------------"
-	vcsh foreach pushall
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
-elif [ "${action}" = "all" ]
-then
-	echo "--------------------------------"
-	echo "Update ..."
-	echo "--------------------------------"
-	vcsh foreach remote update --prune
-	echo "--------------------------------"
-	echo "Pull ..."
-	echo "--------------------------------"
-	vcsh foreach pull
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
-	echo "--------------------------------"
-	echo "Adding ..."
-	echo "--------------------------------"
-	vcsh foreach add --all
-	dotsadd
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
 	echo "--------------------------------"
 	echo "Committing ..."
 	echo "--------------------------------"
