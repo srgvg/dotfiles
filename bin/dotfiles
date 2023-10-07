@@ -44,11 +44,12 @@ dotadds="
 	.git-template/
     .i3/
     .local/etc
+    .local/man/
     .local/share/applications/
     .local/share/bash-completion
     .local/share/doc/
+	.local/share/flatpak/
     .local/share/icons/
-    .local/man/
     .local/share/nautilus/
     .local/share/nemo/
     .pam_environment
@@ -70,6 +71,7 @@ dotadds="
 dotremoves="
     .config/nvim/plugged/
     .config/nvim.bootstrap/plugged/
+	.local/share/flatpak/db/
 "
 
 ###############################################################################
