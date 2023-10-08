@@ -111,8 +111,8 @@ title "update flatpak"
 
 flatpak update --assumeyes --noninteractive
 flatpak update --assumeyes --noninteractive --user
-flatpak remote-ls > /tmp/flatpak.remotes && mv /tmp/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
-flatpak list      > /tmp/flatpak.list    && mv /tmp/flatpak.list    $HOME/.local/share/flatpak/list.ls
+flatpak remotes -d > /tmp/flatpak.remotes && mv /tmp/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
+flatpak list       > /tmp/flatpak.list    && mv /tmp/flatpak.list    $HOME/.local/share/flatpak/list.ls
 
 ##########################################################################################################
 
