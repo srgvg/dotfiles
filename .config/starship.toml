@@ -1,8 +1,8 @@
 ###
 # https://starship.rs/advanced-config/#style-strings
-# 
+#
 # Style strings are a list of words, separated by whitespace. The words are not case sensitive (i.e. bold and BoLd are considered the same string). Each word can be one of the following:
-# 
+#
 #     bold
 #     italic
 #     underline
@@ -15,31 +15,31 @@
 #     fg:<color>
 #     <color>
 #     none
-# 
-# where <color> is a color specifier (discussed below). fg:<color> and <color> currently do the same thing, though this may change in the future. inverted swaps the background and foreground colors. The order of words in the string does not matter.
-# 
-# The none token overrides all other tokens in a string if it is not part of a bg: specifier, so that e.g. fg:red none fg:blue will still create a string with no styling. bg:none sets the background to the default color so fg:red bg:none is equivalent to red or fg:red and bg:green fg:red bg:none is also equivalent to fg:red or red. It may become an error to use none in conjunction with other tokens in the future.
-# 
-# A color specifier can be one of the following:
-# 
-#   * One of the standard terminal colors: 
 #
-#	black, 
-#	red, 
-#	green, 
-#	blue, 
-#	yellow, 
-#	purple, 
-#	cyan, 
-#	white. 
+# where <color> is a color specifier (discussed below). fg:<color> and <color> currently do the same thing, though this may change in the future. inverted swaps the background and foreground colors. The order of words in the string does not matter.
+#
+# The none token overrides all other tokens in a string if it is not part of a bg: specifier, so that e.g. fg:red none fg:blue will still create a string with no styling. bg:none sets the background to the default color so fg:red bg:none is equivalent to red or fg:red and bg:green fg:red bg:none is also equivalent to fg:red or red. It may become an error to use none in conjunction with other tokens in the future.
+#
+# A color specifier can be one of the following:
+#
+#   * One of the standard terminal colors:
+#
+#	black,
+#	red,
+#	green,
+#	blue,
+#	yellow,
+#	purple,
+#	cyan,
+#	white.
 
 # 	You can optionally prefix these with bright- to get the bright version (e.g. bright-white).
 #
 #   * A # followed by a six-digit hexadecimal number. This specifies an RGB color hex code
-# 
+#
 #   * A number between 0-255. This specifies an 8-bit ANSI Color Code
-# 
-# 
+#
+#
 ###
 #
 # Get editor completions based on the config schema
@@ -118,8 +118,9 @@ error_symbol = "[➞](bold red) "
 #vicmd_symbol = "[❮](bold green)"
 
 [cmd_duration]
+disabled = false
 format = "took [$duration]($style) "
-min_time = 3_000
+min_time = 1_000
 show_milliseconds = true
 style = "bold yellow"
 # https://github.com/starship/starship/pull/1019/files
@@ -234,14 +235,14 @@ style = "bold cyan"
 style = "bold bright-blue"
 format = "[($symbol $account(@$domain)( / [$project](underline bold ))( / $region)) \n[│ ](bold green)]($style)"
 symbol = "\\[GCP\\]"
-# \n[│ ](bold green) 
+# \n[│ ](bold green)
 
 [aws]
 format = "[\\[($symbol $profile(/$region))\\]\n[│ ](bold green)]($style) "
 style = "bold yellow"
 symbol = "\\[AWS\\]"
 
-# \n[│ ](bold green) 
+# \n[│ ](bold green)
 [aws.region_aliases]
 #ap-southeast-2 = "au"
 #us-east-1 = "va"
