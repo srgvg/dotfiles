@@ -55,12 +55,12 @@ then
   unset TERMINAL
   unset MOZ_ENABLE_WAYLAND
   unset WLR_DRM_NO_MODIFIERS
-else 
-  export MY_WM="UNKNOWN"
-  unset XDG_CURRENT_DESKTOP
-  unset XDG_CURRENT_DESKTOP
-  unset XDG_SESSION_TYPE
-  unset TERMINAL
-  unset MOZ_ENABLE_WAYLAND
-  unset WLR_DRM_NO_MODIFIERS
+#else 
+#  export MY_WM="UNKNOWN"
+#  unset XDG_CURRENT_DESKTOP
+#  unset XDG_CURRENT_DESKTOP
+#  unset XDG_SESSION_TYPE
+#  unset TERMINAL
+#  unset MOZ_ENABLE_WAYLAND
+#  unset WLR_DRM_NO_MODIFIERS
 fi

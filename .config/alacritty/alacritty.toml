@@ -1,0 +1,101 @@
+live_config_reload = true
+
+[colors]
+indexed_colors = []
+
+[colors.bright]
+black = "0x020221"
+blue = "0x99a4bc"
+cyan = "0x8bccbf"
+green = "0xb1bf75"
+magenta = "0xffb07b"
+red = "0xff8e78"
+white = "0xf8f8ff"
+yellow = "0xffd392"
+
+[colors.cursor]
+cursor = "0xffe8c0"
+text = "0x020221"
+
+[colors.dim]
+black = "#1d2021"
+blue = "#2b3c44"
+cyan = "#205161"
+green = "#232b0f"
+magenta = "#4e3d45"
+red = "#421e1e"
+white = "#f4e8ba"
+yellow = "#4d3b27"
+
+[colors.normal]
+black = "0x000004"
+blue = "0x635196"
+cyan = "0x34bfa4"
+green = "0x718e3f"
+magenta = "0xff761a"
+red = "0xff3600"
+white = "0xb4b4b9"
+yellow = "0xffc552"
+
+[colors.primary]
+background = "0x020221"
+foreground = "0xb4b4b9"
+
+[cursor]
+style = "Beam"
+thickness = 0
+unfocused_hollow = true
+vi_mode_style = "Beam"
+
+[env]
+TERM = "xterm-256color"
+
+[font]
+size = 10
+
+[font.bold]
+family = "liberation mono"
+style = "Bold"
+
+[font.bold_italic]
+family = "liberation mono"
+style = "Bold Italic"
+
+[font.italic]
+family = "liberation mono"
+style = "Italic"
+
+[font.normal]
+family = "liberation mono"
+style = "Regular"
+
+[font.offset]
+x = 1
+y = 2
+
+[[mouse.bindings]]
+action = "PasteSelection"
+mouse = "Middle"
+
+[[mouse.bindings]]
+action = "PasteSelection"
+mouse = "Right"
+
+[scrolling]
+history = 100000
+multiplier = 3
+
+[selection]
+save_to_clipboard = true
+
+[window]
+decorations = "full"
+dynamic_title = true
+title = "Terminal"
+
+[window.class]
+general = "Alacritty"
+instance = "Alacritty"
+
+[window.window]
+opacity = 0.9

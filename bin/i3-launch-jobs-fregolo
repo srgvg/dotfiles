@@ -1,17 +1,9 @@
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-  pasystray --debug --notify=none --notify=sink
-  system-config-printer-applet
-  nm-applet
-  blueman-applet
-  /home/serge/Documents/Applications/firefox/firefox
-  arandr-autoconfig-daemonized
-  autocutsel -verbose -selection CLIPBOARD
-  #autocutsel -verbose -selection PRIMARY
-  /usr/bin/dunst -print -verbosity info
+  #/home/serge/Documents/Applications/firefox/firefox
   /home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
-  vorta
+  #vorta
   #runflatpak.sh spotify --show-console
   runflatpak.sh signal
   runflatpak.sh mattermost
