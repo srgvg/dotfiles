@@ -135,6 +135,14 @@ curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.
 
 ##########################################################################################################
 
+title "regclient"
+curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >$HOME/bin2/regctl
+curl -L https://github.com/regclient/regclient/releases/latest/download/regsync-linux-amd64 >$HOME/bin2/regsync
+curl -L https://github.com/regclient/regclient/releases/latest/download/regbot-linux-amd64 >$HOME/bin2/regbot
+chmod 755 $HOME/bin2/reg{ctl,sync,bot}
+
+##########################################################################################################
+
 title "generate bash completions"
 $HOME/bin/update-bash-completions.sh
 

@@ -29,13 +29,14 @@ completion_bash_commands=(
     k9s
     kind
     kind
-    krew
     kubectl
     kubectl-plugin_completion
     kubescape
     kubeshark
     kustomize
-    nova
+    regctl
+    regsync
+    regbot
     talosctl
 )
 completions_bash_commands=(
