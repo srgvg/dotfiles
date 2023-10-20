@@ -3,7 +3,6 @@ Postman	com.getpostman.Postman	10.19.0	stable	system
 Youp for whatsapp	com.gigitux.youp	2.0	stable	system
 ungoogled-chromium	com.github.Eloston.UngoogledChromium	118.0.5993.70	stable	system
 Codecs	com.github.Eloston.UngoogledChromium.Codecs		stable	system
-WhatsApp for Linux	com.github.eneshecan.WhatsAppForLinux	1.6.4	stable	system
 Google Chrome	com.google.Chrome	118.0.5993.70-1	stable	system
 Mattermost	com.mattermost.Desktop	5.5.1	stable	system
 Microsoft Teams	com.microsoft.Teams	1.5.00.23861	stable	system
