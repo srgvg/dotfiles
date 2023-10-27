@@ -5,7 +5,6 @@ ungoogled-chromium	com.github.Eloston.UngoogledChromium	118.0.5993.70	stable	sys
 Codecs	com.github.Eloston.UngoogledChromium.Codecs		stable	system
 Google Chrome	com.google.Chrome	118.0.5993.70-1	stable	system
 Mattermost	com.mattermost.Desktop	5.5.1	stable	system
-Microsoft Teams	com.microsoft.Teams	1.5.00.23861	stable	system
 Nextcloud Desktop	com.nextcloud.desktopclient.nextcloud	3.10.0	stable	system
 ZapZap	com.rtosta.zapzap	4.5.2	stable	system
 Slack	com.slack.Slack	4.34.121	stable	system

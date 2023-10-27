@@ -53,9 +53,13 @@ generate_completion_bash() {
         if [ -n "${source}" ]
         then
             echo "source <($command completion bash)" > ${complpath}/${command}${complext}
-        else
+        elif [ -x "$(which ${command})" ]
+        then
             $command completion bash > ${complpath}/${command}${complext}
             chmod 644 ${complpath}/${command}${complext}
+        else
+            echo -e "\n$command not executable"
+            return 2
         fi
     else
         echo -e "\n$command not found"
@@ -66,10 +70,20 @@ generate_completion_bash() {
 
 generate_completions_bash() {
     command=$1
+    source=${2:-}
     if hash $command >&/dev/null || type -a $command >&/dev/null
     then
-        $command completions bash > ${complpath}/${command}${complext}
-        chmod 644 ${complpath}/${command}${complext}
+        if [ -n "${source}" ]
+        then
+            echo "source <($command completions bash)" > ${complpath}/${command}${complext}
+        elif [ -x "$(which ${command})" ]
+        then
+            $command completions bash > ${complpath}/${command}${complext}
+            chmod 644 ${complpath}/${command}${complext}
+        else
+            echo -e "\n$command not executable"
+            return 2
+        fi
     else
         echo -e "\n$command not found"
         echo consider: rm -f ${complpath}/${command}${complext}

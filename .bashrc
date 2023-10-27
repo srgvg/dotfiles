@@ -36,3 +36,4 @@ fi
 # So all you need to do is look for the name of your environment variable in
 # that output. (you can use the script command to help you store the whole
 # shell session output, or for the bash approach, use 7> file.log instead of
+

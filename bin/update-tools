@@ -30,6 +30,12 @@ cd ~/tmp/update-tools/
 
 ##########################################################################################################
 
+title "antonmedv/fx"
+VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/antonmedv/fx/releases/latest | jq -r .tag_name)
+curl --connect-timeout 5 -L https://github.com/antonmedv/fx/releases/download/${VERSION}/fx_linux_amd64 -o $HOME/bin2/fx && chmod +x $HOME/bin2/fx
+
+##########################################################################################################
+
 title "kubetail"
 curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
 curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
