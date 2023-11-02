@@ -48,6 +48,6 @@ KDE Application Platform	org.kde.Platform		6.5	system
 Firefox	org.mozilla.firefox	119.0	stable	system
 Signal Desktop	org.signal.Signal	6.36.0	stable	system
 DB Browser for SQLite	org.sqlitebrowser.sqlitebrowser	3.12.2	stable	system
-Telegram Desktop	org.telegram.desktop	4.11.1	stable	system
+Telegram Desktop	org.telegram.desktop	4.11.2	stable	system
 Telegram Desktop Webview Add-on	org.telegram.desktop.webview	2.42.1	stable	system
 Insomnia	rest.insomnia.Insomnia	2023.5.8	stable	system
