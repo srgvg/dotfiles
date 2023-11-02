@@ -4,11 +4,17 @@
 # vi: set shiftwidth=4 tabstop=4 expandtab:
 # :indentSize=4:tabSize=4:noTabs=true:
 
+set -o nounset
+set -o errexit
+set -o pipefail
 
-# bash-completion’s on-demand loading.
-# Whenever completions for command cmd are needed for the first time,
-# bash-completion looks for ~/.local/share/bash-completion/completions/cmd
-# or /usr/share/bash-completion/completions/cmd.
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+##########################################################################################################
+#
+CURL_COMMAND="curl --silent --connect-timeout 5 --location"
+source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
 
 complpath="$HOME/.local/share/bash-completion/completions"
 complext=""
@@ -32,12 +38,12 @@ completion_bash_commands=(
     kubectl
     kubectl-plugin_completion
     kubescape
-    kubeshark
     kustomize
     regctl
     regsync
     regbot
     talosctl
+    kubeshark
 )
 completions_bash_commands=(
     starship
@@ -47,6 +53,7 @@ completions_bash_commands=(
 #
 generate_completion_bash() {
     command=$1
+    type=${2:-completion}
     source=${2:-}
     if hash $command >&/dev/null || type -a $command >&/dev/null
     then
@@ -55,39 +62,22 @@ generate_completion_bash() {
             echo "source <($command completion bash)" > ${complpath}/${command}${complext}
         elif [ -x "$(which ${command})" ]
         then
-            $command completion bash > ${complpath}/${command}${complext}
-            chmod 644 ${complpath}/${command}${complext}
+            if $command ${type} bash > /tmp/${command}${complext}
+            then
+                mv /tmp/${command}${complext} ${complpath}/${command}${complext}
+                chmod 644 ${complpath}/${command}${complext}
+            else
+                echo "error generating completions for ${command}" >&2
+                #return 2
+            fi
         else
             echo -e "\n$command not executable"
-            return 2
+            #return 2
         fi
     else
         echo -e "\n$command not found"
         echo consider: rm -f ${complpath}/${command}${complext}
-        return 1
-    fi
-}
-
-generate_completions_bash() {
-    command=$1
-    source=${2:-}
-    if hash $command >&/dev/null || type -a $command >&/dev/null
-    then
-        if [ -n "${source}" ]
-        then
-            echo "source <($command completions bash)" > ${complpath}/${command}${complext}
-        elif [ -x "$(which ${command})" ]
-        then
-            $command completions bash > ${complpath}/${command}${complext}
-            chmod 644 ${complpath}/${command}${complext}
-        else
-            echo -e "\n$command not executable"
-            return 2
-        fi
-    else
-        echo -e "\n$command not found"
-        echo consider: rm -f ${complpath}/${command}${complext}
-        return 1
+        #return 1
     fi
 }
 
@@ -101,7 +91,7 @@ done
 for command in ${completions_bash_commands[@]}
 do
     echo -n .
-    generate_completions_bash $command
+    generate_completion_bash $command completions
 done
 
 #######################################################################################################################
@@ -130,12 +120,12 @@ echo "source $HOME/.asdf/installs/gcloud/$(gcloud version 2>/dev/null \
 echo .
 KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
 command=kubie
-curl -L --no-progress-meter https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
+$CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
     >  ${complpath}/kubie${complext} || echo kubie NOK
     chmod 644 ${complpath}/${command}${complext}
 
 # golang
-wget https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -O ${complpath}/go${complext}
+$CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/go${complext}
 
 ####################
 

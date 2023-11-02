@@ -106,7 +106,7 @@ alias sysl="tail -n 200 -f /var/log/syslog"
 alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
 # v
 alias vs="vcsh status --terse"
-alias vsd="vcsh foreach diff-index -p HEAD"
+alias vsd="vcsh foreach diff-index --patch HEAD --color=always | less --raw-control-chars --quit-if-one-screen"
 alias v="vcsh"
 # w
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"

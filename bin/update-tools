@@ -5,165 +5,265 @@
 # :indentSize=4:tabSize=4:noTabs=false:
 
 set -o nounset
-#set -o errexit
-#set -o pipefail
+set -o errexit
+set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
+
+##########################################################################################################
+#
+TMPPATH="$HOME/tmp/update-tools"
+BINPATH="$HOME/bin2"
+COMPLPATH="$HOME/.local/share/bash-completion/completions"
+OS_ARCH="linux_amd64"
+OS_ARCH2="linux-amd64"
+CURL_COMMAND="curl --silent --connect-timeout 5 --location"
+source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
+
+rm -rf ${TMPPATH}
+mkdir --parents ${TMPPATH}
+cd ${TMPPATH}
 
 ##########################################################################################################
 ##########################################################################################################
 
 title() {
 	echo
-	echo "################################################################################################################"
-	echo "# ${1}"
-	echo "################################################################################################################"
-	echo
+	#echo "################################################################################################################"
+	echo -e "${*}"
+}
+
+github_getlatestversion() {
+	local project
+
+	local url
+	local version
+	local json
+
+	project=$1
+
+	url="https://api.github.com/repos/${project}/releases/latest"
+
+	json="$($CURL_COMMAND ${url})"
+	version="$(echo ${json} | jq -r .tag_name)"
+	if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]
+	then
+		echo failed retrieving latest version for ${project} version ${version} >&2
+		echo via ${url} >&2
+		echo >&2
+		echo "${json}" >&2
+		exit 1
+	fi
+	echo -n ${version}
+}
+
+download_file() {
+	local url
+	local destpathname
+
+	local tmppathname
+	local destname
+
+	url=$1
+	destpathname=$2
+
+	tmppathname="${TMPPATH}/$(basename ${destpathname})"
+
+	$CURL_COMMAND ${url} --output ${tmppathname}
+	rc=$?													; set +o pipefail
+	header="$(strings ${tmppathname} | head --lines 1)"		; set -o pipefail
+
+	if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]
+	then
+		echo failed downloading ${url}
+		exit 1
+	elif [[ "${url}" =~ tar.gz$ ]] || \
+	     [[ "${url}" =~ tgz$    ]] || \
+	     [[ "${url}" =~ tar.bz$ ]] || \
+	     [[ "${url}" =~ tbz$    ]]
+	then
+		# libarchive-tools
+		bsdtar --extract --file ${tmppathname}
+		destname="$(basename ${destpathname})"
+		destname="${destname%%\.*}"
+		tmppathname="$(find ${TMPPATH} -name ${destname})"
+		destpathname="$(dirname ${destpathname})/${destname}"
+	fi
+
+	mv ${tmppathname} ${destpathname}
+	if [[ "${destpathname}" =~ "/bin" ]]
+	then
+		chmod +x ${destpathname}
+	fi
+	echo -n "Downloaded "
+	file ${destpathname}
+}
+
+
+github_download() {
+	local type
+	local project
+	local artefact
+	local destpath
+	local destname
+	local version
+
+	local url
+	local destpathname
+
+	type=$1
+	project=$2
+	artefact=$3
+	destpath=$4
+	destname=$5
+	version=${6:-}
+
+	destpathname="${destpath}/${destname}"
+
+	if [ -z "${version}" ] || [ "${version}" = "latest" ]
+	then
+		version="$(github_getlatestversion ${project})"
+	fi
+
+	if [[ "${artefact}" =~ "@@VERSION@@" ]]
+	then
+		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
+		if [[ "${artefact}" =~ civo ]]
+		then
+			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
+		fi
+	fi
+
+	if [ "${type}" = "release" ]
+	then
+		url="https://github.com/${project}/releases/download/${version}/${artefact}"
+	elif [ "${type}" = "file" ]
+	then
+		url="https://raw.githubusercontent.com/${project}/${version}/${artefact}"
+	else
+		echo "Unknown download type ~${type}~"
+		exit 1
+	fi
+
+	title "Fetch ${project} ${type} ${artefact} version ${version} to ${destpath}/${destname}\n  from  ${url}"
+	download_file ${url} ${destpathname}
 }
 
 ##########################################################################################################
 ##########################################################################################################
 
-mkdir ~/tmp/update-tools/ -p
-cd ~/tmp/update-tools/
+# github_download release|file	project			artefactname_${osarch}		destpath	destname		version
+
+github_download release	antonmedv/fx			fx_${OS_ARCH}				$BINPATH	fx				latest
+github_download release kubescape/kubescape		kubescape-ubuntu-latest		$BINPATH	kubescape		latest
+github_download release kubeshark/kubeshark		kubeshark_${OS_ARCH}		$BINPATH	kubeshark		latest
+github_download release regclient/regclient		regctl-${OS_ARCH2}			$BINPATH	regctl			latest
+github_download release regclient/regclient		regsync-${OS_ARCH2}			$BINPATH	regsync			latest
+github_download release regclient/regclient		regbot-${OS_ARCH2}			$BINPATH	regbot			latest
+
+github_download file	johanhaleby/kubetail	kubetail					$BINPATH	kubetail		master
+github_download file	vaniacer/kube-dialog	kd							$BINPATH	kube-dialog		master
+
+github_download file	johanhaleby/kubetail	completion/kubetail.bash	$COMPLPATH	completions.kubetail.bash	master
+
+github_download release	cilium/cilium-cli		cilium-${OS_ARCH2}.tar.gz				$BINPATH	cilium.tgz		latest
+github_download release	cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble.tgz		latest
+github_download release	noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp.tar.gz		latest
+github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
 
 ##########################################################################################################
 
-title "antonmedv/fx"
-VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/antonmedv/fx/releases/latest | jq -r .tag_name)
-curl --connect-timeout 5 -L https://github.com/antonmedv/fx/releases/download/${VERSION}/fx_linux_amd64 -o $HOME/bin2/fx && chmod +x $HOME/bin2/fx
-
-##########################################################################################################
-
-title "kubetail"
-curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail > $HOME/bin/kubetail ; chmod +x $HOME/bin/kubetail
-curl --connect-timeout 5 https://raw.githubusercontent.com/johanhaleby/kubetail/master/completion/kubetail.bash > $HOME/.bashrc.d/completions.kubetail.bash
-
-##########################################################################################################
-
-title "kubescape"
-VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/kubescape/kubescape/releases/latest | jq -r .tag_name)
-curl --connect-timeout 5 -L https://github.com/kubescape/kubescape/releases/download/${VERSION}/kubescape-ubuntu-latest -o $HOME/bin2/kubescape && chmod +x $HOME/bin2/kubescape
-
-##########################################################################################################
-
-title "kubeshark"
-VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/kubeshark/kubeshark/releases/latest | jq -r .tag_name)
-curl --connect-timeout 5 -L https://github.com/kubeshark/kubeshark/releases/download/${VERSION}/kubeshark_linux_amd64 -o $HOME/bin2/kubeshark && chmod +x $HOME/bin2/kubeshark
-
-##########################################################################################################
-
-title "cilium"
-
-CLI_ARCH=amd64
-CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt)
-HUBBLE_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/hubble/master/stable.txt)
-curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
-curl -L --fail --remote-name-all https://github.com/cilium/hubble/releases/download/${HUBBLE_CLI_VERSION}/hubble-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
-sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
-sha256sum --check hubble-linux-${CLI_ARCH}.tar.gz.sha256sum
-tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz $HOME/bin2/
-tar xzvfC hubble-linux-${CLI_ARCH}.tar.gz $HOME/bin2/
-rm {cilium,hubble}-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
-
-##########################################################################################################
-
-title "civo"
-# located in bin2
-civo update
-
-##########################################################################################################
-
-title "go-chromecast  ########################################################################################################"
-
-TARGETOS="linux"
-TARGETARCH="amd"
-TARGETVARIANT="64"
-GC_URL=$(wget https://api.github.com/repos/vishen/go-chromecast/releases/latest -O - \
+title "go-chromecast"
+gcurl=$($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest \
 			| jq -r '.assets[].browser_download_url' \
-			| grep ${TARGETOS}_${TARGETARCH}${TARGETVARIANT} \
-		)
-wget $GC_URL -O ./go-chromecast.tgz
-tar xzf ./go-chromecast.tgz -C $HOME/bin2/
-chmod +x $HOME/bin2/go-chromecast
+			| grep $OS_ARCH )
+download_file ${gcurl} ${BINPATH}/go-chromecast.tgz
 
 
-##########################################################################################################
-
-title "kubedialog  ########################################################################################################"
-
-wget https://raw.githubusercontent.com/vaniacer/kube-dialog/master/kd
-chmod +x kd
-cp kd $HOME/bin/kube-dialog
-
-##########################################################################################################
-
-title "jqp"
-VERSION=$(curl --connect-timeout 5 -s https://api.github.com/repos/noahgorstein/jqp/releases/latest | jq -r .tag_name)
-_VERSION=${VERSION/v}
-curl --connect-timeout 5 -L https://github.com/noahgorstein/jqp/releases/download/${VERSION}/jqp_${_VERSION}_Linux_x86_64.tar.gz -o ~/tmp/update-tools/jqp.tgz
-tar -xvzf ~/tmp/update-tools/jqp.tgz
-mv ~/tmp/update-tools/jqp $HOME/bin2/jqp && chmod +x $HOME/bin2/jqp
-
-##########################################################################################################
-
-title "asdf ########################################################################################################"
-$HOME/bin/update-asdf
-
-##########################################################################################################
-
-title "update flatpak"
-
-flatpak update --assumeyes --noninteractive
-flatpak update --assumeyes --noninteractive --user
-flatpak remotes -d > /tmp/flatpak.remotes && mv /tmp/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
-flatpak list       > /tmp/flatpak.list    && mv /tmp/flatpak.list    $HOME/.local/share/flatpak/list.ls
-
-##########################################################################################################
-
-title "helm repo update"
-
-helm repo update
-helm repo list > /tmp/helm-repositories.yaml && mv /tmp/helm-repositories $HOME/.config/helm/repositories.yaml
-
+title "kubedash"
+gcurl=$($CURL_COMMAND https://api.github.com/repos/kdash-rs/kdash/releases/latest \
+			| jq -r '.assets[].browser_download_url' \
+			| grep 'linux\.tar.gz' )
+download_file ${gcurl} ${BINPATH}/kdash.tgz
 
 ##########################################################################################################
 
 title "krew"
 ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) $HOME/.krew
-update-krew
+kubectl-krew update
+kubectl-krew upgrade
+[ "${HOSTNAME}" = "goldorak" ] && kubectl-krew index list > $HOME/.config/krew-index-list
+[ "${HOSTNAME}" = "goldorak" ] && kubectl-krew list > $HOME/.config/krew-list
+
+title "krew / kubectl-plugin_completion"
+version="$(github_getlatestversion MartinSimango/kubectl-plugin_completion)"
+krew install --manifest-url https://github.com/MartinSimango/kubectl-plugin_completion/releases/download/${version}/plugin_completion.yaml
 
 ##########################################################################################################
 
-title "kubedash"
-curl https://raw.githubusercontent.com/kdash-rs/kdash/main/deployment/getLatest.sh | sed "s@EXE_DEST_DIR=\"/usr/local/bin\"@EXE_DEST_DIR=\"$HOME/bin2\"@" | bash
+
+title "update asdf"
+echo "### asdf update"
+asdf update
+echo
+echo "### asdf plugin update --all"
+asdf plugin update --all
+echo
+plugins="$(asdf plugin-list)"
+echo "### updating plugins $plugins"
+echo
+for plugin in $plugins
+do
+    echo "## asdf install $plugin latest"
+    asdf install $plugin latest ||:
+    echo "# asdf global $plugin latest"
+    asdf global $plugin latest ||:
+	echo; echo
+done
+if [ "${HOSTNAME}" = "goldorak" ]
+then
+	asdf plugin-list     > $HOME/.config/asdf-plugin-list
+	asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
+fi
+
 
 ##########################################################################################################
 
-title "regclient"
-curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >$HOME/bin2/regctl
-curl -L https://github.com/regclient/regclient/releases/latest/download/regsync-linux-amd64 >$HOME/bin2/regsync
-curl -L https://github.com/regclient/regclient/releases/latest/download/regbot-linux-amd64 >$HOME/bin2/regbot
-chmod 755 $HOME/bin2/reg{ctl,sync,bot}
+
+title "update flatpak"
+flatpak update --assumeyes --noninteractive
+flatpak update --assumeyes --noninteractive --user
+flatpak remotes -d > $TMPPATH/flatpak.remotes && mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
+flatpak list       > $TMPPATH/flatpak.list    && mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
+
 
 ##########################################################################################################
+
+
+title "helm repo update"
+helm repo update
+helm repo list > $TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
+
+
+##########################################################################################################
+
 
 title "generate bash completions"
 $HOME/bin/update-bash-completions.sh
 
+
 ##########################################################################################################
 
-title "add gitignores"
+
+title "add dotfiles"
 $HOME/bin/dotfiles add
 
 ##########################################################################################################
 
 title "cleanup ########################################################################################################"
 cd $HOME
-rm -rfv ~/tmp/update-tools/
-
-##########################################################################################################
+rm -rfv $TMPPATH
 
 title "end"
 

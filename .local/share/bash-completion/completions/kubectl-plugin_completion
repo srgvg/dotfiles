@@ -699,6 +699,68 @@ _plugin_completion_help()
     noun_aliases=()
 }
 
+_plugin_completion_list_bash()
+{
+    last_command="plugin_completion_list_bash"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_plugin_completion_list_zsh()
+{
+    last_command="plugin_completion_list_zsh"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_plugin_completion_list()
+{
+    last_command="plugin_completion_list"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("bash")
+    commands+=("zsh")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _plugin_completion_plugin-completion_bash()
 {
     last_command="plugin_completion_plugin-completion_bash"
@@ -771,6 +833,7 @@ _plugin_completion_root_command()
     commands+=("completion")
     commands+=("config")
     commands+=("help")
+    commands+=("list")
     commands+=("plugin-completion")
 
     flags=()
