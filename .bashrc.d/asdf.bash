@@ -1,1 +1,2 @@
-source $HOME/.asdf/asdf.sh
+ASDF_FORCE_PREPEND=no source $HOME/.asdf/asdf.sh
+
