@@ -12,7 +12,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-if [ "${MY_WM}" = "sway" ]
+if [ "${MY_WM:-}" = "sway" ]
 then
     copy='wl-copy'
 else
