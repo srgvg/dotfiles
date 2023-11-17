@@ -26,7 +26,14 @@ alias diff='diff --unified --color'
 alias dL='dpkg -L'
 alias dS='dpkg -S'
 alias dmesg="dmesg --ctime --time-format iso --decode --nopager"
-#g
+
+# g
+#
+# gcloud
+alias gconfig='export CLOUDSDK_ACTIVE_CONFIG_NAME="$(gcloud config configurations list | grep -v NAME | cut -d\  -f1 | fzf)"'
+alias gproject='gcloud config set project $(gcloud projects list | grep -v PROJECT_ID | cut -d\  -f1 | fzf)'
+
+# git
 alias ga='git add'
 alias gA='git add --all'
 alias gap='git add --patch'

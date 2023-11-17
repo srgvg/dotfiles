@@ -84,7 +84,7 @@ dotremoves="
 sdotadds="
     .config/gandi/
     .config/mopidy/mopidy.conf
-    .docker/
+    .docker/config.json
     .aws/
     .cert/
     .config/gandi/
@@ -107,6 +107,7 @@ sdotadds="
 "
 
 sdotremoves="
+    .docker/buildx/
     .config/gcloud/*.db
     .config/gcloud/cache/
     .config/gcloud/logs/
