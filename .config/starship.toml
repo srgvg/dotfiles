@@ -66,7 +66,7 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """(\
-    [┌──────────────────────────────────────────────────────────────────────────────](bold green)\
+    [┌$fill](bold green)\
     $line_break\
     \
     [│ ](bold green)\
@@ -111,6 +111,14 @@ right_format = """
 #    ${custom.ansible}\
 
 ###
+
+# The fill module fills any extra space on the line with a symbol.
+# If multiple fill modules are present in a line they will split the space
+# evenly between them. This is useful for aligning other modules.
+[fill]
+symbol = '─'
+style = 'bold green'
+disabled = false
 
 [character]      # The name of the module we are configuring is "character"
 success_symbol = "[➞](bold green) "     # The "symbol" segment is being set to "➜"
