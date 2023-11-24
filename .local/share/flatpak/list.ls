@@ -31,6 +31,7 @@ ffmpeg-full	org.freedesktop.Platform.ffmpeg-full		21.08	system
 ffmpeg-full	org.freedesktop.Platform.ffmpeg-full		22.08	system
 ffmpeg-full	org.freedesktop.Platform.ffmpeg-full		23.08	system
 openh264	org.freedesktop.Platform.openh264	2.1.0	2.0	system
+openh264	org.freedesktop.Platform.openh264	2.1.0	2.2.0	system
 GNOME Network Displays	org.gnome.NetworkDisplays	0.90.5	stable	system
 GNOME Application Platform version 3.38	org.gnome.Platform		3.38	system
 GNOME Application Platform version 43	org.gnome.Platform		43	system
@@ -46,6 +47,6 @@ KDE Application Platform	org.kde.Platform		6.5	system
 Firefox	org.mozilla.firefox	120.0	stable	system
 Signal Desktop	org.signal.Signal	6.39.1	stable	system
 DB Browser for SQLite	org.sqlitebrowser.sqlitebrowser	3.12.2	stable	system
-Telegram Desktop	org.telegram.desktop	4.11.3	stable	system
+Telegram Desktop	org.telegram.desktop	4.11.8	stable	system
 Telegram Desktop Webview Add-on	org.telegram.desktop.webview	2.42.2	stable	system
 Insomnia	rest.insomnia.Insomnia	2023.5.8	stable	system
