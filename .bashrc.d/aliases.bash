@@ -46,6 +46,7 @@ alias gl='git lola'
 alias gls='git lol'
 alias gld='git lold'
 alias glt='git lolt'
+#alias gpg='gpg2'
 alias grep='grep --color=auto'
 alias grepr='grep --line-number --initial-tab --recursive'
 hash gron >&/dev/null && alias ngron="gron --ungron"

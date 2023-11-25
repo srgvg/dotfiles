@@ -31,7 +31,7 @@ SETBG_LOOP_DELAY=${SETBG_LOOP_DELAY:-59}
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"
 
-
+source $HOME/.bashrc.d/0-windowmanager.bash
 
 # colors
 # these colors must be used with `echo -e`
@@ -134,3 +134,4 @@ fi
 function get_colors() {
     grep echo_ "$0" | sed 's/\s*\(echo_.*\)=.*/\1/' | sort -u
 }
+

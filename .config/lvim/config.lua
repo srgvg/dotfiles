@@ -8,6 +8,11 @@ vim.opt.tabstop = 2
 vim.opt.relativenumber = true
 vim.opt.wrap = true
 
+vim.g.GPGPreferArmor = 0
+vim.g.GPGDefaultRecipients = {
+    "serge@vanginderachter.be"
+}
+
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
@@ -115,6 +120,7 @@ lvim.format_on_save.enabled = true
 lvim.plugins = {
     {
         "editorconfig/editorconfig-vim",
+        "jamessan/vim-gnupg",
     }
 }
 -- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>

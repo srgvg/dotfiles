@@ -22,7 +22,24 @@ then
     fi
     [ -x "$(which keychain)" ] \
 	    && [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] \
-	    || eval "`keychain --lockwait 300 --quiet --inherit any --nogui --agents ssh,gpg --eval ~/.ssh/id_!(*.pub)`"
+        || eval "$(
+            keychain \
+            --lockwait 300 \
+            --quiet \
+            --attempts 2 \
+            --inherit any \
+            --nogui \
+            --agents ssh,gpg \
+            --gpg2 \
+            --eval \
+            --ignore-missing \
+            ~/.ssh/id_!(*.pub) \
+            )"
+        # to list the key id's:
+        # gpg --list-secret-keys | grep sec | sed 's/.*\/0x//' | cut -d\  -f1
+        #    8CC387DA097F5468 \
+        #    D08FC082B8E46E8E \
+        #    3148E9B9232D65E5 \
     if [ "${EXTGLOB}" -eq 0 ]
     then
       shopt -u extglob
