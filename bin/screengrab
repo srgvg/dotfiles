@@ -15,7 +15,7 @@ source "$HOME/bin/common.bash"
 screenshotdir="$HOME/t/grabs"
 filename="$(date +%Y%m%d-%H%M%S)"
 imagefile="${screenshotdir}/${filename}.png"
-swappyimagefile="${screenshotdir}/${filename}-swappy.png"
+swappyimagefile="${screenshotdir}/${filename}-annotated.png"
 util="/usr/bin/grimshot save"
 
 mkdir -p $screenshotdir

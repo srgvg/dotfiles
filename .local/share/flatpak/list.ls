@@ -38,10 +38,12 @@ GNOME Application Platform version 43	org.gnome.Platform		43	system
 GNOME Application Platform version 45	org.gnome.Platform		45	system
 Adwaita theme	org.kde.KStyle.Adwaita		5.15-21.08	system
 Adwaita theme	org.kde.KStyle.Adwaita		5.15-22.08	system
+Adwaita theme	org.kde.KStyle.Adwaita		5.15-23.08	system
 Adwaita theme	org.kde.KStyle.Adwaita		6.3	system
 Adwaita theme	org.kde.KStyle.Adwaita		6.5	system
 KDE Application Platform	org.kde.Platform		5.15-21.08	system
 KDE Application Platform	org.kde.Platform		5.15-22.08	system
+KDE Application Platform	org.kde.Platform		5.15-23.08	system
 KDE Application Platform	org.kde.Platform		6.3	system
 KDE Application Platform	org.kde.Platform		6.5	system
 Firefox	org.mozilla.firefox	120.0	stable	system
