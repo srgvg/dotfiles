@@ -239,8 +239,10 @@ fi
 title "update flatpak"
 flatpak update --assumeyes --noninteractive
 flatpak update --assumeyes --noninteractive --user
-flatpak remotes -d > $TMPPATH/flatpak.remotes && mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
-flatpak list       > $TMPPATH/flatpak.list    && mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
+flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
+	&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
+flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
+	&& mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
 
 
 ##########################################################################################################
