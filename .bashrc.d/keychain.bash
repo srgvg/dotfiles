@@ -22,7 +22,7 @@ then
     fi
     [ -x "$(which keychain)" ] \
 	    && [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] \
-        || eval "$(
+        || eval "`
             keychain \
             --lockwait 300 \
             --quiet \
@@ -34,7 +34,7 @@ then
             --eval \
             --ignore-missing \
             ~/.ssh/id_!(*.pub) \
-            )"
+            `"
         # to list the key id's:
         # gpg --list-secret-keys | grep sec | sed 's/.*\/0x//' | cut -d\  -f1
         #    8CC387DA097F5468 \
