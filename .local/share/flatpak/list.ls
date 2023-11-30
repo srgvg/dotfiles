@@ -1,4 +1,4 @@
-com.discordapp.Discord	0.0.35	flathub	system
+com.discordapp.Discord	0.0.36	flathub	system
 com.getpostman.Postman	10.19.7	flathub	system
 com.gigitux.youp	2.0	flathub	system
 com.github.Eloston.UngoogledChromium	119.0.6045.159	flathub	system

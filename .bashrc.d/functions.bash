@@ -63,13 +63,25 @@ function dl() {
 }
 
 function gcloud-project() {
-	if [ -n "${1:-}" ]; then 
+	if [ -n "${1:-}" ]; then
 		gcloud config set project ${1}
 	else
 		gcloud projects list
 	fi
 }
 
+function hl() {
+	set -x
+	local pattern
+	local parameters
+	parameters=()
+	for pattern in "$@"
+	do
+		parameters+=(--regexp "${pattern}|$")
+	done
+	grep --color --extended-regexp "${parameters[@]}"
+	set +x
+}
 function ka() {
 	#kubectl $* --all-namespaces
 	k $* --all-namespaces
