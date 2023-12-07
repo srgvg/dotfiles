@@ -7,6 +7,7 @@
 set -o nounset
 set -o errexit
 set -o pipefail
+set -o errtrace
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -20,6 +21,9 @@ OS_ARCH="linux_amd64"
 OS_ARCH2="linux-amd64"
 CURL_COMMAND="curl --silent --connect-timeout 5 --location"
 source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
+
+trap trap_exit EXIT
+trap trap_error ERR
 
 rm -rf ${TMPPATH}
 mkdir --parents ${TMPPATH}
@@ -54,7 +58,7 @@ github_getlatestversion() {
 		echo via ${url} >&2
 		echo >&2
 		echo "${json}" >&2
-		exit 1
+		return 1
 	fi
 	echo -n ${version}
 }
@@ -71,34 +75,34 @@ download_file() {
 
 	tmppathname="${TMPPATH}/$(basename ${destpathname})"
 
-	$CURL_COMMAND ${url} --output ${tmppathname}
+	$CURL_COMMAND ${url} --output ${tmppathname} || return 1
 	rc=$?													; set +o pipefail
 	header="$(strings ${tmppathname} | head --lines 1)"		; set -o pipefail
 
 	if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]
 	then
 		echo failed downloading ${url}
-		exit 1
+		return 1
 	elif [[ "${url}" =~ tar.gz$ ]] || \
 	     [[ "${url}" =~ tgz$    ]] || \
 	     [[ "${url}" =~ tar.bz$ ]] || \
 	     [[ "${url}" =~ tbz$    ]]
 	then
 		# libarchive-tools
-		bsdtar --extract --file ${tmppathname}
+		bsdtar --extract --file ${tmppathname} || return 1
 		destname="$(basename ${destpathname})"
 		destname="${destname%%\.*}"
-		tmppathname="$(find ${TMPPATH} -name ${destname})"
+		tmppathname="$(find ${TMPPATH} -name ${destname} || return 1)"
 		destpathname="$(dirname ${destpathname})/${destname}"
 	fi
 
-	mv ${tmppathname} ${destpathname}
+	mv ${tmppathname} ${destpathname} || return 1
 	if [[ "${destpathname}" =~ "/bin" ]]
 	then
-		chmod +x ${destpathname}
+		chmod +x ${destpathname} || return 1
 	fi
 	echo -n "Downloaded "
-	file ${destpathname}
+	file ${destpathname} || return 1
 }
 
 
@@ -124,7 +128,7 @@ github_download() {
 
 	if [ -z "${version}" ] || [ "${version}" = "latest" ]
 	then
-		version="$(github_getlatestversion ${project})"
+		version="$(github_getlatestversion ${project} || return 1)"
 	fi
 
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
@@ -148,7 +152,7 @@ github_download() {
 	fi
 
 	title "Fetch ${project} ${type} ${artefact} version ${version} to ${destpath}/${destname}\n  from  ${url}"
-	download_file ${url} ${destpathname}
+	download_file ${url} ${destpathname} || return 1
 }
 
 ##########################################################################################################
@@ -194,8 +198,14 @@ download_file ${gcurl} ${BINPATH}/kdash.tgz
 
 title "krew"
 ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) $HOME/.krew
+
+title "krew update"
 kubectl-krew update
+
+title "krew upgrade"
 kubectl-krew upgrade
+
+title "krew make lists"
 [ "${HOSTNAME}" = "goldorak" ] && kubectl-krew index list > $HOME/.config/krew-index-list
 [ "${HOSTNAME}" = "goldorak" ] && kubectl-krew list > $HOME/.config/krew-list
 
@@ -207,8 +217,6 @@ krew install --manifest-url https://github.com/MartinSimango/kubectl-plugin_comp
 ##########################################################################################################
 
 
-title "update asdf"
-title ""
 title "asdf update"
 asdf update
 
@@ -216,18 +224,19 @@ title "asdf plugin update --all"
 asdf plugin update --all
 
 plugins="$(asdf plugin-list)"
-title "updating plugins\n$(echo $plugins | xargs)"
+title "asdf updating plugins\n$(echo $plugins | xargs)"
 for plugin in $plugins
 do
-    echo "# asdf install $plugin latest"
+    title "asdf install $plugin latest"
     asdf install $plugin latest ||:
-    echo "# asdf global $plugin latest"
+
+    title "asdf global $plugin latest"
     asdf global $plugin latest ||:
-	echo; echo
 done
 
 if [ "${HOSTNAME}" = "goldorak" ]
 then
+	title asdf make lists
 	asdf plugin-list     > $HOME/.config/asdf-plugin-list
 	asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
 fi
@@ -236,9 +245,12 @@ fi
 ##########################################################################################################
 
 
-title "update flatpak"
+title "flatpak update global"
 flatpak update --assumeyes --noninteractive
+title "flatpak update user"
 flatpak update --assumeyes --noninteractive --user
+
+title "flatpak make lists"
 flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
 	&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
 flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
@@ -268,11 +280,18 @@ $HOME/bin/dotfiles add
 
 ##########################################################################################################
 
-title "cleanup ########################################################################################################"
-cd $HOME
-rm -rfv $TMPPATH
+trap_exit() {
+	title "cleanup ########################################################################################################"
+	cd $HOME
+	rm -rfv $TMPPATH
 
-title "end"
+	title "end"
+}
 
 ##########################################################################################################
 
+trap_error(){
+	echo "Got error, continuing."
+}
+
+##########################################################################################################

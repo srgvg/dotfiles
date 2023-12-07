@@ -66,7 +66,9 @@ command_timeout = 500
 #[│](bold green)$directory$rust$package
 #[└─>](bold green) """
 format = """(\
-    $status$cmd_duration$line_break\
+    $status\
+    $cmd_duration\
+    $line_break\
     $line_break\
     [┌$fill](bold green)\
     $line_break\

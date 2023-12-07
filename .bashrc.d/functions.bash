@@ -71,7 +71,6 @@ function gcloud-project() {
 }
 
 function hl() {
-	set -x
 	local pattern
 	local parameters
 	parameters=()
@@ -80,7 +79,6 @@ function hl() {
 		parameters+=(--regexp "${pattern}|$")
 	done
 	grep --color --extended-regexp "${parameters[@]}"
-	set +x
 }
 function ka() {
 	#kubectl $* --all-namespaces

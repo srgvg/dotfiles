@@ -30,7 +30,7 @@ alias dmesg="dmesg --ctime --time-format iso --decode --nopager"
 # g
 #
 # gcloud
-alias gconfig='export CLOUDSDK_ACTIVE_CONFIG_NAME="$(gcloud config configurations list | grep -v NAME | cut -d\  -f1 | fzf)" && rm -f $(dirname $KUBECONFIG 2>/dev/null || echo -n $HOME/.kube)/gke_gcloud_auth_plugin_cache'
+alias gconfig='export CLOUDSDK_ACTIVE_CONFIG_NAME="$(gcloud config configurations list | grep -v NAME | cut -d\  -f1 | fzf)" && rm -f {$(dirname $KUBECONFIG 2>/dev/null || echo -n /tmp),$HOME/.kube}/gke_gcloud_auth_plugin_cache'
 alias gproject='gcloud config set project $(gcloud projects list | grep -v PROJECT_ID | cut -d\  -f1 | fzf)'
 
 # git

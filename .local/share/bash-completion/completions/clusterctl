@@ -63,7 +63,7 @@ __clusterctl_handle_go_custom_completion()
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly clusterctl allows to handle aliases
+    # Calling ${words[0]} instead of directly clusterctl allows handling aliases
     args=("${words[@]:1}")
     # Disable ActiveHelp which is not supported for bash completion v1
     requestComp="CLUSTERCTL_ACTIVE_HELP=0 ${words[0]} __completeNoDesc ${args[*]}"
