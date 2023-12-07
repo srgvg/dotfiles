@@ -149,10 +149,18 @@ then
 	echo "Update ..."
 	echo "--------------------------------"
 	vcsh foreach remote update --prune
+	#echo "--------------------------------"
+	#echo "Stach save ..."
+	#echo "--------------------------------"
+	#vcsh foreach stash save
 	echo "--------------------------------"
 	echo "Pull ..."
 	echo "--------------------------------"
 	vcsh foreach pull
+	#echo "--------------------------------"
+	#echo "Stash pop ..."
+	#echo "--------------------------------"
+	vcsh foreach stash pop
 	echo "--------------------------------"
 	echo "Info ..."
 	echo "--------------------------------"
