@@ -28,10 +28,11 @@ mkdir -p $CACHEDIR
 PICTURENAME=$(basename $PICTURE)
 IMAGE=$CACHEDIR/${PICTURENAME%%.png}-lock.png
 [ -f ${IMAGE} ] || composite -gravity center $LOCK $PICTURE $IMAGE
-for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name'`
-do
-    LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
-done
+LOCKARGS="${LOCKARGS} --image ${IMAGE}"
+#for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name'`
+#do
+#    LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
+#done
 
-swaylock $LOCKARGS &
+echo swaylock $LOCKARGS &
 sleep 1

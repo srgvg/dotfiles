@@ -69,6 +69,12 @@ function gcloud-project() {
 		gcloud projects list
 	fi
 }
+function coh-disable() {
+	chmod -v -x "$(realpath $(git rev-parse --show-cdup))/.git/hooks/pre-commit"
+}
+function coh-enable() {
+	chmod -v +x "$(realpath $(git rev-parse --show-cdup))/.git/hooks/pre-commit"
+}
 
 function hl() {
 	local pattern
