@@ -250,20 +250,24 @@ flatpak update --assumeyes --noninteractive
 title "flatpak update user"
 flatpak update --assumeyes --noninteractive --user
 
-title "flatpak make lists"
-flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
-	&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
-flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
-	&& mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
-
+if [ "${HOSTNAME}" = "goldorak" ]
+then
+	title "flatpak make lists"
+	flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
+		&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
+	flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
+		&& mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
+fi
 
 ##########################################################################################################
 
 
-title "helm repo update"
-helm repo update
-helm repo list > $TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
-
+if [ "${HOSTNAME}" = "goldorak" ]
+then
+	title "helm repo update"
+	helm repo update
+	helm repo list > $TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
+fi
 
 ##########################################################################################################
 
