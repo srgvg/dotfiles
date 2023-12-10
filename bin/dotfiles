@@ -126,9 +126,8 @@ function title() {
 	local msg
 	msg="${*}"
 
-	echo "--------------------------------"
-	echo "${msg} ..."
-	echo ""
+	echo -e "\n--------------------------------"
+	echo -e "${msg} ... \n"
 }
 
 function info() {
