@@ -12,10 +12,12 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-###############################################################################
+trap info INT TERM EXIT
 
 OIFS=$IFS
 IFS=$'\n'
+
+###############################################################################
 
 dotadds="
 .asdfrc
@@ -126,10 +128,11 @@ function title() {
 
 	echo "--------------------------------"
 	echo "${msg} ..."
-	echo "--------------------------------"
+	echo ""
 }
+
 function info() {
-	title status
+	title Status
 	vcsh foreach status --short --branch --verbose --show-stash
 }
 
@@ -142,29 +145,24 @@ if [ "${action}" = "up" ] || [ "${action}" = "all" ]
 then
 	title Update
 	vcsh foreach remote update --prune
-	[ "${action}" = "up" ] && info
 fi
 if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 then
 	title Pull
 	vcsh foreach pull --autostash
-	info
 fi
 if [ "${action}" = "add" ] || [ "${action}" = "all" ]
 then
 	title Add
 	dotsadd
-	info
 fi
 if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 then
 	title Committing
 	vcsh foreach commit -m "update from $HOSTNAME"
-	[ "${action}" = "commit" ] && info
 fi
 if [ "${action}" = "push" ] || [ "${action}" = "all" ]
 then
 	title Pushing
 	vcsh foreach pushall
-	info
 fi
