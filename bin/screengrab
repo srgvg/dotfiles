@@ -12,7 +12,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-screenshotdir="$HOME/t/grabs"
+screenshotdir="$HOME/tmp/grabs"
 filename="$(date +%Y%m%d-%H%M%S)"
 imagefile="${screenshotdir}/${filename}.png"
 swappyimagefile="${screenshotdir}/${filename}-annotated.png"
