@@ -14,134 +14,122 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
+OIFS=$IFS
+IFS=$'\n'
+
 dotadds="
-    .asdfrc
-    .bash_completion
-    .bash_logout
-    .bash_profile
-    .bashrc
-    .bashrc.d/
-    .config/alacritty/
-    .config/asdf-plugin-list
-    .config/dunst/dunstrc
-    .config/dunst/dunstrc.d_*
-    .config/gtk-2.0/
-    .config/gtk-3.0/
-    .config/helm/repositories.yaml
-    .config/helm/repo-list.yaml
-    .config/htop/
-    .config/krew-index-list
-    .config/krew-list
-    .config/nvim/
-    .config/nvim.bootstrap/
-    .config/pip/
-    .config/pulse/daemon.conf
-    .config/ranger/
-    .config/picom.conf
-    .config/sway/
-    .config/remmina
-    .config/user-dirs.dirs
-    .editorconfig
-    .gitconfig
-    .gitconfig.d/
-    .gitignore.d/dot
-    .git-template/
-    .i3/
-    .local/etc
-    .local/man/
-    .local/share/applications/
-    .local/share/bash-completion
-	.local/share/direnv/allow/
-    .local/share/doc/
-    .local/share/flatpak/
-    .local/share/icons/
-    .local/share/nautilus/
-    .local/share/nemo/
-    .pam_environment
-    .pastebinit.xml
-    .profile
-    .screenlayout
-    .screenrc
-    .selected_editor
-    bin/
-	src/autops/cust/enperas/.envrc
-	src/autops/cust/equans/.envrc
-	src/autops/cust/viumore/.envrc
-	src/autops/cust/velleman/.envrc
-	src/autops/.envrc
-	src/ginsys/opsmaster/hwconfig/kube/.envrc
-	src/mateco/.envrc
+.asdfrc
+.bash_completion
+.bash_logout
+.bash_profile
+.bashrc
+.bashrc.d/
+.config/alacritty/
+.config/asdf-plugin-list
+.config/dunst/dunstrc
+.config/dunst/dunstrc.d_*
+.config/gtk-2.0/
+.config/gtk-3.0/
+.config/helm/repositories.yaml
+.config/helm/repo-list.yaml
+.config/htop/
+.config/krew-index-list
+.config/krew-list
+.config/nvim/           :!.config/nvim/plugged/           :!.config/nvim/plugged/
+.config/pip/
+.config/pulse/daemon.conf
+.config/ranger/
+.config/picom.conf
+.config/sway/
+.config/remmina
+.config/user-dirs.dirs
+.editorconfig
+.gitconfig
+.gitconfig.d/
+.gitignore.d/dot
+.git-template/
+.i3/
+.local/etc
+.local/man/
+.local/share/applications/
+.local/share/bash-completion
+.local/share/direnv/allow/
+.local/share/doc/
+.local/share/flatpak/ :!.local/share/flatpak/db/
+.local/share/icons/
+.local/share/nautilus/
+.local/share/nemo/
+.pam_environment
+.pastebinit.xml
+.profile
+.screenlayout
+.screenrc
+.selected_editor
+bin/
+src/autops/cust/enperas/.envrc
+src/autops/cust/equans/.envrc
+src/autops/cust/viumore/.envrc
+src/autops/cust/velleman/.envrc
+src/autops/.envrc
+src/ginsys/opsmaster/hwconfig/kube/.envrc
+src/mateco/.envrc
 "
-
-dotremoves="
-    .config/nvim/plugged/
-    .config/nvim.bootstrap/plugged/
-	.local/share/flatpak/db/
-"
-
-###############################################################################
 
 sdotadds="
-    .config/gandi/
-    .config/mopidy/mopidy.conf
-    .docker/config.json
-    .aws/
-    .cert/
-    .config/gandi/
-    .config/gcloud/
-    .config/gotify/
-    .config/hcloud/
-    .config/mopidy/
-    .config/scw/
-    .gitignore.d/sdot
-    .gnupg/
-    .kube/config-*.yaml
-    .kube/kubie.yaml
-    .remmina/
-    .s3cfg
-    .src/
-    .ssh/
-    .talos/
-    bins/
-    etc/
+.config/gandi/
+.config/mopidy/mopidy.conf
+.docker/ :!.docker/buildx/
+.aws/
+.cert/
+.config/gandi/
+.config/gcloud/ :!.config/gcloud/*.db :!.config/gcloud/cache/ :!.config/gcloud/logs/ :!.config/gcloud/surface_data/ :!.config/gcloud/.last*
+.config/gotify/
+.config/hcloud/
+.config/mopidy/
+.config/scw/
+.gitignore.d/sdot
+.gnupg/
+.kube/config-*.yaml
+.kube/kubie.yaml
+.local/share/remmina/
+.s3cfg
+.src/
+.ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
+.talos/
+bins/
+etc/
 "
 
-sdotremoves="
-    .docker/buildx/
-    .config/gcloud/*.db
-    .config/gcloud/cache/
-    .config/gcloud/logs/
-    .config/gcloud/surface_data/
-    .config/gcloud/.last*
-    .ssh/*_known_hosts
-    .ssh/known_hosts*
-"
 
 ###############################################################################
 
 function dotsadd() {
 	cd $HOME
 
-	for repo in dot sdot
+	for entry in ${dotadds}
 	do
-		_entries="${repo}adds"
-		for entry in ${!_entries}
-		do
-		    vcsh run ${repo} git add --force ${entry} ||:
-		done
-
-		_entries="${repo}removes"
-		for entry in ${!_entries}
-		do
-		    vcsh run ${repo} git rm -r --force --cached --quiet ${entry} ||:
-		done
+		IFS=$OIFS
+	    vcsh run dot git add --force ${entry}
+		IFS=$'\n'
+	done
+	for entry in ${sdotadds}
+	do
+		IFS=$OIFS
+	    vcsh run sdot git add --force ${entry}
+		IFS=$'\n'
 	done
 }
 
+function title() {
+	local msg
+	msg="${*}"
+
+	echo "--------------------------------"
+	echo "${msg} ..."
+	echo "--------------------------------"
+}
 function info() {
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
+	title status
 	vcsh foreach status --short --branch --verbose --show-stash
 }
 
@@ -152,42 +140,31 @@ action="${1:-add}"
 
 if [ "${action}" = "up" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Update ..."
-	echo "--------------------------------"
+	title Update
 	vcsh foreach remote update --prune
 	[ "${action}" = "up" ] && info
 fi
 if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Pull ..."
-	echo "--------------------------------"
+	title Pull
 	vcsh foreach pull --autostash
 	info
 fi
 if [ "${action}" = "add" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Adding ..."
-	echo "--------------------------------"
-	vcsh foreach add --all
+	title Add
 	dotsadd
 	info
 fi
 if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Committing ..."
-	echo "--------------------------------"
+	title Committing
 	vcsh foreach commit -m "update from $HOSTNAME"
 	[ "${action}" = "commit" ] && info
 fi
 if [ "${action}" = "push" ] || [ "${action}" = "all" ]
 then
-	echo "--------------------------------"
-	echo "Pushing ..."
-	echo "--------------------------------"
+	title Pushing
 	vcsh foreach pushall
 	info
 fi
