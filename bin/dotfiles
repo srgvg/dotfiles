@@ -138,33 +138,33 @@ function dotsadd() {
 	done
 }
 
+function info() {
+	echo "--------------------------------"
+	echo "Info ..."
+	echo "--------------------------------"
+	vcsh foreach status --short --branch --verbose --show-stash
+}
+
 ###############################################################################
 
 cd $HOME
 action="${1:-add}"
 
-if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+if [ "${action}" = "up" ] || [ "${action}" = "all" ]
 then
 	echo "--------------------------------"
 	echo "Update ..."
 	echo "--------------------------------"
 	vcsh foreach remote update --prune
-	#echo "--------------------------------"
-	#echo "Stach save ..."
-	#echo "--------------------------------"
-	#vcsh foreach stash save
+	[ "${action}" = "up" ] && info
+fi
+if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+then
 	echo "--------------------------------"
 	echo "Pull ..."
 	echo "--------------------------------"
-	vcsh foreach pull
-	#echo "--------------------------------"
-	#echo "Stash pop ..."
-	#echo "--------------------------------"
-	vcsh foreach stash pop
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
+	vcsh foreach pull --autostash
+	info
 fi
 if [ "${action}" = "add" ] || [ "${action}" = "all" ]
 then
@@ -173,10 +173,7 @@ then
 	echo "--------------------------------"
 	vcsh foreach add --all
 	dotsadd
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
+	info
 fi
 if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 then
@@ -184,12 +181,13 @@ then
 	echo "Committing ..."
 	echo "--------------------------------"
 	vcsh foreach commit -m "update from $HOSTNAME"
+	[ "${action}" = "commit" ] && info
+fi
+if [ "${action}" = "push" ] || [ "${action}" = "all" ]
+then
 	echo "--------------------------------"
 	echo "Pushing ..."
 	echo "--------------------------------"
 	vcsh foreach pushall
-	echo "--------------------------------"
-	echo "Info ..."
-	echo "--------------------------------"
-	vcsh foreach status --short --branch --verbose --show-stash
+	info
 fi
