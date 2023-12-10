@@ -34,5 +34,5 @@ LOCKARGS="${LOCKARGS} --image ${IMAGE}"
 #    LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
 #done
 
-echo swaylock $LOCKARGS &
+swaylock $LOCKARGS &
 sleep 1
