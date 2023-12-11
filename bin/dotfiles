@@ -14,10 +14,11 @@ source "$HOME/bin/common.bash"
 
 trap info INT TERM EXIT
 
-OIFS=$IFS
-IFS=$'\n'
-
 ###############################################################################
+
+OIFS=$IFS
+NIFS=$'\n'
+IFS=$NIFS
 
 dotadds="
 .asdfrc
@@ -112,22 +113,24 @@ function dotsadd() {
 	do
 		IFS=$OIFS
 	    vcsh run dot git add --force ${entry}
-		IFS=$'\n'
+		IFS=$NIFS
 	done
 	for entry in ${sdotadds}
 	do
 		IFS=$OIFS
 	    vcsh run sdot git add --force ${entry}
-		IFS=$'\n'
+		IFS=$NIFS
 	done
 }
 
 function title() {
 	local msg
+	IFS=$OIFS
 	msg="${*}"
 
 	echo -e "\n--------------------------------"
 	echo -e "${msg} ... \n"
+	IFS=$NIFS
 }
 
 function info() {
@@ -138,9 +141,21 @@ function info() {
 ###############################################################################
 
 cd $HOME
-action="${1:-add}"
+action="${1:-}"
 
+<<<<<<< Updated upstream
 if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+||||||| Stash base
+if [ "${action}" = "up" ] || [ "${action}" = "all" ]
+=======
+if [ -z "${action}" ]
+then
+	title Usage $0
+	echo "up | pull | add | commit | push | all"
+	exit
+fi
+if [ "${action}" = "up" ] || [ "${action}" = "all" ]
+>>>>>>> Stashed changes
 then
 	title Update
 	vcsh foreach remote update --prune
