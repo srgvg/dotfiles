@@ -143,11 +143,6 @@ function info() {
 cd $HOME
 action="${1:-}"
 
-<<<<<<< Updated upstream
-if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-||||||| Stash base
-if [ "${action}" = "up" ] || [ "${action}" = "all" ]
-=======
 if [ -z "${action}" ]
 then
 	title Usage $0
@@ -155,7 +150,6 @@ then
 	exit
 fi
 if [ "${action}" = "up" ] || [ "${action}" = "all" ]
->>>>>>> Stashed changes
 then
 	title Update
 	vcsh foreach remote update --prune
