@@ -12,42 +12,35 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-# list of jobs to execute in screen
-## filter comments and empty lines
-JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-
-	/home/serge/bin/swayidle.sh
-	/home/serge/.local/bin/vorta
-	/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
-	/usr/bin/dunst -print -verbosity info
-	/usr/bin/pasystray --debug --notify=none --notify=sink
-	/usr/bin/alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
-
-	/home/serge/Documents/Applications/firefox/firefox
-
-	runflatpak.sh nextcloud
-	runflatpak.sh signal
-
-	# runflatpak.sh mattermost
-	# runflatpak.sh slack
-	# runflatpak.sh Microsoft Teams
-	# runflatpak.sh Discord
-	# runflatpak.sh telegram
-
-EOF
-)
-if [ -f "${0}-$(hostname)" ]
-then
-	source "${0}-$(hostname)"
-fi
-
+# full path to this script
+self=$(realpath $(dirname $(realpath -e $0))/$(basename $0))
 
 _job=${*:-}
 if [ -n "${_job}" ]
 then
 	notify_debug "Replacing default job list with '${_job}'"
 	JOBS="${_job}"
+else
+	# list of jobs to execute in screen
+	## filter comments and empty lines
+	JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+
+		/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
+		runflatpak.sh nextcloud
+		runflatpak.sh signal
+		runflatpak.sh mattermost
+		# runflatpak.sh slack
+		# runflatpak.sh spotify --show-console
+
+	EOF
+	)
+	if [ -f "${self}-$(hostname)" ]
+	then
+		source "${self}-$(hostname)"
+	fi
+	JOBS="$(echo "$JOBS" | sort -u)"
 fi
+
 
 I3SCREENPID=$(pgrep -f "SCREEN -S i3jobs" 2>/dev/null || echo 0)
 

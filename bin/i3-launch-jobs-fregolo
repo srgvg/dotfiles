@@ -1,17 +1,8 @@
 # list of jobs to execute in screen
 ## filter comments and empty lines
-JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-  #/home/serge/Documents/Applications/firefox/firefox
-  /home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
-  #vorta
-  #runflatpak.sh spotify --show-console
-  runflatpak.sh signal
-  runflatpak.sh mattermost
-  #runflatpak.sh nextcloud
-  #runflatpak.sh teams
-  #runflatpak.sh Microsoft Teams
-  #runflatpak.sh slack
-  #runflatpak.sh telegram
-  #runflatpak.sh Discord
+JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
+  #
 EOF
 )
+JOBS="$JOBS
+$JOBS2"
