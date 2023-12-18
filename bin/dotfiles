@@ -142,36 +142,39 @@ function info() {
 ###############################################################################
 
 cd $HOME
-action="${1:-}"
-
-if [ -z "${action}" ]
-then
-	title Usage $0
-	echo "up | pull | add | commit | push | all"
-	exit
-fi
-if [ "${action}" = "up" ] || [ "${action}" = "all" ]
-then
-	title Update
-	vcsh foreach remote update --prune
-fi
-if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-then
-	title Pull
-	vcsh foreach pull --autostash
-fi
-if [ "${action}" = "add" ] || [ "${action}" = "all" ]
-then
-	title Add
-	dotsadd
-fi
-if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
-then
-	title Committing
-	vcsh foreach commit -m "update from $HOSTNAME"
-fi
-if [ "${action}" = "push" ] || [ "${action}" = "all" ]
-then
-	title Pushing
-	vcsh foreach pushall
-fi
+while [ -n "${1:-}" ]
+do
+	action="${1:-}"
+	if [ -z "${action}" ]
+	then
+		title Usage $0
+		echo "up | pull | add | commit | push | all"
+		exit
+	fi
+	if [ "${action}" = "up" ] || [ "${action}" = "all" ]
+	then
+		title Update
+		vcsh foreach remote update --prune
+	fi
+	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+	then
+		title Pull
+		vcsh foreach pull --autostash
+	fi
+	if [ "${action}" = "add" ] || [ "${action}" = "all" ]
+	then
+		title Add
+		dotsadd
+	fi
+	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
+	then
+		title Committing
+		vcsh foreach commit -m "update from $HOSTNAME"
+	fi
+	if [ "${action}" = "push" ] || [ "${action}" = "all" ]
+	then
+		title Pushing
+		vcsh foreach pushall
+	fi
+	shift
+done
