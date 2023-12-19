@@ -126,8 +126,8 @@ init_screen() {
 execute_screen() {
     init_screen
     notify_debug "Executing: screen $options $command"
-    echo screen $options timestamp $command
-    screen $options $command
+    echo screen $options $command
+    screen $options bash -c "$command 2>&1 | ts '%Y:%M:%d-%H:%M:%S'"
     }
 
 main() {

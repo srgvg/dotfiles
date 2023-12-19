@@ -2,13 +2,13 @@
 ## filter comments and empty lines
 JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 
-	/home/serge/bin/swayidle.sh
-	/home/serge/.local/bin/vorta
-	/usr/bin/dunst -print -verbosity info
-	/usr/bin/pasystray --debug --notify=none --notify=sink
-	/usr/bin/alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
-	/home/serge/Documents/Applications/firefox/firefox
-	vlc
+    /home/serge/bin/swayidle.sh
+    /home/serge/.local/bin/vorta
+    /usr/bin/dunst -print -verbosity info
+    /usr/bin/pasystray --debug --notify=none --notify=sink
+    /usr/bin/alacritty --class htop --title htop --command htop --delay=30 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
+    /home/serge/Documents/Applications/firefox/firefox 2>&1 | tee --append $HOME/logs/firefox.log
+    vlc
 
 EOF
 )

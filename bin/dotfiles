@@ -142,15 +142,17 @@ function info() {
 ###############################################################################
 
 cd $HOME
+
+if [ -z "${1:-}" ]
+then
+	title Usage $0
+	echo "up | pull | add | commit | push | all"
+	exit
+fi
+
 while [ -n "${1:-}" ]
 do
 	action="${1:-}"
-	if [ -z "${action}" ]
-	then
-		title Usage $0
-		echo "up | pull | add | commit | push | all"
-		exit
-	fi
 	if [ "${action}" = "up" ] || [ "${action}" = "all" ]
 	then
 		title Update
