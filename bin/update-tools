@@ -192,6 +192,8 @@ gcurl=$($CURL_COMMAND https://api.github.com/repos/kdash-rs/kdash/releases/lates
 			| grep 'linux\.tar.gz' )
 download_file ${gcurl} ${BINPATH}/kdash.tgz
 
+title "broot"
+download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}/broot
 
 ##########################################################################################################
 
