@@ -29,6 +29,7 @@ dotadds="
 .bashrc.d/
 .config/alacritty/
 .config/asdf-plugin-list
+.config/broot/
 .config/dunst/dunstrc
 .config/dunst/dunstrc.d_*
 .config/gtk-2.0/
@@ -69,14 +70,11 @@ dotadds="
 .screenlayout
 .screenrc
 .selected_editor
+.tigrc
+.tool-versions
+.XCompose
 bin/
-src/autops/cust/enperas/.envrc
-src/autops/cust/equans/.envrc
-src/autops/cust/viumore/.envrc
-src/autops/cust/velleman/.envrc
-src/autops/.envrc
-src/ginsys/opsmaster/hwconfig/kube/.envrc
-src/mateco/.envrc
+$(find $HOME/src/ -name '.envrc' -type f)
 "
 
 sdotadds="
@@ -102,6 +100,7 @@ sdotadds="
 .talos/
 bins/
 etc/
+src/*.sh
 "
 
 
@@ -110,18 +109,26 @@ etc/
 function dotsadd() {
 	cd $HOME
 
+	set +o errexit
+	title "dot"
 	for entry in ${dotadds}
 	do
 		IFS=$OIFS
-	    vcsh run dot git add --force ${entry}
+		echo -n ${entry}
+	    vcsh run dot git add --force ${entry} || title "ERROR ADDING ${entry}"
 		IFS=$NIFS
 	done
+	echo
+	title "sdot"
 	for entry in ${sdotadds}
 	do
 		IFS=$OIFS
-	    vcsh run sdot git add --force ${entry}
+		echo -n ${entry}
+		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
+	echo
+	set -o errexit
 }
 
 function title() {
@@ -130,7 +137,8 @@ function title() {
 	msg="${*}"
 
 	echo -e "\n--------------------------------"
-	echo -e "${msg} ... \n"
+	echo -e "${msg} ... "
+	echo -e "--------------------------------\n"
 	IFS=$NIFS
 }
 
