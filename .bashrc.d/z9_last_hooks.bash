@@ -6,3 +6,5 @@ eval "$(starship init bash)"
 
 # https://superuser.com/questions/992210/how-to-set-environment-variables-for-a-gnome-wayland-session
 echo "PATH=${PATH}" >  $HOME/.config/environment.d/50-path.conf
+
+export PATH

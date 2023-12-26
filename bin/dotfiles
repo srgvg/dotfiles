@@ -32,6 +32,7 @@ dotadds="
 .config/broot/
 .config/dunst/dunstrc
 .config/dunst/dunstrc.d_*
+.config/environment.d/
 .config/gtk-2.0/
 .config/gtk-3.0/
 .config/helm/repositories.yaml
@@ -39,6 +40,7 @@ dotadds="
 .config/htop/
 .config/krew-index-list
 .config/krew-list
+.config/mimeapps.list
 .config/nvim/           :!.config/nvim/plugged/           :!.config/nvim/plugged/
 .config/pip/
 .config/pulse/daemon.conf
@@ -161,7 +163,7 @@ fi
 while [ -n "${1:-}" ]
 do
 	action="${1:-}"
-	if [ "${action}" = "up" ] || [ "${action}" = "all" ]
+	if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 	then
 		title Update
 		vcsh foreach remote update --prune
