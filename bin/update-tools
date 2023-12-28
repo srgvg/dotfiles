@@ -29,8 +29,21 @@ rm -rf ${TMPPATH}
 mkdir --parents ${TMPPATH}
 cd ${TMPPATH}
 
+#
 ##########################################################################################################
-##########################################################################################################
+#
+
+trap_exit() {
+	title "cleanup ########################################################################################################"
+	cd $HOME
+	rm -rfv $TMPPATH
+
+	title "end"
+}
+
+trap_error(){
+	echo "Got error, continuing."
+}
 
 title() {
 	echo
@@ -134,7 +147,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ civo ]]
+		if [[ "${artefact}" =~ (civo|korb) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -155,11 +168,15 @@ github_download() {
 	download_file ${url} ${destpathname} || return 1
 }
 
+#
 ##########################################################################################################
+#
+#exit
+#
 ##########################################################################################################
+#
 
 # github_download release|file	project			artefactname_${osarch}		destpath	destname		version
-
 github_download release	antonmedv/fx			fx_${OS_ARCH}				$BINPATH	fx				latest
 github_download release kubescape/kubescape		kubescape-ubuntu-latest		$BINPATH	kubescape		latest
 github_download release kubeshark/kubeshark		kubeshark_${OS_ARCH}		$BINPATH	kubeshark		latest
@@ -176,6 +193,8 @@ github_download release	cilium/cilium-cli		cilium-${OS_ARCH2}.tar.gz				$BINPATH
 github_download release	cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble.tgz		latest
 github_download release	noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp.tar.gz		latest
 github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
+github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
+github_download release BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb.tar.gz		latest
 
 ##########################################################################################################
 
@@ -283,21 +302,5 @@ $HOME/bin/update-bash-completions.sh
 
 title "add dotfiles"
 $HOME/bin/dotfiles add
-
-##########################################################################################################
-
-trap_exit() {
-	title "cleanup ########################################################################################################"
-	cd $HOME
-	rm -rfv $TMPPATH
-
-	title "end"
-}
-
-##########################################################################################################
-
-trap_error(){
-	echo "Got error, continuing."
-}
 
 ##########################################################################################################
