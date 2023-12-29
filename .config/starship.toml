@@ -83,6 +83,7 @@ format = """(\
     $git_state\
     $git_commit\
     $git_status\
+    $direnv\
     $line_break\
     \
     [│ ](bold green)\
@@ -157,6 +158,19 @@ home_symbol = "~"
 #[directory.substitutions]
 #"/Volumes/network/path" = "/net"
 #"src/com/long/java/path" = "mypath"
+
+[direnv]
+disabled = false
+format = '[$symbol $rc_path $loaded]($style)[$allowed](bold red) '
+symbol = 'env' #	The symbol used before displaying the direnv context.
+style = 'bold cyan'
+detect_extensions = [] #	Which extensions should trigger this module.
+detect_files = ['.envrc'] #	Which filenames should trigger this module.
+detect_folders = [] #	Which folders should trigger this module.
+allowed_msg = ''
+denied_msg = '✗'
+loaded_msg = 'ϟ'
+unloaded_msg = '✗'
 
 [docker_context]
 disabled = false
