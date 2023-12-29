@@ -114,20 +114,20 @@ function dotsadd() {
 	cd $HOME
 
 	set +o errexit
-	title "dot"
+	log "dot"
 	for entry in ${dotadds}
 	do
 		IFS=$OIFS
-		echo -n ${entry}
+		log ${entry}
 	    vcsh run dot git add --force ${entry} || title "ERROR ADDING ${entry}"
 		IFS=$NIFS
 	done
 	echo
-	title "sdot"
+	log "sdot"
 	for entry in ${sdotadds}
 	do
 		IFS=$OIFS
-		echo -n ${entry}
+		log ${entry}
 		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
@@ -143,6 +143,14 @@ function title() {
 	echo -e "\n--------------------------------"
 	echo -e "${msg} ... "
 	echo -e "--------------------------------\n"
+	IFS=$NIFS
+}
+
+function log() {
+	local msg
+	IFS=$OIFS
+	msg="${*}"
+	echo -e "${msg} ... "
 	IFS=$NIFS
 }
 
