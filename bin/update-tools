@@ -49,7 +49,10 @@ title() {
 	echo
 	echo "########################################"
 	echo -e "# ${*}"
-	echo
+}
+
+log() {
+	echo -e "# ${*}"
 }
 
 github_getlatestversion() {
@@ -109,13 +112,18 @@ download_file() {
 		destpathname="$(dirname ${destpathname})/${destname}"
 	fi
 
-	mv ${tmppathname} ${destpathname} || return 1
-	if [[ "${destpathname}" =~ "/bin" ]]
+	if ! cmp ${tmppathname} ${destpathname}
 	then
-		chmod +x ${destpathname} || return 1
+		mv ${tmppathname} ${destpathname} || return 1
+		if [[ "${destpathname}" =~ "/bin" ]]
+		then
+			chmod +x ${destpathname} || return 1
+		fi
+		log -n "Downloaded "
+		file ${destpathname} || return 1
+	else
+		log ${tmppathname} already exists at ${destpathname}
 	fi
-	echo -n "Downloaded "
-	file ${destpathname} || return 1
 }
 
 
@@ -139,6 +147,7 @@ github_download() {
 
 	destpathname="${destpath}/${destname}"
 
+	title "Fetch   ${project} ${type} ${artefact}"
 	if [ -z "${version}" ] || [ "${version}" = "latest" ]
 	then
 		version="$(github_getlatestversion ${project} || return 1)"
@@ -164,8 +173,9 @@ github_download() {
 		exit 1
 	fi
 
-	title "Fetch ${project} ${type} ${artefact} version ${version} to ${destpath}/${destname}\n  from  ${url}"
-	download_file ${url} ${destpathname} || return 1
+	log "Fetch  version ${version} to ${destpath}/${destname}"
+	log " from  ${url}"
+	download_file ${url} ${destpathname} # || return 1
 }
 
 #
@@ -220,17 +230,17 @@ download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}
 title "krew"
 ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) $HOME/.krew
 
-title "krew update"
+log "krew update"
 kubectl-krew update
 
-title "krew upgrade"
+log "krew upgrade"
 kubectl-krew upgrade
 
-title "krew make lists"
+log "krew make lists"
 [ "${HOSTNAME}" = "goldorak" ] && kubectl-krew index list > $HOME/.config/krew-index-list
 [ "${HOSTNAME}" = "goldorak" ] && kubectl-krew list > $HOME/.config/krew-list
 
-title "krew / kubectl-plugin_completion"
+log "krew / kubectl-plugin_completion"
 version="$(github_getlatestversion MartinSimango/kubectl-plugin_completion)"
 krew install --manifest-url https://github.com/MartinSimango/kubectl-plugin_completion/releases/download/${version}/plugin_completion.yaml
 
@@ -241,23 +251,23 @@ krew install --manifest-url https://github.com/MartinSimango/kubectl-plugin_comp
 title "asdf update"
 asdf update
 
-title "asdf plugin update --all"
+log "asdf plugin update --all"
 asdf plugin update --all
 
 plugins="$(asdf plugin-list)"
-title "asdf updating plugins\n$(echo $plugins | xargs)"
+log "asdf updating plugins\n$(echo $plugins | xargs)"
 for plugin in $plugins
 do
-    title "asdf install $plugin latest"
+    log "asdf install $plugin latest"
     asdf install $plugin latest ||:
 
-    title "asdf global $plugin latest"
+    log "asdf global $plugin latest"
     asdf global $plugin latest ||:
 done
 
 if [ "${HOSTNAME}" = "goldorak" ]
 then
-	title asdf make lists
+	log asdf make lists
 	asdf plugin-list     > $HOME/.config/asdf-plugin-list
 	asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
 fi
@@ -266,14 +276,15 @@ fi
 ##########################################################################################################
 
 
-title "flatpak update global"
+title "flatpak"
+log "flatpak update global"
 flatpak update --assumeyes --noninteractive
-title "flatpak update user"
+log "flatpak update user"
 flatpak update --assumeyes --noninteractive --user
 
 if [ "${HOSTNAME}" = "goldorak" ]
 then
-	title "flatpak make lists"
+	log "flatpak make lists"
 	flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
 		&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
 	flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
