@@ -19,11 +19,13 @@ BINPATH="$HOME/bin2"
 COMPLPATH="$HOME/.local/share/bash-completion/completions"
 OS_ARCH="linux_amd64"
 OS_ARCH2="linux-amd64"
+OS_ARCH3="Linux_x86_64"
 CURL_COMMAND="curl --silent --connect-timeout 5 --location"
 source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
 
+trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
 trap trap_exit EXIT
-trap trap_error ERR
+#trap trap_error ERR
 
 rm -rf ${TMPPATH}
 mkdir --parents ${TMPPATH}
@@ -43,6 +45,7 @@ trap_exit() {
 
 trap_error(){
 	echo "Got error, continuing."
+	return 1
 }
 
 title() {
@@ -53,6 +56,10 @@ title() {
 
 log() {
 	echo -e "# ${*}"
+}
+
+err() {
+	echo -e "\n*** ${*}\n"
 }
 
 github_getlatestversion() {
@@ -70,11 +77,11 @@ github_getlatestversion() {
 	version="$(echo ${json} | jq -r .tag_name)"
 	if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]
 	then
-		echo failed retrieving latest version for ${project} version ${version} >&2
-		echo via ${url} >&2
-		echo >&2
-		echo "${json}" >&2
-		return 1
+		err failed retrieving latest version for ${project} version ${version} >&2
+		err via ${url} >&2
+		err "${json}" >&2
+		echo -n "${version}"
+		return
 	fi
 	echo -n ${version}
 }
@@ -91,36 +98,36 @@ download_file() {
 
 	tmppathname="${TMPPATH}/$(basename ${destpathname})"
 
-	$CURL_COMMAND ${url} --output ${tmppathname} || return 1
+	$CURL_COMMAND ${url} --output ${tmppathname}
 	rc=$?													; set +o pipefail
 	header="$(strings ${tmppathname} | head --lines 1)"		; set -o pipefail
 
 	if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]
 	then
-		echo failed downloading ${url}
-		return 1
+		err failed downloading ${url}
+		return
 	elif [[ "${url}" =~ tar.gz$ ]] || \
-	     [[ "${url}" =~ tgz$    ]] || \
-	     [[ "${url}" =~ tar.bz$ ]] || \
-	     [[ "${url}" =~ tbz$    ]]
+		 [[ "${url}" =~ tgz$    ]] || \
+		 [[ "${url}" =~ tar.bz$ ]] || \
+		 [[ "${url}" =~ tbz$    ]]
 	then
 		# libarchive-tools
-		bsdtar --extract --file ${tmppathname} || return 1
+		bsdtar --extract --file ${tmppathname}
 		destname="$(basename ${destpathname})"
 		destname="${destname%%\.*}"
-		tmppathname="$(find ${TMPPATH} -name ${destname} || return 1)"
+		tmppathname="$(find ${TMPPATH} -name ${destname})"
 		destpathname="$(dirname ${destpathname})/${destname}"
 	fi
 
 	if ! cmp ${tmppathname} ${destpathname}
 	then
-		mv ${tmppathname} ${destpathname} || return 1
+		mv ${tmppathname} ${destpathname}
 		if [[ "${destpathname}" =~ "/bin" ]]
 		then
-			chmod +x ${destpathname} || return 1
+			chmod +x ${destpathname}
 		fi
 		log -n "Downloaded "
-		file ${destpathname} || return 1
+		file ${destpathname}
 	else
 		log ${tmppathname} already exists at ${destpathname}
 	fi
@@ -150,7 +157,12 @@ github_download() {
 	title "Fetch   ${project} ${type} ${artefact}"
 	if [ -z "${version}" ] || [ "${version}" = "latest" ]
 	then
-		version="$(github_getlatestversion ${project} || return 1)"
+		version="$(github_getlatestversion ${project})"
+		if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]
+		then
+			log "No version found, can't download"
+			return
+		fi
 	fi
 
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
@@ -169,13 +181,13 @@ github_download() {
 	then
 		url="https://raw.githubusercontent.com/${project}/${version}/${artefact}"
 	else
-		echo "Unknown download type ~${type}~"
-		exit 1
+		err "Unknown download type ~${type}~"
+		exit
 	fi
 
 	log "Fetch  version ${version} to ${destpath}/${destname}"
 	log " from  ${url}"
-	download_file ${url} ${destpathname} # || return 1
+	download_file ${url} ${destpathname}
 }
 
 #
@@ -203,8 +215,8 @@ github_download release	cilium/cilium-cli		cilium-${OS_ARCH2}.tar.gz				$BINPATH
 github_download release	cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble.tgz		latest
 github_download release	noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp.tar.gz		latest
 github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
-github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
 github_download release BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb.tar.gz		latest
+github_download release k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt.tar.gz	latest
 
 ##########################################################################################################
 
