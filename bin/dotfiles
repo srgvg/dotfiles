@@ -57,6 +57,8 @@ dotadds="
 .gitignore.d/dot
 .git-template/
 .i3/
+.kube/kubie.yaml
+.kube/plugin-completion-config/
 .local/etc
 .local/man/
 .local/share/applications/
@@ -95,8 +97,7 @@ sdotadds="
 .config/scw/
 .gitignore.d/sdot
 .gnupg/
-.kube/config-*.yaml
-.kube/kubie.yaml
+.kube/ :!.kube/cache/ :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history
 .local/share/remmina/
 .s3cfg
 .src/
@@ -195,6 +196,10 @@ do
 	then
 		title Add
 		dotsadd
+		if [ "${action}" = "all" ]
+		then
+			info
+		fi
 	fi
 	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 	then
