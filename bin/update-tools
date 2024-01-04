@@ -20,6 +20,7 @@ COMPLPATH="$HOME/.local/share/bash-completion/completions"
 OS_ARCH="linux_amd64"
 OS_ARCH2="linux-amd64"
 OS_ARCH3="Linux_x86_64"
+OS_ARCH4="linux_x86_64"
 CURL_COMMAND="curl --silent --connect-timeout 5 --location"
 source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
 
@@ -168,7 +169,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ (civo|korb) ]]
+		if [[ "${artefact}" =~ (civo|korb|grpcurl) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -217,6 +218,7 @@ github_download release	noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	j
 github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo.tar.gz		latest
 github_download release BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb.tar.gz		latest
 github_download release k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt.tar.gz	latest
+github_download release fullstorydev/grpcurl 	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl.tar.gz	latest
 
 ##########################################################################################################
 

@@ -62,7 +62,7 @@ generate_completion_bash() {
             echo "source <($command completion bash)" > ${complpath}/${command}${complext}
         elif [ -x "$(which ${command})" ]
         then
-            if $command ${type} bash > /tmp/${command}${complext}
+            if $command ${type} bash > /tmp/${command}${complext} 2>/dev/null
             then
                 mv /tmp/${command}${complext} ${complpath}/${command}${complext}
                 chmod 644 ${complpath}/${command}${complext}
@@ -85,13 +85,11 @@ generate_completion_bash() {
 #
 for command in ${completion_bash_commands[@]}
 do
-    echo -n .
-    generate_completion_bash $command
+    generate_completion_bash $command && echo $command OK
 done
 for command in ${completions_bash_commands[@]}
 do
-    echo -n .
-    generate_completion_bash $command completions
+    generate_completion_bash $command completions && echo $command OK
 done
 
 #######################################################################################################################
@@ -99,36 +97,33 @@ done
 # custom....
 #
 # scw
-echo -n .
 # https://github.com/scaleway/scaleway-cli/issues/1959#issuecomment-1451964559
 command=scw
 scw autocomplete script shell=bash \
     | sed -E 's#(_?)\/([^ \n]*)scw#\1scw#g' \
     > ${complpath}/scw${complext} || echo scw NOK
-    chmod 644 ${complpath}/${command}${complext}
+chmod 644 ${complpath}/${command}${complext} && echo scw OK
 
 # gcloud
-echo -n .
 command=gcloud
 echo "source $HOME/.asdf/installs/gcloud/$(gcloud version 2>/dev/null \
     | grep "Google Cloud SDK" \
     | sed 's/Google Cloud SDK //')/completion.bash.inc" \
     > ${complpath}/gcloud${complext} || echo gcloud NOK
-    chmod 644 ${complpath}/${command}${complext}
+chmod 644 ${complpath}/${command}${complext} && echo gcloud OK
 
 # kubie
-echo .
 KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
 command=kubie
 $CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
     >  ${complpath}/kubie${complext} || echo kubie NOK
-    chmod 644 ${complpath}/${command}${complext}
+chmod 644 ${complpath}/${command}${complext} && echo kubie OK
 
 # golang
-$CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/go${complext}
+$CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/go${complext} && echo golang OK
 
 ####################
 
-ln -vnfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext}
+ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext} && echo asdf OK
 
 ####################
