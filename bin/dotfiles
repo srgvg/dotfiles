@@ -80,7 +80,7 @@ dotadds="
 .tool-versions
 .XCompose
 bin/
-$(find $HOME/src/ -name '.envrc' -type f)
+$(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*')
 "
 
 sdotadds="
@@ -119,8 +119,8 @@ function dotsadd() {
 	for entry in ${dotadds}
 	do
 		IFS=$OIFS
-		echo -n ${entry}
-		vcsh run dot git add --force ${entry} || title "ERROR ADDING ${entry}"
+		echo ${entry}
+		vcsh run dot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
 	echo
@@ -128,7 +128,7 @@ function dotsadd() {
 	for entry in ${sdotadds}
 	do
 		IFS=$OIFS
-		echo -n ${entry}
+		echo ${entry}
 		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
