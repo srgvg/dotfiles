@@ -82,7 +82,7 @@ function hl() {
 	parameters=()
 	for pattern in "$@"
 	do
-		parameters+=(--regexp "${pattern}|$")
+		parameters+=(--regexp "${pattern}|^")
 	done
 	grep --color --extended-regexp "${parameters[@]}"
 }
