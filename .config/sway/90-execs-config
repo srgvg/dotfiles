@@ -58,3 +58,6 @@ exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-a
 # desktop stuff
 #
 exec_always "sleep 3 && $HOME/bin/i3-launch-jobs ; sleep 1 && swaymsg 'focus output $primary'"
+# https://major.io/p/sway-dark-mode/
+exec "dbus-send --session --dest=org.kde.GtkConfig --type=method_call /GtkConfig org.kde.GtkConfig.setGtkTheme string:Breeze-dark-gtk""
+exec "gsettings set org.gnome.desktop.interface gtk-theme Arc-Dark"

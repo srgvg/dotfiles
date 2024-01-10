@@ -84,7 +84,7 @@ function hl() {
 	do
 		parameters+=(--regexp "${pattern}|^")
 	done
-	grep --color --extended-regexp "${parameters[@]}"
+	grep --color --ignore-case --extended-regexp "${parameters[@]}"
 }
 function ka() {
 	#kubectl $* --all-namespaces
