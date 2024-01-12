@@ -48,6 +48,9 @@ completion_bash_commands=(
 completions_bash_commands=(
     starship
 )
+dashdash_completion_bash_commands=(
+    stern
+)
 
 #######################################################################################################################
 #
@@ -59,7 +62,7 @@ generate_completion_bash() {
     then
         if [ -n "${source}" ]
         then
-            echo "source <($command completion bash)" > ${complpath}/${command}${complext}
+            echo "source <($command $type bash)" > ${complpath}/${command}${complext}
         elif [ -x "$(which ${command})" ]
         then
             if $command ${type} bash > /tmp/${command}${complext} 2>/dev/null
@@ -68,16 +71,13 @@ generate_completion_bash() {
                 chmod 644 ${complpath}/${command}${complext}
             else
                 echo "error generating completions for ${command}" >&2
-                #return 2
             fi
         else
             echo -e "\n$command not executable"
-            #return 2
         fi
     else
         echo -e "\n$command not found"
         echo consider: rm -f ${complpath}/${command}${complext}
-        #return 1
     fi
 }
 
@@ -90,6 +90,10 @@ done
 for command in ${completions_bash_commands[@]}
 do
     generate_completion_bash $command completions && echo $command OK
+done
+for command in ${dashdash_completion_bash_commands[@]}
+do
+    generate_completion_bash $command --completion && echo $command OK
 done
 
 #######################################################################################################################
