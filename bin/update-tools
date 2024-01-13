@@ -289,7 +289,7 @@ fi
 title "asdf cleaning up old versions"
 for plugin in $(asdf plugin-list)
 do
-	for version in $(asdf list $plugin | grep -v '*')
+	for version in $(asdf list $plugin | grep -v '*' | head -n -5)
 	do
 		log removing $plugin $version
 		asdf uninstall $plugin $version

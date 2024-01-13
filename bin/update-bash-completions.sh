@@ -71,13 +71,16 @@ generate_completion_bash() {
                 chmod 644 ${complpath}/${command}${complext}
             else
                 echo "error generating completions for ${command}" >&2
+                return 1
             fi
         else
             echo -e "\n$command not executable"
+            return 1
         fi
     else
         echo -e "\n$command not found"
         echo consider: rm -f ${complpath}/${command}${complext}
+        return 1
     fi
 }
 
@@ -85,15 +88,15 @@ generate_completion_bash() {
 #
 for command in ${completion_bash_commands[@]}
 do
-    generate_completion_bash $command && echo $command OK
+    generate_completion_bash $command && echo $command OK || echo $command NOK
 done
 for command in ${completions_bash_commands[@]}
 do
-    generate_completion_bash $command completions && echo $command OK
+    generate_completion_bash $command completions && echo $command OK || echo $command NOK
 done
 for command in ${dashdash_completion_bash_commands[@]}
 do
-    generate_completion_bash $command --completion && echo $command OK
+    generate_completion_bash $command --completion && echo $command OK || echo $command NOK
 done
 
 #######################################################################################################################
