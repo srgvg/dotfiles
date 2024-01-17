@@ -39,6 +39,7 @@ completion_bash_commands=(
     kubectl-plugin_completion
     kubescape
     kustomize
+    pluto
     regctl
     regsync
     regbot

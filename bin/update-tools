@@ -287,7 +287,7 @@ then
 fi
 
 title "asdf cleaning up old versions"
-for plugin in $(asdf plugin-list)
+for plugin in $(asdf plugin-list | grep -v -e flux2 -e kubectl)
 do
 	for version in $(asdf list $plugin | grep -v '*' | head -n -5)
 	do
