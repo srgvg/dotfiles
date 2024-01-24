@@ -38,13 +38,14 @@ completion_bash_commands=(
     kubectl
     kubectl-plugin_completion
     kubescape
+    kubeshark
     kustomize
     pluto
     regctl
     regsync
     regbot
     talosctl
-    kubeshark
+    velero
 )
 completions_bash_commands=(
     starship

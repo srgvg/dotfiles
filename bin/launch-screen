@@ -124,10 +124,15 @@ init_screen() {
 	fi
 	}
 execute_screen() {
-    init_screen
-    notify_debug "Executing: screen $options $command"
-    echo screen $options $command
-    screen $options bash -c "$command 2>&1 | ts '%Y:%M:%d-%H:%M:%S'"
+	init_screen
+	notify_debug "Executing: screen $options $command"
+	echo screen $options $command
+	if [[ "$command" =~ "setsbg loop" ]]
+	then
+		screen $options bash -c "$command"
+	else
+		screen $options bash -c "$command 2>&1 | ts '%Y:%M:%d-%H:%M:%S'"
+	fi
     }
 
 main() {

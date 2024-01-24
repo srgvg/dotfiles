@@ -138,13 +138,13 @@ notifypath() {
 showbg() {
     if ! ifinteractive
     then
-        swayimg --window='#000000' --scale=optimal --fullscreen --info $(showpath) &
+        swayimg --scale=optimal --fullscreen $(showpath) &
     fi
     notifypath
 }
 
 lock() {
-        checktarget $1
+    checktarget $1
     pickpic
     echo ${background}
     rm -f "${LOCK_SCREEN_IMAGE}"
