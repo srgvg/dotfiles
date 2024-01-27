@@ -59,6 +59,7 @@ alias gu='git up'
 alias imginfo="identify -format '-- %f -- \nType: %m\nSize: %b bytes\nResolution: %wpx x %hpx\nColors: %k'"
 alias imgres="identify -format '%f: %wpx x %hpx\n'"
 # j
+alias jless="jless --mode line --json"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 # k
@@ -118,3 +119,6 @@ alias vsd="vcsh foreach diff-index --patch HEAD --color=always | less --raw-cont
 alias v="vcsh"
 # w
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"
+# y
+hash jless &>/dev/null && alias yless="jless --mode line --yaml"
+
