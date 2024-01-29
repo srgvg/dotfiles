@@ -69,8 +69,16 @@ generate_completion_bash() {
         then
             if $command ${type} bash > /tmp/${command}${complext} 2>/dev/null
             then
-                mv /tmp/${command}${complext} ${complpath}/${command}${complext}
-                chmod 644 ${complpath}/${command}${complext}
+                if cmp /tmp/${command}${complext} ${complpath}/${command}${complext}
+                then
+                    echo "unchanged ${command}"
+                    return 0
+                else
+                    mv /tmp/${command}${complext} ${complpath}/${command}${complext}
+                    chmod 644 ${complpath}/${command}${complext}
+                    echo "updated   ${command}"
+                    return 0
+                fi
             else
                 echo "error generating completions for ${command}" >&2
                 return 1
@@ -90,15 +98,15 @@ generate_completion_bash() {
 #
 for command in ${completion_bash_commands[@]}
 do
-    generate_completion_bash $command && echo $command OK || echo $command NOK
+    generate_completion_bash $command || echo $command NOK
 done
 for command in ${completions_bash_commands[@]}
 do
-    generate_completion_bash $command completions && echo $command OK || echo $command NOK
+    generate_completion_bash $command completions || echo $command NOK
 done
 for command in ${dashdash_completion_bash_commands[@]}
 do
-    generate_completion_bash $command --completion && echo $command OK || echo $command NOK
+    generate_completion_bash $command --completion || echo $command NOK
 done
 
 #######################################################################################################################
@@ -108,31 +116,59 @@ done
 # scw
 # https://github.com/scaleway/scaleway-cli/issues/1959#issuecomment-1451964559
 command=scw
-scw autocomplete script shell=bash \
+if scw autocomplete script shell=bash \
     | sed -E 's#(_?)\/([^ \n]*)scw#\1scw#g' \
-    > ${complpath}/scw${complext} || echo scw NOK
-chmod 644 ${complpath}/${command}${complext} && echo scw OK
+    > ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
 
 # gcloud
 command=gcloud
-echo "source $HOME/.asdf/installs/gcloud/$(gcloud version 2>/dev/null \
-    | grep "Google Cloud SDK" \
-    | sed 's/Google Cloud SDK //')/completion.bash.inc" \
-    > ${complpath}/gcloud${complext} || echo gcloud NOK
-chmod 644 ${complpath}/${command}${complext} && echo gcloud OK
+if GCLOUD_VERSION="$(gcloud version 2>/dev/null | grep "Google Cloud SDK" | sed 's/Google Cloud SDK //')"
+then
+    echo "source $HOME/.asdf/installs/gcloud/${GCLOUD_VERSION}/completion.bash.inc" \
+        > ${complpath}/gcloud${complext}
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
 
 # kubie
-KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
 command=kubie
-$CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
-    >  ${complpath}/kubie${complext} || echo kubie NOK
-chmod 644 ${complpath}/${command}${complext} && echo kubie OK
+KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
+if $CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
+    >  ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
 
 # golang
-$CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/go${complext} && echo golang OK
+command=go
+if $CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
 
 ####################
 
-ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/asdf${complext} && echo asdf OK
+command=asdf
+if ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
 
 ####################
