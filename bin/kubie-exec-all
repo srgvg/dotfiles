@@ -13,13 +13,18 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-WHO=$1 ; shift
-NS=default
+if [ -z "${3:-}" ]
+then
+	echo "USAGE: $0 <context-filter> <default-context> <command>" >&2
+	exit 1
+fi
 
-alias k=kubectl
+WHO=$1 ; shift
+NS=$2 ; shift
+COMMAND="$*"
 
 for ctx in $(kubie ctx | grep -e ${WHO})
 do
-	echo "COMMAND => $@"
-	kubie exec $ctx ${NS} "$@"
+	echo "COMMAND => ${COMMAND}"
+	kubie exec $ctx ${NS} ${COMMAND}
 done
