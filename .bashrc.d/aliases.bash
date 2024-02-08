@@ -1,5 +1,4 @@
 # a
-alias ahack='source ~/ansible/hacking/env-setup >/dev/null 2>&1'
 alias ai='sudo apt install'
 alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
 alias as='apt-cache search'
@@ -71,14 +70,12 @@ alias k="kubectl"
 #    alias kubectl="kubecolor"
 #fi
 complete -F _complete_alias k
-alias kailns="kail --current-ns"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
 alias konfig="kubectl konfig"
-alias ksw="switcher"
 # https://fluxcd.io/flux/faq/#what-is-the-behavior-of-kustomize-used-by-flux
 alias kustomize-build-flux="kustomize build --load-restrictor=LoadRestrictionsNone"
 # l

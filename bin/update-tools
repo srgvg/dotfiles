@@ -209,6 +209,12 @@ github_download release regclient/regclient		regctl-${OS_ARCH2}			$BINPATH	regct
 github_download release regclient/regclient		regsync-${OS_ARCH2}			$BINPATH	regsync			latest
 github_download release regclient/regclient		regbot-${OS_ARCH2}			$BINPATH	regbot			latest
 github_download release neovim/neovim			nvim.appimage				$BINPATH	nvim			latest
+github_download release apple/pkl				pkl-${OS_ARCH2}				$BINPATH	pkl				latest
+
+github_download file	johanhaleby/kubetail	kubetail					$BINPATH	kubetail		master
+github_download file	vaniacer/kube-dialog	kd							$BINPATH	kube-dialog		master
+
+github_download file	johanhaleby/kubetail	completion/kubetail.bash	$COMPLPATH	completions.kubetail.bash	master
 
 github_download release	cilium/cilium-cli		cilium-${OS_ARCH2}.tar.gz				$BINPATH	cilium.tgz		latest
 github_download release	cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble.tgz		latest
@@ -217,11 +223,6 @@ github_download release civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPAT
 github_download release BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb.tar.gz		latest
 github_download release k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt.tar.gz	latest
 github_download release fullstorydev/grpcurl	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl.tar.gz	latest
-
-github_download file	johanhaleby/kubetail	kubetail					$BINPATH	kubetail		master
-github_download file	vaniacer/kube-dialog	kd							$BINPATH	kube-dialog		master
-
-github_download file	johanhaleby/kubetail	completion/kubetail.bash	$COMPLPATH	completions.kubetail.bash	master
 
 ##########################################################################################################
 
