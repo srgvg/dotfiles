@@ -15,12 +15,12 @@ source "$HOME/bin/common.bash"
 
 if [ -z "${3:-}" ]
 then
-	echo "USAGE: $0 <context-filter> <default-context> <command>" >&2
+	echo "USAGE: $0 <context-filter> <namespace> <command>" >&2
 	exit 1
 fi
 
 WHO=$1 ; shift
-NS=$2 ; shift
+NS=$1 ; shift
 COMMAND="$*"
 
 for ctx in $(kubie ctx | grep -e ${WHO})
