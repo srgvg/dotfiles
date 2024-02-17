@@ -171,4 +171,13 @@ else
     echo "NOK ${command}"
 fi
 
+command=ka
+if ln -nfs ${complpath}/kubectl ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
+
 ####################
