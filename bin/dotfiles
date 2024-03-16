@@ -133,7 +133,6 @@ function dotsadd() {
 	for entry in ${dotadds}
 	do
 		IFS=$OIFS
-		echo ${entry}
 		vcsh run dot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
@@ -142,7 +141,6 @@ function dotsadd() {
 	for entry in ${sdotadds}
 	do
 		IFS=$OIFS
-		echo ${entry}
 		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
 	done
