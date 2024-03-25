@@ -49,7 +49,8 @@ dotadds="
 .config/picom.conf
 .config/starship.toml
 .config/sway/
-.config/remmina
+.config/remmina			:!.config/remmina/*.remmina
+.local/share/remmina	:!.local/share/remmina/*.remmina
 .config/user-dirs.dirs
 .editorconfig
 .gitconfig
@@ -112,7 +113,7 @@ sdotadds="
 .gitignore.d/sdot
 .gnupg/
 .kube/ :!.kube/cache/ :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history
-.local/share/remmina/
+.local/share/remmina/*.remmina
 .s3cfg
 .src/
 .ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
