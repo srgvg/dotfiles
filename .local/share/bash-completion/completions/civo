@@ -4952,6 +4952,63 @@ _civo_loadbalancer()
     noun_aliases=()
 }
 
+_civo_network_connect()
+{
+    last_command="civo_network_connect"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--allocation-pool-v4-end=")
+    two_word_flags+=("--allocation-pool-v4-end")
+    local_nonpersistent_flags+=("--allocation-pool-v4-end")
+    local_nonpersistent_flags+=("--allocation-pool-v4-end=")
+    flags+=("--allocation-pool-v4-start=")
+    two_word_flags+=("--allocation-pool-v4-start")
+    local_nonpersistent_flags+=("--allocation-pool-v4-start")
+    local_nonpersistent_flags+=("--allocation-pool-v4-start=")
+    flags+=("--cidr-v4=")
+    two_word_flags+=("--cidr-v4")
+    local_nonpersistent_flags+=("--cidr-v4")
+    local_nonpersistent_flags+=("--cidr-v4=")
+    flags+=("--gateway-ipv4=")
+    two_word_flags+=("--gateway-ipv4")
+    local_nonpersistent_flags+=("--gateway-ipv4")
+    local_nonpersistent_flags+=("--gateway-ipv4=")
+    flags+=("--hardware-addr=")
+    two_word_flags+=("--hardware-addr")
+    local_nonpersistent_flags+=("--hardware-addr")
+    local_nonpersistent_flags+=("--hardware-addr=")
+    flags+=("--vlan-id=")
+    two_word_flags+=("--vlan-id")
+    local_nonpersistent_flags+=("--vlan-id")
+    local_nonpersistent_flags+=("--vlan-id=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_network_create()
 {
     last_command="civo_network_create"
@@ -5059,6 +5116,39 @@ _civo_network_remove()
     noun_aliases=()
 }
 
+_civo_network_show()
+{
+    last_command="civo_network_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_network_update()
 {
     last_command="civo_network_update"
@@ -5099,6 +5189,13 @@ _civo_network()
     command_aliases=()
 
     commands=()
+    commands+=("connect")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="connect"
+        command_aliases+=("new")
+        aliashash["new"]="connect"
+    fi
     commands+=("create")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("add")
@@ -5121,6 +5218,15 @@ _civo_network()
         aliashash["destroy"]="remove"
         command_aliases+=("rm")
         aliashash["rm"]="remove"
+    fi
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("describe")
+        aliashash["describe"]="show"
+        command_aliases+=("get")
+        aliashash["get"]="show"
+        command_aliases+=("inspect")
+        aliashash["inspect"]="show"
     fi
     commands+=("update")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then

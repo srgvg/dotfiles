@@ -64,7 +64,15 @@ alias jqc="jq -C . | less -r"
 alias kb="kustomize build"
 alias kbf="kustomize-build-flux"
 alias kbfad="kustomize-build-flux-apply-dry"
-alias k="kubectl"
+if command -v /home/serge/.asdf/shims/kubecolor >/dev/null 2>&1
+then
+    alias k="kubecolor"
+    complete -o default -F __start_kubectl k
+    alias kubectl="kubecolor"
+    complete -o default -F __start_kubectl kubecolor
+else
+    alias k="kubectl"
+fi
 #if hash kubecolor >&/dev/null; then
 #    alias k="kubecolor"
 #    alias kubectl="kubecolor"

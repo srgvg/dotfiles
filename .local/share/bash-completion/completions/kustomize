@@ -49,7 +49,7 @@ __kustomize_handle_go_custom_completion()
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly kustomize allows to handle aliases
+    # Calling ${words[0]} instead of directly kustomize allows handling aliases
     args=("${words[@]:1}")
     # Disable ActiveHelp which is not supported for bash completion v1
     requestComp="KUSTOMIZE_ACTIVE_HELP=0 ${words[0]} __completeNoDesc ${args[*]}"
@@ -404,6 +404,8 @@ _kustomize_build()
     local_nonpersistent_flags+=("--helm-kube-version=")
     flags+=("--load-restrictor=")
     two_word_flags+=("--load-restrictor")
+    flags_with_completion+=("--load-restrictor")
+    flags_completion+=("__kustomize_handle_go_custom_completion")
     local_nonpersistent_flags+=("--load-restrictor")
     local_nonpersistent_flags+=("--load-restrictor=")
     flags+=("--mount=")
@@ -1543,6 +1545,39 @@ _kustomize_edit_set_replicas()
     noun_aliases=()
 }
 
+_kustomize_edit_set_secret()
+{
+    last_command="kustomize_edit_set_secret"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from-literal=")
+    two_word_flags+=("--from-literal")
+    local_nonpersistent_flags+=("--from-literal")
+    local_nonpersistent_flags+=("--from-literal=")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace=")
+    flags+=("--new-namespace=")
+    two_word_flags+=("--new-namespace")
+    local_nonpersistent_flags+=("--new-namespace")
+    local_nonpersistent_flags+=("--new-namespace=")
+    flags+=("--stack-trace")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _kustomize_edit_set()
 {
     last_command="kustomize_edit_set"
@@ -1559,6 +1594,7 @@ _kustomize_edit_set()
     commands+=("namespace")
     commands+=("namesuffix")
     commands+=("replicas")
+    commands+=("secret")
 
     flags=()
     two_word_flags=()

@@ -587,99 +587,6 @@ _clusterctl_alpha_rollout()
     noun_aliases=()
 }
 
-_clusterctl_alpha_topology_plan()
-{
-    last_command="clusterctl_alpha_topology_plan"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--cluster=")
-    two_word_flags+=("--cluster")
-    two_word_flags+=("-c")
-    local_nonpersistent_flags+=("--cluster")
-    local_nonpersistent_flags+=("--cluster=")
-    local_nonpersistent_flags+=("-c")
-    flags+=("--file=")
-    two_word_flags+=("--file")
-    two_word_flags+=("-f")
-    local_nonpersistent_flags+=("--file")
-    local_nonpersistent_flags+=("--file=")
-    local_nonpersistent_flags+=("-f")
-    flags+=("--kubeconfig=")
-    two_word_flags+=("--kubeconfig")
-    local_nonpersistent_flags+=("--kubeconfig")
-    local_nonpersistent_flags+=("--kubeconfig=")
-    flags+=("--kubeconfig-context=")
-    two_word_flags+=("--kubeconfig-context")
-    flags_with_completion+=("--kubeconfig-context")
-    flags_completion+=("__clusterctl_handle_go_custom_completion")
-    local_nonpersistent_flags+=("--kubeconfig-context")
-    local_nonpersistent_flags+=("--kubeconfig-context=")
-    flags+=("--namespace=")
-    two_word_flags+=("--namespace")
-    flags_with_completion+=("--namespace")
-    flags_completion+=("__clusterctl_handle_go_custom_completion")
-    two_word_flags+=("-n")
-    flags_with_completion+=("-n")
-    flags_completion+=("__clusterctl_handle_go_custom_completion")
-    local_nonpersistent_flags+=("--namespace")
-    local_nonpersistent_flags+=("--namespace=")
-    local_nonpersistent_flags+=("-n")
-    flags+=("--output-directory=")
-    two_word_flags+=("--output-directory")
-    two_word_flags+=("-o")
-    local_nonpersistent_flags+=("--output-directory")
-    local_nonpersistent_flags+=("--output-directory=")
-    local_nonpersistent_flags+=("-o")
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--v=")
-    two_word_flags+=("--v")
-    two_word_flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_flag+=("--file=")
-    must_have_one_flag+=("-f")
-    must_have_one_flag+=("--output-directory=")
-    must_have_one_flag+=("-o")
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_clusterctl_alpha_topology()
-{
-    last_command="clusterctl_alpha_topology"
-
-    command_aliases=()
-
-    commands=()
-    commands+=("plan")
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--v=")
-    two_word_flags+=("--v")
-    two_word_flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _clusterctl_alpha()
 {
     last_command="clusterctl_alpha"
@@ -688,7 +595,6 @@ _clusterctl_alpha()
 
     commands=()
     commands+=("rollout")
-    commands+=("topology")
 
     flags=()
     two_word_flags=()
@@ -734,6 +640,7 @@ _clusterctl_completion()
     must_have_one_flag=()
     must_have_one_noun=()
     must_have_one_noun+=("bash")
+    must_have_one_noun+=("fish")
     must_have_one_noun+=("zsh")
     noun_aliases=()
 }
