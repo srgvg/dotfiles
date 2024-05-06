@@ -171,7 +171,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ (civo|korb|grpcurl) ]]
+		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -217,6 +217,7 @@ github_download 	file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail		
 github_download 	file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
 github_download 	release 		neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
 github_download 	release			noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp.tar.gz					latest
+github_download		release			oras-project/oras		oras_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH    oras.tar.gz					latest
 github_download 	release 		regclient/regclient		regbot-${OS_ARCH2}						$BINPATH	regbot						latest
 github_download 	release 		regclient/regclient		regctl-${OS_ARCH2}						$BINPATH	regctl						latest
 github_download 	release 		regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
