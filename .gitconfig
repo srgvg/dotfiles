@@ -367,5 +367,9 @@
 
 	path = ~/.gitconfig.d/mateco
 
+[includeIf "gitdir:~/src/nccn/"]
+
+	path = ~/.gitconfig.d/nccn
+
 [advice]
 	addIgnoredFile = false
