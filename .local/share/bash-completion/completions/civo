@@ -353,39 +353,6 @@ __civo_handle_word()
     __civo_handle_word
 }
 
-_civo_apikey_current()
-{
-    last_command="civo_apikey_current"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _civo_apikey_ls()
 {
     last_command="civo_apikey_ls"
@@ -487,6 +454,39 @@ _civo_apikey_save()
     noun_aliases=()
 }
 
+_civo_apikey_set()
+{
+    last_command="civo_apikey_set"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_apikey_show()
 {
     last_command="civo_apikey_show"
@@ -527,15 +527,6 @@ _civo_apikey()
     command_aliases=()
 
     commands=()
-    commands+=("current")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
-        command_aliases+=("default")
-        aliashash["default"]="current"
-        command_aliases+=("set")
-        aliashash["set"]="current"
-        command_aliases+=("use")
-        aliashash["use"]="current"
-    fi
     commands+=("ls")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("all")
@@ -560,6 +551,15 @@ _civo_apikey()
         aliashash["new"]="save"
         command_aliases+=("store")
         aliashash["store"]="save"
+    fi
+    commands+=("set")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("current")
+        aliashash["current"]="set"
+        command_aliases+=("default")
+        aliashash["default"]="set"
+        command_aliases+=("use")
+        aliashash["use"]="set"
     fi
     commands+=("show")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
@@ -2537,6 +2537,10 @@ _civo_instance_create()
     local_nonpersistent_flags+=("--network")
     local_nonpersistent_flags+=("--network=")
     local_nonpersistent_flags+=("-r")
+    flags+=("--private_ipv4=")
+    two_word_flags+=("--private_ipv4")
+    local_nonpersistent_flags+=("--private_ipv4")
+    local_nonpersistent_flags+=("--private_ipv4=")
     flags+=("--publicip=")
     two_word_flags+=("--publicip")
     two_word_flags+=("-p")

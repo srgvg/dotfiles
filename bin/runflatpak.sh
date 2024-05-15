@@ -13,15 +13,26 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-app_name="${1:-$(basename $0)}"
-
-[ -n "${1:-}" ] && shift ||:
-app_args="${*:-}"
-
+app_name="$(basename $0)"
 # select pak to run
 if [[ "${app_name}" =~ flatpak ]]
+# script called by its own name, not via app-named symlink
 then
-	app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
+	# app should be first argument
+	if [ -z "${1:-}" ]
+	then
+		# interactively select app
+		app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
+	else
+		echo trying to launch app $app_name
+		shift
+	fi
+fi
+
+app_args="${*:-}"
+if [ -n "${app_args}" ]
+then
+	echo application arguments: $app_args
 fi
 
 # NF is number of fields, so it always prints the last column (first column can have spaces...)
@@ -33,8 +44,13 @@ then
 elif flatpak ps | grep -q "${app_id}"
 then
 	echo flatpak "${app_id}" is already running
-	sleep 5
+	echo =========================================================================
+	echo flatpak run --verbose "${app_id}" ${app_args}
+	echo =========================================================================
+	echo
+	flatpak run --verbose "${app_id}" ${app_args}
 else
+	echo =========================================================================
 	echo flatpak run --verbose "${app_id}" ${app_args}
 	echo =========================================================================
 	echo

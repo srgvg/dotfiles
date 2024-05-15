@@ -22,6 +22,7 @@ IFS=$NIFS
 
 dotadds="
 .asdfrc
+.azure
 .bash_completion
 .bash_logout
 .bash_profile
@@ -99,6 +100,7 @@ Videos
 "
 
 sdotadds="
+.azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry
 .config/gandi/
 .config/mopidy/mopidy.conf
 .docker/ :!.docker/buildx/
@@ -142,9 +144,11 @@ function dotsadd() {
 	sub "sdot"
 	for entry in ${sdotadds}
 	do
+		set -x
 		IFS=$OIFS
 		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
 		IFS=$NIFS
+		set +x
 	done
 	echo
 	set -o errexit

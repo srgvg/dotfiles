@@ -37,6 +37,7 @@ completion_bash_commands=(
     kind
     kubectl
     kubectl-plugin_completion
+    kubelogin
     kubescape
     kubeshark
     kustomize
@@ -46,6 +47,7 @@ completion_bash_commands=(
     regbot
     talosctl
     velero
+    yq
 )
 completions_bash_commands=(
     starship
@@ -159,6 +161,18 @@ then
 else
     echo "NOK ${command}"
 fi
+
+
+# azure-cli
+command=az
+if $CURL_COMMAND https://raw.githubusercontent.com/Azure/azure-cli/dev/az.completion -o ${complpath}/${command}${complext}
+then
+    chmod 644 ${complpath}/${command}${complext}
+    echo "OK  ${command}"
+else
+    echo "NOK ${command}"
+fi
+
 
 # asdf
 command=asdf
