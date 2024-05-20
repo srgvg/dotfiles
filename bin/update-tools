@@ -46,7 +46,7 @@ trap_exit() {
 
 trap_error(){
 	echo "Got error, continuing."
-	return 1
+	return 0
 }
 
 title() {
@@ -225,6 +225,7 @@ github_download 	release 		regclient/regclient		regctl-${OS_ARCH2}						$BINPATH
 github_download 	release 		regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
 github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
 github_download 	release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
+github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
 
 ##########################################################################################################
 
@@ -232,14 +233,14 @@ title "go-chromecast"
 gcurl=$($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest \
 			| jq -r '.assets[].browser_download_url' \
 			| grep $OS_ARCH )
-download_file ${gcurl} ${BINPATH}/go-chromecast.tgz
+download_file ${gcurl} ${BINPATH}/go-chromecast
 
 
 title "kubedash"
 gcurl=$($CURL_COMMAND https://api.github.com/repos/kdash-rs/kdash/releases/latest \
 			| jq -r '.assets[].browser_download_url' \
 			| grep 'linux\.tar.gz' )
-download_file ${gcurl} ${BINPATH}/kdash.tgz
+download_file ${gcurl} ${BINPATH}/kdash
 
 title "broot"
 download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}/broot

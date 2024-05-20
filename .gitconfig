@@ -207,12 +207,17 @@
 	mnemonicprefix = true ; replace a/b with (i)ndex/(c)ommit/(w)orking tree
 	noprefix = true
 	renames = copy
-	#tool = icdiff
+	tool = difftastic
 
 
 [difftool]
 
 	prompt = false
+
+
+[difftool "difftastic"]
+
+	cmd = difft "$LOCAL" "$REMOTE"
 
 
 #[difftool "icdiff"]
@@ -268,6 +273,11 @@
 [merge]
 
 	conflictstyle = diff3
+
+
+[pager]
+
+	difftool = true
 
 
 [pretty]
