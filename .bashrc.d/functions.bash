@@ -87,7 +87,7 @@ function cohen() {
 	chmod -v +x "$(realpath $(git rev-parse --show-cdup))/.git/hooks/pre-commit"
 }
 
-function sortcol() {
+function colsort() {
 	if [ -n "$1" ] #&& [ $1 -gt 0 ]
 	then
 		column -t | sort --ignore-leading-blanks --key $1
