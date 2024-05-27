@@ -1,8 +1,8 @@
 # list of jobs to execute in screen
 ## filter comments and empty lines
 JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
-	runflatpak.sh slack
-	runflatpak.sh discord
+	#runflatpak.sh slack
+	#runflatpak.sh discord
 EOF
 )
 if [ -n "$JOBS2" ]
