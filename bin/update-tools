@@ -111,7 +111,8 @@ download_file() {
 		 [[ "${url}" =~ tgz$    ]] || \
 		 [[ "${url}" =~ tar.xz$ ]] || \
 		 [[ "${url}" =~ tar.bz$ ]] || \
-		 [[ "${url}" =~ tbz$    ]]
+		 [[ "${url}" =~ tbz$    ]] || \
+		 [[ "${url}" =~ zip$    ]]
 	then
 		mv ${tmppathname} ${tmppathname}.archive  # when no subdir and nameclash
 		# libarchive-tools
