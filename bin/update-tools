@@ -5,9 +5,9 @@
 # :indentSize=4:tabSize=4:noTabs=false:
 
 set -o nounset
-set -o errexit
 set -o pipefail
 set -o errtrace
+#set -o errexit
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -171,7 +171,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|nats) ]]
+		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -250,6 +250,9 @@ download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}
 
 ##########################################################################################################
 
+cd ${HOME}
+
+##########################################################################################################
 
 title "krew"
 ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) $HOME/.krew
