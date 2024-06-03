@@ -197,6 +197,7 @@ github_download() {
 ##########################################################################################################
 #
 #
+#
 ##########################################################################################################
 #
 
@@ -204,6 +205,7 @@ github_download() {
 github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
 github_download 	release 		apple/pkl				pkl-${OS_ARCH2}							$BINPATH	pkl							latest
 github_download 	release 		BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb						latest
+github_download		release			c-bata/kube-prompt		kube-prompt_@@VERSION@@_linux_amd64.zip $BINPATH	kube-prompt					latest
 github_download 	release			cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble						latest
 github_download 	release 		civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo						latest
 github_download 	release 		fullstorydev/grpcurl	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl						latest
