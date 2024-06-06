@@ -317,6 +317,9 @@ do
 	done
 done
 
+title "asdf install add-ons for asdf tools"
+log "\ngithub cli extensions"
+gh extension upgrade dlvhdr/gh-dash || gh extension install dlvhdr/gh-dash
 
 ##########################################################################################################
 

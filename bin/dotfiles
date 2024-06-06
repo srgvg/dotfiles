@@ -22,7 +22,6 @@ IFS=$NIFS
 
 dotadds="
 .asdfrc
-.azure
 .bash_completion
 .bash_logout
 .bash_profile
@@ -80,7 +79,6 @@ dotadds="
 .screenrc
 .selected_editor
 .tigrc
-.tool-versions
 .XCompose
 .Xresources
 bin/
@@ -100,7 +98,8 @@ Videos
 "
 
 sdotadds="
-.azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json
+.azure
+.azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json
 .config/gandi/
 .config/mopidy/mopidy.conf
 .docker/ :!.docker/buildx/
