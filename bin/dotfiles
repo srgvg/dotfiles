@@ -82,7 +82,6 @@ dotadds="
 .XCompose
 .Xresources
 bin/
-$(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*')
 Applications
 Backgrounds
 bin
@@ -124,6 +123,7 @@ sdotadds="
 bins/
 etc/
 src/*.sh
+$(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*')
 "
 
 
