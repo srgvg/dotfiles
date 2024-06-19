@@ -27,6 +27,7 @@ completion_bash_commands=(
     cmctl
     datree
     doctl
+    eksctl
     flux
     go-chromecast
     hcloud
