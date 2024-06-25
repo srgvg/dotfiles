@@ -383,3 +383,5 @@
 
 [advice]
 	addIgnoredFile = false
+[diff "dyff"]
+	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"

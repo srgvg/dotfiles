@@ -27,6 +27,7 @@ completion_bash_commands=(
     cmctl
     datree
     doctl
+    dyff
     eksctl
     flux
     go-chromecast

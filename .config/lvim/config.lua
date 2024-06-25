@@ -139,3 +139,35 @@ lvim.plugins = {
 vim.opt.foldmethod = "expr"                     -- default is "normal"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()" -- default is ""
 vim.opt.foldenable = false                      -- if this option is true and fold method option is other than normal, every time a document is opened everything will be folded.
+
+
+
+-- https://www.lunarvim.org/docs/configuration/language-features/linting-and-formatting
+local formatters = require "lvim.lsp.null-ls.formatters"
+formatters.setup {
+    {
+        name = "yamlfmt",
+        ---@usage arguments to pass to the formatter
+        -- these cannot contain whitespace
+        -- options such as `--line-width 80` become either `{"--line-width", "80"}` or `{"--line-width=80"}`
+        args = { "-conf", ".config/yamlfmt/yamlfmt.yaml", "-" },
+        ---@usage only start in these filetypes, by default it will attach to all filetypes it supports
+        filetypes = { "yaml" },
+    },
+}
+
+local linters = require "lvim.lsp.null-ls.linters"
+linters.setup {
+    { name = "flake8" },
+    {
+        name = "shellcheck",
+        args = { "--severity", "warning" },
+    },
+}
+
+local code_actions = require "lvim.lsp.null-ls.code_actions"
+code_actions.setup {
+    {
+        name = "proselint",
+    },
+}
