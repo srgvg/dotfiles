@@ -13,7 +13,7 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-for kustomization in `find -name kustomization.yaml | sed s/kustomization.yaml//`
+for kustomization in $( find . -name kustomization.yaml | sed s/kustomization.yaml// )
 do
 	echo -n .
 	kustomize build $kustomization > /dev/null \

@@ -836,6 +836,7 @@ _kubescape_patch()
     flags+=("--format=")
     two_word_flags+=("--format")
     two_word_flags+=("-f")
+    flags+=("--ignore-errors")
     flags+=("--image=")
     two_word_flags+=("--image")
     two_word_flags+=("-i")
@@ -1273,6 +1274,137 @@ _kubescape_update()
     noun_aliases=()
 }
 
+_kubescape_vap_create-policy-binding()
+{
+    last_command="kubescape_vap_create-policy-binding"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--action=")
+    two_word_flags+=("--action")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--action")
+    local_nonpersistent_flags+=("--action=")
+    local_nonpersistent_flags+=("-a")
+    flags+=("--label=")
+    two_word_flags+=("--label")
+    local_nonpersistent_flags+=("--label")
+    local_nonpersistent_flags+=("--label=")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--namespace=")
+    two_word_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace")
+    local_nonpersistent_flags+=("--namespace=")
+    flags+=("--parameter-reference=")
+    two_word_flags+=("--parameter-reference")
+    two_word_flags+=("-r")
+    local_nonpersistent_flags+=("--parameter-reference")
+    local_nonpersistent_flags+=("--parameter-reference=")
+    local_nonpersistent_flags+=("-r")
+    flags+=("--policy=")
+    two_word_flags+=("--policy")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--policy")
+    local_nonpersistent_flags+=("--policy=")
+    local_nonpersistent_flags+=("-p")
+    flags+=("--cache-dir=")
+    two_word_flags+=("--cache-dir")
+    flags+=("--disable-color")
+    flags+=("--enable-color")
+    flags+=("--kube-context=")
+    two_word_flags+=("--kube-context")
+    flags+=("--logger=")
+    two_word_flags+=("--logger")
+    two_word_flags+=("-l")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("-n")
+    must_have_one_flag+=("--policy=")
+    must_have_one_flag+=("-p")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kubescape_vap_deploy-library()
+{
+    last_command="kubescape_vap_deploy-library"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cache-dir=")
+    two_word_flags+=("--cache-dir")
+    flags+=("--disable-color")
+    flags+=("--enable-color")
+    flags+=("--kube-context=")
+    two_word_flags+=("--kube-context")
+    flags+=("--logger=")
+    two_word_flags+=("--logger")
+    two_word_flags+=("-l")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_kubescape_vap()
+{
+    last_command="kubescape_vap"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create-policy-binding")
+    commands+=("deploy-library")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cache-dir=")
+    two_word_flags+=("--cache-dir")
+    flags+=("--disable-color")
+    flags+=("--enable-color")
+    flags+=("--kube-context=")
+    two_word_flags+=("--kube-context")
+    flags+=("--logger=")
+    two_word_flags+=("--logger")
+    two_word_flags+=("-l")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _kubescape_version()
 {
     last_command="kubescape_version"
@@ -1321,6 +1453,7 @@ _kubescape_root_command()
     commands+=("patch")
     commands+=("scan")
     commands+=("update")
+    commands+=("vap")
     commands+=("version")
 
     flags=()
