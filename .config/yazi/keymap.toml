@@ -4,6 +4,11 @@
 
 [manager]
 
+prepend_keymap = [
+    { on   = [ "l" ], run  = "plugin --sync smart-enter", desc = "Enter the child directory, or open the file" },
+    { on   = [ "Right" ], run  = "plugin --sync smart-enter", desc = "Enter the child directory, or open the file" },
+]
+
 keymap = [
 	{ on = [ "<Esc>" ], run = "escape",             desc = "Exit visual mode, clear selected, or cancel search" },
 	{ on = [ "<C-[>" ], run = "escape",             desc = "Exit visual mode, clear selected, or cancel search" },

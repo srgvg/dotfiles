@@ -67,6 +67,26 @@ function b64d() {
 }
 alias bd=b64d
 
+function b64-loop() {
+	while read -r LINE
+	do
+		echo -n $LINE | base64
+		echo ; echo
+		echo '----------------------------------------'
+		echo
+	done
+}
+
+function b64d-loop() {
+	while read -r LINE
+	do
+		echo -n $LINE | base64 -d
+		echo ; echo
+		echo '----------------------------------------'
+		echo
+	done
+}
+
 function dl() {
 	# quick package search
 	# shellcheck disable=SC2046
