@@ -122,7 +122,7 @@ alias v="vcsh"
 alias vs="vcsh status --terse"
 alias vsd="vcsh foreach diff-index --patch HEAD --color=always | less --raw-control-chars --quit-if-one-screen"
 alias vsi="vcsh foreach myinfo"
-alias vsl="vcsh foreach lola -n 30"
+alias vsl="/usr/bin/paste -d '|' <(vcsh dot lola -n 30 | cut -d\( -f1 )  <(vcsh sdot lola -n 30 | cut -d\( -f1 ) | column -t -s \|"
 # w
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"
 # y
