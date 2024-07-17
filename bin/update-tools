@@ -170,7 +170,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|nats|dyff) ]]
+		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|dyff) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -229,7 +229,7 @@ get_github() {
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$BINPATH	yazi						latest
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$COMPLPATH  yazi.bash					latest
 	github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
-	github_download		file			vaniacer/kube-dialog	kd										$BINPATH	kube-dialog					master
+	github_download		file			vaniacer/kui			kui										$BINPATH	kui							master
 	github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
 	github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
 	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
