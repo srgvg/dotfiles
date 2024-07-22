@@ -28,6 +28,8 @@
 	dcac = diff --cached --word-diff-regex=.
 	dcaw = diff --cached --word-diff
 	df = diff
+	# full context
+	dfc = diff --no-prefix -U1000
 	dfs = ! git diff | grep -v -e ^--- -e ^@@ -e ^+++ -e ^index
 	dw = diff --word-diff
 
