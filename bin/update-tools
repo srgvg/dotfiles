@@ -31,6 +31,7 @@ trap trap_error ERR
 
 rm -rf ${TMPPATH}
 mkdir --parents ${TMPPATH}
+cd ${TMPPATH}
 
 #
 ##########################################################################################################
@@ -232,6 +233,7 @@ get_github() {
 	github_download		file			vaniacer/kui			kui										$BINPATH	kui							master
 	github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
 	github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
+    github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
 
 }
@@ -380,6 +382,9 @@ main() {
 }
 ##########################################################################################################
 
+#    github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
+#    exit
+#
 main
 
 ##########################################################################################################
