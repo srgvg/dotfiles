@@ -25,7 +25,7 @@ else
 	## filter comments and empty lines
 	JOBS=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 
-		/home/serge/bin2/syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
+		syncthing serve --no-browser --verbose --logfile=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
 		runflatpak.sh nextcloud
 		runflatpak.sh signal
 		runflatpak.sh mattermost
