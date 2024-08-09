@@ -15,3 +15,8 @@ if [ -n "$BASH_VERSION" ]; then
 	. "$HOME/.bashrc"
     fi
 fi
+
+
+# Added by Toolbox App
+export PATH="$PATH:/home/serge/.local/share/JetBrains/Toolbox/scripts"
+

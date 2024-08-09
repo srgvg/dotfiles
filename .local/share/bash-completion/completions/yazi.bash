@@ -19,7 +19,7 @@ _yazi() {
 
     case "${cmd}" in
         yazi)
-            opts="-V -h --cwd-file --chooser-file --clear-cache --local-events --remote-events --debug --version --help [ENTRY]"
+            opts="-V -h --cwd-file --chooser-file --clear-cache --client-id --local-events --remote-events --debug --version --help [ENTRY]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -30,6 +30,10 @@ _yazi() {
                     return 0
                     ;;
                 --chooser-file)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --client-id)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
