@@ -2549,6 +2549,10 @@ _civo_instance_create()
     local_nonpersistent_flags+=("--publicip")
     local_nonpersistent_flags+=("--publicip=")
     local_nonpersistent_flags+=("-p")
+    flags+=("--reservedip=")
+    two_word_flags+=("--reservedip")
+    local_nonpersistent_flags+=("--reservedip")
+    local_nonpersistent_flags+=("--reservedip=")
     flags+=("--script=")
     two_word_flags+=("--script")
     local_nonpersistent_flags+=("--script")
@@ -4648,6 +4652,45 @@ _civo_kubernetes_size()
     noun_aliases=()
 }
 
+_civo_kubernetes_update()
+{
+    last_command="civo_kubernetes_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--firewall=")
+    two_word_flags+=("--firewall")
+    local_nonpersistent_flags+=("--firewall")
+    local_nonpersistent_flags+=("--firewall=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--firewall=")
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
 _civo_kubernetes_upgrade()
 {
     last_command="civo_kubernetes_upgrade"
@@ -4806,6 +4849,11 @@ _civo_kubernetes()
         aliashash["all"]="size"
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
+    fi
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("edit")
+        aliashash["edit"]="update"
     fi
     commands+=("upgrade")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
