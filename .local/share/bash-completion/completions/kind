@@ -49,9 +49,10 @@ __kind_handle_go_custom_completion()
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly kind allows to handle aliases
+    # Calling ${words[0]} instead of directly kind allows handling aliases
     args=("${words[@]:1}")
-    requestComp="${words[0]} __completeNoDesc ${args[*]}"
+    # Disable ActiveHelp which is not supported for bash completion v1
+    requestComp="KIND_ACTIVE_HELP=0 ${words[0]} __completeNoDesc ${args[*]}"
 
     lastParam=${words[$((${#words[@]}-1))]}
     lastChar=${lastParam:$((${#lastParam}-1)):1}
@@ -77,7 +78,7 @@ __kind_handle_go_custom_completion()
         directive=0
     fi
     __kind_debug "${FUNCNAME[0]}: the completion directive is: ${directive}"
-    __kind_debug "${FUNCNAME[0]}: the completions are: ${out[*]}"
+    __kind_debug "${FUNCNAME[0]}: the completions are: ${out}"
 
     if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
         # Error code.  No completion.
@@ -103,7 +104,7 @@ __kind_handle_go_custom_completion()
         local fullFilter filter filteringCmd
         # Do not use quotes around the $out variable or else newline
         # characters will be kept.
-        for filter in ${out[*]}; do
+        for filter in ${out}; do
             fullFilter+="$filter|"
         done
 
@@ -114,7 +115,7 @@ __kind_handle_go_custom_completion()
         # File completion for directories only
         local subdir
         # Use printf to strip any trailing newline
-        subdir=$(printf "%s" "${out[0]}")
+        subdir=$(printf "%s" "${out}")
         if [ -n "$subdir" ]; then
             __kind_debug "Listing directories in $subdir"
             __kind_handle_subdirs_in_dir_flag "$subdir"
@@ -125,7 +126,7 @@ __kind_handle_go_custom_completion()
     else
         while IFS='' read -r comp; do
             COMPREPLY+=("$comp")
-        done < <(compgen -W "${out[*]}" -- "$cur")
+        done < <(compgen -W "${out}" -- "$cur")
     fi
 }
 
@@ -492,6 +493,33 @@ _kind_completion_fish()
     noun_aliases=()
 }
 
+_kind_completion_powershell()
+{
+    last_command="kind_completion_powershell"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--loglevel=")
+    two_word_flags+=("--loglevel")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--verbosity=")
+    two_word_flags+=("--verbosity")
+    two_word_flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _kind_completion_zsh()
 {
     last_command="kind_completion_zsh"
@@ -528,6 +556,7 @@ _kind_completion()
     commands=()
     commands+=("bash")
     commands+=("fish")
+    commands+=("powershell")
     commands+=("zsh")
 
     flags=()
