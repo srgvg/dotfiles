@@ -298,8 +298,11 @@ get_asdf() {
 	    log "\nasdf install $plugin latest"
 	    asdf install $plugin latest ||:
 
-	    log "\nasdf global $plugin latest"
-	    asdf global $plugin latest ||:
+		if ! [[ "$plugin" =~ python|flux2 ]]
+		then
+			log "\nasdf global $plugin latest"
+			asdf global $plugin latest ||:
+		fi
 	done
 
 	if [ "${HOSTNAME}" = "goldorak" ]
