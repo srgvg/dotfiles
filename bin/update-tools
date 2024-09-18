@@ -171,7 +171,7 @@ github_download() {
 	if [[ "${artefact}" =~ "@@VERSION@@" ]]
 	then
 		artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|dyff) ]]
+		if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|dyff|nats) ]]
 		then
 			artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
 		fi
@@ -213,6 +213,7 @@ get_github() {
 	github_download		release			k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt						latest
 	github_download		release			kubescape/kubescape		kubescape-ubuntu-latest					$BINPATH	kubescape					latest
 	github_download		release			kubeshark/kubeshark		kubeshark_${OS_ARCH}					$BINPATH	kubeshark					latest
+	github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
 	github_download		file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail					master
 	github_download		file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
 	github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
@@ -235,7 +236,6 @@ get_github() {
 	github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
 	github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
-	github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
 
 }
 ##########################################################################################################
@@ -325,7 +325,8 @@ get_asdf() {
 
 	title "asdf install add-ons for asdf tools"
 	log "\ngithub cli extensions"
-	gh extension upgrade dlvhdr/gh-dash || gh extension install dlvhdr/gh-dash
+	gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
+	gh extension upgrade dlvhdr/gh-dash
 }
 
 ##########################################################################################################
