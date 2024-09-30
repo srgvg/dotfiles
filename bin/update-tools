@@ -45,14 +45,14 @@ trap_exit() {
 }
 
 trap_error(){
-	echo "Got error, continuing."
+	err ${echo_bold_red}"Got error, continuing."
 	return 0
 }
 
 title() {
-	echo
+	echo -e ${echo_yellow}
 	echo "########################################"
-	echo -e "# ${*}"
+	echo -e "# ${*}" ${echo_white}
 }
 
 log() {
@@ -60,7 +60,7 @@ log() {
 }
 
 err() {
-	echo -e "\n*** ${*}\n"
+	echo -e ${echo_bold_red}"\n*** ${*}\n"}${echo_white}
 }
 
 github_getlatestversion() {
@@ -216,6 +216,7 @@ get_github() {
 	github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
 	github_download		file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail					master
 	github_download		file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
+	github_download		release			josephburnett/jd		jd-amd64-linux							$BINPATH	jd							latest
 	github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
 	github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
 	github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
@@ -296,8 +297,8 @@ get_asdf() {
 	log "\nasdf updating plugins\n$(echo $plugins | xargs)"
 	for plugin in $plugins
 	do
-	    log "\nasdf install $plugin latest"
-	    asdf install $plugin latest ||:
+		log "\nasdf install $plugin latest"
+		asdf install $plugin latest ||:
 
 		if ! [[ "$plugin" =~ python|flux2 ]]
 		then
