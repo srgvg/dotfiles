@@ -3090,6 +3090,39 @@ _civo_instance_upgrade()
     noun_aliases=()
 }
 
+_civo_instance_vnc()
+{
+    last_command="civo_instance_vnc"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_instance()
 {
     last_command="civo_instance"
@@ -3188,6 +3221,7 @@ _civo_instance()
         command_aliases+=("resize")
         aliashash["resize"]="upgrade"
     fi
+    commands+=("vnc")
 
     flags=()
     two_word_flags=()
