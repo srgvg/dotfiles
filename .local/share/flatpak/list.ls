@@ -9,6 +9,7 @@ com.rtosta.zapzap	5.3.7	flathub	system
 com.slack.Slack	4.39.95	flathub	system
 com.spotify.Client	1.2.45.454.gc16ec9f6	flathub	system
 io.dbeaver.DBeaverCommunity	24.2.1	flathub	system
+io.github.dyegoaurelio.simple-wireplumber-gui	0.1.4	flathub	system
 io.github.mimbrero.WhatsAppDesktop	1.2.3	flathub	system
 io.github.ungoogled_software.ungoogled_chromium	129.0.6668.70-1-1	flathub	system
 org.chromium.Chromium	129.0.6668.70	flathub	system

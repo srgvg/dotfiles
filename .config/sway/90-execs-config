@@ -50,7 +50,7 @@ exec --no-startup-id "nmcli radio wwan off"
 # tray stuff
 #
 exec_always "pgrep nm-applet || nm-applet --indicator &"
-#exec_always "pgrep pasystray || pasystray --debug --notify=all &"
+exec_always "pgrep pasystray || pasystray --debug --notify=all &"
 exec_always "pgrep pavucontrol || pavucontrol &"
 exec_always "pgrep blueman-applet || blueman-applet &"
 exec_always "pgrep -f system-config-printer/applet.py || system-config-printer-applet &"

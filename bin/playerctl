@@ -19,7 +19,7 @@ playerctl="/usr/bin/playerctl"
 
 PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/.playerctl_active}"
 PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE||:)}"
-if ! $(${playerctl} --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null)
+if ! ${playerctl} --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null
 then
 	PLAYERCTL_ACTIVE_PLAYER=""
 fi
