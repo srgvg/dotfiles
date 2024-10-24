@@ -5482,6 +5482,62 @@ _eksctl_utils_update-legacy-subnet-settings()
     noun_aliases=()
 }
 
+_eksctl_utils_update-zonal-shift-config()
+{
+    last_command="eksctl_utils_update-zonal-shift-config"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cluster=")
+    two_word_flags+=("--cluster")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--cluster")
+    local_nonpersistent_flags+=("--cluster=")
+    local_nonpersistent_flags+=("-c")
+    flags+=("--config-file=")
+    two_word_flags+=("--config-file")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--config-file")
+    local_nonpersistent_flags+=("--config-file=")
+    local_nonpersistent_flags+=("-f")
+    flags+=("--enable-zonal-shift")
+    local_nonpersistent_flags+=("--enable-zonal-shift")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--profile")
+    local_nonpersistent_flags+=("--profile=")
+    local_nonpersistent_flags+=("-p")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    two_word_flags+=("-r")
+    local_nonpersistent_flags+=("--region")
+    local_nonpersistent_flags+=("--region=")
+    local_nonpersistent_flags+=("-r")
+    flags+=("--color=")
+    two_word_flags+=("--color")
+    two_word_flags+=("-C")
+    flags+=("--dumpLogs")
+    flags+=("-d")
+    flags+=("--help")
+    flags+=("-h")
+    flags+=("--verbose=")
+    two_word_flags+=("--verbose")
+    two_word_flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _eksctl_utils_write-kubeconfig()
 {
     last_command="eksctl_utils_write-kubeconfig"
@@ -5576,6 +5632,7 @@ _eksctl_utils()
     commands+=("update-coredns")
     commands+=("update-kube-proxy")
     commands+=("update-legacy-subnet-settings")
+    commands+=("update-zonal-shift-config")
     commands+=("write-kubeconfig")
 
     flags=()
