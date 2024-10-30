@@ -56,11 +56,12 @@ title() {
 }
 
 log() {
-	echo -e "# ${*}"
+	echo -en ${echo_yellow}"#"${echo_white}
+	echo -e " ${*}"
 }
 
 err() {
-	echo -e ${echo_bold_red}"\n*** ${*}\n"}${echo_white}
+	echo -e ${echo_bold_red}"\n*** ${*}\n"${echo_white}
 }
 
 github_getlatestversion() {
@@ -290,22 +291,26 @@ get_asdf() {
 	title "asdf update"
 	asdf update
 
-	log "\nasdf plugin update --all"
+	log "asdf plugin update --all"
 	asdf plugin update --all
+	log ""
 
 	plugins="$(asdf plugin-list)"
-	log "\nasdf updating plugins\n$(echo $plugins | xargs)"
+	log "asdf updating plugins\n$(echo $plugins | xargs)"
 	for plugin in $plugins
 	do
-		log "\nasdf install $plugin latest"
+		log "asdf install $plugin latest"
 		asdf install $plugin latest ||:
+		log ""
 
 		if ! [[ "$plugin" =~ python|flux2 ]]
 		then
-			log "\nasdf global $plugin latest"
+			log "asdf global $plugin latest"
 			asdf global $plugin latest ||:
+			log ""
 		fi
 	done
+	log "END of asdf updating plugins"
 
 	if [ "${HOSTNAME}" = "goldorak" ]
 	then
@@ -334,22 +339,27 @@ get_asdf() {
 
 get_misc() {
 
-	log "\ncivo update"
+	title "civo"
+	log "civo update"
 	hash civo >/dev/null 2>&1 && civo update
+	log ""
 
 	title "flatpak"
-	log "\nflatpak update global"
+	log "flatpak update global"
 	flatpak update --assumeyes --noninteractive
-	log "\nflatpak update user"
+	log ""
+	log "flatpak update user"
 	flatpak update --assumeyes --noninteractive --user
+	log ""
 
 	if [ "${HOSTNAME}" = "goldorak" ]
 	then
-		log "\nflatpak make lists"
+		log "flatpak make lists"
 		flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
 			&& mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
 		flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
 			&& mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
+		log ""
 	fi
 
 	##########################################################################################################
