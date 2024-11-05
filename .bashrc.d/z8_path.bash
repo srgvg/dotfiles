@@ -13,3 +13,6 @@ pathmunge $HOME/.screenlayout   after
 
 pathmunge /usr/local/games      after
 pathmunge /usr/games            after
+
+# custom customer stuff
+pathmunge $HOME/.flits/bin      after

@@ -2577,6 +2577,10 @@ _civo_instance_create()
     local_nonpersistent_flags+=("--tags")
     local_nonpersistent_flags+=("--tags=")
     local_nonpersistent_flags+=("-g")
+    flags+=("--volume-type=")
+    two_word_flags+=("--volume-type")
+    local_nonpersistent_flags+=("--volume-type")
+    local_nonpersistent_flags+=("--volume-type=")
     flags+=("--volumes=")
     two_word_flags+=("--volumes")
     two_word_flags+=("-v")
@@ -7025,6 +7029,73 @@ _civo_volume()
     noun_aliases=()
 }
 
+_civo_volumetypes_ls()
+{
+    last_command="civo_volumetypes_ls"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_volumetypes()
+{
+    last_command="civo_volumetypes"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("ls")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_root_command()
 {
     last_command="civo"
@@ -7164,6 +7235,13 @@ _civo_root_command()
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("volumes")
         aliashash["volumes"]="volume"
+    fi
+    commands+=("volumetypes")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("voltype")
+        aliashash["voltype"]="volumetypes"
+        command_aliases+=("volumetype")
+        aliashash["volumetype"]="volumetypes"
     fi
 
     flags=()
