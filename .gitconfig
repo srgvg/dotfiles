@@ -387,3 +387,9 @@
 	addIgnoredFile = false
 [diff "dyff"]
 	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"
+[credential "https://github.com"]
+	helper = 
+	helper = !/home/serge/.asdf/installs/github-cli/2.60.1/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/home/serge/.asdf/installs/github-cli/2.60.1/bin/gh auth git-credential

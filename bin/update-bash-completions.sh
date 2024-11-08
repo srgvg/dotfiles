@@ -50,6 +50,7 @@ completion_bash_commands=(
     talosctl
     velero
     yq
+    zarf
 )
 completions_bash_commands=(
     starship
