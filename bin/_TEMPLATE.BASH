@@ -4,6 +4,7 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
 set -o nounset
 set -o errexit
 set -o pipefail

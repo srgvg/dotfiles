@@ -37,10 +37,10 @@ function apk() {
 function asdf-cleanup() {
 	for plugin in $(asdf plugin-list)
 	do
-		for version in $(asdf list $plugin | grep -v '*' | head -n -3)
+		for version in $(asdf list $plugin | grep -v '*' )
 		do
-			echo removing $plugin $version
-			asdf uninstall $plugin $version
+			#echo removing $plugin $version
+			echo asdf uninstall $plugin $version
 		done
 	done
 }
