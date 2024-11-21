@@ -78,6 +78,7 @@ fi
 #    alias kubectl="kubecolor"
 #fi
 complete -F _complete_alias k
+alias k9s="k9s --all-namespaces"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"

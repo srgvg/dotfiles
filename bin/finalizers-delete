@@ -1,3 +1,0 @@
-#!/bin/bash -x
-
-finalizers | grep -v -e NAMESAPCE -e NAME | awk '{print "kubectl patch -n "$1" "$4" "$2" -p " }' | sed -e "s/$/\'{\"metadata\":{\"finalizers\":null}}\' --type=merge/"

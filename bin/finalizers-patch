@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+if [ "${1:-}" = delete ]
+then
+	shift
+	DO=""
+else
+	DO="echo"
+fi
+
+for obj in $( finalizers | awk '{print $4"/"$2}' | grep -v -e KIND -e NAME )
+do
+	echo -n "== patching $obj:   "
+	$DO kubectl patch $obj -p '{"metadata":{"finalizers":null}}' --type=merge ||:
+done
+

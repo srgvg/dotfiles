@@ -320,6 +320,7 @@ get_asdf() {
 		asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
 	fi
 
+<<<<<<< Updated upstream
 	#title "asdf cleaning up old versions"
 	#for plugin in $(asdf plugin-list | grep -v -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
 	#do
@@ -329,6 +330,27 @@ get_asdf() {
 	#		asdf uninstall $plugin $version
 	#	done
 	#done
+||||||| Stash base
+	title "asdf cleaning up old versions"
+	for plugin in $(asdf plugin-list | grep -v -e flux2 -e kubectl -e gcloud -e azure-cli)
+	do
+		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
+		do
+			log "\nremoving $plugin $version"
+			asdf uninstall $plugin $version
+		done
+	done
+=======
+	title "asdf cleaning up old versions"
+	for plugin in $(asdf plugin-list | grep -v -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
+	do
+		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
+		do
+			log "\nremoving $plugin $version"
+			asdf uninstall $plugin $version
+		done
+	done
+>>>>>>> Stashed changes
 
 	title "asdf install add-ons for asdf tools"
 	log "\ngithub cli extensions"

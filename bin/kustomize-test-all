@@ -12,15 +12,22 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-
+if [ -z "${1:-}" ]
+then
+	echo "INFO: add any string as first parameter (e.g. '$(basename $0) out') to show error output"
+	echo
+fi
 for kustomization in $( find . -name kustomization.yaml | sed s/kustomization.yaml// )
 do
-	echo -n .
-	kustomize build --load-restrictor=LoadRestrictionsNone $kustomization > /dev/null \
-		|| (
-				echo
-				echo ERROR: $kustomization failed
-				echo
-			)
+	if ! output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization 2>&1 >/dev/null)
+	then
+		if [ -z "${1:-}" ]
+		then
+			echo "ERROR:  $kustomization"
+		else
+			echo "ERROR:  $kustomization  FAILED: $output"
+			echo
+		fi
+	fi
 done
 
