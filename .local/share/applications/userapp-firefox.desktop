@@ -1,0 +1,17 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+NoDisplay=true
+Exec=$HOME/Documents/Applications/firefox/firefox-bin %u
+Name=Local Firefox
+GenericName=Local Bin Web Browser Instance
+Comment=Custom definition for Firefox
+
+[Desktop Action new-window]
+Name=New Window
+Exec=$HOME/bin/firefox --new-window %u
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=$HOME/bin/firefox --private-window %u
