@@ -13,17 +13,38 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-if [ "${1:-}" = delete ]
+function kpatch() {
+	local obj
+	local ns
+	if [ -n "${2:-}" ]
+	then
+		ns=$1
+		obj=$2
+		echo kubectl patch --namespace $ns $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge ||:
+	else
+		obj=$1
+		echo kubectl patch $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge ||:
+	fi
+}
+
+NS=""
+
+if [ -n "${1:-}" ]
 then
-	shift
-	DO=""
-else
-	DO="echo"
+	NS="--namespace $1"
 fi
 
-for obj in $( finalizers | awk '{print $4"/"$2}' | grep -v -e KIND -e NAME )
+# with namespace
+for obj in $( finalizers $NS 2>/dev/null | grep -v '^[[:space:]].*' | awk '{print $1"@"$4"/"$2}' | grep -v -e KIND -e NAME )
 do
-	echo -n "== patching $obj:   "
-	$DO kubectl patch $obj -p '{"metadata":{"finalizers":null}}' --type=merge ||:
-done
+	kpatch ${obj/@/ }
+done | sort
+
+echo
+
+# without namespace
+for obj in $( finalizers 2>/dev/null | grep '^[[:space:]].*' | awk '{print $3"/"$1}' | grep -v -e KIND -e NAME )
+do
+	kpatch ${obj}
+done | sort
 

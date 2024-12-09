@@ -48,6 +48,7 @@ completion_bash_commands=(
     regsync
     regbot
     talosctl
+    talhelper
     velero
     yq
     zarf
