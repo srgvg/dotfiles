@@ -129,5 +129,4 @@ alias vsl="vcsh foreach lola -n 10"
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"
 # y
 hash jless &>/dev/null && alias yless="jless --mode line --yaml"
-hash yazi &>/dev/null && alias y="yazi"
 

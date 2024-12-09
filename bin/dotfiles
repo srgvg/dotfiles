@@ -12,7 +12,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-trap info INT TERM EXIT
+#trap info INT TERM EXIT
 
 ###############################################################################
 
@@ -141,7 +141,13 @@ function dotsadd() {
 	do
 		echo EXECUTING vcsh run dot git add --force ${entry}
 		IFS=$OIFS
-		vcsh run dot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
+		if ! vcsh run dot git add --force ${entry}
+		then
+			err=$?
+			echo
+			title "ERROR ADDING ${entry}"
+			exit $err
+		fi
 		IFS=$NIFS
 	done
 	echo
@@ -150,7 +156,13 @@ function dotsadd() {
 	do
 		echo EXECUTING vcsh run sdot git add --force ${entry}
 		IFS=$OIFS
-		vcsh run sdot git add --force ${entry} || (echo ; title "ERROR ADDING ${entry}")
+		if ! vcsh run sdot git add --force ${entry}
+		then
+			err=$?
+			echo
+			title "ERROR ADDING ${entry}"
+			exit $err
+		fi
 		IFS=$NIFS
 	done
 	echo
@@ -217,10 +229,7 @@ do
 	then
 		title Add
 		dotsadd
-		if [ "${action}" = "all" ]
-		then
-			info
-		fi
+		info
 	fi
 	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 	then
@@ -231,6 +240,10 @@ do
 	then
 		title Pushing
 		vcsh foreach pushall
+	fi
+	if [ "${action}" = "all" ]
+	then
+		info
 	fi
 	shift
 done
