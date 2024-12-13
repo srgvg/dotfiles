@@ -229,7 +229,7 @@ do
 	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 	then
 		title Pull
-		vcsh foreach pull --autostash
+		vcsh foreach pull
 		info
 	fi
 	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
