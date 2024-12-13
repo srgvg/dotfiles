@@ -1,0 +1,1 @@
+AZURE_CONFIG_DIR="/please-set-AZURE_CONFIG_DIR"

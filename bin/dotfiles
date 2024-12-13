@@ -220,15 +220,16 @@ do
 		title Update
 		vcsh foreach remote update --prune
 	fi
-	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-	then
-		title Pull
-		vcsh foreach pull --autostash
-	fi
 	if [ "${action}" = "add" ] || [ "${action}" = "all" ]
 	then
 		title Add
 		dotsadd
+		info
+	fi
+	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+	then
+		title Pull
+		vcsh foreach pull --autostash
 		info
 	fi
 	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]

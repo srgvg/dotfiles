@@ -239,6 +239,7 @@ get_github() {
 	github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
 	github_download		release			zarf-dev/zarf			zarf_@@VERSION@@_Linux_amd64			$BINPATH	zarf						latest
+	github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
 
 }
 ##########################################################################################################
@@ -321,7 +322,7 @@ get_asdf() {
 	fi
 
 	title "asdf cleaning up old versions"
-	for plugin in $(asdf plugin-list | grep -v -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
+	for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
 	do
 		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
 		do
