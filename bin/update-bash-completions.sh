@@ -49,7 +49,6 @@ completion_bash_commands=(
     regbot
     talosctl
     talhelper
-    velero
     yq
     zarf
 )
@@ -59,34 +58,44 @@ completions_bash_commands=(
 dashdash_completion_bash_commands=(
     stern
 )
+register_python_argcomplete_commands=(
+    pipx
+    )
 
 #######################################################################################################################
 #
 generate_completion_bash() {
-    command=$1
-    type=${2:-completion}
-    source=${2:-}
+    local type
+    local command
+    type=$1
+    command=$2
     if hash $command >&/dev/null || type -a $command >&/dev/null
     then
-        if [ -n "${source}" ]
+        if [ -x "$(which ${command})" ]
         then
-            echo "source <($command $type bash)" > ${complpath}/${command}${complext}
-        elif [ -x "$(which ${command})" ]
-        then
-            if $command ${type} bash > /tmp/${command}${complext} 2>/dev/null
+            if [ ${type} = "register-python-argcomplete" ]
             then
-                if cmp /tmp/${command}${complext} ${complpath}/${command}${complext}
+                errout=$(register-python-argcomplete ${command} 2>&1 > /tmp/${command}${complext})
+                rc=$?
+            else
+                errout=$($command ${type} bash 2>&1 > /tmp/${command}${complext})
+                rc=$?
+            fi
+            # [ -n "${errout:-}" ] && echo ERROUT $errout
+            if [ $rc -eq 0 ]
+            then
+                if cmp /tmp/${command}${complext} ${complpath}/${command}${complext} >/dev/null 2>&1
                 then
                     echo "unchanged ${command}"
-                    return 0
                 else
                     mv /tmp/${command}${complext} ${complpath}/${command}${complext}
                     chmod 644 ${complpath}/${command}${complext}
                     echo "updated   ${command}"
-                    return 0
                 fi
             else
-                echo "error generating completions for ${command}" >&2
+                echo "error generating completions for ${command}:" >&2
+                echo ${errout}
+                echo
                 return 1
             fi
         else
@@ -94,28 +103,35 @@ generate_completion_bash() {
             return 1
         fi
     else
-        echo -e "\n$command not found"
-        echo consider: rm -f ${complpath}/${command}${complext}
+        echo
+        echo "$command not found"
+        echo "consider removing $command from this tool and:"
+        echo "rm -vf ${complpath}/${command}${complext}"
+        echo
         return 1
     fi
 }
 
 #######################################################################################################################
 #
-for command in ${completion_bash_commands[@]}
+for command in "${completion_bash_commands[@]}"
 do
-    generate_completion_bash $command || echo $command NOK
+    generate_completion_bash completion $command ||:
 done
-for command in ${completions_bash_commands[@]}
+for command in "${completions_bash_commands[@]}"
 do
-    generate_completion_bash $command completions || echo $command NOK
+    generate_completion_bash completions $command ||:
 done
-for command in ${dashdash_completion_bash_commands[@]}
+for command in "${dashdash_completion_bash_commands[@]}"
 do
-    generate_completion_bash $command --completion || echo $command NOK
+    generate_completion_bash --completion $command ||:
 done
-
+for command in "${register_python_argcomplete_commands[@]}"
+do
+    generate_completion_bash register-python-argcomplete $command ||:
+done
 #######################################################################################################################
+echo
 #######################################################################################################################
 # custom....
 #
