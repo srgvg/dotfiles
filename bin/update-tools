@@ -380,6 +380,13 @@ get_misc() {
 	title "generate bash completions"
 	$HOME/bin/update-bash-completions.sh
 
+
+	##########################################################################################################
+
+
+	title update pipx list
+	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
+
 }
 
 ##########################################################################################################
