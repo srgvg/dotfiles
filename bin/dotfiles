@@ -226,16 +226,16 @@ do
 		dotsadd
 		info
 	fi
+	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
+	then
+		title Committing
+		vcsh foreach commit -m "update from $HOSTNAME"
+	fi
 	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 	then
 		title Pull
 		vcsh foreach pull
 		info
-	fi
-	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
-	then
-		title Committing
-		vcsh foreach commit -m "update from $HOSTNAME"
 	fi
 	if [ "${action}" = "push" ] || [ "${action}" = "all" ]
 	then
