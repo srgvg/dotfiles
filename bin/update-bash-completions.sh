@@ -208,5 +208,8 @@ fi
 ln -nfs ${complpath}/kubectl ${complpath}/k
 ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
 
+# talosctl stuff
+ln -nfs ${complpath}/talosctl ${complpath}/t
+
 
 ####################

@@ -117,6 +117,10 @@ alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
 alias sysl="tail -n 200 -f /var/log/syslog"
 # t
+if command -v /home/serge/.asdf/shims/talosctl >/dev/null 2>&1
+then
+    alias t="talosctl"
+fi
 alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
 # v
 alias v="vcsh"

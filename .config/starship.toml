@@ -187,7 +187,7 @@ always_show_remote = true
 # The format for the module. Use "$branch" to refer to the current branch name.
 symbol = ""
 style = "green"
-format = "[$symbol $branch(:$remote_name(/$remote_branch))]($style)"
+format = "$symbol [$branch](bg:bright-green fg:black bold italic)[( $remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
 # The symbol used to indicate a branch name was truncated. You can use "" for no symbol
