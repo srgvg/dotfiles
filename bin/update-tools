@@ -7,7 +7,7 @@
 set -o nounset
 set -o pipefail
 set -o errtrace
-#set -o errexit
+set -o errexit
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
@@ -17,13 +17,15 @@ source "$HOME/bin/common.bash"
 TMPPATH="$HOME/tmp/update-tools"
 BINPATH="$HOME/bin2"
 COMPLPATH="$HOME/.local/share/bash-completion/completions"
+
+CURL_COMMAND="curl --silent --connect-timeout 5 --location"
+source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
+
 OS_ARCH="linux_amd64"
 OS_ARCH2="linux-amd64"
 OS_ARCH3="Linux_x86_64"
 OS_ARCH4="linux_x86_64"
 OS_ARCH5="linux64"
-CURL_COMMAND="curl --silent --connect-timeout 5 --location"
-source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
 
 trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
 trap trap_exit EXIT
@@ -139,6 +141,7 @@ download_file() {
 
 
 github_download() {
+
 	local type
 	local project
 	local artefact
@@ -200,6 +203,8 @@ github_download() {
 ##########################################################################################################
 
 get_github() {
+	trap "return 0" ERR
+	trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
 	# github_download	release|file	project					artefactname_${osarch}					destpath	destname					version
 	github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
@@ -218,6 +223,7 @@ get_github() {
 	github_download		file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail					master
 	github_download		file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
 	github_download		release			josephburnett/jd		jd-amd64-linux							$BINPATH	jd							latest
+	github_download		release			mirceanton/talswitcher 	talswitcher_linux_amd64.tar.gz			$BINPATH	talswitcher					latest
 	github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
 	github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
 	github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
@@ -384,7 +390,8 @@ get_misc() {
 	##########################################################################################################
 
 
-	title update pipx list
+	title update pipx
+	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
 	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
 
 }

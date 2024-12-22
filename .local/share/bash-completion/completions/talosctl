@@ -474,54 +474,6 @@ _talosctl_bootstrap()
     noun_aliases=()
 }
 
-_talosctl_cgroups()
-{
-    last_command="talosctl_cgroups"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--preset=")
-    two_word_flags+=("--preset")
-    flags_with_completion+=("--preset")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    local_nonpersistent_flags+=("--preset")
-    local_nonpersistent_flags+=("--preset=")
-    flags+=("--schema-file=")
-    two_word_flags+=("--schema-file")
-    local_nonpersistent_flags+=("--schema-file")
-    local_nonpersistent_flags+=("--schema-file=")
-    flags+=("--cluster=")
-    two_word_flags+=("--cluster")
-    flags+=("--context=")
-    two_word_flags+=("--context")
-    flags_with_completion+=("--context")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--endpoints=")
-    two_word_flags+=("--endpoints")
-    two_word_flags+=("-e")
-    flags+=("--nodes=")
-    two_word_flags+=("--nodes")
-    flags_with_completion+=("--nodes")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    two_word_flags+=("-n")
-    flags_with_completion+=("-n")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--talosconfig=")
-    two_word_flags+=("--talosconfig")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _talosctl_cluster_create()
 {
     last_command="talosctl_cluster_create"
@@ -594,6 +546,8 @@ _talosctl_cluster_create()
     two_word_flags+=("--cpus-workers")
     local_nonpersistent_flags+=("--cpus-workers")
     local_nonpersistent_flags+=("--cpus-workers=")
+    flags+=("--crashdump")
+    local_nonpersistent_flags+=("--crashdump")
     flags+=("--custom-cni-url=")
     two_word_flags+=("--custom-cni-url")
     local_nonpersistent_flags+=("--custom-cni-url")
@@ -744,10 +698,6 @@ _talosctl_cluster_create()
     two_word_flags+=("--talosconfig")
     local_nonpersistent_flags+=("--talosconfig")
     local_nonpersistent_flags+=("--talosconfig=")
-    flags+=("--usb-path=")
-    two_word_flags+=("--usb-path")
-    local_nonpersistent_flags+=("--usb-path")
-    local_nonpersistent_flags+=("--usb-path=")
     flags+=("--use-vip")
     local_nonpersistent_flags+=("--use-vip")
     flags+=("--user-disk=")
@@ -782,8 +732,6 @@ _talosctl_cluster_create()
     local_nonpersistent_flags+=("--with-firewall=")
     flags+=("--with-init-node")
     local_nonpersistent_flags+=("--with-init-node")
-    flags+=("--with-json-logs")
-    local_nonpersistent_flags+=("--with-json-logs")
     flags+=("--with-kubespan")
     local_nonpersistent_flags+=("--with-kubespan")
     flags+=("--with-network-bandwidth=")
@@ -870,10 +818,6 @@ _talosctl_cluster_destroy()
 
     flags+=("--force")
     flags+=("-f")
-    flags+=("--save-cluster-logs-archive-path=")
-    two_word_flags+=("--save-cluster-logs-archive-path")
-    flags+=("--save-support-archive-path=")
-    two_word_flags+=("--save-support-archive-path")
     flags+=("--cluster=")
     two_word_flags+=("--cluster")
     flags+=("--context=")
@@ -1665,6 +1609,48 @@ _talosctl_dashboard()
     local_nonpersistent_flags+=("--update-interval")
     local_nonpersistent_flags+=("--update-interval=")
     local_nonpersistent_flags+=("-d")
+    flags+=("--cluster=")
+    two_word_flags+=("--cluster")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__talosctl_handle_go_custom_completion")
+    flags+=("--endpoints=")
+    two_word_flags+=("--endpoints")
+    two_word_flags+=("-e")
+    flags+=("--nodes=")
+    two_word_flags+=("--nodes")
+    flags_with_completion+=("--nodes")
+    flags_completion+=("__talosctl_handle_go_custom_completion")
+    two_word_flags+=("-n")
+    flags_with_completion+=("-n")
+    flags_completion+=("__talosctl_handle_go_custom_completion")
+    flags+=("--talosconfig=")
+    two_word_flags+=("--talosconfig")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_talosctl_disks()
+{
+    last_command="talosctl_disks"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--insecure")
+    flags+=("-i")
+    local_nonpersistent_flags+=("--insecure")
+    local_nonpersistent_flags+=("-i")
     flags+=("--cluster=")
     two_word_flags+=("--cluster")
     flags+=("--context=")
@@ -3108,58 +3094,6 @@ _talosctl_help()
     noun_aliases=()
 }
 
-_talosctl_image_cache-create()
-{
-    last_command="talosctl_image_cache-create"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--force")
-    flags+=("--image-cache-path=")
-    two_word_flags+=("--image-cache-path")
-    flags+=("--image-layer-cache-path=")
-    two_word_flags+=("--image-layer-cache-path")
-    flags+=("--images=")
-    two_word_flags+=("--images")
-    flags+=("--insecure")
-    flags+=("--platform=")
-    two_word_flags+=("--platform")
-    flags+=("--cluster=")
-    two_word_flags+=("--cluster")
-    flags+=("--context=")
-    two_word_flags+=("--context")
-    flags_with_completion+=("--context")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--endpoints=")
-    two_word_flags+=("--endpoints")
-    two_word_flags+=("-e")
-    flags+=("--namespace=")
-    two_word_flags+=("--namespace")
-    flags+=("--nodes=")
-    two_word_flags+=("--nodes")
-    flags_with_completion+=("--nodes")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    two_word_flags+=("-n")
-    flags_with_completion+=("-n")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--talosconfig=")
-    two_word_flags+=("--talosconfig")
-
-    must_have_one_flag=()
-    must_have_one_flag+=("--image-cache-path=")
-    must_have_one_flag+=("--images=")
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _talosctl_image_default()
 {
     last_command="talosctl_image_default"
@@ -3287,7 +3221,6 @@ _talosctl_image()
     command_aliases=()
 
     commands=()
-    commands+=("cache-create")
     commands+=("default")
     commands+=("list")
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
@@ -5103,87 +5036,6 @@ _talosctl_version()
     noun_aliases=()
 }
 
-_talosctl_wipe_disk()
-{
-    last_command="talosctl_wipe_disk"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--method=")
-    two_word_flags+=("--method")
-    local_nonpersistent_flags+=("--method")
-    local_nonpersistent_flags+=("--method=")
-    flags+=("--cluster=")
-    two_word_flags+=("--cluster")
-    flags+=("--context=")
-    two_word_flags+=("--context")
-    flags_with_completion+=("--context")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--endpoints=")
-    two_word_flags+=("--endpoints")
-    two_word_flags+=("-e")
-    flags+=("--nodes=")
-    two_word_flags+=("--nodes")
-    flags_with_completion+=("--nodes")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    two_word_flags+=("-n")
-    flags_with_completion+=("-n")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--talosconfig=")
-    two_word_flags+=("--talosconfig")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_talosctl_wipe()
-{
-    last_command="talosctl_wipe"
-
-    command_aliases=()
-
-    commands=()
-    commands+=("disk")
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--cluster=")
-    two_word_flags+=("--cluster")
-    flags+=("--context=")
-    two_word_flags+=("--context")
-    flags_with_completion+=("--context")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--endpoints=")
-    two_word_flags+=("--endpoints")
-    two_word_flags+=("-e")
-    flags+=("--nodes=")
-    two_word_flags+=("--nodes")
-    flags_with_completion+=("--nodes")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    two_word_flags+=("-n")
-    flags_with_completion+=("-n")
-    flags_completion+=("__talosctl_handle_go_custom_completion")
-    flags+=("--talosconfig=")
-    two_word_flags+=("--talosconfig")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _talosctl_root_command()
 {
     last_command="talosctl"
@@ -5197,11 +5049,6 @@ _talosctl_root_command()
         aliashash["apply"]="apply-config"
     fi
     commands+=("bootstrap")
-    commands+=("cgroups")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("cg")
-        aliashash["cg"]="cgroups"
-    fi
     commands+=("cluster")
     commands+=("completion")
     commands+=("config")
@@ -5217,6 +5064,7 @@ _talosctl_root_command()
         aliashash["cp"]="copy"
     fi
     commands+=("dashboard")
+    commands+=("disks")
     commands+=("dmesg")
     commands+=("edit")
     commands+=("etcd")
@@ -5307,7 +5155,6 @@ _talosctl_root_command()
     fi
     commands+=("validate")
     commands+=("version")
-    commands+=("wipe")
 
     flags=()
     two_word_flags=()
