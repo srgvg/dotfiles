@@ -207,6 +207,7 @@ get_github() {
 	trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
 	# github_download	release|file	project					artefactname_${osarch}					destpath	destname					version
+	github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
 	github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
 	github_download		release			apple/pkl				pkl-${OS_ARCH2}							$BINPATH	pkl							latest
 	github_download		release			BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb						latest
@@ -236,17 +237,18 @@ get_github() {
 	github_download		release			regclient/regclient		regbot-${OS_ARCH2}						$BINPATH	regbot						latest
 	github_download		release			regclient/regclient		regctl-${OS_ARCH2}						$BINPATH	regctl						latest
 	github_download		release			regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
+	github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $BINPATH	satty						latest
+	github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $COMPLPATH	satty.bash					latest
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$BINPATH	yazi						latest
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$COMPLPATH  yazi.bash					latest
 	github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
 	github_download		file			vaniacer/kui			kui										$BINPATH	kui							master
+	github_download		release			versity/versitygw		versitygw_@@VERSION@@_Linux_x86_64.tar.gz $BINPATH	versitygw					latest
 	github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
 	github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
 	github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
 	github_download		release			zarf-dev/zarf			zarf_@@VERSION@@_Linux_amd64			$BINPATH	zarf						latest
-	github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
-
 }
 ##########################################################################################################
 
@@ -272,7 +274,6 @@ get_downloads() {
 get_krew(){
 
 	title "krew"
-	ln -nfs $(asdf which kubectl-krew  | sed s@/bin/kubectl-krew@@) $HOME/.krew
 
 	log "\nkrew update"
 	kubectl-krew update
@@ -285,6 +286,7 @@ get_krew(){
 		log "\nkrew make lists"
 		kubectl-krew index list > $HOME/.config/krew-index-list
 		kubectl-krew list > $HOME/.config/krew-list
+		# to restore: krew install <  $HOME/.config/krew-list
 	fi
 
 	log "\nkrew / kubectl-plugin_completion"
@@ -293,54 +295,74 @@ get_krew(){
 }
 
 ##########################################################################################################
+#
+#get_asdf() {
+#
+#	title "asdf update"
+#	asdf update
+#
+#	log "asdf plugin update --all"
+#	asdf plugin update --all
+#	log ""
+#
+#	plugins="$(asdf plugin-list)"
+#	log "asdf updating plugins\n$(echo $plugins | xargs)"
+#	for plugin in $plugins
+#	do
+#		log "asdf install $plugin latest"
+#		asdf install $plugin latest ||:
+#		log ""
+#
+#		if ! [[ "$plugin" =~ python|flux2 ]]
+#		then
+#			log "asdf global $plugin latest"
+#			asdf global $plugin latest ||:
+#			log ""
+#		fi
+#	done
+#	log "END of asdf updating plugins"
+#
+#	if [ "${HOSTNAME}" = "goldorak" ]
+#	then
+#		log asdf make lists
+#		asdf plugin-list     > $HOME/.config/asdf-plugin-list
+#		asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
+#	fi
+#
+#	title "asdf cleaning up old versions"
+#	for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
+#	do
+#		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
+#		do
+#			log "\nremoving $plugin $version"
+#			asdf uninstall $plugin $version
+#		done
+#	done
+#
+#	title "asdf install add-ons for asdf tools"
+#	log "\ngithub cli extensions"
+#	gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
+#	gh extension upgrade dlvhdr/gh-dash
+#}
+#
+##########################################################################################################
 
-get_asdf() {
+get_mise() {
 
-	title "asdf update"
-	asdf update
-
-	log "asdf plugin update --all"
-	asdf plugin update --all
-	log ""
-
-	plugins="$(asdf plugin-list)"
-	log "asdf updating plugins\n$(echo $plugins | xargs)"
-	for plugin in $plugins
-	do
-		log "asdf install $plugin latest"
-		asdf install $plugin latest ||:
-		log ""
-
-		if ! [[ "$plugin" =~ python|flux2 ]]
-		then
-			log "asdf global $plugin latest"
-			asdf global $plugin latest ||:
-			log ""
-		fi
-	done
-	log "END of asdf updating plugins"
-
-	if [ "${HOSTNAME}" = "goldorak" ]
+	title "mise-en-place"
+	if ! hash mise >/dev/null 2>&1
 	then
-		log asdf make lists
-		asdf plugin-list     > $HOME/.config/asdf-plugin-list
-		asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
+		title "install mise"
+		curl https://mise.run | sh
+		if ! cmp $HOME/.local/bin/mise $HOME/bin/mise >/dev/null 2>&1
+		then
+			mv -v cmp $HOME/.local/bin/mise $HOME/bin/mise
+		fi
+	else
+		mise self-update --yes --no-plugins
+		mise upgrade --bump --yes
 	fi
 
-	title "asdf cleaning up old versions"
-	for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
-	do
-		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
-		do
-			log "\nremoving $plugin $version"
-			asdf uninstall $plugin $version
-		done
-	done
-
-	title "asdf install add-ons for asdf tools"
-	log "\ngithub cli extensions"
-	gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
-	gh extension upgrade dlvhdr/gh-dash
 }
 
 ##########################################################################################################
@@ -394,6 +416,8 @@ get_misc() {
 	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
 	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
 
+
+
 }
 
 ##########################################################################################################
@@ -404,7 +428,8 @@ main() {
 	get_github
 	get_downloads
 	cd ${HOME}
-	get_asdf
+	#get_asdf
+	get_mise
 	get_krew
 	get_misc
 

@@ -78,7 +78,7 @@ fi
 #    alias kubectl="kubecolor"
 #fi
 complete -F _complete_alias k
-alias k9s="k9s --all-namespaces"
+alias k9s="k9s --logoless --all-namespaces"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
@@ -122,6 +122,10 @@ then
     alias t="talosctl"
 fi
 alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
+# u
+# https://superuser.com/a/189068
+alias unwrap="printf '\033[?7l'"
+alias wrap="printf '\033[?7h'"
 # v
 alias v="vcsh"
 alias vs="vcsh status --terse"

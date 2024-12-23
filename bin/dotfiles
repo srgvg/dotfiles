@@ -31,9 +31,10 @@ dotadds="
 .config/asdf-plugin-list
 .config/broot/
 .config/dunst/dunstrc
-.config/environment.d/
+.config/environment.d/	:!.config/environment.d/50-path.conf
 .config/gtk-2.0/
 .config/gtk-3.0/
+.config/gtk-4.0/
 .config/helm/repositories.yaml
 .config/helm/repo-list.yaml
 .config/htop/
@@ -41,6 +42,7 @@ dotadds="
 .config/krew-list
 .config/lvim/			:!.config/lvim/lazy-lock.json
 .config/mimeapps.list
+.config/mise/
 .config/nvim/           :!.config/nvim/plugged/           :!.config/nvim/plugged/
 .config/pip/
 .config/pulse/daemon.conf

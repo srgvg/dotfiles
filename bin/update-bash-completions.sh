@@ -43,6 +43,7 @@ completion_bash_commands=(
     kubescape
     kubeshark
     kustomize
+    mise
     pluto
     regctl
     regsync

@@ -210,10 +210,10 @@ format = "\\([ $state($progress_current/$progress_total)]($style)\\) "
 disabled = false
 tag_disabled = false
 commit_hash_length = 10
-format = "[ \\(($tag/)($hash)\\)]($style)"
+format = "[ \\(([$tag](bg:bright-green fg:black bold italic) / )($hash)\\)]($style bold italic)"
 style = "green"
 only_detached = false
-tag_symbol = "🏷 "
+tag_symbol = "🏷  "
 
 [git_status]
 disabled = false
