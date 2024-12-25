@@ -78,6 +78,10 @@ generate_completion_bash() {
             then
                 errout=$(register-python-argcomplete ${command} 2>&1 > /tmp/${command}${complext})
                 rc=$?
+            elif [ ${command} = "mise" ]
+            then
+                errout=$($command ${type} --include-bash-completion-lib bash 2>&1 > /tmp/${command}${complext})
+                rc=$?
             else
                 errout=$($command ${type} bash 2>&1 > /tmp/${command}${complext})
                 rc=$?
