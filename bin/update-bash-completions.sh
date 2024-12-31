@@ -54,6 +54,7 @@ completion_bash_commands=(
     zarf
 )
 completions_bash_commands=(
+    poetry
     starship
 )
 dashdash_completion_bash_commands=(
@@ -157,7 +158,7 @@ fi
 command=gcloud
 if GCLOUD_VERSION="$(gcloud version 2>/dev/null | grep "Google Cloud SDK" | sed 's/Google Cloud SDK //')"
 then
-    echo "source $HOME/.asdf/installs/gcloud/${GCLOUD_VERSION}/completion.bash.inc" \
+    echo "source $HOME/.local/share/mise/installs/gcloud/${GCLOUD_VERSION}/completion.bash.inc" \
         > ${complpath}/gcloud${complext}
     chmod 644 ${complpath}/${command}${complext}
     echo "OK  ${command}"
@@ -199,9 +200,22 @@ else
 fi
 
 
-# asdf
-command=asdf
-if ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/${command}${complext}
+## asdf
+#command=asdf
+#if ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/${command}${complext}
+#then
+#    chmod 644 ${complpath}/${command}${complext}
+#    echo "OK  ${command}"
+#else
+#    echo "NOK ${command}"
+#fi
+
+# kubectl stuff
+ln -nfs ${complpath}/kubectl ${complpath}/k
+ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
+
+command=kubectl-plugin_completion
+if kubectl plugin_completion plugin-completion bash > ${complpath}/${command}${complext}
 then
     chmod 644 ${complpath}/${command}${complext}
     echo "OK  ${command}"
@@ -209,9 +223,6 @@ else
     echo "NOK ${command}"
 fi
 
-# kubectl stuff
-ln -nfs ${complpath}/kubectl ${complpath}/k
-ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
 
 # talosctl stuff
 ln -nfs ${complpath}/talosctl ${complpath}/t

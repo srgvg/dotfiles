@@ -14,10 +14,10 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-~/Applications/GoLand/bin/goland.sh &
+~/Applications/idea-IU/bin/idea.sh &
 
 # https://www.adangel.org/2024/06/21/nofile-limit-investigations/
-for pid in $( pgrep -f GoLand )
+for pid in $( pgrep -f idea-IU )
 do
 	prlimit --nofile=1024:1073741816 -p $pid
 done
