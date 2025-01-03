@@ -1,18 +1,19 @@
 #!/bin/bash
 
 [ -r "$1" ] || exit
+picture="$1"
 
 reso=$(identify -format "%w %h" "$1" 2> /dev/null)
 [ "$?" = 0 ] || exit
 
-w=${reso%%\ *}
-h=${reso##*\ }
+width=${reso%%\ *}
+height=${reso##*\ }
+size=$(( ${width} * $height / 1000 ))
 
-if [ $w -gt $h ]
-then	orientation=LANDSCAPE
-else	orientation=PORTRAIT
+if [ $width -gt $height ]
+then	orientation="LANDSCAPE"
+else	orientation="PORTRAIT "
 fi
 
-printf '%9s' $orientation" "
-echo $1
+printf "%-9s %10d %6d  %6d  %s \n" "${orientation}" "${size}" "${width}" "${height}" "${picture}"
 
