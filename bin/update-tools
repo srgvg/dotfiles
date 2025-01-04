@@ -161,6 +161,14 @@ github_download() {
 
 	destpathname="${destpath}/${destname}"
 
+
+	if [ $type = release ]
+	then
+		echo "\"ubi:$project\" = { version = \"latest\", exe = \"$destname\" }"
+	fi
+	return
+
+
 	title "Fetch   ${project} ${type} ${artefact} to ${destpathname}"
 	if [ -z "${version}" ] || [ "${version}" = "latest" ]
 	then
@@ -207,48 +215,48 @@ get_github() {
 	trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
 	# github_download	release|file	project					artefactname_${osarch}					destpath	destname					version
-	github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
-	github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
-	github_download		release			apple/pkl				pkl-${OS_ARCH2}							$BINPATH	pkl							latest
-	github_download		release			BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb						latest
-	github_download		release			c-bata/kube-prompt		kube-prompt_@@VERSION@@_linux_amd64.zip $BINPATH	kube-prompt					latest
-	github_download		release			cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble						latest
-	github_download		release			civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo						latest
-	github_download		release			direnv/direnv			direnv.linux-amd64						$BINPATH	direnv						latest
-	github_download		release			fullstorydev/grpcurl	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl						latest
-	github_download		release			homeport/dyff			dyff_@@VERSION@@_linux_amd64.tar.gz		$BINPATH	dyff						latest
-	github_download		release			k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt						latest
-	github_download		release			kubescape/kubescape		kubescape-ubuntu-latest					$BINPATH	kubescape					latest
-	github_download		release			kubeshark/kubeshark		kubeshark_${OS_ARCH}					$BINPATH	kubeshark					latest
-	github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
+	#github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
+	#github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
+	#github_download		release			apple/pkl				pkl-${OS_ARCH2}							$BINPATH	pkl							latest
+	#github_download		release			BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb						latest
+	#github_download		release			c-bata/kube-prompt		kube-prompt_@@VERSION@@_linux_amd64.zip $BINPATH	kube-prompt					latest
+	#github_download		release			cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble						latest
+	#github_download		release			civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo						latest
+	#github_download		release			direnv/direnv			direnv.linux-amd64						$BINPATH	direnv						latest
+	#github_download		release			fullstorydev/grpcurl	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl						latest
+	#github_download		release			homeport/dyff			dyff_@@VERSION@@_linux_amd64.tar.gz		$BINPATH	dyff						latest
+	#github_download		release			k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt						latest
+	#github_download		release			kubescape/kubescape		kubescape-ubuntu-latest					$BINPATH	kubescape					latest
+	#github_download		release			kubeshark/kubeshark		kubeshark_${OS_ARCH}					$BINPATH	kubeshark					latest
+	#github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
 	github_download		file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail					master
 	github_download		file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
-	github_download		release			josephburnett/jd		jd-amd64-linux							$BINPATH	jd							latest
-	github_download		release			mirceanton/talswitcher 	talswitcher_linux_amd64.tar.gz			$BINPATH	talswitcher					latest
-	github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
-	github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
+	#github_download		release			josephburnett/jd		jd-amd64-linux							$BINPATH	jd							latest
+	#github_download		release			mirceanton/talswitcher 	talswitcher_linux_amd64.tar.gz			$BINPATH	talswitcher					latest
+	#github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
+	#github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
 	github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
-	github_download		release			noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp							latest
-	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurl				latest
+	#github_download		release			noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp							latest
+	#github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurl				latest
 	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH	hurl.bash			latest
-	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurlfmt				latest
+	#github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurlfmt				latest
 	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH	hurlfmt.bash		latest
-	github_download		release			oras-project/oras		oras_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH    oras						latest
-	github_download		release			regclient/regclient		regbot-${OS_ARCH2}						$BINPATH	regbot						latest
-	github_download		release			regclient/regclient		regctl-${OS_ARCH2}						$BINPATH	regctl						latest
-	github_download		release			regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
-	github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $BINPATH	satty						latest
+	#github_download		release			oras-project/oras		oras_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH    oras						latest
+	#github_download		release			regclient/regclient		regbot-${OS_ARCH2}						$BINPATH	regbot						latest
+	#github_download		release			regclient/regclient		regctl-${OS_ARCH2}						$BINPATH	regctl						latest
+	#github_download		release			regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
+	#github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $BINPATH	satty						latest
 	github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $COMPLPATH	satty.bash					latest
-	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$BINPATH	yazi						latest
+	#github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$BINPATH	yazi						latest
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$COMPLPATH  yazi.bash					latest
-	github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
+	#github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
 	github_download		file			vaniacer/kui			kui										$BINPATH	kui							master
-	github_download		release			versity/versitygw		versitygw_@@VERSION@@_Linux_x86_64.tar.gz $BINPATH	versitygw					latest
-	github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
-	github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
-	github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
-	github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
-	github_download		release			zarf-dev/zarf			zarf_@@VERSION@@_Linux_amd64			$BINPATH	zarf						latest
+	#github_download		release			versity/versitygw		versitygw_@@VERSION@@_Linux_x86_64.tar.gz $BINPATH	versitygw					latest
+	#github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
+	#github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
+	#github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
+	#github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
+	#github_download		release			zarf-dev/zarf			zarf_@@VERSION@@_Linux_amd64			$BINPATH	zarf						latest
 }
 ##########################################################################################################
 
@@ -442,6 +450,7 @@ main() {
 #    github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 #    exit
 #
-main
+#main
+get_github
 
 ##########################################################################################################
