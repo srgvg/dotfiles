@@ -2,11 +2,11 @@
 paranoid = false
 
 [alias]
-hurl = "ubi:Orange-OpenSource/hurl[exe=hurl]"
-hurlfmt = "ubi:Orange-OpenSource/hurl[exe=hurlfmt]"
-regbot = "ubi:regclient/regclient[exe=regbot]"
-regctl = "ubi:regclient/regclient[exe=regctl]"
-regsync = "ubi:regclient/regclient[exe=regsync]"
+hurl = "ubi:Orange-OpenSource/hurl"
+hurlftmp = "ubi:Orange-OpenSource/hurl"
+regbot = "ubi:regclient/regclient"
+regctl = "ubi:regclient/regclient"
+regsync = "ubi:regclient/regclient"
 
 [tools]
 "aqua:Azure/kubelogin" = "latest"
@@ -68,6 +68,7 @@ tflint = "latest"
 tfsec = "latest"
 tfupdate = "latest"
 timoni = "latest"
+ubi = "latest"
 usage = "latest"
 vcluster = "latest"
 velero = "latest"
@@ -84,6 +85,8 @@ yq = "latest"
 "ubi:direnv/direnv" = { version = "latest", exe = "direnv" }
 "ubi:fullstorydev/grpcurl" = { version = "latest", exe = "grpcurl" }
 "ubi:homeport/dyff" = { version = "latest", exe = "dyff" }
+hurl = { version = "latest", exe = "hurl" }
+hurlfmt = { version = "latest", exe = "hurlfmt" }
 "ubi:k8sgpt-ai/k8sgpt" = { version = "latest", exe = "k8sgpt" }
 "ubi:kubeshark/kubeshark" = { version = "latest", exe = "kubeshark" }
 "ubi:JakWai01/lurk" = { version = "latest", exe = "lurk" }
@@ -96,15 +99,14 @@ yq = "latest"
 "ubi:gabm/Satty" = { version = "latest", exe = "satty" }
 "ubi:sxyazi/yazi" = { version = "latest", exe = "yazi" }
 "ubi:updatecli/updatecli" = { version = "latest", exe = "updatecli" }
+regbot = { version = "latest", exe = "regbot", matching = "regbot" }
+regctl = { version = "latest", exe = "regctl", matching = "regctl" }
+regsync = { version = "latest", exe = "regsync", matching = "regsync" }
 "ubi:versity/versitygw" = { version = "latest", exe = "versitygw" }
 "ubi:vladlosev/fouskoti" = { version = "latest", exe = "fouskoti" }
 "ubi:Wilfred/difftastic" = { version = "latest", exe = "difft" }
 "ubi:ynqa/jnv" = { version = "latest", exe = "jnv" }
 "ubi:yorukot/superfile" = { version = "latest", exe = "spf" }
 "ubi:zarf-dev/zarf" = { version = "latest", exe = "zarf" }
-regbot = { version = "latest", exe = "regbot" }
-regsync = { version = "latest", exe = "regsync" }
-regctl = { version = "latest", exe = "regctl" }
-hurl = { version = "latest", exe = "hurl" }
-hurlfmt = { version = "latest", exe = "hurlfmt" }
+cosign = "latest"
 
