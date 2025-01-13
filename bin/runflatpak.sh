@@ -24,7 +24,7 @@ then
 		# interactively select app
 		app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
 	else
-		app_name=""${1}
+		app_name="${1}"
 		echo trying to launch app $app_name
 		shift
 	fi
@@ -45,11 +45,6 @@ then
 elif flatpak ps | grep -q "${app_id}"
 then
 	echo flatpak "${app_id}" is already running
-	echo =========================================================================
-	echo flatpak run --verbose "${app_id}" ${app_args}
-	echo =========================================================================
-	echo
-	flatpak run --verbose "${app_id}" ${app_args}
 else
 	echo =========================================================================
 	echo flatpak run --verbose "${app_id}" ${app_args}
