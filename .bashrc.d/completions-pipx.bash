@@ -1,1 +1,1 @@
-hash pipx >&/dev/null && eval "$(register-python-argcomplete pipx)"
+hash pipx >&/dev/null && eval "$(register-python-argcomplete pipx)" ||:

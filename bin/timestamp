@@ -8,11 +8,6 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-# shellcheck disable=SC1090
-source "$HOME/bin/common.bash"
-
 ###############################################################################
 
-_command="$*"
-alias | grep -q ts && unalias ts
-${_command} | ts '%Y-%m-%d-%H:%M:%.S'
+date '+%Y%m%d-%H%M%S'

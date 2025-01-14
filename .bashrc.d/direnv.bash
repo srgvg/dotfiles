@@ -1,2 +1,2 @@
 # https://direnv.net/docs/hook.html
-hash direnv >&/dev/null && eval "$(direnv hook bash)"
+hash direnv >&/dev/null && eval "$(direnv hook bash)" ||:

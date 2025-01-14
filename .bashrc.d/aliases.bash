@@ -48,7 +48,7 @@ alias glt='git lolt'
 #alias gpg='gpg2'
 alias grep='grep --color=auto'
 alias grepr='grep --line-number --initial-tab --recursive'
-hash gron >&/dev/null && alias ngron="gron --ungron"
+hash gron >&/dev/null && alias ngron="gron --ungron" ||:
 alias gsmu='git submodule update'
 alias gt='git tree'
 alias gtt='git treet'
@@ -136,5 +136,6 @@ alias vsl="vcsh foreach lola -n 10"
 # w
 alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Documents"
 # y
+hash yazi &>/dev/null && alias y="yazi"
 hash jless &>/dev/null && alias yless="jless --mode line --yaml"
 

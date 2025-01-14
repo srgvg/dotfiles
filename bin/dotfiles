@@ -134,6 +134,10 @@ $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path 
 
 ###############################################################################
 
+function err() {
+	echo -e ${echo_bold_red}"\n*** ${*}\n"${echo_white}
+}
+
 function dotsadd() {
 	cd $HOME
 
@@ -203,6 +207,12 @@ function info() {
 	vcsh foreach status --short --branch --verbose --show-stash
 }
 
+function err() {
+	echo -e ${echo_bold_red}
+	title ${echo_bold_red} ERROR - "$@"
+	echo -e ${echo_normal}
+}
+
 ###############################################################################
 
 cd $HOME
@@ -238,6 +248,12 @@ do
 		title Pull
 		vcsh foreach pull
 		info
+		if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]
+		then
+			err Merge conflicts detected
+			vcsh foreach diff --name-only --diff-filter=U --relative
+			exit 1
+		fi
 	fi
 	if [ "${action}" = "push" ] || [ "${action}" = "all" ]
 	then
