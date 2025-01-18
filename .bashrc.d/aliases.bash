@@ -121,6 +121,7 @@ if command -v /home/serge/.asdf/shims/talosctl >/dev/null 2>&1
 then
     alias t="talosctl"
 fi
+alias talosctl-reset-to-maintenance="talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --reboot --wait=false"
 alias ts="ts '%Y/%m/%d-%H:%M:%.S'"
 # u
 # https://superuser.com/a/189068
