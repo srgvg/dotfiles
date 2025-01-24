@@ -42,7 +42,7 @@ exec --no-startup-id "nmcli radio wifi off" # disable wifi
 exec --no-startup-id "rfkill block bluetooth" # disable bluetooth
 exec --no-startup-id "nmcli radio wwan off"
 
-#exec_always --no-startup-id "setsbg redisplay"
+exec_always --no-startup-id "setsbg redisplay"
 #
 ## startup
 #
@@ -62,7 +62,7 @@ exec_always "sleep 3 && $HOME/bin/i3-launch-jobs ; sleep 1 && swaymsg 'focus out
 exec --no-startup-id "dbus-send --session --dest=org.kde.GtkConfig --type=method_call /GtkConfig org.kde.GtkConfig.setGtkTheme string:Breeze-dark-gtk""
 exec --no-startup-id "gsettings set org.gnome.desktop.interface gtk-theme Arc-Dark"
 # default black background
-exec --no-startup-id "setsbg black"
+#exec --no-startup-id "setsbg black"
 
 # https://askubuntu.com/questions/614387/gksu-gtk-warning-cannot-open-display-0
 exec --no-startup-id "xhost +SI:localuser:root"
