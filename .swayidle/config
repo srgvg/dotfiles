@@ -1,9 +1,0 @@
-idlehint 900
-timeout 1800 "swaylock.sh"
-timeout 2100 "swaymsg 'output * dpms off'" resume "swaymsg 'output * dpms on'"
-
-lock "dunstctl set-paused true ; swaylock.sh"
-unlock "dunstctl set-paused false"
-
-before-sleep "playerctl pause ; swaylock.sh"
-after-resume "swaymsg 'output * dpms on'"
