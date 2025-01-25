@@ -211,8 +211,8 @@ github_download() {
 ##########################################################################################################
 
 get_github() {
-	trap "return 0" ERR
-	trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
+	#trap "return 0" ERR
+	#trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
 	# github_download	release|file	project					artefactname_${osarch}					destpath	destname					version
 	#github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
@@ -449,8 +449,7 @@ main() {
 
 #    github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
 #    exit
-#
-#main
-get_github
+
+main
 
 ##########################################################################################################
