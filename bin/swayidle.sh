@@ -41,7 +41,7 @@ function _resume() {
 command=${1:-default}
 if [ "${command}" = "default" ]
 then
-	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" 2>&1 | tee --append $HOME/logs/swayidle-$HOSTNAME.log
+	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" 2>&1 | tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
 elif [ "${command}" = "timeout" ]
 then
 	swaymsg 'output * dpms off'

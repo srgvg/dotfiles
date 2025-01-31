@@ -159,7 +159,7 @@ _starship() {
             return 0
             ;;
         starship__explain)
-            opts="-s -w -p -P -d -k -j -h --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --help"
+            opts="-s -w -p -P -d -k -j -h --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --shlvl --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -222,6 +222,10 @@ _starship() {
                     return 0
                     ;;
                 -j)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --shlvl)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -457,7 +461,7 @@ _starship() {
             return 0
             ;;
         starship__module)
-            opts="-l -s -w -p -P -d -k -j -h --list --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --help [NAME]"
+            opts="-l -s -w -p -P -d -k -j -h --list --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --shlvl --help [NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -523,6 +527,10 @@ _starship() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --shlvl)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -567,7 +575,7 @@ _starship() {
             return 0
             ;;
         starship__prompt)
-            opts="-s -w -p -P -d -k -j -h --right --profile --continuation --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --help"
+            opts="-s -w -p -P -d -k -j -h --right --profile --continuation --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --shlvl --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -637,6 +645,10 @@ _starship() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --shlvl)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -673,7 +685,7 @@ _starship() {
             return 0
             ;;
         starship__timings)
-            opts="-s -w -p -P -d -k -j -h --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --help"
+            opts="-s -w -p -P -d -k -j -h --status --pipestatus --terminal-width --path --logical-path --cmd-duration --keymap --jobs --shlvl --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -736,6 +748,10 @@ _starship() {
                     return 0
                     ;;
                 -j)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --shlvl)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

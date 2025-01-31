@@ -21,7 +21,7 @@ _poetry_78093c390605dfa2_complete()
 
     # completing for an option
     if [[ ${cur} == --* ]] ; then
-        opts="--ansi --directory --help --no-ansi --no-cache --no-interaction --no-plugins --quiet --verbose --version"
+        opts="--ansi --directory --help --no-ansi --no-cache --no-interaction --no-plugins --project --quiet --verbose --version"
 
         case "$com" in
 
@@ -30,11 +30,11 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (add)
-            opts="${opts} --allow-prereleases --dev --dry-run --editable --extras --group --lock --optional --platform --python --source"
+            opts="${opts} --allow-prereleases --dev --dry-run --editable --extras --group --lock --markers --optional --platform --python --source"
             ;;
 
             (build)
-            opts="${opts} --format --output"
+            opts="${opts} --clean --format --local-version --output"
             ;;
 
             ('cache clear')
@@ -46,11 +46,11 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (check)
-            opts="${opts} --lock"
+            opts="${opts} --lock --strict"
             ;;
 
             (config)
-            opts="${opts} --list --local --unset"
+            opts="${opts} --list --local --migrate --unset"
             ;;
 
             ('debug info')
@@ -59,6 +59,10 @@ _poetry_78093c390605dfa2_complete()
 
             ('debug resolve')
             opts="${opts} --extras --install --python --tree"
+            ;;
+
+            ('env activate')
+            opts="${opts} "
             ;;
 
             ('env info')
@@ -90,7 +94,7 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (install)
-            opts="${opts} --all-extras --compile --dry-run --extras --no-dev --no-directory --no-root --only --only-root --remove-untracked --sync --with --without"
+            opts="${opts} --all-extras --all-groups --compile --dry-run --extras --no-directory --no-root --only --only-root --sync --with --without"
             ;;
 
             (list)
@@ -98,11 +102,11 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (lock)
-            opts="${opts} --check --no-update"
+            opts="${opts} --regenerate"
             ;;
 
             (new)
-            opts="${opts} --name --readme --src"
+            opts="${opts} --author --dependency --description --dev-dependency --interactive --license --name --python --readme --src"
             ;;
 
             (publish)
@@ -130,7 +134,7 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             ('self lock')
-            opts="${opts} --check --no-update"
+            opts="${opts} --regenerate"
             ;;
 
             ('self remove')
@@ -145,20 +149,20 @@ _poetry_78093c390605dfa2_complete()
             opts="${opts} "
             ;;
 
+            ('self sync')
+            opts="${opts} --dry-run"
+            ;;
+
             ('self update')
             opts="${opts} --dry-run --preview"
             ;;
 
-            (shell)
-            opts="${opts} "
-            ;;
-
             (show)
-            opts="${opts} --all --latest --no-dev --only --outdated --top-level --tree --why --with --without"
+            opts="${opts} --all --latest --only --outdated --top-level --tree --why --with --without"
             ;;
 
             ('source add')
-            opts="${opts} --default --priority --secondary"
+            opts="${opts} --priority"
             ;;
 
             ('source remove')
@@ -169,8 +173,12 @@ _poetry_78093c390605dfa2_complete()
             opts="${opts} "
             ;;
 
+            (sync)
+            opts="${opts} --all-extras --all-groups --compile --dry-run --extras --no-directory --no-root --only --only-root --with --without"
+            ;;
+
             (update)
-            opts="${opts} --dry-run --lock --no-dev --only --sync --with --without"
+            opts="${opts} --dry-run --lock --only --sync --with --without"
             ;;
 
             (version)
@@ -187,7 +195,7 @@ _poetry_78093c390605dfa2_complete()
 
     # completing for a command
     if [[ $cur == $com ]]; then
-        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'env info' 'env list' 'env remove' 'env use' export help init install list lock new publish remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self update' shell show 'source add' 'source remove' 'source show' update version"
+        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'env activate' 'env info' 'env list' 'env remove' 'env use' export help init install list lock new publish remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self sync' 'self update' show 'source add' 'source remove' 'source show' sync update version"
 
         COMPREPLY=($(compgen -W "${coms}" -- ${cur}))
         __ltrim_colon_completions "$cur"

@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-#
-# This script is a fork of
-# http://fabian-affolter.ch/blog/mqtt-and-desktop-notifications/
-# Copyright (c) 2013 Fabian Affolter <fabian at affolter-engineering.ch>
-#
-# Modified for my own use.
-# Copyright (c) 2015 Serge van Ginderachter <serge@vanginderachter.be>
-#
-# Released under the MIT license.
-#
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "dbus-python",
+#     "paho-mqtt",
+# ]
+# ///
 
 import time
 import datetime

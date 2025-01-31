@@ -164,10 +164,8 @@ github_download() {
 
 	if [ $type = release ]
 	then
-		echo "\"ubi:$project\" = { version = \"latest\", exe = \"$destname\" }"
+		echo "consider for mise:   \"ubi:$project\" = { version = \"latest\", exe = \"$destname\" }"
 	fi
-	return
-
 
 	title "Fetch   ${project} ${type} ${artefact} to ${destpathname}"
 	if [ -z "${version}" ] || [ "${version}" = "latest" ]
@@ -235,7 +233,7 @@ get_github() {
 	#github_download		release			mirceanton/talswitcher 	talswitcher_linux_amd64.tar.gz			$BINPATH	talswitcher					latest
 	#github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
 	#github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
-	github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
+	#github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
 	#github_download		release			noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp							latest
 	#github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurl				latest
 	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH	hurl.bash			latest
@@ -421,6 +419,7 @@ get_misc() {
 
 
 	title update pipx
+	pipx upgrade-all
 	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
 	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
 

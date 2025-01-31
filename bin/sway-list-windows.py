@@ -1,4 +1,10 @@
-#! /usr/bin/env python3
+#! /usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "i3ipc",
+# ]
+# ///
 
 
 # This script gets the list of all current windows and shows them on wofi
@@ -19,7 +25,7 @@ def get_windows(conn):
         windows.append(window_crawl(con))
 
     return {f'{x.id:<5}{", ".join(x.marks):<20}{x.name}': x for x in windows}
-    
+
 def window_crawl(con):
     '''Recursively get containers without descendants e.g windows'''
     # TODO: This function is unneccesary the library provides two functions
@@ -32,7 +38,7 @@ def window_crawl(con):
 
 def wofi(options: list):
     '''Calls rofi in dmenu mode with the given selection options
-   
+
         It returns the selection
     '''
     return subprocess.check_output(['wofi','--gtk-dark', '-i', '-k', '/dev/null', '-d'],

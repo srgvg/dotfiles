@@ -143,9 +143,8 @@ for_window  [app_id="pavucontrol" shell="xdg_shell"]                            
 assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
 
-assign	[class="Spotify" instance="spotify" title="Spotify"] $ws_music
-### https://github.com/i3/i3/issues/2060#issuecomment-155179472
-for_window	[class="Spotify" instance="spotify" title="Spotify"] move to workspace $ws_music
+assign	[title="Spotify Premium" class="Spotify" instance="spotify"] $ws_music, floating disable
+for_window	[title="Spotify Premium" class="Spotify" instance="spotify"] move to workspace $ws_music
 
 # tools
 assign		[app_id="i3jobs"]				$ws_util_l

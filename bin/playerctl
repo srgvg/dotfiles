@@ -13,23 +13,26 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-playerctl="/usr/bin/playerctl"
+function playerctl() {
+	echo "# playerctl $*" >&2
+	/usr/bin/playerctl $*
+}
 
-[ -z "${1:-}" ] && ${playerctl} --help  && exit 1
+[ -z "${1:-}" ] && playerctl --help  && exit 1
 
 PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/.playerctl_active}"
 PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE||:)}"
-if ! ${playerctl} --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null
+if ! playerctl --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null
 then
 	PLAYERCTL_ACTIVE_PLAYER=""
 fi
 
-players="$($playerctl --list-all)"
+players="$(playerctl --list-all)"
 if [ "$players" != "No players found" ]
 then
 	for player in $players
 	do
-		if [ $(${playerctl} --player ${player} status) = "Playing" ]
+		if [ "$(playerctl --player ${player} status)" = "Playing" ]
 		then
 			PLAYERCTL_ACTIVE_PLAYER="${player}"
 			echo ${PLAYERCTL_ACTIVE_PLAYER} > ${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE}
@@ -40,14 +43,14 @@ fi
 
 playeropt=""
 [ -n "$PLAYERCTL_ACTIVE_PLAYER" ] && playeropt="--player $PLAYERCTL_ACTIVE_PLAYER"
-if [ "$PLAYERCTL_ACTIVE_PLAYER" = "vlc" ] && [ "$1" = "play-pause" ] && [ "$(${playerctl} status)" = "Playing" ]
+if [ "$PLAYERCTL_ACTIVE_PLAYER" = "vlc" ] && [ "$1" = "play-pause" ] && [ "$(playerctl ${playeropt} status)" = "Playing" ]
 then
 	shift
-	${playerctl} ${playeropt} --all-players stop $*
-elif [ "$1" = "play-pause" ] && [ "$(${playerctl} status)" = "Playing" ]
+	playerctl ${playeropt} --all-players stop $*
+elif [ "$1" = "play-pause" ] && [ "$(playerctl status)" = "Playing" ]
 then
 	shift
-	${playerctl} ${playeropt} --all-players stop $*
+	playerctl ${playeropt} --all-players stop $*
 else
-	${playerctl} ${playeropt} $*
+	playerctl ${playeropt} $*
 fi

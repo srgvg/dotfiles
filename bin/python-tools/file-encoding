@@ -1,6 +1,0 @@
-#!/usr/bin/env python2
-import chardet
-import os
-
-for n in os.listdir('.'):
-    print '%s => %s (%s)' % (n, chardet.detect(n)['encoding'], chardet.detect(n)['confidence'])
