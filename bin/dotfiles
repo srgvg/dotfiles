@@ -242,7 +242,7 @@ do
 	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
 	then
 		title Committing
-		vcsh foreach commit -m "update from $HOSTNAME"
+		vcsh foreach commit -m "update from $HOSTNAME  ${2:-}"
 	fi
 	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
 	then

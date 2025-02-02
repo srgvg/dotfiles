@@ -3,13 +3,13 @@ Version=1.0
 Type=Application
 Terminal=false
 X-MultipleArgs=false
-Icon=firefox256
-StartupWMClass=firefox-release
+Icon=firefox
+#StartupWMClass=firefox-release
 DBusActivatable=false
 Categories=GNOME;GTK;Network;WebBrowser;
 StartupNotify=true
 Actions=new-window;new-private-window;open-profile-manager;
-Exec=$HOME/Documents/Applications/firefox/firefox-bin %u
+Exec=/home/serge/Documents/Applications/firefox/firefox-bin %u
 Name=Local Firefox
 GenericName=Firefox
 Comment=Local Bin Web Browser Instance
@@ -17,8 +17,8 @@ MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xm
 
 [Desktop Action new-window]
 Name=New Window
-Exec=$HOME/Documents/Applications/firefox/firefox-bin --new-window %u
+Exec=/home/serge/Documents/Applications/firefox/firefox-bin --new-window %u
 
 [Desktop Action new-private-window]
 Name=New Private Window
-Exec=$HOME/Documents/Applications/firefox/firefox-bin --private-window %u
+Exec=/home/serge/Documents/Applications/firefox/firefox-bin --private-window %u
