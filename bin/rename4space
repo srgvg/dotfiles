@@ -27,17 +27,14 @@ function rename() {
 	$echo mv -v "$file" "$path/$newname"
 }
 
-if [ y"$1" = ydo ]
+if [ "${1:-}" = "do" ]
 then
     shift
 else
-	echo=echo
+	echo="echo"
 fi
 
-rename "$@"
-exit
-
-files=($@)
+files=("$@")
 for file in "${files[@]}"
 do
 	rename "${file}"
