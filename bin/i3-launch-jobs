@@ -29,6 +29,7 @@ else
 		runflatpak.sh signal
 		runflatpak.sh mattermost
 		runflatpak.sh slack
+		runflatpak.sh nextcloud
 		# runflatpak.sh discord
 		# runflatpak.sh spotify --show-console
 
@@ -50,15 +51,14 @@ function i3-launch-job() {
         notify_error "Nothing to launch"
         return
     fi
-    notify "Checking for \"$*\" ... "
-	if _pid=$(pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs)
+	_pid=$( pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs || echo -n 0 )
+	if  [ "${_pid}" -ne 0 ]
     then
-	notify "              ... already running (${_pid})"
+		echo -n "."
     else
-        notify "              ... !! STARTING UP !!"
-        notify "              ..... $*"
-        # shellcheck disable=SC2048
-	launch-screen i3jobs add $* | sed -e 's/^/                -   /'
+		notify "starting  $*"
+		# shellcheck disable=SC2048
+		launch-screen i3jobs add $* | sed -e 's/^/                -   /'
     fi
 }
 
@@ -77,15 +77,13 @@ do
 	fi
 	if ifinteractive
 	then
-		echo DEBUG IN TERMINAL
 		i3-launch-job $line
 	else
-		echo DEBUG NOT NOT NOT IN TERMINAL
 		sleep ${SLEEP_COUNTER} && i3-launch-job $line
 		((SLEEP_COUNTER=SLEEP_COUNTER+1))
 	fi
-	echo
 done
+echo
 
 if ifinteractive
 then

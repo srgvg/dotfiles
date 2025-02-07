@@ -50,11 +50,13 @@ else
 	echo flatpak run --verbose "${app_id}" ${app_args}
 	echo =========================================================================
 	echo
-	i3-launch-jobs flatpak run --verbose "${app_id}" ${app_args}
+	#i3-launch-jobs flatpak run --verbose "${app_id}" ${app_args}
+	flatpak run --verbose "${app_id}" ${app_args}
 
 	## because they sometimes go to background
-	#while flatpak ps | grep -q "${app_id}"
-	#do
-	#	sleep 5
-	#done
+	PID=$( flatpak ps | grep ${app_id} | awk '{print $2}')
+	while kill -0 $PID > /dev/null 2>&1
+	do
+		sleep 5
+	done
 fi

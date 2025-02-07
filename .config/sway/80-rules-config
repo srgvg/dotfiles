@@ -139,12 +139,15 @@ for_window [class="Mattermost" instance="mattermost" window_role="browser-window
 # Music
 assign      [app_id="pavucontrol" shell="xdg_shell"]                                            $ws_music
 for_window  [app_id="pavucontrol" shell="xdg_shell"]                                            layout splitv, floating disable
+assign      [app_id="com.saivert.pwvucontrol"]                                            $ws_music
+for_window  [app_id="com.saivert.pwvucontrol"]                                            layout splitv, floating disable
 
-assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
-for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout splitv
 
-assign	[class="Spotify" instance="spotify"] $ws_music, floating disable
-for_window	[ class="Spotify" instance="spotify"] move to workspace $ws_music
+assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music, layout tabbed
+for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
+
+assign	[class="Spotify" instance="spotify"] $ws_music, floating disable, layout tabbed
+for_window	[ class="Spotify" instance="spotify"] move to workspace $ws_music, layout tabbed
 
 # tools
 assign		[app_id="i3jobs"]				$ws_util_l
