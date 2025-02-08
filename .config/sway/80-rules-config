@@ -67,8 +67,8 @@ no_focus [window_role="pop-up"]
 # Tools
 #
 #for_window [app_id="nemo"]								floating enable
-for_window [app_id=org.gnome.Nautilus ] floating enable
 for_window [class="Nemo" instance="bookmarks" title="Edit Bookmarks"]					floating enable
+for_window [app_id="org.gnome.Nautilus"]                                                floating disable
 for_window [class="Totem" instance="totem"]												floating enable, border pixel 4
 for_window [class="Gnome-control-center" instance="gnome-control-center"]				floating enable
 # xev

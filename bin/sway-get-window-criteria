@@ -24,14 +24,20 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-props="$( 
-	swaymsg -t get_tree | jq -r '..|try select(.focused == true)' \
-		| jq 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' \
-		| grep -e{name,app_id,shell}=
-	swaymsg -t get_tree | jq -r '..|try select(.focused == true).window_properties' \
-		| sed 's/null/\{\}/' \
-	    | jq 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' 
+props="$(
+	swaymsg --type get_tree --raw \
+		| jq -r 'recurse | try select(.focused == true) | to_entries[] | select(.key == "app_id" or .key == "name" or .key == "shell")' \
+		| jq -s 'map(.key + "=\"" + .value|tostring + "\"" ) |.[]' \
+		| jq -r
+	swaymsg --type get_tree --raw \
+		| jq  'recurse | try select(.focused == true) | try .window_properties' \
+		| grep -v null | jq -s \
+		| jq '.[] | to_entries | .[] | select(.key == "class" or .key == "instance" or .key == "title" or .key == "window_role" )  ' \
+		| jq -s 'map(.key + "=\"" + .value|tostring + "\"" ) |.[]' \
+		| jq -r
 	)"
-echo -n $props
+echo $props
+echo
+echo $props | xargs -n1
 notify_desktop_always low "Sway Window Properties" "${props}"
 echo -n $props | wl-copy
