@@ -18,36 +18,41 @@ function playerctl() {
 	/usr/bin/playerctl $*
 }
 
+function findplaying(){
+	playing=""
+	players="$(playerctl --list-all)"
+	if [ "$players" != "No players found" ]
+	then
+		for player in $players
+		do
+			if [ "$(playerctl --player ${player} status)" = "Playing" ]
+			then
+				playing="${player}"
+				break
+			fi
+		done
+	fi
+	echo -n ${playing}
+}
+
 [ -z "${1:-}" ] && playerctl --help  && exit 1
 
 PLAYERCTL_ACTIVE_PLAYER_STATUSFILE="${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE:-$HOME/.playerctl_active}"
 PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_ACTIVE_PLAYER:-$(head -n 1 $PLAYERCTL_ACTIVE_PLAYER_STATUSFILE||:)}"
-if ! playerctl --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null
-then
-	PLAYERCTL_ACTIVE_PLAYER=""
-fi
+PLAYERCTL_PLAYING_PLAYER="$(findplaying)"
 
-players="$(playerctl --list-all)"
-if [ "$players" != "No players found" ]
+if [ -z "${PLAYERCTL_ACTIVE_PLAYER}" ] || ! playerctl --player ${PLAYERCTL_ACTIVE_PLAYER} status 2>/dev/null
 then
-	for player in $players
-	do
-		if [ "$(playerctl --player ${player} status)" = "Playing" ]
-		then
-			PLAYERCTL_ACTIVE_PLAYER="${player}"
-			echo ${PLAYERCTL_ACTIVE_PLAYER} > ${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE}
-			break
-		fi
-	done
+	PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_PLAYING_PLAYER}"
+	echo ${PLAYERCTL_ACTIVE_PLAYER} > ${PLAYERCTL_ACTIVE_PLAYER_STATUSFILE}
+elif  [ -n "${PLAYERCTL_PLAYING_PLAYER}" ] && [ "${PLAYERCTL_ACTIVE_PLAYER}" != "${PLAYERCTL_PLAYING_PLAYER}" ]
+then
+	PLAYERCTL_ACTIVE_PLAYER="${PLAYERCTL_PLAYING_PLAYER}"
 fi
 
 playeropt=""
 [ -n "$PLAYERCTL_ACTIVE_PLAYER" ] && playeropt="--player $PLAYERCTL_ACTIVE_PLAYER"
-if [ "$PLAYERCTL_ACTIVE_PLAYER" = "vlc" ] && [ "$1" = "play-pause" ] && [ "$(playerctl ${playeropt} status)" = "Playing" ]
-then
-	shift
-	playerctl ${playeropt} --all-players stop $*
-elif [ "$1" = "play-pause" ] && [ "$(playerctl status)" = "Playing" ]
+if ( [ "$PLAYERCTL_ACTIVE_PLAYER" = "vlc" ] && [ "$1" = "play-pause" ] && [ "$(playerctl ${playeropt} status)" = "Playing" ] ) || [ "$1" = "stop" ]
 then
 	shift
 	playerctl ${playeropt} --all-players stop $*
