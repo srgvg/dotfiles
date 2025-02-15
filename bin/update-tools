@@ -424,6 +424,19 @@ get_misc() {
 	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
 
 
+	##########################################################################################################
+
+
+	if hash ble-update 2> /dev/null
+	then
+		ble-update
+	else
+		echo "# ble.sh not installed. install with:"
+		echo "curl -L https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz | tar xJf -"
+		echo " bash ble-nightly/ble.sh --install ~/.local/share"
+	fi
+
+	##########################################################################################################
 
 }
 
