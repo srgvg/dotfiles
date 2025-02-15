@@ -436,6 +436,14 @@ get_misc() {
 		echo " bash ble-nightly/ble.sh --install ~/.local/share"
 	fi
 
+	if hash atuin 2> /dev/null
+	then
+		atuin-update
+	else
+		echo "# atuin not installed. install with:"
+		echo "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+	fi
+
 	##########################################################################################################
 
 }
