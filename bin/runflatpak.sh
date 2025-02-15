@@ -25,7 +25,7 @@ then
 		app_name="$(flatpak list --columns=name,application  | fzf | awk '{print $NF}')"
 	else
 		app_name="${1}"
-		echo trying to launch app $app_name
+		echo "trying to launch app $app_name"
 		shift
 	fi
 fi
@@ -54,9 +54,9 @@ else
 	flatpak run --verbose "${app_id}" ${app_args}
 
 	## because they sometimes go to background
-	PID=$( flatpak ps | grep ${app_id} | awk '{print $2}')
-	while kill -0 $PID > /dev/null 2>&1
+	while fpid=$( flatpak ps | grep ${app_id} | awk '{print $2}')
 	do
-		sleep 5
+		echo -ne "\033[0K\r$( date '+%Y-%m-%d-%H:%M:%S' ) $app_id pid $fpid "
+ 		sleep 5
 	done
 fi

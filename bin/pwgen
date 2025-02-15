@@ -41,19 +41,19 @@ esac
 
 case $TYPE in
 	lo*)
-		L=${PL:-15}
+		L=${PL:-8}
 		pass=$($pwgen --no-capitalize --ambiguous --no-vowels $L 1)
 		msg="type $TYPE with character length $L"
 		notify_debug "${msg}"
 		;;
     no*)
-		L=${PL:-35}
-		pass=$($pwgen --capitalize --numerals --symbols $L 1)
+		L=${PL:-14}
+		pass=$($pwgen --capitalize --numerals $L 1)
 		msg="type $TYPE with length $L"
 		notify_debug "${msg}"
 		;;
     hi*)
-		L=${PL:-50}
+		L=${PL:-32}
 		pass=$($pwgen --capitalize --numerals --symbols --secure $L 1)
 		msg="type $TYPE with character length $L"
 		notify_debug "${msg}"
@@ -74,7 +74,7 @@ esac
 echo -n $pass | $copy
 notify_desktop low "Password copied to clipboard" "${msg}" stock_lock pwgen
 if [ -t 1 ]; then
-	echo "${pass}"
+	echo "  '${pass}'"
 else #pipe
 	echo -n "${pass}"
 fi

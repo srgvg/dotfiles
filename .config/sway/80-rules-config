@@ -31,6 +31,7 @@ for_window [title="Pages Unresponsive"] floating enable
 for_window [class="feh" instance="feh"] floating enable
 for_window [class="Nm-connection-editor" instance="nm-connection-editor"] floating enable
 for_window [class="System-config-printer.py" instance="system-config-printer"] floating enable
+for_window [app_id="nm-openconnect-auth-dialog"] floating_enable
 
 for_window [app_id="alacritty-floating"] floating enable
 for_window [app_id="alacritty-floating"] opacity 0.9
@@ -143,11 +144,12 @@ assign      [app_id="com.saivert.pwvucontrol"]                                  
 for_window  [app_id="com.saivert.pwvucontrol"]                                            layout splitv, floating disable
 
 
-assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music, layout tabbed
+assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
 for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
 
-assign	[class="Spotify" instance="spotify"] $ws_music, floating disable, layout tabbed
-for_window	[ class="Spotify" instance="spotify"] move to workspace $ws_music, layout tabbed
+# https://github.com/swaywm/sway/issues/3793
+assign	[class="Spotify" instance="spotify"] $ws_music
+for_window	[ class="Spotify" instance="spotify"] move container|window to workspace $ws_music, layout tabbed
 
 # tools
 assign		[app_id="i3jobs"]				$ws_util_l

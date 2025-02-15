@@ -322,10 +322,9 @@ bindsym $mod+period		    exec playerctl next
 bindsym $mod+slash		    exec playerctl play-pause
 bindsym $mod+Shift+slash	exec playerctl stop
 
-bindsym $mod+m			exec pavucontrol
-bindsym $mod+Shift+m	exec pa-rotate-sinks
+bindsym $mod+m			exec i3-playerctl-select-player
 bindsym $mod+Control+m	exec i3-pa-select-output
-bindsym $mod+Alt+m		exec i3-playerctl-select-player
+bindsym $mod+Alt+m		exec pa-rotate-sinks
 
 # Fn-F4  XF86AudioMicMute
 bindsym XF86AudioMicMute				exec ponymix  --source --device 389 toggle

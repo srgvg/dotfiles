@@ -126,6 +126,16 @@ function hl() {
 	done
 	grep --color --ignore-case --extended-regexp "${parameters[@]}"
 }
+
+function i3-launch-jobs-list() {
+	c=0
+	while screen -p $c -Q title 2>/dev/null | grep -v "not find pre-select window"
+	do
+		((c++))
+	done
+	echo
+}
+
 function ka() {
 	#kubectl $* --all-namespaces
 	k $* --all-namespaces

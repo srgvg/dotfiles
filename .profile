@@ -16,3 +16,5 @@ if [ -n "$BASH_VERSION" ]; then
     fi
 fi
 
+
+. "$HOME/.atuin/bin/env"

@@ -12,22 +12,47 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-if [ -z "${1:-}" ]
-then
-	echo "INFO: add any string as first parameter (e.g. '$(basename $0) out') to show error output"
-	echo
-fi
-for kustomization in $( find . -name kustomization.yaml | sed s/kustomization.yaml// )
+
+COUNT=0
+KUST_ERROR=0
+KUBE_ERROR=0
+
+for kustomization in $( find ${manifestsdir} -name kustomization.yaml | sed s/kustomization.yaml// )
 do
-	if ! output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization 2>&1 >/dev/null)
+	((COUNT+=1))
+	echo -n "# checking ($COUNT) ... "
+	if output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization 2>&1 >/dev/null)
 	then
-		if [ -z "${1:-}" ]
+		if output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization | kube-score score --color always --all-default-optional  - 2>&1)
 		then
-			echo "ERROR:  $kustomization"
+			echo "OK | $kustomization"
 		else
-			echo "ERROR:  $kustomization  FAILED: $output"
 			echo
+			echo "$output" | sed 's/^/MANIFEST ERROR: /'
+			echo
+			((KUBE_ERROR+=1))
 		fi
+    else
+		echo
+		echo "$output" | sed 's/^/KUSTOMIZE ERROR: /'
+		echo
+		((KUST_ERROR+=1))
 	fi
 done
 
+if [ $KUST_ERROR -gt 0 ] || [ $KUBE_ERROR -gt 0 ]
+then
+	echo "#################################################"
+	echo
+	echo "$KUST_ERROR/$COUNT kustomization failed"
+	echo "$KUBE_ERROR/$COUNT kustomization failed"
+	echo
+	echo "#################################################"
+	exit 1
+else
+	echo "#################################################"
+	echo
+	echo "all tests passed"
+	echo
+	echo "#################################################"
+fi
