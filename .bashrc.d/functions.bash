@@ -128,12 +128,19 @@ function hl() {
 }
 
 function i3-launch-jobs-list() {
-	c=0
-	while screen -p $c -Q title 2>/dev/null | grep -v "not find pre-select window"
+c=0
+e=0
+	while test $c -le 10
 	do
+		title=$(screen -p $c -Q title)
+		if [[ "${title}" =~ "not find pre-select window" ]]
+		then
+			((e++))
+		else
+			echo ${title}
+		fi
 		((c++))
 	done
-	echo
 }
 
 function ka() {
