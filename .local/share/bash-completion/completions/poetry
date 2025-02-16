@@ -1,4 +1,4 @@
-_poetry_78093c390605dfa2_complete()
+_poetry_ba874044365e986a_complete()
 {
     local cur script coms opts com
     COMPREPLY=()
@@ -34,7 +34,7 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (build)
-            opts="${opts} --clean --format --local-version --output"
+            opts="${opts} --clean --config-settings --format --local-version --output"
             ;;
 
             ('cache clear')
@@ -59,6 +59,10 @@ _poetry_78093c390605dfa2_complete()
 
             ('debug resolve')
             opts="${opts} --extras --install --python --tree"
+            ;;
+
+            ('debug tags')
+            opts="${opts} "
             ;;
 
             ('env activate')
@@ -106,11 +110,23 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (new)
-            opts="${opts} --author --dependency --description --dev-dependency --interactive --license --name --python --readme --src"
+            opts="${opts} --author --dependency --description --dev-dependency --flat --interactive --license --name --python --readme --src"
             ;;
 
             (publish)
             opts="${opts} --build --cert --client-cert --dist-dir --dry-run --password --repository --skip-existing --username"
+            ;;
+
+            ('python install')
+            opts="${opts} --clean --free-threaded --implementation --reinstall"
+            ;;
+
+            ('python list')
+            opts="${opts} --all --implementation --managed"
+            ;;
+
+            ('python remove')
+            opts="${opts} --implementation"
             ;;
 
             (remove)
@@ -158,7 +174,7 @@ _poetry_78093c390605dfa2_complete()
             ;;
 
             (show)
-            opts="${opts} --all --latest --only --outdated --top-level --tree --why --with --without"
+            opts="${opts} --all --latest --no-truncate --only --outdated --top-level --tree --why --with --without"
             ;;
 
             ('source add')
@@ -195,7 +211,7 @@ _poetry_78093c390605dfa2_complete()
 
     # completing for a command
     if [[ $cur == $com ]]; then
-        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'env activate' 'env info' 'env list' 'env remove' 'env use' export help init install list lock new publish remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self sync' 'self update' show 'source add' 'source remove' 'source show' sync update version"
+        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'debug tags' 'env activate' 'env info' 'env list' 'env remove' 'env use' export help init install list lock new publish 'python install' 'python list' 'python remove' remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self sync' 'self update' show 'source add' 'source remove' 'source show' sync update version"
 
         COMPREPLY=($(compgen -W "${coms}" -- ${cur}))
         __ltrim_colon_completions "$cur"
@@ -204,5 +220,5 @@ _poetry_78093c390605dfa2_complete()
     fi
 }
 
-complete -o default -F _poetry_78093c390605dfa2_complete poetry
-complete -o default -F _poetry_78093c390605dfa2_complete /home/serge/.local/pipx/venvs/poetry/bin/poetry
+complete -o default -F _poetry_ba874044365e986a_complete poetry
+complete -o default -F _poetry_ba874044365e986a_complete /home/serge/poetry
