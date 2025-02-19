@@ -7,7 +7,7 @@
 
 HOMETMPDIRNAME="scratch"
 HOMETMPDIR="$(readlink --canonicalize-missing --no-newline $HOME/$HOMETMPDIRNAME)"
-BACKGROUND_PICTURES="$HOME/Pictures/Backgrounds"
+BACKGROUND_PICTURES="$HOME/Pictures/Wallpapers"
 
 DEBUG="${DEBUG:-0}"
 

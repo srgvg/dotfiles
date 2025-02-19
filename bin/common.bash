@@ -22,6 +22,10 @@ function timestamp2() {
 	date +%Y-%m-%d-%H:%M:%S
 }
 
+function ts() {
+	ts '%Y/%m/%d-%H:%M:%.S'
+}
+
 function ifdebug1() {
 	# shellcheck disable=SC2153
 	[ "${DEBUG}" -ge 1 ]

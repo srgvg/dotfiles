@@ -13,6 +13,6 @@ set -o pipefail
 
 tmpf="$(mktemp)"
 
-nice -n 20 ionice -c 3 find $HOME/Documents/Pictures/Backgrounds/ -type f \( -iname '*.png'  -o -iname '*.jpg'  -o -iname '*.jpeg' \) -exec picorient {} \; > ${tmpf}
+nice -n 20 ionice -c 3 find $BACKGROUND_PICTURES -type f \( -iname '*.png'  -o -iname '*.jpg'  -o -iname '*.jpeg' \) -exec picorient {} \; > ${tmpf}
 
-mv ${tmpf} $HOME/Documents/Pictures/Backgrounds/index.txt
+mv ${tmpf} $BACKGROUND_PICTURES/index.txt

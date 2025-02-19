@@ -18,7 +18,8 @@ set -x
 echo "swayidle called as $0 $*"
 
 function _lock() {
-	dunstctl set-paused true
+	#dunstctl set-paused true
+	makoctl mode -a do-not-disturb
 	swaylock.sh
 }
 function _resume() {
@@ -53,7 +54,8 @@ then
 	_lock
 elif [ "${command}" = "unlock" ]
 then
-	dunstctl set-paused false
+	#dunstctl set-paused false
+	makoctl mode -r do-not-disturb
 elif [ "${command}" = "sleep" ]
 then
 	_lock

@@ -240,7 +240,8 @@ volume "${device}" "${action}" "${value:-50}"
 if [ "${device}" = "sonos" ]
 then
 	level2="$(sonos volume)"
-else
-	level2="$(ponymix get-volume)"
+	notify_desktop low "$device2 [$level2]" "volume ${action} ${level1} → ${level2}" $icon i3-volume
+## only notify for sonos as ponymix already does notifications
+#else
+#	level2="$(ponymix get-volume)"
 fi
-notify_desktop low "$device2 [$level2]" "volume ${action} ${level1} → ${level2}" $icon i3-volume

@@ -1,5 +1,6 @@
 sort=-time
 layer=overlay
+text-color=#a9a9a9
 background-color=#2e3440
 width=800
 height=2000
@@ -9,7 +10,7 @@ border-radius=30
 padding=10
 outer-margin=50
 margin=10
-progress-color=over #ffffff
+progress-color=source #ffffff
 icons=1
 icon-location=right
 markup=1
@@ -22,15 +23,18 @@ font=monospace 16
 anchor=top-center
 
 [urgency=low]
-border-color=#cccccc
+border-color=#a9a9a9
 
 [urgency=normal]
-border-color=#d08770
+border-color=#2a52be
 
 [urgency=high]
-border-color=#bf616a
+border-color=#b22222
 default-timeout=0
 
 [category=mpd]
 default-timeout=2000
 group-by=category
+
+[mode=do-not-disturb]
+invisible=1
