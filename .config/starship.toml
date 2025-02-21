@@ -284,13 +284,15 @@ disabled = true
 
 [python]
 disabled = false
-symbol = "py "
+#symbol = "py "
 style = "yellow bold"
 pyenv_version_name = false
-pyenv_prefix = "pyenv"
+#pyenv_prefix = "pyenv"
 #scan_for_pyfiles = true
 python_binary = "python3"
-format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
+#format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
+#format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+format = '[${symbol}(${virtualenv}/)(${version})]($style)'
 
 [status]
 disabled = false

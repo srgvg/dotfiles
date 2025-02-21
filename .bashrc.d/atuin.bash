@@ -1,4 +1,4 @@
-pathmunge $HOME/.atuin/bin/ after
+pathmunge $HOME/.atuin/bin/ before
 
 # https://docs.atuin.sh/configuration/key-binding/#bash
 export ATUIN_NOBIND="true"
