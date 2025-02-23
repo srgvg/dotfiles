@@ -55,6 +55,7 @@ dotadds="
 .config/starship.toml
 .config/sway/
 .config/swayidle/
+.config/swaync/
 .config/systemd/user
 .config/remmina			:!.config/remmina/*.remmina
 .config/yamlfmt/
@@ -153,7 +154,7 @@ function dotsadd() {
 	sub "dot"
 	for entry in ${dotadds}
 	do
-		echo adding [dot] ${entry}
+		echo "adding [dot] ${entry}"
 		IFS=$OIFS
 		if ! vcsh run dot git add --force ${entry}
 		then
@@ -168,7 +169,7 @@ function dotsadd() {
 	sub "sdot"
 	for entry in ${sdotadds}
 	do
-		echo adding [sdot] ${entry}
+		echo "adding [sdot] ${entry}"
 		IFS=$OIFS
 		if ! vcsh run sdot git add --force ${entry}
 		then

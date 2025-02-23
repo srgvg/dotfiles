@@ -121,11 +121,12 @@ function pre_lock() {
 	(
 		sleep 1
 		notify "Pause notifications"
-		notify "$(killall -v -SIGUSR1 dunst 2>&1)"
+		#notify "$(killall -v -SIGUSR1 dunst 2>&1)"
+		makoctl mode -a do-not-disturb
 	 ) &
 
-	notify "Lock remote irssi screen"
-	(irc lock ||:) & sleep 1
+	#notify "Lock remote irssi screen"
+	#(irc lock ||:) & sleep 1
 }
 
 function perform_lock() {
@@ -192,8 +193,9 @@ function post_lock() {
 	irc unlock ||:
 
     notify "Re-enable notifications"
-	notify "$(killall -v -SIGUSR2 dunst 2>&1)"
-    systemctl restart --user dunst.service
+	#notify "$(killall -v -SIGUSR2 dunst 2>&1)"
+    #systemctl restart --user dunst.service
+	makoctl mode -r do-not-disturb
 
 	if ! systemdservice
 	then
