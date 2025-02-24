@@ -35,12 +35,11 @@ then
                 --eval \
                 --ignore-missing \
                 ~/.ssh/id_!(*.pub) \
+                3148E9B9232D65E5  \
              `"
     fi
         # to list the key id's:
         # gpg --list-secret-keys | grep sec | sed 's/.*\/0x//' | cut -d\  -f1
-        #    8CC387DA097F5468 \
-        #    D08FC082B8E46E8E \
         #    3148E9B9232D65E5 \
     if [ "${EXTGLOB}" -eq 0 ]
     then

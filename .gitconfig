@@ -177,7 +177,7 @@
 
 [commit]
 
-	gpgsign = false
+	gpgsign = true
 	verbose = true
 
 
@@ -350,46 +350,33 @@
 [user]
 
 	name = Serge van Ginderachter
-    email = serge@vanginderachter.be
-	#signingkey = D08FC082B8E46E8E
-	signingkey = 8CC387DA097F5468
+    email = serge@ginsys.eu
+	signingkey = 3148E9B9232D65E5
 
 
 
 ## includes
 
 [include]
-
 	path = ~/.gitconfig.d/git-repo
 
-
 [includeIf "gitdir:~/src/autops/"]
-
 	path = ~/.gitconfig.d/autops
 
 [includeIf "gitdir:~/src/ginsys/"]
-
 	path = ~/.gitconfig.d/ginsys
 
-[includeIf "gitdir:~/src/equans/"]
+[includeIf "gitdir:~/src/srgvg/"]
+	path = ~/.gitconfig.d/srgvg
 
-	path = ~/.gitconfig.d/equans
-
-[includeIf "gitdir:~/src/mateco/"]
-
-	path = ~/.gitconfig.d/mateco
-
-[includeIf "gitdir:~/src/nccn/"]
-
-	path = ~/.gitconfig.d/nccn
 
 [advice]
 	addIgnoredFile = false
 [diff "dyff"]
 	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"
 [credential "https://github.com"]
-	helper = 
+	helper =
 	helper = !/home/serge/.asdf/installs/github-cli/2.60.1/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
+	helper =
 	helper = !/home/serge/.asdf/installs/github-cli/2.60.1/bin/gh auth git-credential

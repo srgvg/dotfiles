@@ -18,5 +18,5 @@ export DEBUG=1
 
 for picture in $(find ${LOCK_DEFAULT_LOCKSCREEN} -type f)
 do
-    xrandr-background lock $picture $HOME/tmp/cached
+    xrandr-background lock $picture $HOME/.cache/xrandr-background/
 done

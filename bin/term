@@ -39,9 +39,9 @@ fi
 
 if ifdebug1
 then
-	mkdir -p ~/tmp/term/
+	mkdir -p $HOMETMPDIR/tmp/term/
 	filename=$HOME/tmp/term/$(date +%Y%m%d-%H%M%S).trace.log
-	ln -nfs $filename ~/tmp/term/latest.trace.log
+	ln -nfs $filename $HOMETMPDIR/tmp/term/latest.trace.log
 	exec strace -o $filename -tt -T -y -yy -f $TERMINAL
 else
 	exec $TERMINAL $CARGS
