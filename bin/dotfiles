@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#set -x
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
@@ -20,7 +19,8 @@ OIFS=$IFS
 NIFS=$'\n'
 IFS=$NIFS
 
-dotadds="
+function define_adds() {
+	dotadds="
 .bash-preexec.sh
 .bash_completion
 .bash_logout
@@ -111,7 +111,7 @@ Videos
 Wallpapers
 "
 
-sdotadds="
+	sdotadds="
 .azure
 .azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry.txt .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json
 .config/gandi/
@@ -140,7 +140,7 @@ etc/
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*')
 "
-
+}
 
 ###############################################################################
 
@@ -149,6 +149,8 @@ function err() {
 }
 
 function dotsadd() {
+	define_adds
+
 	cd $HOME
 
 	set +o errexit
@@ -226,53 +228,64 @@ function err() {
 ###############################################################################
 
 cd $HOME
+action="${1:-}"
+shift
+comment="$*"
 
-if [ -z "${1:-}" ]
+if [ -z "${action:-}" ] || { \
+		[ "${action}" != "up" ] && \
+		[ "${action}" != "pull" ] && \
+		[ "${action}" != "add" ] && \
+		[ "${action}" != "commit" ] && \
+		[ "${action}" != "push" ] && \
+		[ "${action}" != "all" ]
+	}
 then
 	title Usage $0
 	echo "up | pull | add | commit | push | all"
+	echo
 	exit
 fi
 
-while [ -n "${1:-}" ]
-do
-	action="${1:-}"
-	if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+then
+	title Update
+	vcsh foreach remote update --prune
+fi
+
+if [ "${action}" = "add" ] || [ "${action}" = "all" ]
+then
+	title Add
+	dotsadd
+	info
+fi
+
+if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
+then
+	title Committing
+	vcsh foreach commit -m "update from $HOSTNAME  ${comment:-}"
+fi
+
+if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
+then
+	title Pull
+	vcsh foreach pull
+	info
+	if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]
 	then
-		title Update
-		vcsh foreach remote update --prune
+		err Merge conflicts detected
+		vcsh foreach diff --name-only --diff-filter=U --relative
+		exit 1
 	fi
-	if [ "${action}" = "add" ] || [ "${action}" = "all" ]
-	then
-		title Add
-		dotsadd
-		info
-	fi
-	if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
-	then
-		title Committing
-		vcsh foreach commit -m "update from $HOSTNAME  ${2:-}"
-	fi
-	if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-	then
-		title Pull
-		vcsh foreach pull
-		info
-		if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]
-		then
-			err Merge conflicts detected
-			vcsh foreach diff --name-only --diff-filter=U --relative
-			exit 1
-		fi
-	fi
-	if [ "${action}" = "push" ] || [ "${action}" = "all" ]
-	then
-		title Pushing
-		vcsh foreach pushall
-	fi
-	if [ "${action}" = "all" ]
-	then
-		info
-	fi
-	shift
-done
+fi
+
+if [ "${action}" = "push" ] || [ "${action}" = "all" ]
+then
+	title Pushing
+	vcsh foreach pushall
+fi
+
+if [ "${action}" = "all" ]
+then
+	info
+fi
