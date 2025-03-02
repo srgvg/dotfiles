@@ -1086,6 +1086,10 @@ _civo_database_create()
     local_nonpersistent_flags+=("--version")
     local_nonpersistent_flags+=("--version=")
     local_nonpersistent_flags+=("-v")
+    flags+=("--wait")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--wait")
+    local_nonpersistent_flags+=("-w")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -4035,10 +4039,6 @@ _civo_kubernetes_config()
     flags+=("-s")
     local_nonpersistent_flags+=("--save")
     local_nonpersistent_flags+=("-s")
-    flags+=("--switch")
-    flags+=("-i")
-    local_nonpersistent_flags+=("--switch")
-    local_nonpersistent_flags+=("-i")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -4104,10 +4104,6 @@ _civo_kubernetes_create()
     local_nonpersistent_flags+=("--firewall-rules")
     local_nonpersistent_flags+=("--firewall-rules=")
     local_nonpersistent_flags+=("-u")
-    flags+=("--merge")
-    flags+=("-m")
-    local_nonpersistent_flags+=("--merge")
-    local_nonpersistent_flags+=("-m")
     flags+=("--network=")
     two_word_flags+=("--network")
     two_word_flags+=("-t")
@@ -4570,6 +4566,10 @@ _civo_kubernetes_remove()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--delete-kubeconfig-context")
+    flags+=("-d")
+    local_nonpersistent_flags+=("--delete-kubeconfig-context")
+    local_nonpersistent_flags+=("-d")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -4732,6 +4732,39 @@ _civo_kubernetes_update()
     must_have_one_flag+=("--firewall=")
     must_have_one_noun=()
     has_completion_function=1
+    noun_aliases=()
+}
+
+_civo_kubernetes_update-kubeconfig()
+{
+    last_command="civo_kubernetes_update-kubeconfig"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
     noun_aliases=()
 }
 
@@ -4899,6 +4932,7 @@ _civo_kubernetes()
         command_aliases+=("edit")
         aliashash["edit"]="update"
     fi
+    commands+=("update-kubeconfig")
     commands+=("upgrade")
     if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
         command_aliases+=("change")
@@ -6959,6 +6993,47 @@ _civo_volume_remove()
     noun_aliases=()
 }
 
+_civo_volume_resize()
+{
+    last_command="civo_volume_resize"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--size-gb=")
+    two_word_flags+=("--size-gb")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--size-gb")
+    local_nonpersistent_flags+=("--size-gb=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--size-gb=")
+    must_have_one_flag+=("-s")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_volume()
 {
     last_command="civo_volume"
@@ -7003,6 +7078,7 @@ _civo_volume()
         command_aliases+=("rm")
         aliashash["rm"]="remove"
     fi
+    commands+=("resize")
 
     flags=()
     two_word_flags=()
