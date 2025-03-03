@@ -31,7 +31,7 @@ fi
 
 if [ "${act:-}" = "do" ]
 then    # act
-        find "$dir" -mindepth 1 -type d -empty | xargs rmdir --parents --verbose
+        find "$dir" -mindepth 1 -type d -empty -print0 | xargs --null rmdir --verbose
 else    # no act
         echo 'Directories that would be deleted:'
         echo
