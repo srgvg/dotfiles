@@ -421,7 +421,7 @@ get_misc() {
 	title update pipx
 	pipx upgrade-all
 	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
-	pipx list --json > $TMPPATH/pipx.json && mv $TMPPATH/pipx.json $HOME/etc/packages/pipx.json
+	pipx list --short > $TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
 
 
 	##########################################################################################################
