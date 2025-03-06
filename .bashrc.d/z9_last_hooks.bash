@@ -10,7 +10,7 @@ echo "PATH=${PATH}" >  $HOME/.config/environment.d/50-path.conf
 export PATH
 
 # at some point CDPATH completion stopped working, this seems to fix/workarounf it
-__load_completion cd
+#__load_completion cd
 
 # https://github.com/akinomyoga/ble.sh?tab=readme-ov-file#set-up-bashrc
 [[ ! ${BLE_VERSION-} ]] || ble-attach
