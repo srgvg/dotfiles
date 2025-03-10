@@ -85,10 +85,6 @@ _poetry_ba874044365e986a_complete()
             opts="${opts} "
             ;;
 
-            (export)
-            opts="${opts} --all-extras --dev --extras --format --only --output --with --with-credentials --without --without-hashes --without-urls"
-            ;;
-
             (help)
             opts="${opts} "
             ;;
@@ -211,7 +207,7 @@ _poetry_ba874044365e986a_complete()
 
     # completing for a command
     if [[ $cur == $com ]]; then
-        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'debug tags' 'env activate' 'env info' 'env list' 'env remove' 'env use' export help init install list lock new publish 'python install' 'python list' 'python remove' remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self sync' 'self update' show 'source add' 'source remove' 'source show' sync update version"
+        coms="about add build 'cache clear' 'cache list' check config 'debug info' 'debug resolve' 'debug tags' 'env activate' 'env info' 'env list' 'env remove' 'env use' help init install list lock new publish 'python install' 'python list' 'python remove' remove run search 'self add' 'self install' 'self lock' 'self remove' 'self show' 'self show plugins' 'self sync' 'self update' show 'source add' 'source remove' 'source show' sync update version"
 
         COMPREPLY=($(compgen -W "${coms}" -- ${cur}))
         __ltrim_colon_completions "$cur"
