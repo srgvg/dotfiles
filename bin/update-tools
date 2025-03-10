@@ -422,7 +422,8 @@ get_misc() {
 	pipx upgrade-all
 	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
 	pipx list --short > $TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
-
+	# install back:
+	#  < ~/etc/packages/pipx.list sed s/\ /==/ | xargs -n1 pipx install
 
 	##########################################################################################################
 
