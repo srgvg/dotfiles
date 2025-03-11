@@ -1,6 +1,5 @@
 # a
 alias ai='sudo apt install'
-alias ansible-hostvars='ansible -m debug -a var=hostvars[inventory_hostname]'
 alias as='apt-cache search'
 alias ash='apt-cache show'
 alias ap='apt-cache policy'
