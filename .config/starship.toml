@@ -78,12 +78,14 @@ format = """(\
     $username\
     $hostname\
     $directory\
+    $line_break\
+    \
+    [│ ](bold green)\
     $vcsh\
     $git_branch\
     $git_state\
     $git_commit\
     $git_status\
-    $direnv\
     $line_break\
     \
     [│ ](bold green)\
@@ -91,14 +93,14 @@ format = """(\
     $gcloud\
     $aws\
     $azure\
+    $line_break\
+    \
+    [│ ](bold green)\
+    $direnv\
     $package\
     $golang\
     $nodejs\
     $python\
-    $ruby\
-    $rust\
-    $terraform\
-    $conda\
     \
     $jobs\
     $sudo\
@@ -178,7 +180,7 @@ disabled = false
 
 [vcsh]
 disabled = false
-symbol = "v"
+symbol = "vcsh"
 style = "bold yellow"
 format = "$symbol[$repo]($style) "
 
@@ -186,7 +188,7 @@ format = "$symbol[$repo]($style) "
 disabled = false
 always_show_remote = true
 # The format for the module. Use "$branch" to refer to the current branch name.
-symbol = ""
+symbol = ' '
 style = "green"
 format = "$symbol [$branch](bg:bright-green fg:black bold italic)[( $remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
@@ -243,7 +245,7 @@ format = "[@$hostname $ssh_symbol]($style)"
 disabled = false
 #symbol = "☸"
 #symbol = "⛵"
-symbol = "\\[K8S\\]"
+symbol = "☸ "
 #format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
 #format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
 #format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
@@ -341,7 +343,7 @@ time_range = "-"
 
 [username]
 show_always = true
-format = "[$user]($style)"
+format = "[$user]($style) "
 
 ###
 
