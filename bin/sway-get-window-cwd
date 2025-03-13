@@ -28,7 +28,8 @@ app_pid="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).pid' || 
 if [ ${app_pid} -gt 1 ] 2>/dev/null
 then
 	#child_pid="$( pgrep -P ${app_pid} | tail -n1 )"
-	child_pid="$( pstree -p ${app_pid} -ncTU | sed 's/[^[0-9\.\-]]*/ /g' | xargs -n1 | tail -n1 )"
+	#child_pid="$( pstree -p ${app_pid} -ncTU | sed 's/[^[0-9\.\-]]*/ /g' | xargs -n1 | tail -n1 )"
+	child_pid="$(pgrep -P ${app_pid} | head -n1)"
 	cwd="$(pwdx ${child_pid} | cut -d: -f2 | xargs -n1)"
 	if ! [[ "${cwd}" = /home* ]]
 	then

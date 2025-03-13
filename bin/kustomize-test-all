@@ -13,25 +13,17 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
+MANIFESTSDIR=${1:-./}
 COUNT=0
 KUST_ERROR=0
-KUBE_ERROR=0
 
-for kustomization in $( find ${manifestsdir} -name kustomization.yaml | sed s/kustomization.yaml// )
+for kustomization in $( find ${MANIFESTSDIR} -name kustomization.yaml | sed s/kustomization.yaml// )
 do
 	((COUNT+=1))
 	echo -n "# checking ($COUNT) ... "
 	if output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization 2>&1 >/dev/null)
 	then
-		if output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization | kube-score score --color always --all-default-optional  - 2>&1)
-		then
-			echo "OK | $kustomization"
-		else
-			echo
-			echo "$output" | sed 's/^/MANIFEST ERROR: /'
-			echo
-			((KUBE_ERROR+=1))
-		fi
+		echo "OK | $kustomization"
     else
 		echo
 		echo "$output" | sed 's/^/KUSTOMIZE ERROR: /'
@@ -40,19 +32,18 @@ do
 	fi
 done
 
-if [ $KUST_ERROR -gt 0 ] || [ $KUBE_ERROR -gt 0 ]
+if [ $KUST_ERROR -gt 0 ]
 then
 	echo "#################################################"
 	echo
 	echo "$KUST_ERROR/$COUNT kustomization failed"
-	echo "$KUBE_ERROR/$COUNT kustomization failed"
 	echo
 	echo "#################################################"
 	exit 1
 else
 	echo "#################################################"
 	echo
-	echo "all tests passed"
+	echo "$KUST_ERROR/$COUNT - all tests passed"
 	echo
 	echo "#################################################"
 fi

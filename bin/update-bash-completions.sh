@@ -30,6 +30,7 @@ completion_bash_commands=(
     dyff
     eksctl
     flux
+    flux-operator
     go-chromecast
     hcloud
     helm
@@ -38,7 +39,6 @@ completion_bash_commands=(
     kind
     kind
     kubectl
-    kubectl-plugin_completion
     kubelogin
     kubescape
     kubeshark
@@ -54,7 +54,6 @@ completion_bash_commands=(
     zarf
 )
 completions_bash_commands=(
-    poetry
     starship
 )
 dashdash_completion_bash_commands=(
@@ -214,14 +213,14 @@ fi
 ln -nfs ${complpath}/kubectl ${complpath}/k
 ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
 
-command=kubectl-plugin_completion
-if kubectl plugin_completion plugin-completion bash > ${complpath}/${command}${complext}
-then
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
-fi
+#command=kubectl-plugin_completion
+#if kubectl plugin_completion plugin-completion bash > ${complpath}/${command}${complext}
+#then
+#    chmod 644 ${complpath}/${command}${complext}
+#    echo "OK  ${command}"
+#else
+#    echo "NOK ${command}"
+#fi
 
 
 # talosctl stuff
