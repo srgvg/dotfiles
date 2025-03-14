@@ -23,7 +23,7 @@ function timestamp2() {
 }
 
 function ts() {
-	ts '%Y/%m/%d-%H:%M:%.S'
+	/usr/bin/ts '%Y/%m/%d-%H:%M:%.S'
 }
 
 function ifdebug1() {
