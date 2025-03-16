@@ -128,6 +128,7 @@
 
 	autosetupmerge = true
 	autosetuprebase = always
+	sort = -committerdate
 
 
 [color]
@@ -202,14 +203,15 @@
 
 [diff]
 
-	colorMoved = dimmed-zebra
+	colorMoved = plain
 	colorMovedWS = allow-indentation-change
 	compactionheuristic = true
 	fallbackToNoIndex = true
-	mnemonicprefix = true ; replace a/b with (i)ndex/(c)ommit/(w)orking tree
+	mnemonicPrefix = true
 	noprefix = true
-	renames = copy
+	renames = true
 	tool = difftastic
+	algorithm = histogram
 
 
 [difftool]
@@ -240,9 +242,11 @@
 
 [fetch]
 
-	prune = false
+	prune = true
 	# https://groups.google.com/forum/m/#!msg/binary-transparency/f-BI4o8HZW0/MDmnWideAgAJ
 	fsckobjects = false
+	pruneTags = true
+	all = true
 
 
 [format]
@@ -274,7 +278,7 @@
 
 [merge]
 
-	conflictstyle = diff3
+	conflictstyle = zdiff3
 
 
 [pager]
@@ -298,17 +302,19 @@
 
 	# git push will by default push all branches that have the same name on the remote
 	# to limit this behavior to just the current branch, set this configuration option:
-	default = tracking
+	default = simple
 	#default = matching
 
 	# Instead of manually pushing new tags with --follow-tags, you always send
 	# your local tags up along with a git push.
-	followTags = true
+	followTags = false
+	autoSetupRemote = true
 
 
 [rebase]
 
 	autoStash = false
+	autoSquash = true
 	updateRefs = true
 
 
@@ -380,3 +386,9 @@
 [credential "https://gist.github.com"]
 	helper =
 	helper = !/home/serge/.asdf/installs/github-cli/2.60.1/bin/gh auth git-credential
+[column]
+	ui = auto
+[tag]
+	sort = version:refname
+[help]
+	autocorrect = prompt
