@@ -19,9 +19,12 @@ command=${1:-default}
 
 function log() {
 	local command
+	local logfile
 	command=${1-:default}
-
-	cat > "$HOME/logs/${command}-$(hostname)-$(date +%H).log"
+	logfile="$HOME/logs/${command}-$(hostname)-$(date +%H).log"
+	cat > ${logfile}
+	# delete file if empty
+	test -s  ${logfile} || rm ${logfile}
 }
 
 
@@ -29,6 +32,7 @@ function execute() {
 	local command
 	command=${1-:default}
 
+	###############################################################################
 	if [ "${command}" = "rm-scratch-files" ]
 	then
 
@@ -40,9 +44,9 @@ function execute() {
 			\( -type f -o -type l \) \
 			| xargs rm -rfv
 
+	###############################################################################
 	elif [ "${command}" = "rm-scratch-dirs" ]
 	then
-
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
 			-depth -mindepth 1 \
@@ -51,9 +55,9 @@ function execute() {
 			-empty \
 			| xargs rm -rfv
 
+	###############################################################################
 	elif [ "${command}" = "restore-dirs" ]
 	then
-
 		if ! test -d /home/serge/scratch/.stfolder
 		then
 			rm -rfv /home/serge/scratch/.stfolder
@@ -65,26 +69,41 @@ function execute() {
 			mkdir -pv /home/serge/scratch/work
 		fi
 
+	###############################################################################
 	elif [ "${command}" = "update-tools" ]
 	then
 
 		$HOME/bin/update-tools
 
+	###############################################################################
 	elif [ "${command}" = "backup-vaultwarden" ]
 	then
-
 		$HOME/bins/backup-vaultwarden.sh
 
+	###############################################################################
 	elif [ "${command}" = "default" ]
 	then
 		echo saving crontab
 		crontab -l | tee $HOME/etc/crontab
 
-	else
-
-		echo no actions for ${command}
-
+	###############################################################################
 	fi
 }
 
-execute ${command} |& ts | log ${command}
+
+if		[ "${command}" = "rm-scratch-files" ] \
+	||	[ "${command}" = "rm-scratch-dirs" ] \
+	||	[ "${command}" = "restore-dirs" ] \
+	||	[ "${command}" = "update-tools" ] \
+	|| 	[ "${command}" = "backup-vaultwarden" ] \
+	|| 	[ "${command}" = "default" ]
+then
+	execute ${command} |& ts | log ${command}
+else
+	echo no actions for ${command}
+fi
+
+
+
+
+
