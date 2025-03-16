@@ -1,46 +1,4 @@
 ###
-# https://starship.rs/advanced-config/#style-strings
-#
-# Style strings are a list of words, separated by whitespace. The words are not case sensitive (i.e. bold and BoLd are considered the same string). Each word can be one of the following:
-#
-#     bold
-#     italic
-#     underline
-#     dimmed
-#     inverted
-#     blink
-#     hidden
-#     strikethrough
-#     bg:<color>
-#     fg:<color>
-#     <color>
-#     none
-#
-# where <color> is a color specifier (discussed below). fg:<color> and <color> currently do the same thing, though this may change in the future. inverted swaps the background and foreground colors. The order of words in the string does not matter.
-#
-# The none token overrides all other tokens in a string if it is not part of a bg: specifier, so that e.g. fg:red none fg:blue will still create a string with no styling. bg:none sets the background to the default color so fg:red bg:none is equivalent to red or fg:red and bg:green fg:red bg:none is also equivalent to fg:red or red. It may become an error to use none in conjunction with other tokens in the future.
-#
-# A color specifier can be one of the following:
-#
-#   * One of the standard terminal colors:
-#
-#	black,
-#	red,
-#	green,
-#	blue,
-#	yellow,
-#	purple,
-#	cyan,
-#	white.
-
-# 	You can optionally prefix these with bright- to get the bright version (e.g. bright-white).
-#
-#   * A # followed by a six-digit hexadecimal number. This specifies an RGB color hex code
-#
-#   * A number between 0-255. This specifies an 8-bit ANSI Color Code
-#
-#
-###
 #
 # Get editor completions based on the config schema
 "$schema" = 'https://starship.rs/config-schema.json'
@@ -60,54 +18,14 @@ continuation_prompt = "[└───➞](bold green)  "
 command_timeout = 500
 
 # Configure the format of the prompt.
-## Use custom format
-#format = """
-#[┌───────────────────>](bold green)
-#[│](bold green)$directory$rust$package
-#[└─>](bold green) """
-format = """(\
-    $status\
-    $cmd_duration\
-    $line_break\
-    $line_break\
-    [┌$fill](bold green)\
-    $line_break\
-    \
-    [│ ](bold green)\
-    $time\
-    $username\
-    $hostname\
-    $directory\
-    $line_break\
-    \
-    [│ ](bold green)\
-    $vcsh\
-    $git_branch\
-    $git_state\
-    $git_commit\
-    $git_status\
-    $line_break\
-    \
-    [│ ](bold green)\
-    $kubernetes\
-    $gcloud\
-    $aws\
-    $azure\
-    $line_break\
-    \
-    [│ ](bold green)\
-    $direnv\
-    $package\
-    $golang\
-    $nodejs\
-    $python\
-    \
-    $jobs\
-    $sudo\
-    $line_break\
-    \
-    [└](bold green)(bold green)\
-    )$character\
+format = """
+(($status )($cmd_duration )\n)\
+([┌$fill](bold green) \n)\
+([│](bold green) $time $username $hostname $directory \n)\
+([│](bold green) ($kubernetes )($vcsh )($git_branch )($git_state )($git_commit )($git_status )\n)\
+([│](bold green) $gcloud$aws$azure \n)\
+([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
+([└$character](bold green)($jobs )($sudo ) )\
 """
 right_format = """
 """
@@ -132,7 +50,7 @@ error_symbol = "[➞](bold red) "
 
 [cmd_duration]
 disabled = false
-format = "➞ took [$duration]($style) "
+format = "➞ took [$duration]($style)"
 min_time = 1_000
 show_milliseconds = true
 style = "bold yellow"
@@ -151,10 +69,10 @@ use_logical_path = true
 read_only = "🔒"
 read_only_style = "red"
 truncation_symbol = "…/"
-format = " [$path]($style)[ $read_only]($read_only_style) "
+format = "[$path]($style)[ $read_only]($read_only_style)"
 style = "bold bright-yellow"
 repo_root_style = "bold yellow"
-repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
+repo_root_format = "[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)"
 home_symbol = "~"
 
 #[directory.substitutions]
@@ -163,8 +81,7 @@ home_symbol = "~"
 
 [direnv]
 disabled = false
-#format = '[$symbol $rc_path $loaded]($style)[$allowed](bold red) '
-format = '[$symbol $loaded]($style)[$allowed](bold red) '
+format = '[$symbol $loaded]($style)[$allowed](bold red)'
 symbol = 'env' #	The symbol used before displaying the direnv context.
 style = 'bold #fe7f01'
 detect_extensions = [] #	Which extensions should trigger this module.
@@ -182,18 +99,16 @@ disabled = false
 disabled = false
 symbol = "vcsh"
 style = "bold yellow"
-format = "$symbol[$repo]($style) "
+format = "$symbol[$repo]($style)"
 
 [git_branch]
 disabled = false
 always_show_remote = true
-# The format for the module. Use "$branch" to refer to the current branch name.
-symbol = ' '
+symbol = 'ϟ'
 style = "green"
 format = "$symbol [$branch](bg:bright-green fg:black bold italic)[( $remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
-# The symbol used to indicate a branch name was truncated. You can use "" for no symbol
 truncation_symbol = "…"
 only_attached = true
 
@@ -207,13 +122,13 @@ bisect = "BISECTING"
 am = "AM"
 am_or_rebase = "AM/REBASE"
 style = "green"
-format = "\\([ $state($progress_current/$progress_total)]($style)\\) "
+format = "\\([ $state($progress_current/$progress_total)]($style)\\)"
 
 [git_commit]
 disabled = false
 tag_disabled = false
 commit_hash_length = 10
-format = "[ \\(([$tag](bg:bright-green fg:black bold italic) / )($hash)\\)]($style bold italic)"
+format = "[ \\(([$tag](bg:bright-green fg:black bold italic)/)($hash)\\)]($style bold italic)"
 style = "green"
 only_detached = false
 tag_symbol = "🏷  "
@@ -231,9 +146,7 @@ staged = "+${count}"
 renamed = "»${count}"
 deleted = "✘${count}"
 style = "bold green"
-# $all_status ~ $conflicted$stashed$deleted$renamed$modified$staged$untracked
-# ahead_behind	Displays diverged ahead or behind format string based on the current status of the repo
-format = "[( ${all_status})( ${ahead_behind})]($style) "
+format = "[( ${all_status})( ${ahead_behind})]($style)"
 
 [hostname]
 ssh_only = true
@@ -241,17 +154,9 @@ style = "bold green"
 format = "[@$hostname $ssh_symbol]($style)"
 
 [kubernetes]
-# https://starship.rs/config/#kubernetes
 disabled = false
-#symbol = "☸"
-#symbol = "⛵"
 symbol = "☸ "
-#format = "[${symbol}\\[${context}(/$namespace)\\]]($style) "
-#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-#format = "[${symbol} ${user}@${cluster} ${context}( \\[$namespace\\])]($style) "
-#format = "[${symbol} ${context}( \\[$namespace\\])]($style) "
-#format = "[${symbol} [$context](underline bold bright-cyan)(/[$namespace](bold bright-cyan))]($style) "
-format = "[${symbol} $context( / [$namespace](underline bold)) \n[│ ](bold green)]($style)"
+format = "[$symbol $context / $namespace]($style)"
 style = "bold cyan"
 #namespace_spaceholder = "none"
 
@@ -265,18 +170,17 @@ symbol = "\\[GCP\\]"
 # \n[│ ](bold green)
 
 [aws]
-format = "[\\[($symbol $profile(/$region))\\]\n[│ ](bold green)]($style) "
+format = "[\\[($symbol $profile(/$region))\\]]($style)"
 style = "bold yellow"
 symbol = "\\[AWS\\]"
 
-# \n[│ ](bold green)
 [aws.region_aliases]
 #ap-southeast-2 = "au"
 #us-east-1 = "va"
 
 [azure]
 disabled = false
-format = '[$symbol $username@$subscription]($style) '
+format = '[$symbol $username@$subscription]($style)'
 #symbol = 'ﴃ '
 symbol = "\\[AZR\\]"
 style = 'bold cyan'
@@ -286,14 +190,10 @@ disabled = true
 
 [python]
 disabled = false
-#symbol = "py "
 style = "yellow bold"
 pyenv_version_name = false
-#pyenv_prefix = "pyenv"
 #scan_for_pyfiles = true
 python_binary = "python3"
-#format = "[${symbol}${pyenv_prefix}${version}( \\($virtualenv\\))]($style) "
-#format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 format = '[${symbol}(${virtualenv}/)(${version})]($style)'
 
 [status]
@@ -312,10 +212,10 @@ map_symbol = true
 format = '[$symbol]($style)'
 symbol = '❢'
 style = "bold fg:bright-red"
-disabled = true
+disabled = false
 
 [terraform]
-format = "[${symbol}tf $version]($style) "
+format = "[${symbol}tf $version]($style)"
 version_format = "v${raw}"
 symbol = "💠"
 detect_extensions = ["tf", "tfplan", "tfstate"]
@@ -326,14 +226,10 @@ disabled = false
 
 [time]
 disabled = false
-#format = "[$time]($style) "
 time_format = "%T"
-#format = "[🕙$time]($style) "
-format = "[$time]($style) "
+format = "[$time]($style)"
 use_12hr = false
 style = "bold yellow"
-# Sets the UTC offset to use. Range from -24 < x < 24.
-# Allows floats to accommodate 30/45 minute timezone offsets.
 #utc_time_offset = "+2"
 utc_time_offset = "local"
 # Sets the time range during which the module will be shown.
@@ -343,7 +239,7 @@ time_range = "-"
 
 [username]
 show_always = true
-format = "[$user]($style) "
+format = "[$user]($style)"
 
 ###
 
