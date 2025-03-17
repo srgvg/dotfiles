@@ -17,14 +17,17 @@ MANIFESTSDIR=${1:-./}
 COUNT=0
 KUST_ERROR=0
 
+echo "#################################################"
+echo "#"
 for kustomization in $( find ${MANIFESTSDIR} -name kustomization.yaml | sed s/kustomization.yaml// )
 do
 	((COUNT+=1))
 	echo -n "# checking ($COUNT) ... "
 	if output=$(kustomize build --load-restrictor=LoadRestrictionsNone $kustomization 2>&1 >/dev/null)
 	then
-		echo "OK | $kustomization"
+		echo "OK     | $kustomization"
     else
+		echo "NOT OK | $kustomization"
 		echo
 		echo "$output" | sed 's/^/KUSTOMIZE ERROR: /'
 		echo
@@ -32,18 +35,19 @@ do
 	fi
 done
 
+echo "#"
+echo "#################################################"
+echo "#"
 if [ $KUST_ERROR -gt 0 ]
 then
-	echo "#################################################"
-	echo
-	echo "$KUST_ERROR/$COUNT kustomization failed"
-	echo
+	echo "# $KUST_ERROR/$COUNT kustomization(s) failed"
+	echo "#"
 	echo "#################################################"
 	exit 1
 else
-	echo "#################################################"
-	echo
-	echo "$KUST_ERROR/$COUNT - all tests passed"
-	echo
+	echo "# $KUST_ERROR/$COUNT kustomization(s) failed"
+	echo "#"
+	echo "# all tests passed"
+	echo "#"
 	echo "#################################################"
 fi
