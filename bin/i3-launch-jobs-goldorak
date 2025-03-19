@@ -3,7 +3,7 @@
 JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 
     /home/serge/bin/swayidle.sh
-    /home/serge/.local/bin/vorta
+    /home/serge/bin/vorta.sh
     runflatpak.sh com.spotify.Client
     runflatpak.sh com.saivert.pwvucontrol
     /usr/bin/pasystray --debug --notify=none --notify=sink

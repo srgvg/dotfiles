@@ -56,4 +56,5 @@ else
 fi
 
 notify2 "swappy --file ${imagefile} --output-file ${swappyimagefile}"
-swappy --file "${imagefile}" --output-file - | tee "${swappyimagefile}" | wl-copy
+#swappy --file "${imagefile}" --output-file - | tee "${swappyimagefile}" | wl-copy
+satty --filename "${imagefile}" --output-filename - | tee "${swappyimagefile}" | wl-copy

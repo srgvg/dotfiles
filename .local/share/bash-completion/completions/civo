@@ -2,7 +2,7 @@
 
 __civo_debug()
 {
-    if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
+    if [[ -n ${BASH_COMP_DEBUG_FILE:-} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
     fi
 }
@@ -49,9 +49,10 @@ __civo_handle_go_custom_completion()
     local out requestComp lastParam lastChar comp directive args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly civo allows to handle aliases
+    # Calling ${words[0]} instead of directly civo allows handling aliases
     args=("${words[@]:1}")
-    requestComp="${words[0]} __completeNoDesc ${args[*]}"
+    # Disable ActiveHelp which is not supported for bash completion v1
+    requestComp="CIVO_ACTIVE_HELP=0 ${words[0]} __completeNoDesc ${args[*]}"
 
     lastParam=${words[$((${#words[@]}-1))]}
     lastChar=${lastParam:$((${#lastParam}-1)):1}
@@ -77,7 +78,7 @@ __civo_handle_go_custom_completion()
         directive=0
     fi
     __civo_debug "${FUNCNAME[0]}: the completion directive is: ${directive}"
-    __civo_debug "${FUNCNAME[0]}: the completions are: ${out[*]}"
+    __civo_debug "${FUNCNAME[0]}: the completions are: ${out}"
 
     if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
         # Error code.  No completion.
@@ -103,7 +104,7 @@ __civo_handle_go_custom_completion()
         local fullFilter filter filteringCmd
         # Do not use quotes around the $out variable or else newline
         # characters will be kept.
-        for filter in ${out[*]}; do
+        for filter in ${out}; do
             fullFilter+="$filter|"
         done
 
@@ -112,9 +113,9 @@ __civo_handle_go_custom_completion()
         $filteringCmd
     elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
         # File completion for directories only
-        local subDir
+        local subdir
         # Use printf to strip any trailing newline
-        subdir=$(printf "%s" "${out[0]}")
+        subdir=$(printf "%s" "${out}")
         if [ -n "$subdir" ]; then
             __civo_debug "Listing directories in $subdir"
             __civo_handle_subdirs_in_dir_flag "$subdir"
@@ -125,7 +126,7 @@ __civo_handle_go_custom_completion()
     else
         while IFS='' read -r comp; do
             COMPREPLY+=("$comp")
-        done < <(compgen -W "${out[*]}" -- "$cur")
+        done < <(compgen -W "${out}" -- "$cur")
     fi
 }
 
@@ -165,13 +166,19 @@ __civo_handle_reply()
                     PREFIX=""
                     cur="${cur#*=}"
                     ${flags_completion[${index}]}
-                    if [ -n "${ZSH_VERSION}" ]; then
+                    if [ -n "${ZSH_VERSION:-}" ]; then
                         # zsh completion needs --flag= prefix
                         eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
                     fi
                 fi
             fi
-            return 0;
+
+            if [[ -z "${flag_parsing_disabled}" ]]; then
+                # If flag parsing is enabled, we have completed the flags and can return.
+                # If flag parsing is disabled, we may not know all (or any) of the flags, so we fallthrough
+                # to possibly call handle_go_custom_completion.
+                return 0;
+            fi
             ;;
     esac
 
@@ -210,13 +217,13 @@ __civo_handle_reply()
     fi
 
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
-		if declare -F __civo_custom_func >/dev/null; then
-			# try command name qualified custom func
-			__civo_custom_func
-		else
-			# otherwise fall back to unqualified for compatibility
-			declare -F __custom_func >/dev/null && __custom_func
-		fi
+        if declare -F __civo_custom_func >/dev/null; then
+            # try command name qualified custom func
+            __civo_custom_func
+        else
+            # otherwise fall back to unqualified for compatibility
+            declare -F __custom_func >/dev/null && __custom_func
+        fi
     fi
 
     # available in bash-completion >= 2, not always present on macOS
@@ -250,7 +257,7 @@ __civo_handle_flag()
 
     # if a command required a flag, and we found it, unset must_have_one_flag()
     local flagname=${words[c]}
-    local flagvalue
+    local flagvalue=""
     # if the word contained an =
     if [[ ${words[c]} == *"="* ]]; then
         flagvalue=${flagname#*=} # take in as flagvalue after the =
@@ -269,7 +276,7 @@ __civo_handle_flag()
 
     # keep flag value with flagname as flaghash
     # flaghash variable is an associative array which is only supported in bash > 3.
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         if [ -n "${flagvalue}" ] ; then
             flaghash[${flagname}]=${flagvalue}
         elif [ -n "${words[ $((c+1)) ]}" ] ; then
@@ -281,7 +288,7 @@ __civo_handle_flag()
 
     # skip the argument to a two word flag
     if [[ ${words[c]} != *"="* ]] && __civo_contains_word "${words[c]}" "${two_word_flags[@]}"; then
-			  __civo_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+        __civo_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
         c=$((c+1))
         # if we are looking for a flags value, don't show commands
         if [[ $c -eq $cword ]]; then
@@ -341,7 +348,7 @@ __civo_handle_word()
         __civo_handle_command
     elif __civo_contains_word "${words[c]}" "${command_aliases[@]}"; then
         # aliashash variable is an associative array which is only supported in bash > 3.
-        if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
             words[c]=${aliashash[${words[c]}]}
             __civo_handle_command
         else
@@ -530,21 +537,21 @@ _civo_apikey()
 
     commands=()
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("rm")
         aliashash["rm"]="remove"
     fi
     commands+=("save")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="save"
         command_aliases+=("create")
@@ -555,7 +562,7 @@ _civo_apikey()
         aliashash["store"]="save"
     fi
     commands+=("set")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("current")
         aliashash["current"]="set"
         command_aliases+=("default")
@@ -564,7 +571,7 @@ _civo_apikey()
         aliashash["use"]="set"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("show")
         aliashash["show"]="show"
     fi
@@ -972,14 +979,14 @@ _civo_database_backup()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("destroy")
         aliashash["destroy"]="delete"
         command_aliases+=("remove")
@@ -988,21 +995,21 @@ _civo_database_backup()
         aliashash["rm"]="delete"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
         aliashash["inspect"]="show"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("modify")
@@ -1448,21 +1455,21 @@ _civo_database()
 
     commands=()
     commands+=("backup")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("backups")
         aliashash["backups"]="backup"
         command_aliases+=("bk")
         aliashash["bk"]="backup"
     fi
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("credential")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("cred")
         aliashash["cred"]="credential"
         command_aliases+=("credentials")
@@ -1471,7 +1478,7 @@ _civo_database()
         aliashash["creds"]="credential"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("destroy")
         aliashash["destroy"]="delete"
         command_aliases+=("remove")
@@ -1480,7 +1487,7 @@ _civo_database()
         aliashash["rm"]="delete"
     fi
     commands+=("engine")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="engine"
         command_aliases+=("engines")
@@ -1491,42 +1498,42 @@ _civo_database()
         aliashash["softwares"]="engine"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("restore")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("reset")
         aliashash["reset"]="restore"
         command_aliases+=("restores")
         aliashash["restores"]="restore"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
         aliashash["inspect"]="show"
     fi
     commands+=("size")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="size"
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("modify")
         aliashash["modify"]="update"
     fi
     commands+=("versions")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("version")
         aliashash["version"]="versions"
     fi
@@ -1630,14 +1637,14 @@ _civo_diskimage()
 
     commands=()
     commands+=("find")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="find"
         command_aliases+=("search")
         aliashash["search"]="find"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -1907,21 +1914,21 @@ _civo_domain_record()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -1930,7 +1937,7 @@ _civo_domain_record()
         aliashash["rm"]="remove"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
@@ -2003,26 +2010,26 @@ _civo_domain()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("record")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("records")
         aliashash["records"]="record"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -2316,21 +2323,21 @@ _civo_firewall_rule()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -2405,21 +2412,21 @@ _civo_firewall()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -2428,12 +2435,12 @@ _civo_firewall()
         aliashash["rm"]="remove"
     fi
     commands+=("rule")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("rules")
         aliashash["rules"]="rule"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("rename")
@@ -3112,6 +3119,12 @@ _civo_instance_vnc()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--duration=")
+    two_word_flags+=("--duration")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--duration")
+    local_nonpersistent_flags+=("--duration=")
+    local_nonpersistent_flags+=("-d")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -3139,14 +3152,14 @@ _civo_instance()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("firewall")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change-firewall")
         aliashash["change-firewall"]="firewall"
         command_aliases+=("fw")
@@ -3155,31 +3168,31 @@ _civo_instance()
         aliashash["set-firewall"]="firewall"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("password")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("pw")
         aliashash["pw"]="password"
     fi
     commands+=("public-ip")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("ip")
         aliashash["ip"]="public-ip"
         command_aliases+=("publicip")
         aliashash["publicip"]="public-ip"
     fi
     commands+=("reboot")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("hard-reboot")
         aliashash["hard-reboot"]="reboot"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -3188,14 +3201,14 @@ _civo_instance()
         aliashash["rm"]="remove"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
         aliashash["inspect"]="show"
     fi
     commands+=("size")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="size"
         command_aliases+=("sizes")
@@ -3203,29 +3216,29 @@ _civo_instance()
     fi
     commands+=("soft-reboot")
     commands+=("start")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("boot")
         aliashash["boot"]="start"
         command_aliases+=("run")
         aliashash["run"]="start"
     fi
     commands+=("stop")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("shutdown")
         aliashash["shutdown"]="stop"
     fi
     commands+=("tag")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("tags")
         aliashash["tags"]="tag"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("set")
         aliashash["set"]="update"
     fi
     commands+=("upgrade")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("resize")
         aliashash["resize"]="upgrade"
     fi
@@ -3476,12 +3489,12 @@ _civo_ip()
 
     commands=()
     commands+=("assign")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("attach")
         aliashash["attach"]="assign"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("free")
         aliashash["free"]="delete"
         command_aliases+=("remove")
@@ -3492,21 +3505,21 @@ _civo_ip()
         aliashash["unallocate"]="delete"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("rename")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="rename"
         command_aliases+=("update")
         aliashash["update"]="rename"
     fi
     commands+=("reserve")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="reserve"
         command_aliases+=("allocate")
@@ -3515,7 +3528,7 @@ _civo_ip()
         aliashash["new"]="reserve"
     fi
     commands+=("unassign")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("detach")
         aliashash["detach"]="unassign"
     fi
@@ -3742,14 +3755,14 @@ _civo_kfcluster()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("destroy")
         aliashash["destroy"]="delete"
         command_aliases+=("remove")
@@ -3758,21 +3771,21 @@ _civo_kfcluster()
         aliashash["rm"]="delete"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("size")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="size"
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("modify")
@@ -3960,26 +3973,26 @@ _civo_kubernetes_applications()
 
     commands=()
     commands+=("add")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("install")
         aliashash["install"]="add"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("rm")
         aliashash["rm"]="remove"
         command_aliases+=("uninstall")
         aliashash["uninstall"]="remove"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
@@ -4449,35 +4462,35 @@ _civo_kubernetes_node-pool()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("create")
         aliashash["create"]="create"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="delete"
         command_aliases+=("rm")
         aliashash["rm"]="delete"
     fi
     commands+=("instance-delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("instance-remove")
         aliashash["instance-remove"]="instance-delete"
         command_aliases+=("instance-rm")
         aliashash["instance-rm"]="instance-delete"
     fi
     commands+=("instance-ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("instance-all")
         aliashash["instance-all"]="instance-ls"
         command_aliases+=("instance-list")
         aliashash["instance-list"]="instance-ls"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -4850,7 +4863,7 @@ _civo_kubernetes()
 
     commands=()
     commands+=("applications")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("addon")
         aliashash["addon"]="applications"
         command_aliases+=("addons")
@@ -4877,26 +4890,26 @@ _civo_kubernetes()
         aliashash["marketplace"]="applications"
     fi
     commands+=("config")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("conf")
         aliashash["conf"]="config"
     fi
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("node-pool")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("node-pool")
         aliashash["node-pool"]="node-pool"
         command_aliases+=("pool")
@@ -4904,7 +4917,7 @@ _civo_kubernetes()
     fi
     commands+=("recycle")
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -4914,34 +4927,34 @@ _civo_kubernetes()
     fi
     commands+=("rename")
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
         aliashash["inspect"]="show"
     fi
     commands+=("size")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="size"
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("edit")
         aliashash["edit"]="update"
     fi
     commands+=("update-kubeconfig")
     commands+=("upgrade")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="upgrade"
         command_aliases+=("modify")
         aliashash["modify"]="upgrade"
     fi
     commands+=("versions")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("version")
         aliashash["version"]="versions"
     fi
@@ -5045,14 +5058,14 @@ _civo_loadbalancer()
 
     commands=()
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("inspect")
@@ -5324,28 +5337,28 @@ _civo_network()
 
     commands=()
     commands+=("connect")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="connect"
         command_aliases+=("new")
         aliashash["new"]="connect"
     fi
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -5354,7 +5367,7 @@ _civo_network()
         aliashash["rm"]="remove"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("describe")
         aliashash["describe"]="show"
         command_aliases+=("get")
@@ -5363,7 +5376,7 @@ _civo_network()
         aliashash["inspect"]="show"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("modify")
@@ -5704,14 +5717,14 @@ _civo_objectstore_credential()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("destroy")
         aliashash["destroy"]="delete"
         command_aliases+=("remove")
@@ -5720,12 +5733,12 @@ _civo_objectstore_credential()
         aliashash["rm"]="delete"
     fi
     commands+=("export")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("export-credentials")
         aliashash["export-credentials"]="export"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -5733,7 +5746,7 @@ _civo_objectstore_credential()
     fi
     commands+=("secret")
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="update"
         command_aliases+=("edit")
@@ -5915,14 +5928,14 @@ _civo_objectstore()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("credential")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("credentials")
         aliashash["credentials"]="credential"
         command_aliases+=("creds")
@@ -5937,7 +5950,7 @@ _civo_objectstore()
         aliashash["users"]="credential"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("destroy")
         aliashash["destroy"]="delete"
         command_aliases+=("remove")
@@ -5946,14 +5959,14 @@ _civo_objectstore()
         aliashash["rm"]="delete"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("resize")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("change")
         aliashash["change"]="resize"
         command_aliases+=("edit")
@@ -5964,7 +5977,7 @@ _civo_objectstore()
         aliashash["update"]="resize"
     fi
     commands+=("show")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="show"
         command_aliases+=("info")
@@ -6037,7 +6050,7 @@ _civo_permissions()
 
     commands=()
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -6176,7 +6189,7 @@ _civo_region()
 
     commands=()
     commands+=("current")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("default")
         aliashash["default"]="current"
         command_aliases+=("set")
@@ -6185,7 +6198,7 @@ _civo_region()
         aliashash["use"]="current"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -6264,7 +6277,7 @@ _civo_size()
 
     commands=()
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -6477,26 +6490,26 @@ _civo_sshkey()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("find")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("get")
         aliashash["get"]="find"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -6505,7 +6518,7 @@ _civo_sshkey()
         aliashash["rm"]="remove"
     fi
     commands+=("update")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("modify")
         aliashash["modify"]="update"
         command_aliases+=("rename")
@@ -6677,21 +6690,21 @@ _civo_teams()
 
     commands=()
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("delete")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="delete"
         command_aliases+=("rm")
         aliashash["rm"]="delete"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
@@ -7042,35 +7055,35 @@ _civo_volume()
 
     commands=()
     commands+=("attach")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("connect")
         aliashash["connect"]="attach"
         command_aliases+=("link")
         aliashash["link"]="attach"
     fi
     commands+=("create")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("add")
         aliashash["add"]="create"
         command_aliases+=("new")
         aliashash["new"]="create"
     fi
     commands+=("detach")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("disconnect")
         aliashash["disconnect"]="detach"
         command_aliases+=("unlink")
         aliashash["unlink"]="detach"
     fi
     commands+=("ls")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("all")
         aliashash["all"]="ls"
         command_aliases+=("list")
         aliashash["list"]="ls"
     fi
     commands+=("remove")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("delete")
         aliashash["delete"]="remove"
         command_aliases+=("destroy")
@@ -7180,20 +7193,20 @@ _civo_root_command()
 
     commands=()
     commands+=("apikey")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("apikeys")
         aliashash["apikeys"]="apikey"
     fi
     commands+=("completion")
     commands+=("database")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("databases")
         aliashash["databases"]="database"
         command_aliases+=("db")
         aliashash["db"]="database"
     fi
     commands+=("diskimage")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("diskimages")
         aliashash["diskimages"]="diskimage"
         command_aliases+=("template")
@@ -7202,12 +7215,12 @@ _civo_root_command()
         aliashash["templates"]="diskimage"
     fi
     commands+=("domain")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("domains")
         aliashash["domains"]="domain"
     fi
     commands+=("firewall")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("firewalls")
         aliashash["firewalls"]="firewall"
         command_aliases+=("fw")
@@ -7215,17 +7228,17 @@ _civo_root_command()
     fi
     commands+=("help")
     commands+=("instance")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("instances")
         aliashash["instances"]="instance"
     fi
     commands+=("ip")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("ips")
         aliashash["ips"]="ip"
     fi
     commands+=("kfcluster")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("kf")
         aliashash["kf"]="kfcluster"
         command_aliases+=("kfaas")
@@ -7240,7 +7253,7 @@ _civo_root_command()
         aliashash["kubeflow"]="kfcluster"
     fi
     commands+=("kubernetes")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("k3s")
         aliashash["k3s"]="kubernetes"
         command_aliases+=("k8s")
@@ -7251,21 +7264,21 @@ _civo_root_command()
         aliashash["talos"]="kubernetes"
     fi
     commands+=("loadbalancer")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("lb")
         aliashash["lb"]="loadbalancer"
         command_aliases+=("loadbalancers")
         aliashash["loadbalancers"]="loadbalancer"
     fi
     commands+=("network")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("net")
         aliashash["net"]="network"
         command_aliases+=("networks")
         aliashash["networks"]="network"
     fi
     commands+=("objectstore")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("bucket")
         aliashash["bucket"]="objectstore"
         command_aliases+=("buckets")
@@ -7276,27 +7289,27 @@ _civo_root_command()
         aliashash["objects"]="objectstore"
     fi
     commands+=("permissions")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("permission")
         aliashash["permission"]="permissions"
     fi
     commands+=("quota")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("quotas")
         aliashash["quotas"]="quota"
     fi
     commands+=("region")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("regions")
         aliashash["regions"]="region"
     fi
     commands+=("size")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
     fi
     commands+=("sshkey")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("ssh")
         aliashash["ssh"]="sshkey"
         command_aliases+=("ssh-key")
@@ -7308,12 +7321,12 @@ _civo_root_command()
     commands+=("update")
     commands+=("version")
     commands+=("volume")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("volumes")
         aliashash["volumes"]="volume"
     fi
     commands+=("volumetypes")
-    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("voltype")
         aliashash["voltype"]="volumetypes"
         command_aliases+=("volumetype")
@@ -7351,7 +7364,7 @@ _civo_root_command()
 
 __start_civo()
 {
-    local cur prev words cword
+    local cur prev words cword split
     declare -A flaghash 2>/dev/null || :
     declare -A aliashash 2>/dev/null || :
     if declare -F _init_completion >/dev/null 2>&1; then
@@ -7361,17 +7374,20 @@ __start_civo()
     fi
 
     local c=0
+    local flag_parsing_disabled=
     local flags=()
     local two_word_flags=()
     local local_nonpersistent_flags=()
     local flags_with_completion=()
     local flags_completion=()
     local commands=("civo")
+    local command_aliases=()
     local must_have_one_flag=()
     local must_have_one_noun=()
-    local has_completion_function
-    local last_command
+    local has_completion_function=""
+    local last_command=""
     local nouns=()
+    local noun_aliases=()
 
     __civo_handle_word
 }
