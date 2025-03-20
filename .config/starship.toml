@@ -11,7 +11,15 @@ scan_timeout = 30
 
 ##continuation_prompt = "[∙](bright-black) "
 #continuation_prompt = "▶▶ "
-continuation_prompt = "[└───➞](bold green)  "
+continuation_prompt = "[└───🡲 ](bold green)"
+#  ───🠪
+#  ───🠮
+#  ───🠲
+#  ───🡒
+#  ───🡢
+#  ───🡪
+#  ───🡲
+#  ───🢚
 
 
 # Timeout for commands executed by starship (in milliseconds).
@@ -25,8 +33,10 @@ format = """
 ([│](bold green) ($kubernetes )($vcsh )($git_branch )($git_state )($git_commit )($git_status )\n)\
 ([│](bold green) $gcloud$aws$azure \n)\
 ([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
-([└$character](bold green)($jobs )($sudo ) )\
+([│](bold green) ($jobs )($sudo )\n)\
+([└──](bold green)$character)\
 """
+
 right_format = """
 """
 
@@ -44,8 +54,8 @@ style = 'bold green'
 disabled = false
 
 [character]      # The name of the module we are configuring is "character"
-success_symbol = "[➞](bold green) "     # The "symbol" segment is being set to "➜"
-error_symbol = "[➞](bold red) "
+success_symbol = "[─🡲 ](bold green)"     # The "symbol" segment is being set to "➜"
+error_symbol = "[─🡲 ](bold red)"
 #vicmd_symbol = "[❮](bold green)"
 
 [cmd_duration]
@@ -195,6 +205,15 @@ pyenv_version_name = false
 #scan_for_pyfiles = true
 python_binary = "python3"
 format = '[${symbol}(${virtualenv}/)(${version})]($style)'
+
+[jobs]
+# https://starship.rs/config/#jobs
+disabled = false
+symbol = '✦'
+symbol_threshold = 1
+number_threshold = 1
+format = '[$symbol$number]($style)'
+style = 'bold blue'
 
 [status]
 disabled = false

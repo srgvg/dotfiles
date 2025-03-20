@@ -15,8 +15,9 @@ source "$HOME/bin/common.bash"
 screenshotdir="$HOMETMPDIR/grabs"
 filename="$(date +%Y%m%d-%H%M%S)"
 imagefile="${screenshotdir}/${filename}.png"
-swappyimagefile="${screenshotdir}/${filename}-annotated.png"
-util="/usr/bin/grimshot save"
+annotatedimagefile="${screenshotdir}/${filename}-annotated.png"
+screenshottool="/usr/bin/grimshot save"
+annotatetool="satty --filename ${imagefile} --output-filename ${annotatedimagefile}"
 
 mkdir -p $screenshotdir
 
@@ -39,7 +40,7 @@ case ${action} in
 	errexit "Unknown action ${action}"
 	;;
 esac
-grabcommand="${util} ${options} ${imagefile}"
+grabcommand="${screenshottool} ${options} ${imagefile}"
 notify_debug "executing ${grabcommand}"
 
 if ifdebug3
@@ -55,6 +56,4 @@ else
 	errexit "Screenshot ${action} failed"
 fi
 
-notify2 "swappy --file ${imagefile} --output-file ${swappyimagefile}"
-#swappy --file "${imagefile}" --output-file - | tee "${swappyimagefile}" | wl-copy
-satty --filename "${imagefile}" --output-filename - | tee "${swappyimagefile}" | wl-copy
+${annotatetool}
