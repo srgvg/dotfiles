@@ -1,4 +1,3 @@
-
 ## SSH Agent
 # if interactive
 if ! grep -q sway /proc/$$/cmdline ; then
@@ -28,7 +27,7 @@ then
                 --lockwait 300 \
                 --quiet \
                 --attempts 2 \
-                --inherit any \
+                --inherit local \
                 --nogui \
                 --agents ssh,gpg \
                 --gpg2 \
@@ -40,6 +39,7 @@ then
     fi
         # to list the key id's:
         # gpg --list-secret-keys | grep sec | sed 's/.*\/0x//' | cut -d\  -f1
+        #    D08FC082B8E46E8E \
         #    3148E9B9232D65E5 \
     if [ "${EXTGLOB}" -eq 0 ]
     then
