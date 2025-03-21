@@ -12,21 +12,30 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-###############################################################################
+#######################################################################################################################
 
 command=${1:-default}
 
+#######################################################################################################################
 
 function log() {
 	local command
 	local logfile
 	command=${1-:default}
-	logfile="$HOME/logs/${command}-$(hostname)-$(date +%H).log"
-	cat > ${logfile}
+	logfile="$HOME/logs/cronjobs/$(date +%H)-$(hostname)-${command}.log"
+	mkdir -p "$(dirname ${logfile})"
+	tee ${logfile}
 	# delete file if empty
 	test -s  ${logfile} || rm ${logfile}
+	find $HOME/logs/cronjobs \
+		-print0 \
+		-mindepth 1 \
+		-cmin +1440 \
+		-type f \
+		| xargs -0 rm -rfv
 }
 
+#######################################################################################################################
 
 function execute() {
 	local command
@@ -38,26 +47,29 @@ function execute() {
 
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
+			-print0 \
 			-mindepth 1 \
 			-not -path '/home/serge/scratch/work/*' -a -not -path '/home/serge/scratch/.stfolder*' \
 			-cmin +2880 \
 			\( -type f -o -type l \) \
-			| xargs rm -rfv
+			| xargs -0 rm -rfv
 
 	###############################################################################
 	elif [ "${command}" = "rm-scratch-dirs" ]
 	then
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
+			-print0 \
 			-depth -mindepth 1 \
 			-not -path '/home/serge/scratch/.stfolder*' -not -path '/home/serge/scratch/work**' \
 			-type d \
 			-empty \
-			| xargs rm -rfv
+			| xargs -0 rm -rfv
 
 	###############################################################################
 	elif [ "${command}" = "restore-dirs" ]
 	then
+
 		if ! test -d /home/serge/scratch/.stfolder
 		then
 			rm -rfv /home/serge/scratch/.stfolder
@@ -78,32 +90,26 @@ function execute() {
 	###############################################################################
 	elif [ "${command}" = "backup-vaultwarden" ]
 	then
+
 		$HOME/bins/backup-vaultwarden.sh
 
 	###############################################################################
 	elif [ "${command}" = "default" ]
 	then
-		echo saving crontab
-		crontab -l | tee $HOME/etc/crontab
+
+		crontab -l > $HOME/etc/crontab
 
 	###############################################################################
+	else
+		return 7
 	fi
 }
 
+#######################################################################################################################
 
-if		[ "${command}" = "rm-scratch-files" ] \
-	||	[ "${command}" = "rm-scratch-dirs" ] \
-	||	[ "${command}" = "restore-dirs" ] \
-	||	[ "${command}" = "update-tools" ] \
-	|| 	[ "${command}" = "backup-vaultwarden" ] \
-	|| 	[ "${command}" = "default" ]
+execute ${command} |& ts | log ${command}
+if [ $? -eq 7 ]
 then
-	execute ${command} |& ts | log ${command}
-else
 	echo no actions for ${command}
 fi
-
-
-
-
 

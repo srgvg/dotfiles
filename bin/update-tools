@@ -42,7 +42,7 @@ cd ${TMPPATH}
 trap_exit() {
 	title "cleanup"
 	cd $HOME
-	rm -rfv $TMPPATH
+	rm -rfv "$(dirname $TMPPATH)"
 	title "end"
 }
 
