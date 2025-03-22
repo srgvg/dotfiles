@@ -16,23 +16,19 @@ source "$HOME/bin/common.bash"
 
 command=${1:-default}
 
+LOGDIR="${HOME}/logs/cronjobs"
+
 #######################################################################################################################
 
 function log() {
 	local command
 	local logfile
 	command=${1-:default}
-	logfile="$HOME/logs/cronjobs/$(date +%H)-$(hostname)-${command}.log"
+	logfile="${LOGDIR}/$(hostname)-${command}-$(date +%y%m%d%H).log"
 	mkdir -p "$(dirname ${logfile})"
 	tee ${logfile}
 	# delete file if empty
 	test -s  ${logfile} || rm ${logfile}
-	find $HOME/logs/cronjobs \
-		-print0 \
-		-mindepth 1 \
-		-cmin +1440 \
-		-type f \
-		| xargs -0 rm -rfv
 }
 
 #######################################################################################################################
@@ -50,7 +46,7 @@ function execute() {
 			-print0 \
 			-mindepth 1 \
 			-not -path '/home/serge/scratch/work/*' -a -not -path '/home/serge/scratch/.stfolder*' \
-			-cmin +2880 \
+			-mmin +2880 \
 			\( -type f -o -type l \) \
 			| xargs -0 rm -rfv
 
@@ -112,4 +108,9 @@ if [ $? -eq 7 ]
 then
 	echo no actions for ${command}
 fi
+find $HOME/logs/cronjobs \
+	-mindepth 1 \
+	-mmin +2880 \
+	-type f \
+	-delete
 
