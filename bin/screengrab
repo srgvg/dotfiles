@@ -13,16 +13,10 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 screenshotdir="$HOMETMPDIR/grabs"
-filename="$(date +%Y%m%d-%H%M%S)"
-imagefile="${screenshotdir}/${filename}.png"
-annotatedimagefile="${screenshotdir}/${filename}-annotated.png"
-screenshottool="/usr/bin/grimshot save"
-annotatetool="satty --filename ${imagefile} --output-filename ${annotatedimagefile}"
-
-mkdir -p $screenshotdir
+filename="$(date +%Y%m%d-%H%M%S).png"
+imagefile="${screenshotdir}/${filename}"
 
 action="${1:-select}"
-notify_debug "Got action '${action}'"
 case ${action} in
     select)
         options="area"
@@ -40,20 +34,6 @@ case ${action} in
 	errexit "Unknown action ${action}"
 	;;
 esac
-grabcommand="${screenshottool} ${options} ${imagefile}"
-notify_debug "executing ${grabcommand}"
 
-if ifdebug3
-then
-	grabcommand="echo ${grabcommand}"
-fi
-notify_debug "${grabcommand}"
-if ${grabcommand}
-then
-	notify2 "Screenshot ${action} saved to ${imagefile}"
-	echo -n ${imagefile} | wl-copy
-else
-	errexit "Screenshot ${action} failed"
-fi
-
-${annotatetool}
+mkdir -p $screenshotdir
+/usr/bin/grimshot save ${options} - | satty --filename - --output-filename ${imagefile}
