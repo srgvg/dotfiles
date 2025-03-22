@@ -43,24 +43,24 @@ function execute() {
 
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
-			-print0 \
 			-mindepth 1 \
 			-not -path '/home/serge/scratch/work/*' -a -not -path '/home/serge/scratch/.stfolder*' \
 			-mmin +2880 \
 			\( -type f -o -type l \) \
-			| xargs -0 rm -rfv
+			-print0 \
+			| xargs -0 rm -fv
 
 	###############################################################################
 	elif [ "${command}" = "rm-scratch-dirs" ]
 	then
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
-			-print0 \
 			-depth -mindepth 1 \
 			-not -path '/home/serge/scratch/.stfolder*' -not -path '/home/serge/scratch/work**' \
 			-type d \
 			-empty \
-			| xargs -0 rm -rfv
+			-print0 \
+			| xargs -0 rmdir -pv
 
 	###############################################################################
 	elif [ "${command}" = "restore-dirs" ]
@@ -113,4 +113,6 @@ find $HOME/logs/cronjobs \
 	-mmin +2880 \
 	-type f \
 	-delete
+
+#######################################################################################################################
 
