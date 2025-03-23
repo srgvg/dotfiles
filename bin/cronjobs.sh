@@ -48,11 +48,12 @@ function execute() {
 			-mmin +2880 \
 			\( -type f -o -type l \) \
 			-print0 \
-			| xargs -0 rm -fv
+			| xargs -r -0 rm -fv
 
 	###############################################################################
 	elif [ "${command}" = "rm-scratch-dirs" ]
 	then
+
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
 			-depth -mindepth 1 \
@@ -60,7 +61,7 @@ function execute() {
 			-type d \
 			-empty \
 			-print0 \
-			| xargs -0 rmdir -pv
+			| xargs -r -0 rmdir -v
 
 	###############################################################################
 	elif [ "${command}" = "restore-dirs" ]
