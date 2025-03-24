@@ -31,8 +31,9 @@ format = """
 ([┌$fill](bold green) \n)\
 ([│](bold green) $time $username $hostname $directory \n)\
 ([│](bold green) ($kubernetes )($vcsh )($git_branch )($git_state )($git_commit )($git_status )\n)\
-([│](bold green) $gcloud$aws$azure \n)\
+([│](bold green) ${custom.talosctl} \n)\
 ([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
+([│](bold green) $gcloud$aws$azure \n)\
 ([│](bold green) ($jobs )($sudo )\n)\
 ([└──](bold green)$character)\
 """
@@ -269,3 +270,7 @@ when="true"
 shell="sh"
 format = "[$output\u001B\\[K]($style)"
 
+[custom.talosctl]
+when = 'test -n "${TALOSCONFIG}"'
+command = "talosinfo"
+style = "bold blue"

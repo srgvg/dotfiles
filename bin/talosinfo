@@ -13,6 +13,14 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
+if [ -z "${TALOSCONFIG:-}" ]
+then
+	echo "no TALOSCONFIG set" >&2
+	exit 1
+fi
 
-eval $(keychain --eval)
-nice -n 20 ionice -c 3 /home/serge/.local/bin/vorta
+CONFIG="$(talosctl --talosconfig "${TALOSCONFIG}" config info -o json)"
+CONTEXT="$(echo ${CONFIG} | jq -rc .context)"
+NODES="$(echo ${CONFIG} | jq -rc .nodes)"
+
+echo "Talos ${CONTEXT} ${NODES}"
