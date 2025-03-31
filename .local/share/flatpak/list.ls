@@ -13,6 +13,7 @@ io.dbeaver.DBeaverCommunity	25.0.0	flathub	system
 io.github.dyegoaurelio.simple-wireplumber-gui	0.1.4	flathub	system
 io.github.mimbrero.WhatsAppDesktop	1.2.3	flathub	system
 io.github.ungoogled_software.ungoogled_chromium	134.0.6998.88-1	flathub	system
+io.kinvolk.Headlamp	0.29.0	flathub	system
 org.chromium.Chromium	134.0.6998.88	flathub	system
 org.ferdium.Ferdium	7.0.0	flathub	system
 org.gnome.NetworkDisplays	0.94.0	flathub	system
