@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
@@ -19,9 +19,18 @@ then
 	echo "no TALOSCONFIG set" >&2
 	exit 1
 fi
-
+TALOSCONFIG_EXISTED=0
+if [ -f "${TALOSCONFIG:-}" ]
+then
+	TALOSCONFIG_EXISTED=1
+fi
 CONFIG="$(talosctl --talosconfig "${TALOSCONFIG}" config info -o json)"
 CONTEXT="$(echo ${CONFIG} | jq -rc .context)"
 NODES="$(echo ${CONFIG} | jq -rc .nodes)"
 
 echo "Talos ${CONTEXT} ${NODES}"
+
+if [ $TALOSCONFIG_EXISTED -eq 0 ]
+then
+	rm -f $TALOSCONFIG
+fi

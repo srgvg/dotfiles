@@ -156,9 +156,9 @@ function dotsadd() {
 
 	set +o errexit
 	sub "dot"
+	echo "adding [dot] entries"
 	for entry in ${dotadds}
 	do
-		echo "adding [dot] ${entry}"
 		IFS=$OIFS
 		if ! vcsh run dot git add --force ${entry}
 		then
@@ -171,9 +171,9 @@ function dotsadd() {
 	done
 	echo
 	sub "sdot"
+	echo "adding [sdot] entries"
 	for entry in ${sdotadds}
 	do
-		echo "adding [sdot] ${entry}"
 		IFS=$OIFS
 		if ! vcsh run sdot git add --force ${entry}
 		then
