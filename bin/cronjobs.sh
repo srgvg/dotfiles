@@ -38,7 +38,7 @@ function execute() {
 	command=${1-:default}
 
 	###############################################################################
-	if [ "${command}" = "rm-scratch-files" ]
+	if [ "${command}" = "clean-scratch" ]
 	then
 
 		nice -n 20 ionice -c 3 \
@@ -50,10 +50,6 @@ function execute() {
 			-print0 \
 			| xargs -r -0 rm -fv
 
-	###############################################################################
-	elif [ "${command}" = "rm-scratch-dirs" ]
-	then
-
 		nice -n 20 ionice -c 3 \
 			find $HOME/scratch/ \
 			-depth -mindepth 1 \
@@ -62,10 +58,6 @@ function execute() {
 			-empty \
 			-print0 \
 			| xargs -r -0 rmdir -v
-
-	###############################################################################
-	elif [ "${command}" = "restore-dirs" ]
-	then
 
 		if ! test -d /home/serge/scratch/.stfolder
 		then
@@ -93,13 +85,15 @@ function execute() {
 	###############################################################################
 	elif [ "${command}" = "default" ]
 	then
-
-		crontab -l > $HOME/etc/crontab
+		:
 
 	###############################################################################
 	else
 		return 7
 	fi
+
+	###############################################################################
+	crontab -l > $HOME/etc/crontab
 }
 
 #######################################################################################################################
@@ -111,7 +105,7 @@ then
 fi
 find $HOME/logs/cronjobs \
 	-mindepth 1 \
-	-mmin +2880 \
+	-mmin +10080 \
 	-type f \
 	-delete
 
