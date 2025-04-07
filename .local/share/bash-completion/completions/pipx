@@ -1,4 +1,4 @@
-
+#compdef pipx
 # Run something, muting output or redirecting it to the debug stream
 # depending on the value of _ARC_DEBUG.
 # If ARGCOMPLETE_USE_TEMPFILES is set, use tempfiles for IPC.
@@ -17,9 +17,9 @@ __python_argcomplete_run() {
 
 __python_argcomplete_run_inner() {
     if [[ -z "${_ARC_DEBUG-}" ]]; then
-        "$@" 8>&1 9>&2 1>/dev/null 2>&1
+        "$@" 8>&1 9>&2 1>/dev/null 2>&1 </dev/null
     else
-        "$@" 8>&1 9>&2 1>&9 2>&1
+        "$@" 8>&1 9>&2 1>&9 2>&1 </dev/null
     fi
 }
 
@@ -27,6 +27,12 @@ _python_argcomplete() {
     local IFS=$'\013'
     local script=""
     if [[ -n "${ZSH_VERSION-}" ]]; then
+        if [[ "${_matcher_num-}" -gt 1 ]]; then
+            # Return early if the completer is called multiple times in the same completion run.
+            # Currently the only known occurrence of this is in zsh when a matcher-list zstyle is declared.
+            # When this happens, _matcher_num is incremented past 1.
+            return
+        fi
         local completions
         completions=($(IFS="$IFS" \
             COMP_LINE="$BUFFER" \
@@ -35,7 +41,15 @@ _python_argcomplete() {
             _ARGCOMPLETE_SHELL="zsh" \
             _ARGCOMPLETE_SUPPRESS_SPACE=1 \
             __python_argcomplete_run ${script:-${words[1]}}))
-        _describe "${words[1]}" completions -o nosort
+        local nosort=()
+        local nospace=()
+        if is-at-least 5.8; then
+            nosort=(-o nosort)
+        fi
+        if [[ "${completions-}" =~ ([^\\]): && "${match[1]}" =~ [=/:] ]]; then
+            nospace=(-S '')
+        fi
+        _describe "${words[1]}" completions "${nosort[@]}" "${nospace[@]}"
     else
         local SUPPRESS_SPACE=0
         if compopt +o nospace 2> /dev/null; then
@@ -60,5 +74,14 @@ _python_argcomplete() {
 if [[ -z "${ZSH_VERSION-}" ]]; then
     complete -o nospace -o default -o bashdefault -F _python_argcomplete pipx
 else
-    compdef _python_argcomplete pipx
+    # When called by the Zsh completion system, this will end with
+    # "loadautofunc" when initially autoloaded and "shfunc" later on, otherwise,
+    # the script was "eval"-ed so use "compdef" to register it with the
+    # completion system
+    autoload is-at-least
+    if [[ $zsh_eval_context == *func ]]; then
+        _python_argcomplete "$@"
+    else
+        compdef _python_argcomplete pipx
+    fi
 fi
