@@ -38,7 +38,7 @@ function execute() {
 	command=${1-:default}
 
 	###############################################################################
-	if [ "${command}" = "clean-scratch" ]
+	if [ "${command}" = "cleanup" ]
 	then
 
 		nice -n 20 ionice -c 3 \
@@ -69,6 +69,12 @@ function execute() {
 			rm -rfv /home/serge/scratch/work
 			mkdir -pv /home/serge/scratch/work
 		fi
+
+		find $HOME/logs/cronjobs \
+			-mindepth 1 \
+			-mmin +10080 \
+			-type f \
+			-delete
 
 	###############################################################################
 	elif [ "${command}" = "update-tools" ]
@@ -103,11 +109,6 @@ if [ $? -eq 7 ]
 then
 	echo no actions for ${command}
 fi
-find $HOME/logs/cronjobs \
-	-mindepth 1 \
-	-mmin +10080 \
-	-type f \
-	-delete
 
 #######################################################################################################################
 
