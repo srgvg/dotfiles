@@ -1,8 +1,10 @@
-pathmunge $HOME/.atuin/bin/ before
+source "$HOME/.atuin/bin/env"
 
-# https://docs.atuin.sh/configuration/key-binding/#bash
-export ATUIN_NOBIND="true"
-eval "$(atuin init bash)"
+## pathmunge $HOME/.atuin/bin/ before
+##
+## # https://docs.atuin.sh/configuration/key-binding/#bash
+## export ATUIN_NOBIND="true"
+## eval "$(atuin init bash)"
 
 # bind to ctrl-r, add any other bindings you want here too
 bind -x '"\C-r": __atuin_history'

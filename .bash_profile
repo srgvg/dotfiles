@@ -14,3 +14,5 @@ fi
 # Added by Toolbox App
 export PATH="$PATH:/home/serge/.local/share/JetBrains/Toolbox/scripts"
 
+
+. "$HOME/.atuin/bin/env"
