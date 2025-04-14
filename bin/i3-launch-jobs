@@ -81,7 +81,7 @@ do
 		i3-launch-job $line
 	else
 		sleep ${SLEEP_COUNTER} && i3-launch-job $line
-		((SLEEP_COUNTER=SLEEP_COUNTER+1))
+		#((SLEEP_COUNTER=SLEEP_COUNTER+1))
 	fi
 done
 echo
