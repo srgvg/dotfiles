@@ -28,7 +28,7 @@ function define_adds() {
 .bashrc
 .bashrc.d/
 .blerc
-.config/alacritty/
+.config/alacritty/		:!.config/alacritty/themes
 .config/asdf-plugin-list
 .config/atuin/
 .config/blesh/
@@ -59,10 +59,8 @@ function define_adds() {
 .config/swayidle/
 .config/swaync/
 .config/systemd/user
-.config/remmina			:!.config/remmina/*.remmina
 .config/yamlfmt/
 .config/yazi/
-.local/share/remmina	:!.local/share/remmina/*.remmina
 .config/user-dirs.dirs
 .default-python-packages
 .editorconfig
@@ -126,12 +124,13 @@ Wallpapers
 .config/gotify/
 .config/hcloud/
 .config/mopidy/
+.config/remmina/
 .config/scw/
 .gitignore.d/sdot
 .gnupg/ :!.gnupg/random_seed
 .hdns/
 .kube/ :!.kube/cache/ :!.kube/config :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history
-.local/share/remmina/*.remmina
+.local/share/remmina/
 .s3cfg
 .ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
 .talos/
