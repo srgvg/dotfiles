@@ -1,44 +1,52 @@
+[general]
+live_config_reload = true
+import = [
+    #"~/.config/alacritty/themes/themes/alacritty_0_12.toml",
+    #"~/.config/alacritty/themes/themes/alabaster_dark.toml",
+    #"~/.config/alacritty/themes/themes/argonaut.toml",
+    "~/.config/alacritty/themes/svg.toml",
+]
 
-[colors]
-indexed_colors = []
-
-[colors.bright]
-black = "0x020221"
-blue = "0x99a4bc"
-cyan = "0x8bccbf"
-green = "0xb1bf75"
-magenta = "0xffb07b"
-red = "0xff8e78"
-white = "0xf8f8ff"
-yellow = "0xffd392"
-
-[colors.cursor]
-cursor = "0xffe8c0"
-text = "0x020221"
-
-[colors.dim]
-black = "#1d2021"
-blue = "#2b3c44"
-cyan = "#205161"
-green = "#232b0f"
-magenta = "#4e3d45"
-red = "#421e1e"
-white = "#f4e8ba"
-yellow = "#4d3b27"
-
-[colors.normal]
-black = "0x000004"
-blue = "0x635196"
-cyan = "0x34bfa4"
-green = "0x718e3f"
-magenta = "0xff761a"
-red = "0xff3600"
-white = "0xb4b4b9"
-yellow = "0xffc552"
-
-[colors.primary]
-background = "0x020221"
-foreground = "0xb4b4b9"
+#[colors]
+#indexed_colors = []
+#
+#[colors.bright]
+#black = "0x020221"
+#blue = "0x99a4bc"
+#cyan = "0x8bccbf"
+#green = "0xb1bf75"
+#magenta = "0xffb07b"
+#red = "0xff8e78"
+#white = "0xf8f8ff"
+#yellow = "0xffd392"
+#
+#[colors.cursor]
+#cursor = "0xffe8c0"
+#text = "0x020221"
+#
+#[colors.dim]
+#black = "#1d2021"
+#blue = "#2b3c44"
+#cyan = "#205161"
+#green = "#232b0f"
+#magenta = "#4e3d45"
+#red = "#421e1e"
+#white = "#f4e8ba"
+#yellow = "#4d3b27"
+#
+#[colors.normal]
+#black = "0x000004"
+#blue = "0x635196"
+#cyan = "0x34bfa4"
+#green = "0x718e3f"
+#magenta = "0xff761a"
+#red = "0xff3600"
+#white = "0xb4b4b9"
+#yellow = "0xffc552"
+#
+#[colors.primary]
+#background = "0x020221"
+#foreground = "0xb4b4b9"
 
 [cursor]
 style = "Beam"
@@ -95,9 +103,6 @@ title = "Terminal"
 [window.class]
 general = "Alacritty"
 instance = "Alacritty"
-
-[general]
-live_config_reload = true
 
 #[window.window]
 #opacity = 0.9

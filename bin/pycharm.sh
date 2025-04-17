@@ -14,7 +14,7 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
-~/Applications/idea-IU/bin/idea.sh &
+~/Applications/pycharm/bin/pycharm.sh &
 
 # https://www.adangel.org/2024/06/21/nofile-limit-investigations/
 for pid in $( pgrep -f idea )

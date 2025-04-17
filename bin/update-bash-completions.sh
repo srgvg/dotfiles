@@ -52,6 +52,7 @@ completion_bash_commands=(
     talhelper
     yq
     zarf
+    zli
 )
 completions_bash_commands=(
     starship
