@@ -121,6 +121,7 @@ lvim.plugins = {
     {
         "editorconfig/editorconfig-vim",
         "jamessan/vim-gnupg",
+        "getnf/getnf"
     }
 }
 -- -- Autocommands (`:help autocmd`) <https://neovim.io/doc/user/autocmd.html>
