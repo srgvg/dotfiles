@@ -3,8 +3,9 @@
  `lvim` is the global options object
 ]]
 -- vim options
-vim.opt.shiftwidth = 2
-vim.opt.tabstop = 2
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.expandtab
 vim.opt.relativenumber = true
 vim.opt.wrap = true
 
