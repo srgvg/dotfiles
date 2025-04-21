@@ -14,6 +14,7 @@ source "$HOME/bin/common.bash"
 
 ##########################################################################################################
 #
+#
 TMPPATH="$HOMETMPDIR/tmp/update-tools"
 BINPATH="$HOME/bin2"
 COMPLPATH="$HOME/.local/share/bash-completion/completions"
@@ -122,8 +123,14 @@ download_file() {
 		bsdtar --extract --file ${tmppathname}.archive
 		destname="$(basename ${destpathname})"
 		tmppathname="$(find ${TMPPATH} -name ${destname})"
+		if [ "${tmppathname}" == "" ]
+		then
+			err "could not find ${destname}" in archive
+			return
+		fi
 		destpathname="$(dirname ${destpathname})/${destname}"
 	fi
+
 
 	if ! cmp ${tmppathname} ${destpathname} >/dev/null 2>&1
 	then
@@ -205,7 +212,6 @@ github_download() {
 
 ##########################################################################################################
 #
-#
 ##########################################################################################################
 
 get_github() {
@@ -213,49 +219,15 @@ get_github() {
 	#trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
 	# github_download	release|file	project					artefactname_${osarch}					destpath	destname					version
-	#github_download		release			aenix-io/talm			talm-linux-amd64						$BINPATH	talm						latest
-	#github_download		release			antonmedv/fx			fx_${OS_ARCH}							$BINPATH	fx							latest
-	#github_download		release			apple/pkl				pkl-${OS_ARCH2}							$BINPATH	pkl							latest
-	#github_download		release			BeryJu/korb				korb_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH	korb						latest
-	#github_download		release			c-bata/kube-prompt		kube-prompt_@@VERSION@@_linux_amd64.zip $BINPATH	kube-prompt					latest
-	#github_download		release			cilium/hubble			hubble-${OS_ARCH2}.tar.gz				$BINPATH	hubble						latest
-	#github_download		release			civo/cli				civo-@@VERSION@@-${OS_ARCH2}.tar.gz		$BINPATH	civo						latest
-	#github_download		release			direnv/direnv			direnv.linux-amd64						$BINPATH	direnv						latest
-	#github_download		release			fullstorydev/grpcurl	grpcurl_@@VERSION@@_${OS_ARCH4}.tar.gz	$BINPATH	grpcurl						latest
-	#github_download		release			homeport/dyff			dyff_@@VERSION@@_linux_amd64.tar.gz		$BINPATH	dyff						latest
-	#github_download		release			k8sgpt-ai/k8sgpt		k8sgpt_${OS_ARCH3}.tar.gz				$BINPATH	k8sgpt						latest
-	#github_download		release			kubescape/kubescape		kubescape-ubuntu-latest					$BINPATH	kubescape					latest
-	#github_download		release			kubeshark/kubeshark		kubeshark_${OS_ARCH}					$BINPATH	kubeshark					latest
-	#github_download		release			JakWai01/lurk			lurk-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	lurk						latest
 	github_download		file			johanhaleby/kubetail	kubetail								$BINPATH	kubetail					master
 	github_download		file			johanhaleby/kubetail	completion/kubetail.bash				$COMPLPATH	completions.kubetail.bash	master
-	#github_download		release			josephburnett/jd		jd-amd64-linux							$BINPATH	jd							latest
-	#github_download		release			mirceanton/talswitcher 	talswitcher_linux_amd64.tar.gz			$BINPATH	talswitcher					latest
-	#github_download		release			nats-io/nats-server		nats-server-@@VERSION@@-linux-amd64.tar.gz	$BINPATH	nats-server				latest
-	#github_download		release			nats-io/natscli			nats-@@VERSION@@-linux-amd64.zip		$BINPATH	nats						latest
-	#github_download		release			neovim/neovim			nvim.appimage							$BINPATH	nvim						latest
-	#github_download		release			noahgorstein/jqp		jqp_Linux_x86_64.tar.gz					$BINPATH	jqp							latest
-	#github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurl				latest
 	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH	hurl.bash			latest
-	#github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $BINPATH	hurlfmt				latest
 	github_download		release			Orange-OpenSource/hurl	hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH	hurlfmt.bash		latest
-	#github_download		release			oras-project/oras		oras_@@VERSION@@_${OS_ARCH}.tar.gz		$BINPATH    oras						latest
-	#github_download		release			regclient/regclient		regbot-${OS_ARCH2}						$BINPATH	regbot						latest
-	#github_download		release			regclient/regclient		regctl-${OS_ARCH2}						$BINPATH	regctl						latest
-	#github_download		release			regclient/regclient		regsync-${OS_ARCH2}						$BINPATH	regsync						latest
-	#github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $BINPATH	satty						latest
 	github_download		release			gabm/Satty				satty-x86_64-unknown-linux-gnu.tar.gz   $COMPLPATH	satty.bash					latest
-	#github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$BINPATH	yazi						latest
 	github_download		release			sxyazi/yazi				yazi-x86_64-unknown-linux-gnu.zip		$COMPLPATH  yazi.bash					latest
-	#github_download		release			updatecli/updatecli		updatecli_${OS_ARCH3}.tar.gz			$BINPATH	updatecli					latest
 	github_download		file			vaniacer/kui			kui										$BINPATH	kui							master
-	#github_download		release			versity/versitygw		versitygw_@@VERSION@@_Linux_x86_64.tar.gz $BINPATH	versitygw					latest
-	#github_download		release			vladlosev/fouskoti		fouskoti_${OS_ARCH3}.tar.gz				$BINPATH	fouskoti					latest
-	#github_download		release			Wilfred/difftastic		difft-x86_64-unknown-linux-gnu.tar.gz	$BINPATH	difft						latest
-	#github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
-	#github_download		release			yorukot/superfile		superfile-linux-@@VERSION@@-amd64.tar.gz $BINPATH	spf							latest
-	#github_download		release			zarf-dev/zarf			zarf_@@VERSION@@_Linux_amd64			$BINPATH	zarf						latest
 }
+
 ##########################################################################################################
 
 get_downloads() {
@@ -301,56 +273,56 @@ get_krew(){
 }
 
 ##########################################################################################################
-#
-#get_asdf() {
-#
-#	title "asdf update"
-#	asdf update
-#
-#	log "asdf plugin update --all"
-#	asdf plugin update --all
-#	log ""
-#
-#	plugins="$(asdf plugin-list)"
-#	log "asdf updating plugins\n$(echo $plugins | xargs)"
-#	for plugin in $plugins
-#	do
-#		log "asdf install $plugin latest"
-#		asdf install $plugin latest ||:
-#		log ""
-#
-#		if ! [[ "$plugin" =~ python|flux2 ]]
-#		then
-#			log "asdf global $plugin latest"
-#			asdf global $plugin latest ||:
-#			log ""
-#		fi
-#	done
-#	log "END of asdf updating plugins"
-#
-#	if [ "${HOSTNAME}" = "goldorak" ]
-#	then
-#		log asdf make lists
-#		asdf plugin-list     > $HOME/.config/asdf-plugin-list
-#		asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
-#	fi
-#
-#	title "asdf cleaning up old versions"
-#	for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
-#	do
-#		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
-#		do
-#			log "\nremoving $plugin $version"
-#			asdf uninstall $plugin $version
-#		done
-#	done
-#
-#	title "asdf install add-ons for asdf tools"
-#	log "\ngithub cli extensions"
-#	gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
-#	gh extension upgrade dlvhdr/gh-dash
-#}
-#
+
+get_asdf() {
+
+	title "asdf update"
+	asdf update
+
+	log "asdf plugin update --all"
+	asdf plugin update --all
+	log ""
+
+	plugins="$(asdf plugin-list)"
+	log "asdf updating plugins\n$(echo $plugins | xargs)"
+	for plugin in $plugins
+	do
+		log "asdf install $plugin latest"
+		asdf install $plugin latest ||:
+		log ""
+
+		if ! [[ "$plugin" =~ python|flux2 ]]
+		then
+			log "asdf global $plugin latest"
+			asdf global $plugin latest ||:
+			log ""
+		fi
+	done
+	log "END of asdf updating plugins"
+
+	if [ "${HOSTNAME}" = "goldorak" ]
+	then
+		log asdf make lists
+		asdf plugin-list     > $HOME/.config/asdf-plugin-list
+		asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
+	fi
+
+	title "asdf cleaning up old versions"
+	for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
+	do
+		for version in $(asdf list $plugin | grep -v '*' | head -n -5)
+		do
+			log "\nremoving $plugin $version"
+			asdf uninstall $plugin $version
+		done
+	done
+
+	title "asdf install add-ons for asdf tools"
+	log "\ngithub cli extensions"
+	gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
+	gh extension upgrade dlvhdr/gh-dash
+}
+
 ##########################################################################################################
 
 get_mise() {
@@ -373,12 +345,7 @@ get_mise() {
 
 ##########################################################################################################
 
-get_misc() {
-
-	title "civo"
-	log "civo update"
-	hash civo >/dev/null 2>&1 && civo update
-	log ""
+get_flatpak() {
 
 	title "flatpak"
 	log "flatpak update global"
@@ -398,8 +365,11 @@ get_misc() {
 		log ""
 	fi
 
-	##########################################################################################################
+}
 
+##########################################################################################################
+
+get_helm() {
 
 	title "helm repo update"
 	helm repo update
@@ -408,25 +378,41 @@ get_misc() {
 		helm repo list > $TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
 	fi
 
-	##########################################################################################################
+}
 
+##########################################################################################################
+
+get_bash_completions() {
 
 	title "generate bash completions"
 	$HOME/bin/update-bash-completions.sh
 
+}
 
-	##########################################################################################################
+##########################################################################################################
 
+get_pipx() {
 
 	title update pipx
+	log install new packages from pipx list
+	comm -13 <(pipx list --short | sed s/\ .*//) <( < ~/etc/packages/pipx.list sed s/\ .*// ) | xargs --no-run-if-empty -n1 pipx install
+	log upgrade all
 	pipx upgrade-all
-	pipx list --short | sed s/\ .*// | xargs -n1 pipx upgrade
-	< ~/etc/packages/pipx.list sed s/\ .*// | xargs -n1 pipx upgrade
+	log save new pipx.list
 	pipx list --short > $TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
 
-	##########################################################################################################
+}
 
+##########################################################################################################
 
+get_misc() {
+
+	title "misc stuff"
+	log "civo update"
+	hash civo >/dev/null 2>&1 && civo update
+	log ""
+
+	log "ble.sh"
 	if hash ble-update 2> /dev/null
 	then
 		ble-update
@@ -436,6 +422,7 @@ get_misc() {
 		echo " bash ble-nightly/ble.sh --install ~/.local/share"
 	fi
 
+	log "atuin"
 	if hash atuin 2> /dev/null
 	then
 		atuin-update
@@ -444,32 +431,35 @@ get_misc() {
 		echo "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
 	fi
 
-	##########################################################################################################
-
 }
 
+##########################################################################################################
+#
 ##########################################################################################################
 
 main() {
 
-	cd ${TMPPATH}
-	get_github
-	get_downloads
 	cd ${HOME}
-	#get_asdf
+
 	get_mise
+	get_pipx
 	get_krew
+	get_helm
+	get_flatpak
 	get_misc
+	get_downloads
+	get_github
+	get_bash_completions
 
 	title "add dotfiles"
 	$HOME/bin/dotfiles add
 
+
 }
-##########################################################################################################
 
-#    github_download		release			ynqa/jnv				jnv-x86_64-unknown-linux-gnu.tar.xz		$BINPATH	jnv							latest
-#    exit
-
-main
+#main
+cd $HOME
+	#get_downloads
+	get_github
 
 ##########################################################################################################
