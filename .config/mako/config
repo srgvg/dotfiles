@@ -2,12 +2,12 @@ sort=-time
 layer=overlay
 text-color=#a9a9a9
 background-color=#2e3440
-width=800
+width=1000
 height=2000
-border-size=10
+border-size=20
 border-color=#88c0d0
 border-radius=30
-padding=10
+padding=30
 outer-margin=50
 margin=10
 progress-color=source #ffffff
@@ -20,7 +20,13 @@ max-icon-size=64
 default-timeout=5000
 ignore-timeout=0
 font=monospace 16
-anchor=top-center
+anchor=center
+text-alignment=center
+
+output=DP-3
+
+ignore-timeout=1
+default-timeout=0
 
 [urgency=low]
 border-color=#a9a9a9
@@ -30,11 +36,6 @@ border-color=#2a52be
 
 [urgency=high]
 border-color=#b22222
-default-timeout=0
-
-[category=mpd]
-default-timeout=2000
-group-by=category
 
 [mode=do-not-disturb]
 invisible=1
