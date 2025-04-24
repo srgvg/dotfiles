@@ -233,7 +233,7 @@ get_downloads() {
     title "go-chromecast"
     download_file $($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest \
                 | jq -r '.assets[].browser_download_url' \
-                | grep $OS_ARCH ) ${BINPATH}/go-chromecast
+                | grep Linux_x86_64 ) ${BINPATH}/go-chromecast
 
 
     title "kubedash"
