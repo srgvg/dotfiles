@@ -1,11 +1,11 @@
-sort=-time
+sort=+time
 layer=overlay
 text-color=#a9a9a9
-background-color=#2e3440
+background-color=#111111
 width=1000
 height=2000
 border-size=20
-border-color=#88c0d0
+border-color=#2a5288
 border-radius=30
 padding=30
 outer-margin=50
@@ -17,16 +17,15 @@ markup=1
 actions=1
 max-history=10
 max-icon-size=64
-default-timeout=5000
-ignore-timeout=0
+default-timeout=0
+ignore-timeout=1
 font=monospace 16
 anchor=center
 text-alignment=center
 
 output=DP-3
 
-ignore-timeout=1
-default-timeout=0
+format=%a\n<b>%s</b>\n\n%b
 
 [urgency=low]
 border-color=#a9a9a9
