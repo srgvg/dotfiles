@@ -131,7 +131,7 @@ _starship() {
             return 0
             ;;
         starship__completions)
-            opts="-h --help bash elvish fish powershell zsh"
+            opts="-h --help bash elvish fish nushell power-shell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -539,7 +539,7 @@ _starship() {
             return 0
             ;;
         starship__preset)
-            opts="-o -l -h --output --list --help bracketed-segments gruvbox-rainbow jetpack nerd-font-symbols no-empty-icons no-nerd-font no-runtime-versions pastel-powerline plain-text-symbols pure-preset tokyo-night"
+            opts="-o -l -h --output --list --help bracketed-segments catppuccin-powerline gruvbox-rainbow jetpack nerd-font-symbols no-empty-icons no-nerd-font no-runtime-versions pastel-powerline plain-text-symbols pure-preset tokyo-night"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

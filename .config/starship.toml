@@ -35,6 +35,7 @@ format = """
 ([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
 ([│](bold green) $gcloud$aws$azure \n)\
 ([│](bold green) ($jobs )($sudo )\n)\
+([│](bold green) $mise\n)\
 ([└──](bold green)$character)\
 """
 
@@ -260,6 +261,11 @@ time_range = "-"
 [username]
 show_always = true
 format = "[$user]($style)"
+
+[mise]
+disabled = true
+symbol = "M "
+
 
 ###
 
