@@ -37,3 +37,4 @@ fi
 # that output. (you can use the script command to help you store the whole
 # shell session output, or for the bash approach, use 7> file.log instead ofbashrc
 
+
