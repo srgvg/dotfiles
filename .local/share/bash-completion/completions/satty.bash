@@ -19,7 +19,7 @@ _satty() {
 
     case "${cmd}" in
         satty)
-            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --action-on-enter --save-after-copy --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --help --version"
+            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --action-on-enter --save-after-copy --right-click-copy --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
