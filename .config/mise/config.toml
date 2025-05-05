@@ -11,6 +11,10 @@ show_env = true
 show_tools = true
 missing_tools = "always"
 
+[env]
+# for gcloud
+MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
+
 [alias]
 hurl = "ubi:Orange-OpenSource/hurl"
 hurlfmt = "ubi:Orange-OpenSource/hurl"

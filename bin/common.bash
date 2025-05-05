@@ -8,6 +8,8 @@
 PATH=$HOME/bin:$PATH
 source $HOME/bin/parameters.bash
 source $HOME/.bashrc.d/functions.bash
+export PATH="$PATH:$HOME/.local/share/mise/shims"
+
 
 # make sure DEBUG is not exported
 # it is when called 'DEBUG=1 foo.sh'
