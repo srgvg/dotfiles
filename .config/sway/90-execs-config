@@ -62,3 +62,5 @@ exec --no-startup-id "gsettings set org.gnome.desktop.interface gtk-theme Arc-Da
 
 # https://askubuntu.com/questions/614387/gksu-gtk-warning-cannot-open-display-0
 exec --no-startup-id "xhost +SI:localuser:root"
+
+exec --no-startup-id "makoctl mode -r do-not-disturb"

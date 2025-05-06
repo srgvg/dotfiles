@@ -35,9 +35,9 @@ function _resume() {
 		fi
 	done
 	sleep 1
-	swaymsg reload
-	setsbg next
-	makoctl mode -r do-not-disturb
+	swaymsg reload ||:
+	setsbg next ||:
+	makoctl mode -r do-not-disturb ||:
 }
 
 command=${1:-default}
