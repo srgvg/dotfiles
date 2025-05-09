@@ -138,7 +138,7 @@ Wallpapers
 bins/
 etc/
 src/*.sh
-$(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*')
+$(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')
 "
 }
 

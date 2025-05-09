@@ -1,12 +1,16 @@
 _satty() {
     local i cur prev opts cmd
     COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+        cur="$2"
+    else
+        cur="${COMP_WORDS[COMP_CWORD]}"
+    fi
+    prev="$3"
     cmd=""
     opts=""
 
-    for i in ${COMP_WORDS[@]}
+    for i in "${COMP_WORDS[@]:0:COMP_CWORD}"
     do
         case "${cmd},${i}" in
             ",$1")
@@ -19,7 +23,7 @@ _satty() {
 
     case "${cmd}" in
         satty)
-            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --action-on-enter --save-after-copy --right-click-copy --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --help --version"
+            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --action-on-enter --save-after-copy --right-click-copy --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
