@@ -72,7 +72,7 @@ function execute() {
 
 		find $HOME/logs/cronjobs \
 			-mindepth 1 \
-			-mmin +10080 \
+			-mmin +4500 \
 			-type f \
 			-delete
 
