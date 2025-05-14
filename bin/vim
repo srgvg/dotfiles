@@ -1,4 +1,2 @@
 #!/usr/bin/env bash
-
-export MISE_NEOVIM_VERSION=0.9.5
-exec $HOME/.local/bin/lvim "$@"
+NVIM_APPNAME=astronvim nvim "$@"
