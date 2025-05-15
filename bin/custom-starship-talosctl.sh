@@ -18,19 +18,11 @@ if [ -z "${TALOSCONFIG:-}" ]
 then
 	echo "no TALOSCONFIG set" >&2
 	exit 1
-fi
-TALOSCONFIG_EXISTED=0
-if [ -f "${TALOSCONFIG:-}" ]
+elif [ -f "${TALOSCONFIG}" ]
 then
 	TALOSCONFIG_EXISTED=1
-fi
-CONFIG="$(talosctl --talosconfig "${TALOSCONFIG}" config info -o json)"
-CONTEXT="$(echo ${CONFIG} | jq -rc .context)"
-NODES="$(echo ${CONFIG} | jq -rc .nodes)"
-
-echo "Talos ${CONTEXT} ${NODES}"
-
-if [ $TALOSCONFIG_EXISTED -eq 0 ]
-then
-	rm -f $TALOSCONFIG
+	CONFIG="$(talosctl --talosconfig "${TALOSCONFIG}" config info -o json)"
+	CONTEXT="$(echo ${CONFIG} | jq -rc .context)"
+	NODES="$(echo ${CONFIG} | jq -rc .nodes)"
+	echo "Talos ${CONTEXT} ${NODES}"
 fi

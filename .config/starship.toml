@@ -277,5 +277,5 @@ format = "[$output\u001B\\[K]($style)"
 
 [custom.talosctl]
 when = 'test -n "${TALOSCONFIG}"'
-command = "talosinfo"
+command = "custom-starship-talosctl.sh"
 style = "bold blue"
