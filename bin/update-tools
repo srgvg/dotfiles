@@ -15,26 +15,6 @@ source "$HOME/bin/common.bash"
 ##########################################################################################################
 #
 #
-TMPPATH="$HOMETMPDIR/tmp/update-tools"
-BINPATH="$HOME/bin2"
-COMPLPATH="$HOME/.local/share/bash-completion/completions"
-
-CURL_COMMAND="curl --silent --connect-timeout 5 --location"
-source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
-
-OS_ARCH="linux_amd64"
-
-trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
-trap trap_exit EXIT
-trap trap_error ERR
-
-rm -rf ${TMPPATH}
-mkdir --parents ${TMPPATH}
-cd ${TMPPATH}
-
-#
-##########################################################################################################
-#
 
 trap_exit() {
     title "cleanup"
@@ -439,9 +419,7 @@ get_misc() {
 #
 ##########################################################################################################
 
-main() {
-
-    cd ${HOME}
+update_all() {
 
     get_mise
     get_pipx
@@ -456,9 +434,102 @@ main() {
     title "add dotfiles"
     $HOME/bin/dotfiles add
 
+}
+
+init() {
+
+    trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
+    trap trap_exit EXIT
+    trap trap_error ERR
 
 }
 
-main
+
+#
+##########################################################################################################
+#
+
+TMPPATH="$HOMETMPDIR/tmp/update-tools"
+BINPATH="$HOME/bin2"
+COMPLPATH="$HOME/.local/share/bash-completion/completions"
+
+CURL_COMMAND="curl --silent --connect-timeout 5 --location"
+source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
+
+rm -rf ${TMPPATH}
+mkdir --parents ${TMPPATH}
+cd ${TMPPATH}
+
+#
+##########################################################################################################
+#
+
+commands=${*:-all}
+for command in ${commands}
+do
+    case ${command} in
+        all)
+            init
+            update_all
+            ;;
+        mise)
+            init
+            get_mise
+            ;;
+        pipx)
+            init
+            get_pipx
+            ;;
+        krew)
+            init
+            get_krew
+            ;;
+        helm)
+            init
+            get_helm
+            ;;
+        flatpak)
+            init
+            get_flatpak
+            ;;
+        misc)
+            init
+            get_misc
+            ;;
+        downloads)
+            init
+            get_downloads
+            ;;
+        github)
+            init
+            get_github
+            ;;
+        completions)
+            init
+            get_bash_completions
+            ;;
+        *)
+cat <<EOF
+
+Unknown command \`${command}\`
+
+possible options are:
+    all (*default)
+    completions
+    downloads
+    flatpak
+    github
+    helm
+    krew
+    misc
+    mise
+    pipx
+
+EOF
+exit 1
+
+    esac
+done
+
 
 ##########################################################################################################
