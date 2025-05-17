@@ -23,7 +23,7 @@ _satty() {
 
     case "${cmd}" in
         satty)
-            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --action-on-enter --save-after-copy --right-click-copy --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --help --version"
+            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --save-after-copy --actions-on-enter --actions-on-escape --actions-on-right-click --default-hide-toolbars --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --no-window-decoration --brush-smooth-history-size --right-click-copy --action-on-enter --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -73,8 +73,16 @@ _satty() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --action-on-enter)
-                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file" -- "${cur}"))
+                --actions-on-enter)
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    return 0
+                    ;;
+                --actions-on-escape)
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    return 0
+                    ;;
+                --actions-on-right-click)
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
                     return 0
                     ;;
                 --font-family)
@@ -87,6 +95,14 @@ _satty() {
                     ;;
                 --primary-highlighter)
                     COMPREPLY=($(compgen -W "block freehand" -- "${cur}"))
+                    return 0
+                    ;;
+                --brush-smooth-history-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --action-on-enter)
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
                     return 0
                     ;;
                 *)

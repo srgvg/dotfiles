@@ -1,12 +1,14 @@
 [general]
-fullscreen = false
+fullscreen = true
 early-exit = true
 corner-roundness = 10
 # possible values: pointer, crop, line, arrow, rectangle, text, marker, blur, brush
 initial-tool = "highlight"
 copy-command = "wl-copy"
 annotation-size-factor = 0.5
-action-on-enter = "save-to-clipboard"
+actions-on-enter = ["save-to-file"]
+actions-on-right-click = ["save-to-file"]
+actions-on-escape = ["exit"]
 save-after-copy = true
 right-click-copy = true
 default-hide-toolbars = false
