@@ -1,19 +1,22 @@
+# https://github.com/gabm/Satty/blob/main/README.md#configuration-file
+
 [general]
-fullscreen = true
+actions-on-enter = ["save-to-clipboard", "save-to-file", "exit"]
+actions-on-right-click = ["save-to-clipboard", "save-to-file", "exit"]
+actions-on-escape = ["save-to-clipboard", "save-to-file", "exit"]
+annotation-size-factor = 0.5
+brush-smooth-history-size = 10
+copy-command = "wl-copy"
+corner-roundness = 20
+default-hide-toolbars = false
+disable-notifications = true
 early-exit = true
-corner-roundness = 10
+fullscreen = false
 # possible values: pointer, crop, line, arrow, rectangle, text, marker, blur, brush
 initial-tool = "highlight"
-copy-command = "wl-copy"
-annotation-size-factor = 0.5
-actions-on-enter = ["save-to-file"]
-actions-on-right-click = ["save-to-file"]
-actions-on-escape = ["exit"]
-save-after-copy = true
-right-click-copy = true
-default-hide-toolbars = false
 primary-highlighter = "block"
-disable-notifications = true
+right-click-copy = true
+save-after-copy = true
 
 
 # Font to use for text annotations
@@ -21,12 +24,15 @@ disable-notifications = true
 family = "Roboto"
 style = "Bold"
 
+
 # Custom colours for the colour palette
 [color-palette]
 # These will be shown in the toolbar for quick selection
 palette = [
-    "#fff400",
+    "#fffB00",
+    "#EE540C",
     "#ff2d20",
+    "#189222",
     "#0012ff",
 ]
 

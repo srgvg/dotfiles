@@ -8,6 +8,7 @@
 PATH=$HOME/bin:$PATH
 source $HOME/bin/parameters.bash
 source $HOME/.bashrc.d/functions.bash
+eval "$(mise activate bash)"
 export PATH="$PATH:$HOME/.local/share/mise/shims"
 
 

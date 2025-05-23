@@ -186,6 +186,11 @@ function mv() {
   command mv -v -- "$1" "$newfilename"
 }
 
+function pbin() {
+	pbincli send --json | tee  | jq -r .result.link | copy
+	paste
+}
+
 function up() {
 	# Quickly CD Out Of n Directories
 	local x=''

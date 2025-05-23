@@ -100,7 +100,6 @@ then
 else
     alias paste='xclip -out -selection clipboard'
 fi
-alias pbin='pbincli send'
 alias ping1="ping -c 1 "
 alias ping3="ping -c 3 "
 alias poweroff='sudo /sbin/poweroff'

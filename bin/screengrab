@@ -34,5 +34,5 @@ case ${action} in
 	;;
 esac
 
-mkdir -p $screenshotdir
+mkdir -p ${screenshotdir}
 /usr/bin/grimshot save ${options} - | satty --filename - --output-filename ${imagefile}
