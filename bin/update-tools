@@ -193,6 +193,9 @@ github_download() {
 ##########################################################################################################
 
 get_github() {
+
+    pushd ${TMPPATH}
+
     #trap "return 0" ERR
     #trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
@@ -204,11 +207,15 @@ get_github() {
     github_download     release         gabm/Satty              satty-x86_64-unknown-linux-gnu.tar.gz   $COMPLPATH  satty.bash                  latest
     github_download     release         sxyazi/yazi             yazi-x86_64-unknown-linux-gnu.zip       $COMPLPATH  yazi.bash                   latest
     github_download     file            vaniacer/kui            kui                                     $BINPATH    kui                         master
+
+    popd
 }
 
 ##########################################################################################################
 
 get_downloads() {
+
+    pushd ${TMPPATH}
 
     title "go-chromecast"
     download_file $($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest \
@@ -223,6 +230,8 @@ get_downloads() {
 
     title "broot"
     download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}/broot
+
+    popd
 }
 
 ##########################################################################################################
@@ -230,6 +239,37 @@ get_downloads() {
 get_krew(){
 
     title "krew"
+
+    log "\nkrew update index list"
+    if [ -f $HOME/.config/krew-index-list ]
+    then
+        if ! cmp --quiet $HOME/.config/krew-index-list <(krew index list)
+        then
+            for indexname in $(grep -v -e INDEX -e URL  $HOME/.config/krew-index-list | awk '{print $1}')
+            do
+                if ! krew index list | grep --quiet $indexname
+                then
+                    indexurl=$(grep --quiet $indexname  $HOME/.config/krew-index-list | awk '{print $2}')
+                    krew index add $indexname $indexurl
+                fi
+            done
+        fi
+    fi
+    log "\nkrew (un)install new/removed plugins"
+    if [ -f $HOME/.config/krew-list ]
+    then
+        if ! cmp --quiet $HOME/.config/krew-list <(krew list)
+        then
+            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^+ | sed 's/^+//')
+            do
+                krew install $plugin
+            done
+            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^- | sed 's/^-//')
+            do
+                krew uninstall $plugin
+            done
+        fi
+    fi
 
     log "\nkrew update"
     kubectl-krew update
@@ -241,7 +281,7 @@ get_krew(){
     then
         log "\nkrew make lists"
         kubectl-krew index list > $HOME/.config/krew-index-list
-        kubectl-krew list > $HOME/.config/krew-list
+        kubectl-krew list -v1 > $HOME/.config/krew-list
         # to restore: krew install <  $HOME/.config/krew-list
     fi
 
@@ -331,7 +371,7 @@ get_flatpak() {
 
     title "flatpak"
     log "flatpak update global"
-    flatpak update --assumeyes --noninteractive
+    flatpak update --assumeyes --noninteractive --system
     log ""
     log "flatpak update user"
     flatpak update --assumeyes --noninteractive --user
@@ -390,6 +430,8 @@ get_pipx() {
 get_misc() {
 
     title "misc stuff"
+    pushd ${TMPPATH}
+
     log "civo update"
     hash civo >/dev/null 2>&1 && civo update
     log ""
@@ -413,6 +455,8 @@ get_misc() {
         echo "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
     fi
 
+    popd
+
 }
 
 ##########################################################################################################
@@ -431,9 +475,6 @@ update_all() {
     get_github
     get_bash_completions
 
-    title "add dotfiles"
-    $HOME/bin/dotfiles add
-
 }
 
 init() {
@@ -441,6 +482,16 @@ init() {
     trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
     trap trap_exit EXIT
     trap trap_error ERR
+
+    rm -rf ${TMPPATH}
+    mkdir --parents ${TMPPATH}
+
+}
+
+post() {
+
+    title "add dotfiles"
+    $HOME/bin/dotfiles add
 
 }
 
@@ -456,10 +507,6 @@ COMPLPATH="$HOME/.local/share/bash-completion/completions"
 CURL_COMMAND="curl --silent --connect-timeout 5 --location"
 source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER:$GITHUB_TOKEN"
 
-rm -rf ${TMPPATH}
-mkdir --parents ${TMPPATH}
-cd ${TMPPATH}
-
 #
 ##########################################################################################################
 #
@@ -471,6 +518,20 @@ do
         all)
             init
             update_all
+            post
+            ;;
+        quick)
+            init
+            get_downloads &
+            get_flatpak &
+            get_helm &
+            get_krew &
+            get_misc &
+            get_mise &
+            get_pipx &
+            get_bash_completions &
+            wait
+            post
             ;;
         mise)
             init
@@ -515,6 +576,7 @@ Unknown command \`${command}\`
 
 possible options are:
     all (*default)
+    quick
     completions
     downloads
     flatpak

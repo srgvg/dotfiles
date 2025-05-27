@@ -100,6 +100,8 @@ assign		[instance="IRCWINDOW"]									$ws_chat
 
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
+assign      [app_id="com.rtosta.zapzap" shell="xdg_shell"]     $ws_chat
+for_window  [app_id="com.rtosta.zapzap" shell="xdg_shell"]     layout tabbed
 
 # flatpak com.microsoft.Teams
 assign	   [class="Microsoft Teams" instance="microsoft teams"  window_role="browser-window"] $ws_chat
