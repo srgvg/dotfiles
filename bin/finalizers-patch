@@ -20,10 +20,10 @@ function kpatch() {
 	then
 		ns=$1
 		obj=$2
-		echo kubectl patch --namespace $ns $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge ||:
+		echo kubectl patch --namespace $ns $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge | sed 's/@/ /' ||:
 	else
 		obj=$1
-		echo kubectl patch $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge ||:
+		echo kubectl patch $obj -p \'\{\"metadata\":\{\"finalizers\":null\}\}\' --type=merge | sed 's/@/ /' ||:
 	fi
 }
 
@@ -35,16 +35,16 @@ then
 fi
 
 # with namespace
-for obj in $( finalizers $NS 2>/dev/null | grep -v '^[[:space:]].*' | awk '{print $1"@"$4"/"$2}' | grep -v -e KIND -e NAME )
+for obj in $( finalizers $NS 2>/dev/null | grep -v '^[[:space:]].*' | awk '{print $1"@"$4"."$3"%"$2}' | sed 's/\/v.*%/@/' | grep -v -e KIND -e NAME )
 do
 	kpatch ${obj/@/ }
-done | sort
+done | sort -u
 
 echo
 
 # without namespace
-for obj in $( finalizers 2>/dev/null | grep '^[[:space:]].*' | awk '{print $3"/"$1}' | grep -v -e KIND -e NAME )
+for obj in $( finalizers 2>/dev/null | grep '^[[:space:]].*' | awk '{print $3"."$2"%"$1}' | sed 's/\/v.*%/@/'| grep -v -e KIND -e NAME )
 do
-	kpatch ${obj}
-done | sort
+	kpatch ${obj/@/ }
+done | sort -u
 
