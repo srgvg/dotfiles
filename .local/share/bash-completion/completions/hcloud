@@ -1261,6 +1261,41 @@ _hcloud_context_list()
     noun_aliases=()
 }
 
+_hcloud_context_unset()
+{
+    last_command="hcloud_context_unset"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
 _hcloud_context_use()
 {
     last_command="hcloud_context_use"
@@ -1307,6 +1342,7 @@ _hcloud_context()
     commands+=("create")
     commands+=("delete")
     commands+=("list")
+    commands+=("unset")
     commands+=("use")
 
     flags=()
@@ -3399,6 +3435,10 @@ _hcloud_load-balancer_create()
     flags_completion+=("__hcloud_handle_go_custom_completion")
     flags+=("--name=")
     two_word_flags+=("--name")
+    flags+=("--network=")
+    two_word_flags+=("--network")
+    flags_with_completion+=("--network")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
     flags+=("--network-zone=")
     two_word_flags+=("--network-zone")
     flags_with_completion+=("--network-zone")
