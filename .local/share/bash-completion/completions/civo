@@ -2205,16 +2205,14 @@ _civo_firewall_create()
     flags_with_completion=()
     flags_completion=()
 
-    flags+=("--create-rules")
-    flags+=("-r")
-    local_nonpersistent_flags+=("--create-rules")
-    local_nonpersistent_flags+=("-r")
     flags+=("--network=")
     two_word_flags+=("--network")
     two_word_flags+=("-n")
     local_nonpersistent_flags+=("--network")
     local_nonpersistent_flags+=("--network=")
     local_nonpersistent_flags+=("-n")
+    flags+=("--no-default-rules")
+    local_nonpersistent_flags+=("--no-default-rules")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--fields=")
@@ -2634,6 +2632,82 @@ _civo_help()
     noun_aliases=()
 }
 
+_civo_instance_allowed-ips-update()
+{
+    last_command="civo_instance_allowed-ips-update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--ips=")
+    two_word_flags+=("--ips")
+    local_nonpersistent_flags+=("--ips")
+    local_nonpersistent_flags+=("--ips=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_bandwidth-update()
+{
+    last_command="civo_instance_bandwidth-update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--limit=")
+    two_word_flags+=("--limit")
+    two_word_flags+=("-l")
+    local_nonpersistent_flags+=("--limit")
+    local_nonpersistent_flags+=("--limit=")
+    local_nonpersistent_flags+=("-l")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_instance_console()
 {
     last_command="civo_instance_console"
@@ -2687,6 +2761,10 @@ _civo_instance_create()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--allowed-ips=")
+    two_word_flags+=("--allowed-ips")
+    local_nonpersistent_flags+=("--allowed-ips")
+    local_nonpersistent_flags+=("--allowed-ips=")
     flags+=("--diskimage=")
     two_word_flags+=("--diskimage")
     two_word_flags+=("-t")
@@ -2717,6 +2795,10 @@ _civo_instance_create()
     local_nonpersistent_flags+=("--network")
     local_nonpersistent_flags+=("--network=")
     local_nonpersistent_flags+=("-r")
+    flags+=("--network-bandwidth-limit=")
+    two_word_flags+=("--network-bandwidth-limit")
+    local_nonpersistent_flags+=("--network-bandwidth-limit")
+    local_nonpersistent_flags+=("--network-bandwidth-limit=")
     flags+=("--private_ipv4=")
     two_word_flags+=("--private_ipv4")
     local_nonpersistent_flags+=("--private_ipv4")
@@ -3118,6 +3200,289 @@ _civo_instance_size()
     noun_aliases=()
 }
 
+_civo_instance_snapshot_create()
+{
+    last_command="civo_instance_snapshot_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("--description")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description")
+    local_nonpersistent_flags+=("--description=")
+    local_nonpersistent_flags+=("-d")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("-n")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot_delete()
+{
+    last_command="civo_instance_snapshot_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot_list()
+{
+    last_command="civo_instance_snapshot_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot_restore()
+{
+    last_command="civo_instance_snapshot_restore"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("--description")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description")
+    local_nonpersistent_flags+=("--description=")
+    local_nonpersistent_flags+=("-d")
+    flags+=("--hostname=")
+    two_word_flags+=("--hostname")
+    local_nonpersistent_flags+=("--hostname")
+    local_nonpersistent_flags+=("--hostname=")
+    flags+=("--overwrite-existing")
+    local_nonpersistent_flags+=("--overwrite-existing")
+    flags+=("--private-ipv4=")
+    two_word_flags+=("--private-ipv4")
+    local_nonpersistent_flags+=("--private-ipv4")
+    local_nonpersistent_flags+=("--private-ipv4=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot_show()
+{
+    last_command="civo_instance_snapshot_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot_update()
+{
+    last_command="civo_instance_snapshot_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("--description")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description")
+    local_nonpersistent_flags+=("--description=")
+    local_nonpersistent_flags+=("-d")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_civo_instance_snapshot()
+{
+    last_command="civo_instance_snapshot"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("delete")
+    commands+=("list")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("restore")
+    commands+=("show")
+    commands+=("update")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--fields=")
+    two_word_flags+=("--fields")
+    two_word_flags+=("-f")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    flags+=("--pretty")
+    flags+=("--region=")
+    two_word_flags+=("--region")
+    flags+=("--yes")
+    flags+=("-y")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _civo_instance_soft-reboot()
 {
     last_command="civo_instance_soft-reboot"
@@ -3345,6 +3710,16 @@ _civo_instance()
     command_aliases=()
 
     commands=()
+    commands+=("allowed-ips-update")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("update-allowed-ips")
+        aliashash["update-allowed-ips"]="allowed-ips-update"
+    fi
+    commands+=("bandwidth-update")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("update-bandwidth")
+        aliashash["update-bandwidth"]="bandwidth-update"
+    fi
     commands+=("console")
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("access")
@@ -3424,6 +3799,11 @@ _civo_instance()
         aliashash["all"]="size"
         command_aliases+=("sizes")
         aliashash["sizes"]="size"
+    fi
+    commands+=("snapshot")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("snapshots")
+        aliashash["snapshots"]="snapshot"
     fi
     commands+=("soft-reboot")
     commands+=("start")
@@ -3741,265 +4121,6 @@ _civo_ip()
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("detach")
         aliashash["detach"]="unassign"
-    fi
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster_create()
-{
-    last_command="civo_kfcluster_create"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--firewall=")
-    two_word_flags+=("--firewall")
-    local_nonpersistent_flags+=("--firewall")
-    local_nonpersistent_flags+=("--firewall=")
-    flags+=("--network=")
-    two_word_flags+=("--network")
-    two_word_flags+=("-n")
-    local_nonpersistent_flags+=("--network")
-    local_nonpersistent_flags+=("--network=")
-    local_nonpersistent_flags+=("-n")
-    flags+=("--size=")
-    two_word_flags+=("--size")
-    two_word_flags+=("-s")
-    local_nonpersistent_flags+=("--size")
-    local_nonpersistent_flags+=("--size=")
-    local_nonpersistent_flags+=("-s")
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_flag+=("--network=")
-    must_have_one_flag+=("-n")
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster_delete()
-{
-    last_command="civo_kfcluster_delete"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster_ls()
-{
-    last_command="civo_kfcluster_ls"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster_size()
-{
-    last_command="civo_kfcluster_size"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster_update()
-{
-    last_command="civo_kfcluster_update"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--name=")
-    two_word_flags+=("--name")
-    two_word_flags+=("-n")
-    local_nonpersistent_flags+=("--name")
-    local_nonpersistent_flags+=("--name=")
-    local_nonpersistent_flags+=("-n")
-    flags+=("--config=")
-    two_word_flags+=("--config")
-    flags+=("--fields=")
-    two_word_flags+=("--fields")
-    two_word_flags+=("-f")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--pretty")
-    flags+=("--region=")
-    two_word_flags+=("--region")
-    flags+=("--yes")
-    flags+=("-y")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_civo_kfcluster()
-{
-    last_command="civo_kfcluster"
-
-    command_aliases=()
-
-    commands=()
-    commands+=("create")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("add")
-        aliashash["add"]="create"
-        command_aliases+=("new")
-        aliashash["new"]="create"
-    fi
-    commands+=("delete")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("destroy")
-        aliashash["destroy"]="delete"
-        command_aliases+=("remove")
-        aliashash["remove"]="delete"
-        command_aliases+=("rm")
-        aliashash["rm"]="delete"
-    fi
-    commands+=("ls")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("all")
-        aliashash["all"]="ls"
-        command_aliases+=("list")
-        aliashash["list"]="ls"
-    fi
-    commands+=("size")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("all")
-        aliashash["all"]="size"
-        command_aliases+=("sizes")
-        aliashash["sizes"]="size"
-    fi
-    commands+=("update")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("change")
-        aliashash["change"]="update"
-        command_aliases+=("modify")
-        aliashash["modify"]="update"
     fi
 
     flags=()
@@ -7446,21 +7567,6 @@ _civo_root_command()
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("ips")
         aliashash["ips"]="ip"
-    fi
-    commands+=("kfcluster")
-    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
-        command_aliases+=("kf")
-        aliashash["kf"]="kfcluster"
-        command_aliases+=("kfaas")
-        aliashash["kfaas"]="kfcluster"
-        command_aliases+=("kfc")
-        aliashash["kfc"]="kfcluster"
-        command_aliases+=("kfclusters")
-        aliashash["kfclusters"]="kfcluster"
-        command_aliases+=("kfcs")
-        aliashash["kfcs"]="kfcluster"
-        command_aliases+=("kubeflow")
-        aliashash["kubeflow"]="kfcluster"
     fi
     commands+=("kubernetes")
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
