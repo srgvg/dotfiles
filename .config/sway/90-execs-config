@@ -20,7 +20,7 @@ exec_always pgrep lxpolkit || lxpolkit
 
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows.
-#exec_always pkill wl-paste ; wl-paste --primary --watch wl-copy
+exec_always pkill wl-paste ; wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard
 
 #exec_always pkill swayidle ;  \
 #	swayidle -d -w \

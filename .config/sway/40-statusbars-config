@@ -30,10 +30,10 @@ bar {
 		swaybar_command waybar
 
 		# You can restrict i3bar to one or more outputs (monitors). The default is to handle all outputs.
-		output $primary
+		output [$primary, $secondary]
 
 		# tray_output <none|primary|output>
-		tray_output $primary
+		tray_output [$primary, $secondary]
 
 		# By default, a padding of 2 pixels is used for the upper, lower and
 		# right-hand side of the tray area and between the individual icons.
@@ -77,76 +77,78 @@ bar {
 
 }
 
-bar {
-		id others
-
-		colors {
-			# Text color to be used for the separator.
-			separator			$light
-			# Text color to be used for the statusline.
-			statusline			$light
-			# Background color of the bar.
-			background			$dark
-			## type				border				background		text
-			# workspace button when the workspace does not have focus and is not
-			# active (visible) on any output. This will be the case for most workspaces.
-			inactive_workspace	$dark   			$dark			$lesslight
-			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
-			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
-			active_workspace	$lesslight			$dark			$lesslight
-			# color for a workspace button when the workspace has focus.
-			focused_workspace	$focus				$dark			$focus
-			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
-			urgent_workspace	$red				$dark			$red
-		}
-
-		## status_command
-		#status_command	swaybar
-		#status_command	waybar --bar_id others
-		#swaybar_command waybar
-
-		# You can restrict i3bar to one or more outputs (monitors). The default is to handle all outputs.
-		output $secondary
-
-		# tray_output <none|primary|output>
-		tray_output none
-
-		# By default, a padding of 2 pixels is used for the upper, lower and
-		# right-hand side of the tray area and between the individual icons.
-		# tray_padding <px> [px]
-		tray_padding 2
-
-		# custom symbol to be used for the separator as opposed to the
-		# vertical, one pixel thick separator.
-		# separator_symbol <symbol>
-		separator_symbol " "
-
-		# position <top|bottom>
-		position top
-
-		# mode <dock|hide|invisible>
-		mode dock
-		#mode hide
-
-		# hidden_state <hide|show>
-		hidden_state hide
-
-		# modifier <Modifier>
-		modifier $mod
-
-		# font <font>
-		#  the order in which fonts are “declared” for use in i3bar actually
-		#  matters. The first font in the list shall be the one containing
-		#  icons, the latter the one for plain text
-		font pango:FontAwesome Solid 14, Terminus 14
-
-		# workspace_buttons <yes|no>
-		workspace_buttons yes
-
-		# binding_mode_indicator <yes|no>
-		# Specifies whether the current binding mode indicator should be shown
-		# or not. This is useful if you want to hide the workspace buttons but
-		# still be able to see the current binding mode indicator.
-		binding_mode_indicator yes
-}
-
+#bar {
+#		id others
+#
+#		colors {
+#			# Text color to be used for the separator.
+#			separator			$light
+#			# Text color to be used for the statusline.
+#			statusline			$light
+#			# Background color of the bar.
+#			background			$dark
+#			## type				border				background		text
+#			# workspace button when the workspace does not have focus and is not
+#			# active (visible) on any output. This will be the case for most workspaces.
+#			inactive_workspace	$dark   			$dark			$lesslight
+#			# Border, background and text color for a workspace button when the workspace is active (visible) on some output, but the focus is on
+#			# another one. You can only tell this apart from the focused workspace when you are using multiple monitors.
+#			active_workspace	$lesslight			$dark			$lesslight
+#			# color for a workspace button when the workspace has focus.
+#			focused_workspace	$focus				$dark			$focus
+#			# Border, background and text color for a workspace button when the workspace window with the urgency hint set.
+#			urgent_workspace	$red				$dark			$red
+#		}
+#
+#		## status_command
+#		#status_command	swaybar
+#		#status_command	waybar --bar_id others
+#		#swaybar_command waybar
+#		status_command waybar --bar others
+#		swaybar_command waybar
+#
+#		# You can restrict i3bar to one or more outputs (monitors). The default is to handle all outputs.
+#		output $secondary
+#
+#		# tray_output <none|primary|output>
+#		tray_output none
+#
+#		# By default, a padding of 2 pixels is used for the upper, lower and
+#		# right-hand side of the tray area and between the individual icons.
+#		# tray_padding <px> [px]
+#		tray_padding 2
+#
+#		# custom symbol to be used for the separator as opposed to the
+#		# vertical, one pixel thick separator.
+#		# separator_symbol <symbol>
+#		separator_symbol " "
+#
+#		# position <top|bottom>
+#		position top
+#
+#		# mode <dock|hide|invisible>
+#		mode dock
+#		#mode hide
+#
+#		# hidden_state <hide|show>
+#		hidden_state hide
+#
+#		# modifier <Modifier>
+#		modifier $mod
+#
+#		# font <font>
+#		#  the order in which fonts are “declared” for use in i3bar actually
+#		#  matters. The first font in the list shall be the one containing
+#		#  icons, the latter the one for plain text
+#		font pango:FontAwesome Solid 14, Terminus 14
+#
+#		# workspace_buttons <yes|no>
+#		workspace_buttons yes
+#
+#		# binding_mode_indicator <yes|no>
+#		# Specifies whether the current binding mode indicator should be shown
+#		# or not. This is useful if you want to hide the workspace buttons but
+#		# still be able to see the current binding mode indicator.
+#		binding_mode_indicator yes
+#}
+#

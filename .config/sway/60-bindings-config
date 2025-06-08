@@ -225,11 +225,13 @@ bindsym $mod+Control+$Alt+x exec swaymsg -t get_tree | \
 
 
 # quickswitch
-bindsym $mod+q	exec sway-list-windows.py
+#bindsym $mod+q	exec sway-list-windows.py
+bindsym $mod+q	exec $dfzf_term dfzf-windows
 
 # run launcher
-#bindsym $mod+r	exec wofi  --gtk-dark --show run,drun
-bindsym $mod+r	exec kickoff
+bindsym $mod+r	        exec wofi --insensitive --show run --normal --gtk-dark
+bindsym $mod+$Alt+r	    exec wofi --insensitive --show drun --normal --gtk-dark
+#bindsym $mod+r	exec kickoff
 
 # get sway window criteria
 bindsym $mod+g	exec sway-get-window-criteria
@@ -247,7 +249,8 @@ bindsym $mod+Pause			exec $suspend
 bindsym $mod+Control+l		exec $suspend
 
 # start some tools
-bindsym $mod+c				exec gnome-calculator
+#bindsym $mod+c				exec gnome-calculator
+bindsym $mod+c				exec $dfzf_term dfzf-clipboard
 bindsym $mod+Control+d	exec nautilus --new-window
 bindsym $mod+d		exec nemo
 
