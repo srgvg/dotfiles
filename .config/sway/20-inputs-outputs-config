@@ -40,22 +40,25 @@ Input "1386:965:Wacom_Intuos_BT_S_Pen" {
     accel_profile adaptive
 }
 
+output $primary {
+    enable
+    dpms on
+    pos 2560 0 res 3440x1440
+}
+output $secondary {
+    enable
+    dpms on
+    pos 0 0 res 3840x2160
+    scale 1.5
+    #transform 270
+}
+output $tv {
+    enable
+    #dpms on
+    pos 0 1440 res 1920x1080
+}
+
 seat seat0 keyboard_grouping smart
-
-output $primary enable
-output $primary dpms on
-output $primary pos 2560 0 res 3440x1440
-
-output $secondary enable
-output $secondary dpms on
-output $secondary pos 0 0 res 3840x2160
-output $secondary scale 1.5
-#output $secondary transform 270
-
-#output $tv enable
-output $tv dpms on
-output $tv pos 0 1440 res 1920x1080
-
 
 ## Automatically putting workspaces on specific screens
 workspace 0     output $secondary

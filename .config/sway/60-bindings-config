@@ -229,8 +229,8 @@ bindsym $mod+Control+$Alt+x exec swaymsg -t get_tree | \
 bindsym $mod+q	exec $dfzf_term dfzf-windows
 
 # run launcher
-bindsym $mod+r	        exec wofi --insensitive --show run --normal --gtk-dark
-bindsym $mod+$Alt+r	    exec wofi --insensitive --show drun --normal --gtk-dark
+bindsym $mod+r	        exec wofi --insensitive --show run  --gtk-dark
+bindsym $mod+$Alt+r	    exec wofi --insensitive --show drun --gtk-dark
 #bindsym $mod+r	exec kickoff
 
 # get sway window criteria

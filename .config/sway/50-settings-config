@@ -51,7 +51,8 @@ popup_during_fullscreen smart
 # to switch to different containers, you can use the force_focus_wrapping
 # configuration directive. After enabling it, the focus will always wrap.
 # force_focus_wrapping <yes|no>
-focus_wrapping no
+# <workspace> keeps wrapping within the same display
+focus_wrapping workspace
 
 # This configuration directive enables automatic workspace back_and_forth when
 # switching to the workspace that is currently focused.

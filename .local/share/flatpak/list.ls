@@ -8,6 +8,7 @@ com.rtosta.zapzap	6.0	flathub	system
 com.saivert.pwvucontrol	0.4.9	flathub	system
 com.slack.Slack	4.43.52	flathub	system
 com.spotify.Client	1.2.60.564.gcc6305cb	flathub	system
+eu.scarpetta.PDFMixTool	1.1.1	flathub	system
 io.dbeaver.DBeaverCommunity	25.1.0	flathub	system
 io.github.dyegoaurelio.simple-wireplumber-gui	0.2.0	flathub	system
 io.github.ungoogled_software.ungoogled_chromium	137.0.7151.68-1	flathub	system
@@ -16,5 +17,6 @@ org.chromium.Chromium	137.0.7151.68	flathub	system
 org.ferdium.Ferdium	7.1.0	flathub	system
 org.gnome.NetworkDisplays	0.97.0	flathub	system
 org.signal.Signal	7.56.1	flathub	system
+org.sonusmix.Sonusmix		sonusmix.org	system
 org.telegram.desktop	5.15.2	flathub	system
 rest.insomnia.Insomnia	1:10.3.1	flathub	system
