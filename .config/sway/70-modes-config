@@ -32,7 +32,7 @@ mode "nag" {
 # resize window (you can also use the mouse for that)
 #
 set $mode_resize Resize Window
-bindsym $mod+Control+$Alt+r mode "$mode_resize"
+bindsym $mod+Control+Alt+r mode "$mode_resize"
 mode "$mode_resize" {
 		# These bindings trigger as soon as you enter the resize mode
 
@@ -54,11 +54,11 @@ mode "$mode_resize" {
 		# back to normal: Enter or Escape
 		bindsym Return mode "default"
 		bindsym Escape mode "default"
-		bindsym $mod+Control+$Alt+r mode "default"
+		bindsym $mod+Control+Alt+r mode "default"
 }
 
 set $mode_moveit Move Window
-bindsym $mod+Control+$Alt+m mode "$mode_moveit"
+bindsym $mod+Control+Alt+m mode "$mode_moveit"
 mode "$mode_moveit" {
 		bindsym Up move up			50px
 		bindsym Left move left		50px
@@ -67,11 +67,11 @@ mode "$mode_moveit" {
 		# back to normal: Enter or Escape
 		bindsym Return mode "default"
 		bindsym Escape mode "default"
-		bindsym $mod+Control+$Alt+m mode "default"
+		bindsym $mod+Control+Alt+m mode "default"
 }
 
 set $mode_system x Exit | [Shift] d [de-]activate Debugging
-bindsym $mod+Control+$Alt+q mode "$mode_system"
+bindsym $mod+Control+Alt+q mode "$mode_system"
 mode "$mode_system" {
 	bindsym x exit
 	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
@@ -79,5 +79,5 @@ mode "$mode_system" {
 	# back to normal: Enter or Escape
 	bindsym Return mode "default"
 	bindsym Escape mode "default"
-	bindsym $mod+Control+$Alt+q mode "default"
+	bindsym $mod+Control+Alt+q mode "default"
 }

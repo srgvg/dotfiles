@@ -201,7 +201,7 @@ bindsym $mod+Shift+Escape unmark scratchpad
 # Show the first scratchpad window
 bindsym $mod+Escape scratchpad show
 # quickswitch select scratchpad window
-bindsym $mod+$Alt+Escape exec i3-quickswitch --prompt --scratchpad
+bindsym $mod+Alt+Escape exec i3-quickswitch --prompt --scratchpad
 
 
 #######################################################################################################################
@@ -219,7 +219,7 @@ bindsym $mod+Control+Return	exec $terminalfl
 #bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator|Alacritty).*$"]	kill
 bindsym $mod+x [con_id="__focused__"] 	kill
 
-bindsym $mod+Control+$Alt+x exec swaymsg -t get_tree | \
+bindsym $mod+Control+Alt+x exec swaymsg -t get_tree | \
           jq '.. | select(.type?) | select(.focused==true).pid' | \
           xargs -L 1 kill -9
 
@@ -230,7 +230,7 @@ bindsym $mod+q	exec $dfzf_term dfzf-windows
 
 # run launcher
 bindsym $mod+r	        exec wofi --insensitive --show run  --gtk-dark
-bindsym $mod+$Alt+r	    exec wofi --insensitive --show drun --gtk-dark
+bindsym $mod+Alt+r	    exec wofi --insensitive --show drun --gtk-dark
 #bindsym $mod+r	exec kickoff
 
 # get sway window criteria
@@ -247,6 +247,7 @@ bindsym Pause				exec $lockscreen
 bindsym $mod+l				exec $lockscreen
 bindsym $mod+Pause			exec $suspend
 bindsym $mod+Control+l		exec $suspend
+bindsym $mod+Control+Alt+Pause   exec wlogout
 
 # start some tools
 #bindsym $mod+c				exec gnome-calculator
@@ -261,8 +262,8 @@ bindsym $mod+Control+o		exec firefox --private-window
 # Show current Background filename
 bindsym $mod+Control+b		exec setsbg show
 bindsym $mod+Shift+Control+b	exec setsbg showpic
-bindsym $mod+$Alt+b		exec setsbg next
-bindsym $mod+Control+$Alt+b	exec setsbg
+bindsym $mod+Alt+b		exec setsbg next
+bindsym $mod+Control+Alt+b	exec setsbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 #bindsym $mod+p			exec presentation-mode

@@ -11,7 +11,6 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     runflatpak.sh com.spotify.Client
     runflatpak.sh com.saivert.pwvucontrol
     /usr/bin/pasystray --debug --notify=none --notify=sink
-    #/usr/bin/pavucontrol
     /usr/bin/nm-applet
     /usr/bin/blueman-applet
     /usr/bin/system-config-printer-applet --debug
