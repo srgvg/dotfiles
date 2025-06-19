@@ -70,6 +70,8 @@ function execute() {
 			mkdir -pv /home/serge/scratch/work
 		fi
 
+		rm -v $HOME/core.*
+
 		find $HOME/logs/cronjobs \
 			-mindepth 1 \
 			-mmin +4500 \
