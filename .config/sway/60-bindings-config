@@ -251,8 +251,9 @@ bindsym $mod+Control+Alt+Pause   exec wlogout
 
 # start some tools
 #bindsym $mod+c				exec gnome-calculator
-bindsym $mod+c				exec $dfzf_term dfzf-clipboard
-bindsym $mod+Control+d	exec nautilus --new-window
+bindsym $mod+c				exec gnome-calculator
+bindsym $mod+Control+c		exec $dfzf_term dfzf-clipboard
+bindsym $mod+Control+d	    exec nautilus --new-window
 bindsym $mod+d		exec nemo
 
 # start browsers

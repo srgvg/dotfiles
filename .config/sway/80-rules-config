@@ -156,6 +156,7 @@ assign	[class="Spotify" instance="spotify"] $ws_music
 for_window	[ class="Spotify" instance="spotify"] move container|window to workspace $ws_music, layout tabbed
 
 # tools
-assign		[app_id="i3jobs"]				$ws_util_l
-assign		[app_id="htop"]	     			$ws_util_p
+assign		[app_id="i3jobs"]				$ws_util
+assign		[app_id="htop"]	     			$ws_util
+for_window  [app_id="(i3jobs|htop)"]        layout tabbed
 
