@@ -23,21 +23,21 @@ function _lock() {
 	swaylock.sh
 }
 function _resume() {
-	swaymsg reload
+	makoctl mode -r do-not-disturb ||:
+	swaymsg reload ||:
 	sleep 1
-	for display in $(wlr-randr --json | jq -r .[].name)
+	for display in $(wlr-randr --json ||: | jq -r .[].name ||:)
 	do
-		swaymsg "output ${display} dpms on"
-		if [ $(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled") = false ]
+		swaymsg "output ${display} dpms on" ||:
+		if [ $(wlr-randr --json  ||: | jq -r ".[] | select(.name == \"${display}\") | .enabled") = false ]
 		then
 			sleep 1
-			wlr-randr --output ${display} --on
+			wlr-randr --output ${display} --on ||:
 		fi
 	done
 	sleep 1
 	swaymsg reload ||:
 	setsbg next ||:
-	makoctl mode -r do-not-disturb ||:
 }
 
 command=${1:-default}
@@ -46,7 +46,7 @@ then
 	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" 2>&1 | tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
 elif [ "${command}" = "timeout" ]
 then
-	swaymsg 'output * dpms off'
+	swaymsg 'output * dpms off' ||:
 elif [ "${command}" = "resume" ]
 then
 	_resume
@@ -56,7 +56,7 @@ then
 elif [ "${command}" = "unlock" ]
 then
 	#dunstctl set-paused false
-	makoctl mode -r do-not-disturb
+	makoctl mode -r do-not-disturb ||:
 elif [ "${command}" = "sleep" ]
 then
 	_lock
