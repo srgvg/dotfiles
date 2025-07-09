@@ -13,54 +13,77 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 set -x
 
-###############################################################################
-
-echo "swayidle called as $0 $*"
-
-function _lock() {
-	#dunstctl set-paused true
-	makoctl mode -a do-not-disturb
-	swaylock.sh
+echo "=== swayidle called as $0 $* (SWAYSOCK=$SWAYSOCK)"
+#
+#############################################################################
+#
+function pause_notifications() {
+	makoctl mode -a do-not-disturb ||:
 }
-function _resume() {
+function pause_mouse() {
+	swaymsg "input type:pointer events disabled" ||:
+}
+function resume_mouse() {
+	swaymsg "input type:pointer events enabled" ||:
+}
+function resume_notifications() {
 	makoctl mode -r do-not-disturb ||:
-	swaymsg reload ||:
 	sleep 1
-	for display in $(wlr-randr --json ||: | jq -r .[].name ||:)
+}
+function resume_displays(){
+	for display in $(wlr-randr --json | jq -r .[].name ||:)
 	do
 		swaymsg "output ${display} dpms on" ||:
-		if [ $(wlr-randr --json  ||: | jq -r ".[] | select(.name == \"${display}\") | .enabled") = false ]
+		if [ $(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled") = "false" ]
 		then
-			sleep 1
 			wlr-randr --output ${display} --on ||:
+			sleep 1
 		fi
 	done
 	sleep 1
 	swaymsg reload ||:
 	setsbg next ||:
 }
+#
+#############################################################################
+#
+function lock() {
+	pause_notifications
+	swaylock.sh
+}
+function resume() {
+	resume_mouse
+	resume_notifications
+	resume_displays
+}
 
+#
+#############################################################################
+#
+
+# default start swayidle
 command=${1:-default}
 if [ "${command}" = "default" ]
 then
-	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" 2>&1 | tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
+	pkill -f "/usr/bin/swayidle -d -w -C $HOME/.config/swayidle/config" ||:
+	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" |& tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
 elif [ "${command}" = "timeout" ]
 then
 	swaymsg 'output * dpms off' ||:
 elif [ "${command}" = "resume" ]
 then
-	_resume
+	resume
 elif [ "${command}" = "lock" ]
 then
-	_lock
+	lock
 elif [ "${command}" = "unlock" ]
 then
-	#dunstctl set-paused false
-	makoctl mode -r do-not-disturb ||:
+	resume_mouse
+	resume_notifications
 elif [ "${command}" = "sleep" ]
 then
-	_lock
+	lock
 elif [ "${command}" = "sleepresume" ]
 then
-	_resume
+	resume
 fi

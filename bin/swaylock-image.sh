@@ -34,5 +34,11 @@ LOCKARGS="${LOCKARGS} --image ${IMAGE}"
 #    LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
 #done
 
-swaylock $LOCKARGS &
-sleep 1
+makoctl mode -a do-not-disturb ||:
+swaymsg "input type:pointer events disabled" ||:
+
+swaylock $LOCKARGS
+
+
+swaymsg "input type:pointer events enabled" ||:
+makoctl mode -r do-not-disturb ||:
