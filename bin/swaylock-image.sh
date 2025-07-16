@@ -21,7 +21,7 @@ source "$HOME/bin/common.bash"
 IMAGES=""
 PICTURE="$(ls ${LOCK_DEFAULT_LOCKSCREEN} | head -n1)"
 LOCK=$HOME/Documents/Pictures/icons/i3lock/lock.png
-LOCKARGS="-f -c 000000"
+LOCKARGS="-c 000000"
 
 CACHEDIR=$HOME/.cache/lock
 mkdir -p $CACHEDIR
@@ -34,11 +34,5 @@ LOCKARGS="${LOCKARGS} --image ${IMAGE}"
 #    LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
 #done
 
-makoctl mode -a do-not-disturb ||:
-swaymsg "input type:pointer events disabled" ||:
-
-swaylock $LOCKARGS
-
-
-swaymsg "input type:pointer events enabled" ||:
-makoctl mode -r do-not-disturb ||:
+echo "= /usr/bin/swaylock $LOCKARGS"
+/usr/bin/swaylock $LOCKARGS

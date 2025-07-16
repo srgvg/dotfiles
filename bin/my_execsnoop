@@ -14,4 +14,4 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-sudo execsnoop --fails --time --print-uid --timestamp --quote "$@"
+sudo execsnoop-libbpf --fails --time --print-uid --timestamp --quote "$@"
