@@ -54,11 +54,11 @@ function resume_displays(){
 			sleep 1
 		fi
 	done
-	sleep 1
-	echo swaymsg reload ||:
-	swaymsg reload ||:
-	echo setsbg next ||:
-	setsbg next ||:
+	#sleep 1
+	#echo swaymsg reload ||:
+	#swaymsg reload ||:
+	#echo setsbg next ||:
+	#setsbg next ||:
 }
 #
 #############################################################################
@@ -96,7 +96,8 @@ function idlecommand() {
 		resume_notifications
 	elif [ "${command}" = "sleep" ]
 	then
-		lock
+		#lock
+		echo "= sleep = do nothing as we are already locked "
 	elif [ "${command}" = "sleepresume" ]
 	then
 		resume
