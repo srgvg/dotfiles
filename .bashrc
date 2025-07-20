@@ -38,3 +38,5 @@ fi
 # shell session output, or for the bash approach, use 7> file.log instead ofbashrc
 
 
+
+. "$HOME/.atuin/bin/env"
