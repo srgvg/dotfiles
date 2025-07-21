@@ -96,8 +96,7 @@ function idlecommand() {
 		resume_notifications
 	elif [ "${command}" = "sleep" ]
 	then
-		#lock
-		echo "= sleep = do nothing as we are already locked "
+		lock
 	elif [ "${command}" = "sleepresume" ]
 	then
 		resume
