@@ -7,7 +7,7 @@
 # http://redsymbol.net/articles/unofficial-bash-strict-mode/
 set -o nounset
 set -o errexit
-set -o pipefail
+#set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
