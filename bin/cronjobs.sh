@@ -31,6 +31,15 @@ function log() {
 	test -s  ${logfile} || rm ${logfile}
 }
 
+function logline() {
+    echo "# $*"
+}
+function logtitle() {
+    echo
+    echo "### $*"
+    echo
+}
+
 #######################################################################################################################
 
 function execute() {
@@ -41,37 +50,52 @@ function execute() {
 	if [ "${command}" = "cleanup" ]
 	then
 
-		nice -n 20 ionice -c 3 \
-			find $HOME/scratch/ \
-			-mindepth 1 \
-			-not -path '/home/serge/scratch/work/*' -a -not -path '/home/serge/scratch/.stfolder*' \
-			-mmin +2880 \
-			\( -type f -o -type l \) \
-			-print0 \
-			| xargs -r -0 rm -fv
+	    cleantime="+2880" # 48 hours
+	    tempfolders="$HOME/scratch/grabs $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t"
 
-		nice -n 20 ionice -c 3 \
-			find $HOME/scratch/ \
+        # cleanup files:
+        # files in ~/scratch/ itself
+        logtitle Looking for files in ~/scratch
+		nice -n 20 ionice -c 3 find \
+		    $HOME/scratch/ \
+			-maxdepth 1 \
+			-not -path '/home/serge/scratch/.stfolder*' \
+			-mmin ${cleantime} \( -type f -o -type l \) \
+			-print0 | xargs -r -0 echo rm -fv
+
+        # files in ~/scratch/grabs/ and other temp folders
+        logtitle looking for files in temp folders
+		nice -n 20 ionice -c 3 find \
+			${tempfolders} \
+			-maxdepth 1 \
+			-not -path '/home/serge/scratch/.stfolder*' \
+			-mmin ${cleantime} \( -type f -o -type l \) \
+			-print0 | xargs -r -0 echo rm -fv
+
+        # cleanup empty directories
+        logtitle looking for empty dirs in temp folders
+		nice -n 20 ionice -c 3 find \
+			${tempfolders} \
 			-depth -mindepth 1 \
-			-not -path '/home/serge/scratch/.stfolder*' -not -path '/home/serge/scratch/work**' \
-			-type d \
-			-empty \
-			-print0 \
-			| xargs -r -0 rmdir -v
+			-not -path '/home/serge/scratch/.stfolder*' \
+			-type d -empty \
+			-print0 | xargs -r -0 rmdir -v
 
+        logtitle misc stuff
+
+        # syncthing needs
 		if ! test -d /home/serge/scratch/.stfolder
 		then
+		    logline fix syncthing folder
 			rm -rfv /home/serge/scratch/.stfolder
 			mkdir -pv /home/serge/scratch/.stfolder
 		fi
-		if ! test -d /home/serge/scratch/work
-		then
-			rm -rfv /home/serge/scratch/work
-			mkdir -pv /home/serge/scratch/work
-		fi
 
-		rm -v $HOME/core.*
+        # ms edge crap
+		rm -fv $HOME/core.*
 
+        # cleanup logs
+        logtitle cleanup my logs
 		find $HOME/logs/cronjobs \
 			-mindepth 1 \
 			-mmin +4500 \
