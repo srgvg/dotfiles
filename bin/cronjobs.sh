@@ -61,7 +61,7 @@ function execute() {
 			-maxdepth 1 \
 			-not -path '/home/serge/scratch/.stfolder*' \
 			-mmin ${cleantime} \( -type f -o -type l \) \
-			-print0 | xargs -r -0 echo rm -fv
+			-print0 | xargs -r -0 rm -fv
 
         # files in ~/scratch/grabs/ and other temp folders
         logtitle looking for files in temp folders
@@ -70,7 +70,7 @@ function execute() {
 			-maxdepth 1 \
 			-not -path '/home/serge/scratch/.stfolder*' \
 			-mmin ${cleantime} \( -type f -o -type l \) \
-			-print0 | xargs -r -0 echo rm -fv
+			-print0 | xargs -r -0 rm -fv
 
         # cleanup empty directories
         logtitle looking for empty dirs in temp folders
