@@ -55,11 +55,12 @@ function execute() {
 
         # cleanup files:
         # files in ~/scratch/ itself
-        logtitle Looking for files in ~/scratch
+        logtitle Looking for files in ~/scratch itself
 		nice -n 20 ionice -c 3 find \
 		    $HOME/scratch/ \
 			-maxdepth 1 \
-			-not -path '/home/serge/scratch/.stfolder*' \
+			-not -path '/home/serge/scratch/.stfolder' \
+			-not -path '/home/serge/scratch/.stignore' \
 			-mmin ${cleantime} \( -type f -o -type l \) \
 			-print0 | xargs -r -0 rm -fv
 
@@ -68,7 +69,6 @@ function execute() {
 		nice -n 20 ionice -c 3 find \
 			${tempfolders} \
 			-maxdepth 1 \
-			-not -path '/home/serge/scratch/.stfolder*' \
 			-mmin ${cleantime} \( -type f -o -type l \) \
 			-print0 | xargs -r -0 rm -fv
 
