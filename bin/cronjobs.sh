@@ -28,7 +28,7 @@ function log() {
 	mkdir -p "$(dirname ${logfile})"
 	tee ${logfile}
 	# delete file if empty
-	test -s  ${logfile} || rm ${logfile}
+	test -s ${logfile} || rm ${logfile}
 }
 
 function logline() {
@@ -121,6 +121,7 @@ function execute() {
 
 	###############################################################################
 	else
+	    echo no actions for ${command}
 		return 7
 	fi
 
@@ -134,10 +135,6 @@ function execute() {
 #######################################################################################################################
 
 execute ${command} |& ts | log ${command}
-if [ $? -eq 7 ]
-then
-	echo no actions for ${command}
-fi
 
 #######################################################################################################################
 
