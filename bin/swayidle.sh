@@ -68,8 +68,10 @@ function lock() {
 	pause_notifications
 	pause_mouse
 	echo "= swaylock.sh"
-	swaylock.sh
-	resume
+	(
+		swaylock.sh
+		resume
+	) &
 }
 function resume() {
 	echo "=== resume"

@@ -6,7 +6,6 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     /usr/local/bin/dfzf-daemon --debug
     wl-paste --watch cliphist -max-items 1000 store
     #
-    /home/serge/bin/swayidle.sh
     /home/serge/bin/vorta.sh
     runflatpak.sh com.spotify.Client
     runflatpak.sh com.saivert.pwvucontrol
