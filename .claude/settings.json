@@ -1,4 +1,10 @@
 {
+  "model": "opusplan",
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); current_dir=$(echo \"$input\" | jq -r '.workspace.current_dir'); model_name=$(echo \"$input\" | jq -r '.model.display_name'); timestamp=$(date '+%H:%M:%S'); if [ -d \"$current_dir/.git\" ]; then cd \"$current_dir\" && branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo 'no-branch'); printf \"%s | %s | %s | git:%s\" \"$timestamp\" \"$model_name\" \"$(basename \"$current_dir\")\" \"$branch\"; else printf \"%s | %s | %s\" \"$timestamp\" \"$model_name\" \"$(basename \"$current_dir\")\"; fi"
+  },
+  "defaultMode": "acceptEdits",
   "numStartups": 1,
   "installMethod": "unknown",
   "autoUpdates": true,
