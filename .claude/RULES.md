@@ -12,6 +12,14 @@ Simple actionable rules for Claude Code SuperClaude framework operation.
 - Use /spawn and /task for complex multi-session workflows
 - Maintain ≥90% context retention across operations
 
+### Git Commit Validation Rules
+- Run `go fmt ./...` before all commits to ensure consistent formatting
+- If tests produce formatting changes, determine if they're related to the main commit:
+  - **Related formatting**: Include in the main commit with clear mention in commit message
+  - **Unrelated formatting**: Commit separately after the main commit with descriptive message
+- Always run full test suite before committing to catch formatting issues early
+- Use parallel bash commands to check both git status and formatting in pre-commit validation
+
 ### File Operation Security
 - Always use Read tool before Write or Edit operations
 - Use absolute paths only, prevent path traversal attacks
@@ -47,6 +55,9 @@ Simple actionable rules for Claude Code SuperClaude framework operation.
 ✅ Use quality gates (see ORCHESTRATOR.md)
 ✅ Complete discovery before codebase changes
 ✅ Verify completion with evidence
+✅ Run `go fmt ./...` before all commits
+✅ Separate related vs unrelated formatting changes in commits
+✅ Validate tests and formatting in parallel before committing
 
 ### Don't
 ❌ Skip Read operations
