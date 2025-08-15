@@ -28,7 +28,7 @@ function define_adds() {
 .bashrc
 .bashrc.d/
 .blerc
-.claude/                :!.claude/ide/  :!.claude/statsig/  :!.claude/shell-snapshots/ :!.claude/todos/ :!.claude/projects/
+.claude/    :!.claude/.credentials.json   :!.claude/logs/  :!.claude/ide/  :!.claude/statsig/  :!.claude/shell-snapshots/ :!.claude/todos/ :!.claude/projects/  :!.claude/backups/
 .config/alacritty/		:!.config/alacritty/themes
 .config/asdf-plugin-list
 .config/atuin/
@@ -123,6 +123,7 @@ Wallpapers
 .docker/ :!.docker/buildx/
 .aws/
 .cert/
+.claude/.credentials.json
 .config/doctl/ :!.config/doctl/cache/
 .config/gandi/
 .config/gcloud/ :!.config/gcloud/*.db :!.config/gcloud/cache/ :!.config/gcloud/logs/ :!.config/gcloud/surface_data/ :!.config/gcloud/.last*

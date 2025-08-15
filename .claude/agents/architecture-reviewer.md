@@ -1,6 +1,7 @@
 ---
 name: architecture-reviewer
 description: Use this agent when you need to review code changes from an architectural perspective, ensuring they maintain consistency with established patterns and principles. Examples: <example>Context: The user has just implemented a new service layer in their Go application and wants to ensure it follows proper architectural patterns. user: 'I've added a new UserService that handles user operations. Can you review it for architectural consistency?' assistant: 'I'll use the architecture-reviewer agent to analyze your UserService implementation for architectural integrity and pattern compliance.' <commentary>Since the user is requesting architectural review of new code, use the architecture-reviewer agent to evaluate the service design against established patterns.</commentary></example> <example>Context: The user has refactored their domain model and wants to ensure the changes don't violate architectural boundaries. user: 'I've moved some business logic from the controller to the domain layer. Here's the updated code...' assistant: 'Let me use the architecture-reviewer agent to evaluate how this refactoring affects your architectural boundaries and domain separation.' <commentary>The user is asking for architectural validation of a refactoring, which requires the architecture-reviewer agent to assess boundary compliance and pattern adherence.</commentary></example>
+tools: Read, Edit, Grep, Glob, WebSearch, WebFetch
 model: opus
 color: green
 ---

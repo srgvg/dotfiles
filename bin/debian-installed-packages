@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+aptitude search '~i' -F '%p %v %t'
+
+## not so effifcient alternative:
+#dpkg --get-selections | grep -v deinstall | awk '{print $1}' | while read pkg; do
+#      version=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null)
+#      repo=$(apt-cache policy "$pkg" | grep -A1 "^\s*\*\*\*" | tail -1 | awk '{print $2}')
+#      echo -e "$pkg\t$version\t$repo"
+#done | column -t

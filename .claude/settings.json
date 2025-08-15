@@ -1,8 +1,24 @@
 {
+  "permissions": {
+    "allow": [
+      "Edit",
+      "View",
+      "MultiEdit",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./config/credentials.json)",
+      "Read(./build)"
+    ]
+  },
   "model": "opusplan",
   "statusLine": {
     "type": "command",
-    "command": "input=$(cat); current_dir=$(echo \"$input\" | jq -r '.workspace.current_dir'); model_name=$(echo \"$input\" | jq -r '.model.display_name'); timestamp=$(date '+%H:%M:%S'); if [ -d \"$current_dir/.git\" ]; then cd \"$current_dir\" && branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo 'no-branch'); printf \"%s | %s | %s | git:%s\" \"$timestamp\" \"$model_name\" \"$(basename \"$current_dir\")\" \"$branch\"; else printf \"%s | %s | %s\" \"$timestamp\" \"$model_name\" \"$(basename \"$current_dir\")\"; fi"
+    "command": "~/.claude/ccstatusline.sh"
   },
   "defaultMode": "acceptEdits",
   "numStartups": 1,
@@ -14,6 +30,7 @@
   },
   "firstStartTime": "2025-07-28T09:53:56.791Z",
   "userID": "10954dfc3358f36eb3df1a75721eeaece1328f3bf7ad2cdf45a1f808d1501a96",
+  "includeCoAuthoredBy": false,
   "projects": {
     "/home/serge/src/go-kure/kure": {
       "allowedTools": [],

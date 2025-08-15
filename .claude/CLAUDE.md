@@ -1,3 +1,10 @@
-## Workflow Permissions
+# SuperClaude Entry Point
 
-- Allow running all possible test commands and file analysis commands (like grep, sed, ..) without asking
+@COMMANDS.md
+@FLAGS.md
+@PRINCIPLES.md
+@RULES.md
+@MCP.md
+@PERSONAS.md
+@ORCHESTRATOR.md
+@MODES.md
