@@ -123,6 +123,26 @@ performance-profile: "optimization"
 
 **`/git [operation] [flags]`** - Git workflow assistant | Auto-Persona: DevOps, Scribe, QA | MCP: Sequential
 
+**`/actions $ARGUMENTS`**
+```yaml
+---
+command: "/actions"
+category: "Development & Deployment"
+purpose: "GitHub Actions workflow analysis and issue resolution"
+wave-enabled: true
+performance-profile: "standard"
+---
+```
+- **Auto-Persona**: DevOps, Security, QA (context-dependent)
+- **MCP Integration**: Context7 (GitHub Actions patterns), Sequential (analysis), Playwright (testing)
+- **Tool Orchestration**: [Bash, Grep, Read, Edit, MultiEdit, WebSearch, WebFetch, TodoWrite]
+- **Arguments**: `[check|analyze|fix|validate]`, `@<workflow-path>`, `!<gh-command>`, `--<flags>`
+- **Operations**: 
+  - `check`: List and status check of all workflows
+  - `analyze`: Deep analysis of workflow issues and optimizations
+  - `fix`: Automated issue resolution and best practice application
+  - `validate`: Syntax and security validation
+
 **`/design [domain] [flags]`** - Design orchestration | Auto-Persona: Architect, Frontend | MCP: Magic, Sequential, Context7
 
 ### Meta & Orchestration Commands
@@ -145,7 +165,7 @@ complex: "Resource-intensive with comprehensive analysis"
 ```
 
 ### Command Categories
-- **Development**: build, implement, design
+- **Development**: build, implement, design, actions
 - **Planning**: workflow, estimate, task
 - **Analysis**: analyze, troubleshoot, explain
 - **Quality**: improve, cleanup
@@ -155,5 +175,5 @@ complex: "Resource-intensive with comprehensive analysis"
 - **Meta**: index, load, spawn
 
 ### Wave-Enabled Commands
-7 commands: `/analyze`, `/build`, `/design`, `/implement`, `/improve`, `/task`, `/workflow`
+8 commands: `/analyze`, `/build`, `/design`, `/implement`, `/improve`, `/task`, `/workflow`, `/actions`
 

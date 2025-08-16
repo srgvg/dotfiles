@@ -84,6 +84,11 @@ infrastructure:
   file_patterns: ["Dockerfile", "*.yml", "*.yaml", ".github/*", "terraform/*"]
   typical_operations: [setup, configure, automate, monitor]
 
+actions:
+  keywords: [actions, workflow, CI/CD, pipeline, build, deploy, GitHub Actions, automation]
+  file_patterns: [".github/workflows/*", "*.yml", "*.yaml"]
+  typical_operations: [check, analyze, fix, validate, optimize]
+
 security:
   keywords: [vulnerability, authentication, encryption, audit, compliance]
   file_patterns: ["*auth*", "*security*", "*.pem", "*.key"]
@@ -133,6 +138,11 @@ debugging:
   verbs: [debug, fix, troubleshoot, resolve, investigate]
   outputs: [fixes, root causes, solutions]
   typical_tools: [Grep, Sequential, Playwright]
+
+actions:
+  verbs: [check, analyze, fix, validate, optimize]
+  outputs: [workflow status, fixes, optimizations, security improvements]
+  typical_tools: [Bash, Grep, Read, Edit, MultiEdit, Sequential]
 
 iterative:
   verbs: [improve, refine, enhance, correct, polish, fix, iterate, loop]
@@ -202,6 +212,9 @@ wave-strategies:
 | "optimize performance" | complex | backend | performance persona, --think-hard, Playwright | 90% |
 | "security audit" | complex | security | security persona, --ultrathink, Sequential | 95% |
 | "write documentation" | moderate | documentation | scribe persona, --persona-scribe=en, Context7 | 95% |
+| "check actions" | simple | actions | devops persona, --c7, Bash | 92% |
+| "analyze workflows" | moderate | actions | devops persona, security persona, --seq, Context7 | 90% |
+| "fix GitHub Actions" | moderate | actions | devops persona, security persona, --validate | 88% |
 | "improve iteratively" | moderate | iterative | intelligent persona, --seq, loop creation | 90% |
 | "analyze large codebase" | complex | any | --delegate --parallel-dirs, domain specialists | 95% |
 | "comprehensive audit" | complex | multi | --multi-agent --parallel-focus, specialized agents | 95% |
