@@ -8,3 +8,4 @@
 @PERSONAS.md
 @ORCHESTRATOR.md
 @MODES.md
+@commands/
