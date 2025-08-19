@@ -30,6 +30,12 @@ function resume_mouse() {
 	echo "== resume mouse"
 	echo swaymsg "input type:pointer events enabled" ||:
 	swaymsg "input type:pointer events enabled" ||:
+	# Verify mouse was re-enabled
+	if ! swaymsg -t get_inputs | grep -q '"events": "enabled"'; then
+	    echo "== mouse still disabled, retrying..."
+	    sleep 0.5
+	    swaymsg "input type:pointer events enabled" ||:
+	fi
 }
 function resume_notifications() {
 	echo "== resume notifications"
@@ -68,10 +74,7 @@ function lock() {
 	pause_notifications
 	pause_mouse
 	echo "= swaylock.sh"
-	(
-		swaylock.sh
-		resume
-	) &
+	swaylock.sh
 }
 function resume() {
 	echo "=== resume"
@@ -94,6 +97,8 @@ function idlecommand() {
 		lock
 	elif [ "${command}" = "unlock" ]
 	then
+		echo "= unlock"
+
 		resume_mouse
 		resume_notifications
 	elif [ "${command}" = "sleep" ]
@@ -115,7 +120,7 @@ if [ "${command}" = "default" ]
 then
 	echo pkill -f "/usr/bin/swayidle"
 	pkill -f "/usr/bin/swayidle" ||:
-	/usr/bin/swayidle -d -w -C "$HOME/.config/swayidle/config" |& tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
+	/usr/bin/swayidle -d -C "$HOME/.config/swayidle/config" |& tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
 else
 	idlecommand ${command} | ts
 fi

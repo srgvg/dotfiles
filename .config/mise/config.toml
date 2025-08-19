@@ -24,6 +24,7 @@ regsync = "ubi:regclient/regclient"
 ripgrep = "ubi:BurntSushi/ripgrep"
 satty = "ubi:gabm/Satty"
 kubecolor = "ubi:kubecolor/kubecolor"
+docker-compose = "ubi:docker/compose"
 
 [tools]
 "ubi:aristocratos/btop" = "latest"
@@ -127,4 +128,6 @@ uv = "latest"
 "ubi:mongodb/kingfisher" = "latest"
 "ubi:jonas-grgt/ktea" = "latest"
 "ubi:macropower/kat" = "latest"
+"gitlab:gitlab-org/cli" = "latest"
+docker-compose = { version = "latest", rename_exe = "docker-compose" }
 #foks = "latest"
