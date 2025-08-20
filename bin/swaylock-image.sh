@@ -37,3 +37,5 @@ LOCKARGS="${LOCKARGS} --image ${IMAGE}"
 echo "= /usr/bin/swaylock $LOCKARGS"
 /usr/bin/swaylock $LOCKARGS
 echo "=  - swaylock exited"
+echo "=  - sent signal - loginctl unlock-session"
+loginctl unlock-session
