@@ -514,33 +514,34 @@ Threshold-based resource management follows the unified Resource Management Thre
 
 ## 🔧 Configuration
 
-### Orchestrator Settings
-```yaml
-orchestrator_config:
-  # Performance
-  enable_caching: true
-  cache_ttl: 3600
-  parallel_operations: true
-  max_parallel: 3
-  
-  # Intelligence
-  learning_enabled: true
-  confidence_threshold: 0.7
-  pattern_detection: aggressive
-  
-  # Resource Management
-  token_reserve: 10%
-  emergency_threshold: 90%
-  compression_threshold: 75%
-  
-  # Wave Mode Settings
-  wave_mode:
-    enable_auto_detection: true
-    wave_score_threshold: 0.7
-    max_waves_per_operation: 5
-    adaptive_wave_sizing: true
-    wave_validation_required: true
-```
+### Configuration
+**Performance**: caching|parallel_ops(max:3) | **Intelligence**: learning|confidence:0.7|pattern:aggressive
+**Resources**: token_reserve:10%|emergency:90%|compression:75% | **Wave**: auto_detect|threshold:0.7|max:5|adaptive|validation
 
-### Custom Routing Rules
-Users can add custom routing patterns via YAML configuration files.
+---
+
+# OPERATIONAL MODES (Consolidated from MODES.md)
+
+## 3 Primary Modes
+1. **Task Management**: Structured workflow execution | Evidence-based progress | Single focus protocol
+2. **Introspection**: Transparency into thinking | Meta-cognitive analysis | Framework troubleshooting  
+3. **Token Efficiency**: Optimized communication | 30-50% reduction | Symbol system integration
+
+## Task Management Layers
+**L1**: TodoRead/TodoWrite (session, 3-20 tasks, pending→in_progress→completed)
+**L2**: /task (multi-session, Epic→Story→Task, persistence)  
+**L3**: /spawn (meta-orchestration, parallel/sequential)
+**L4**: /loop (iterative enhancement, validation cycles)
+
+**Auto-Triggers**: 3+ steps | build/implement/create/fix keywords | system/feature/comprehensive scope
+
+## Introspection Mode
+**Purpose**: Meta-cognitive analysis + SuperClaude troubleshooting
+**Activation**: `--introspect` | self-analysis requests | complex problems | error recovery
+**Markers**: 🧠 Reasoning | 🔄 Action Review | 🎯 Self-Assessment | 📊 Pattern Recognition | 🔍 Framework Compliance | 💡 Retrospective
+
+## Token Efficiency Mode  
+**Activation**: `--uc` | context>75% | large operations | progressive levels 0-95%
+**Symbols**: → ⇒ ← ⇄ & | : » ∴ ∵ ≡ ≈ ≠ | ✅ ❌ ⚠️ ℹ️ 🔄 ⏳ 🚨 🎯 📊 💡
+**Abbreviations**: cfg/impl/arch/perf/ops/req/deps/val/test/docs/qual/sec/err/rec/opt
+**Target**: 30-50% reduction with ≥95% information preservation | <100ms processing

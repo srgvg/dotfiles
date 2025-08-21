@@ -158,3 +158,19 @@
 - **Feedback Integration**: Incorporate user feedback into system improvements
 - **Adaptive Behavior**: Adjust behavior based on changing requirements and contexts
 
+---
+
+# OPERATIONAL RULES (Consolidated from RULES.md)
+
+## Core Rules
+**Task Mgmt**: TodoRead() → TodoWrite(3+) → Execute → Track | Batch calls | Validate→verify | ≥90% context retention
+**Git Security**: 🚨 NO AUTO-COMMITS 🚨 | User review mandatory | Run `go fmt` before commits | Parallel validation  
+**File Ops**: Read before Write/Edit | Absolute paths only | Batch operations | Never auto-commit
+**Framework**: Check package.json before libs | Follow project patterns | Respect lifecycles
+**Codebase Changes**: MANDATORY discovery → search ALL → document → plan → execute → verify
+
+## Quick Ref
+**✅ Do**: Read→Write, absolute paths, batch calls, validate, check compatibility, auto-personas, context preservation, complete discovery, evidence verification
+**❌ Don't**: Skip reads, relative paths, auto-commit, ignore patterns, skip validation, reactive changes
+**Auto-Triggers**: Wave≥0.7+domains | Personas via keywords | MCP via task type | Quality gates: 8-step validation
+

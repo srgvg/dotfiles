@@ -1,16 +1,12 @@
 # FLAGS.md - SuperClaude Flag Reference
 
-Flag system for Claude Code SuperClaude framework with auto-activation and conflict resolution.
+**Priority**: User>safety>performance>persona>MCP>wave
 
-## Flag System Architecture
-
-**Priority Order**:
-1. Explicit user flags override auto-detection
-2. Safety flags override optimization flags
-3. Performance flags activate under resource pressure
-4. Persona flags based on task patterns
-5. MCP server flags with context-sensitive activation
-6. Wave flags based on complexity thresholds
+**Symbol System**:
+- → auto-activates  
+- ∴ therefore enables
+- ≥ threshold trigger
+- & combines with
 
 ## Planning & Analysis Flags
 
@@ -111,111 +107,39 @@ Flag system for Claude Code SuperClaude framework with auto-activation and confl
 - Dynamic allocation based on resources and complexity
 - Prevents resource exhaustion in complex scenarios
 
-## Wave Orchestration Flags
-
-**`--wave-mode [auto|force|off]`**
-- Control wave orchestration activation
-- **auto**: Auto-activates based on complexity >0.8 AND file_count >20 AND operation_types >2
-- **force**: Override auto-detection and force wave mode for borderline cases
-- **off**: Disable wave mode, use Sub-Agent delegation instead
-- 30-50% better results through compound intelligence and progressive enhancement
-
-**`--wave-strategy [progressive|systematic|adaptive|enterprise]`**
-- Select wave orchestration strategy
-- **progressive**: Iterative enhancement for incremental improvements
-- **systematic**: Comprehensive methodical analysis for complex problems
-- **adaptive**: Dynamic configuration based on varying complexity
-- **enterprise**: Large-scale orchestration for >100 files with >0.7 complexity
-- Auto-selects based on project characteristics and operation type
-
-**`--wave-delegation [files|folders|tasks]`**
-- Control how Wave system delegates work to Sub-Agent
-- **files**: Sub-Agent delegates individual file analysis across waves
-- **folders**: Sub-Agent delegates directory-level analysis across waves
-- **tasks**: Sub-Agent delegates by task type (security, performance, quality, architecture)
-- Integrates with `--delegate` flag for coordinated multi-phase execution
+## Wave Orchestration Flags  
+**`--wave-mode [auto|force|off]`**: Wave control → complexity≥0.8 & files>20 & ops>2 (30-50% better)
+**`--wave-strategy`**: progressive|systematic|adaptive|enterprise → auto-select by project
+**`--wave-delegation [files|folders|tasks]`**: Wave+Sub-Agent coordination
 
 ## Scope & Focus Flags
+**`--scope`**: file|module|project|system
+**`--focus`**: performance|security|quality|architecture|accessibility|testing
 
-**`--scope [level]`**
-- file: Single file analysis
-- module: Module/directory level
-- project: Entire project scope
-- system: System-wide analysis
+## Iterative Flags
+**`--loop`**: Iterative improvement → polish|refine|enhance keywords (default: 3 iterations)
+**`--iterations [n]`**: Control cycles 1-10  
+**`--interactive`**: User confirmation between cycles
 
-**`--focus [domain]`**
-- performance: Performance optimization
-- security: Security analysis and hardening
-- quality: Code quality and maintainability
-- architecture: System design and structure
-- accessibility: UI/UX accessibility compliance
-- testing: Test coverage and quality
+## Persona Flags
+**Available**: architect, frontend, backend, analyzer, security, mentor, refactorer, performance, qa, devops, scribe=lang
+**Usage**: `--persona-[name]` (see PERSONAS.md for details)
 
-## Iterative Improvement Flags
+## Transparency Flags
+**`--introspect`**: Deep transparency mode → framework work|complex debugging
+**Markers**: 🤔 Thinking, 🎯 Decision, ⚡ Action, 📊 Check, 💡 Learning
 
-**`--loop`**
-- Enable iterative improvement mode for commands
-- Auto-activates: Quality improvement requests, refinement operations, polish tasks
-- Compatible commands: /improve, /refine, /enhance, /fix, /cleanup, /analyze
-- Default: 3 iterations with automatic validation
+## Integration Patterns
 
-**`--iterations [n]`**
-- Control number of improvement cycles (default: 3, range: 1-10)
-- Overrides intelligent default based on operation complexity
+**MCP Auto-Activation**:
+- Context7 → imports|framework|docs
+- Sequential → debug|design|--think  
+- Magic → UI|components|frontend
+- Playwright → test|e2e|QA
 
-**`--interactive`**
-- Enable user confirmation between iterations
-- Pauses for review and approval before each cycle
-- Allows manual guidance and course correction
+**Flag Precedence**: Safety>explicit>thinking depth>MCP>scope>persona>wave>delegate>loop>compression
 
-## Persona Activation Flags
-
-**Available Personas**:
-- `--persona-architect`: Systems architecture specialist
-- `--persona-frontend`: UX specialist, accessibility advocate
-- `--persona-backend`: Reliability engineer, API specialist
-- `--persona-analyzer`: Root cause specialist
-- `--persona-security`: Threat modeler, vulnerability specialist
-- `--persona-mentor`: Knowledge transfer specialist
-- `--persona-refactorer`: Code quality specialist
-- `--persona-performance`: Optimization specialist
-- `--persona-qa`: Quality advocate, testing specialist
-- `--persona-devops`: Infrastructure specialist
-- `--persona-scribe=lang`: Professional writer, documentation specialist
-
-## Introspection & Transparency Flags
-
-**`--introspect` / `--introspection`**
-- Deep transparency mode exposing thinking process
-- Auto-activates: SuperClaude framework work, complex debugging
-- Transparency markers: 🤔 Thinking, 🎯 Decision, ⚡ Action, 📊 Check, 💡 Learning
-- Conversational reflection with shared uncertainties
-
-## Flag Integration Patterns
-
-### MCP Server Auto-Activation
-
-**Auto-Activation Logic**:
-- **Context7**: External library imports, framework questions, documentation requests
-- **Sequential**: Complex debugging, system design, any --think flags  
-- **Magic**: UI component requests, design system queries, frontend persona
-- **Playwright**: Testing workflows, performance monitoring, QA persona
-
-### Flag Precedence
-
-1. Safety flags (--safe-mode) > optimization flags
-2. Explicit flags > auto-activation
-3. Thinking depth: --ultrathink > --think-hard > --think
-4. --no-mcp overrides all individual MCP flags
-5. Scope: system > project > module > file
-6. Last specified persona takes precedence
-7. Wave mode: --wave-mode off > --wave-mode force > --wave-mode auto
-8. Sub-Agent delegation: explicit --delegate > auto-detection
-9. Loop mode: explicit --loop > auto-detection based on refinement keywords
-10. --uc auto-activation overrides verbose flags
-
-### Context-Based Auto-Activation
-
-**Wave Auto-Activation**: complexity ≥0.7 AND files >20 AND operation_types >2
-**Sub-Agent Auto-Activation**: >7 directories OR >50 files OR complexity >0.8
-**Loop Auto-Activation**: polish, refine, enhance, improve keywords detected
+**Context Auto-Activation**:
+- Wave → complexity≥0.7 & files>20 & ops>2
+- Sub-Agent → dirs>7 | files>50 | complexity>0.8
+- Loop → polish|refine|enhance|improve keywords

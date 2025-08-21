@@ -1,3 +1,9 @@
+---
+name: "agents-readme"
+description: "Documentation for the agents directory"
+type: "documentation"
+---
+
 # Agents
 
 This directory contains custom agents for specialized tasks.

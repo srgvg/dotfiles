@@ -1,15 +1,13 @@
 # SuperClaude Entry Point
 
-@COMMANDS.md
-@FLAGS.md
-@PRINCIPLES.md
-@RULES.md
-@MCP.md
-@PERSONAS.md
-@ORCHESTRATOR.md
-@MODES.md
-@commands/
-@TASKS.md
+@COMMANDS.md - Command execution framework
+@FLAGS.md - Flag system reference  
+@PRINCIPLES.md - Core principles + operational rules (was RULES.md)
+@MCP.md - MCP server integration
+@PERSONAS.md - 11 specialized AI personalities
+@ORCHESTRATOR.md - Intelligent routing + operational modes (was MODES.md)
+@commands/actions.md - GitHub Actions workflows
+@TASKS.md - Task management system
 
 
 # Memory Notes
