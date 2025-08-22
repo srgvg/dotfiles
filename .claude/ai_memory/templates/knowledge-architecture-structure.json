@@ -1,0 +1,193 @@
+{
+  "decisions": [
+    {
+      "id": "arch-001",
+      "title": "JWT for Authentication",
+      "decision": "Use JSON Web Tokens for stateless authentication",
+      "status": "accepted",
+      "date": "2025-08-15T00:00:00Z",
+      "context": "authentication",
+      "rationale": [
+        "Stateless authentication scales better",
+        "Reduces server-side session storage",
+        "Better for microservices architecture"
+      ],
+      "alternatives_considered": [
+        {
+          "option": "Server-side sessions",
+          "pros": ["More secure", "Easier revocation"],
+          "cons": ["Doesn't scale", "Requires shared storage"]
+        },
+        {
+          "option": "OAuth2 only",
+          "pros": ["Industry standard", "Third-party integration"],
+          "cons": ["Complex setup", "External dependency"]
+        }
+      ],
+      "implementation_notes": [
+        "Use RS256 for signing",
+        "Implement proper token expiration",
+        "Add refresh token mechanism"
+      ],
+      "impact": {
+        "performance": "positive",
+        "security": "neutral",
+        "complexity": "moderate",
+        "maintainability": "positive"
+      },
+      "review_date": "2025-11-15T00:00:00Z",
+      "decision_makers": ["tech_lead", "security_team"]
+    }
+  ],
+  
+  "patterns": [
+    {
+      "id": "pattern-001",
+      "name": "Middleware Authentication Pattern",
+      "category": "security",
+      "description": "Standard middleware pattern for authenticating API requests",
+      "use_cases": [
+        "Protected API endpoints",
+        "Role-based access control",
+        "Request context enrichment"
+      ],
+      "code_template": "const authMiddleware = (req, res, next) => {\n  // Validate token\n  // Set user context\n  // Call next()\n}",
+      "benefits": [
+        "Centralized authentication logic",
+        "Easy to apply to multiple routes",
+        "Consistent error handling"
+      ],
+      "considerations": [
+        "Performance impact on every request",
+        "Token validation overhead",
+        "Error handling complexity"
+      ],
+      "related_patterns": ["pattern-002"],
+      "examples": [
+        {
+          "context": "authentication",
+          "implementation": "src/middleware/auth.js",
+          "notes": "Used for API route protection"
+        }
+      ]
+    }
+  ],
+  
+  "constraints": [
+    {
+      "id": "constraint-001",
+      "type": "security",
+      "title": "Token Expiration Policy",
+      "description": "All JWT tokens must have expiration times",
+      "rationale": "Prevents indefinite token usage in case of compromise",
+      "enforcement": "automatic",
+      "validation": "JWT library configuration",
+      "exceptions": [],
+      "impact_level": "high",
+      "compliance_date": "2025-08-01T00:00:00Z"
+    },
+    {
+      "id": "constraint-002",
+      "type": "performance",
+      "title": "API Response Time Limit",
+      "description": "All API endpoints must respond within 200ms",
+      "rationale": "Ensures good user experience",
+      "enforcement": "monitoring",
+      "validation": "performance tests",
+      "exceptions": [
+        {
+          "endpoint": "/api/reports/generate",
+          "limit": "5000ms",
+          "reason": "Complex data processing required"
+        }
+      ],
+      "impact_level": "medium",
+      "compliance_date": "2025-09-01T00:00:00Z"
+    }
+  ],
+  
+  "principles": [
+    {
+      "id": "principle-001",
+      "name": "Security by Default",
+      "description": "All new features should be secure by default",
+      "examples": [
+        "Authentication required unless explicitly exempted",
+        "Input validation on all endpoints",
+        "HTTPS only for production"
+      ],
+      "enforcement_level": "strict",
+      "category": "security"
+    },
+    {
+      "id": "principle-002", 
+      "name": "Fail Fast",
+      "description": "Detect and report errors as early as possible",
+      "examples": [
+        "Input validation at API boundary",
+        "Database constraint violations",
+        "Configuration validation at startup"
+      ],
+      "enforcement_level": "recommended",
+      "category": "reliability"
+    }
+  ],
+  
+  "technical_debt": [
+    {
+      "id": "debt-001",
+      "title": "Legacy Authentication Code",
+      "description": "Old session-based auth still present in codebase",
+      "impact": "high",
+      "effort": "medium",
+      "priority": "high",
+      "created": "2025-08-15T00:00:00Z",
+      "target_resolution": "2025-09-15T00:00:00Z",
+      "responsible_context": "authentication",
+      "resolution_approach": "Gradual migration to JWT-based auth"
+    }
+  ],
+  
+  "quality_metrics": [
+    {
+      "metric": "code_coverage",
+      "current_value": 85,
+      "target_value": 90,
+      "trend": "improving",
+      "last_measured": "2025-08-22T16:00:00Z"
+    },
+    {
+      "metric": "api_response_time_p95",
+      "current_value": 180,
+      "target_value": 150,
+      "unit": "milliseconds",
+      "trend": "stable",
+      "last_measured": "2025-08-22T16:00:00Z"
+    }
+  ],
+  
+  "integration_points": [
+    {
+      "name": "User Management Service",
+      "type": "internal_api",
+      "endpoint": "http://localhost:3001/api/users",
+      "authentication": "jwt",
+      "rate_limit": "1000/hour",
+      "dependencies": ["authentication"],
+      "sla": "99.9%"
+    },
+    {
+      "name": "Payment Gateway",
+      "type": "external_api",
+      "endpoint": "https://api.stripe.com/v1/",
+      "authentication": "api_key",
+      "rate_limit": "100/second",
+      "dependencies": [],
+      "sla": "99.95%"
+    }
+  ],
+  
+  "last_updated": "2025-08-22T16:15:00Z",
+  "next_review": "2025-09-22T00:00:00Z",
+  "review_frequency": "monthly"
+}

@@ -8,10 +8,16 @@
       "WebFetch",
       "WebSearch",
       "Bash(mkdir:*)",
-      "Bash(echo $LOCK_DEFAULT_LOCKSCREEN)",
+      "Bash(echo:*)",
+      "Bash(jq:*)",
       "Bash(grep:*)",
-      "Bash(loginctl list-sessions:*)",
-      "Bash(loginctl show-session:*)"
+      "Bash(mise list:*)",
+      "Bash(mise where:*)",
+      "Bash(pipx list:*)",
+      "Bash(/home/serge/.local/share/mise/installs/python/3.8.20/bin/python3.8:*)",
+      "Read(/home/serge/.claude/ai_memory/**)",
+      "Write(/home/serge/.claude/ai_memory/**)",
+      "MultiEdit(/home/serge/.claude/ai_memory/**)"
     ],
     "deny": [
       "Read(./.env)",

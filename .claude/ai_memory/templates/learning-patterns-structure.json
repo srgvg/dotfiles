@@ -1,0 +1,251 @@
+{
+  "learned_patterns": [
+    {
+      "pattern": "jwt_middleware_implementation",
+      "category": "authentication",
+      "description": "Standard pattern for implementing JWT authentication middleware",
+      "context": "Node.js Express applications",
+      "learned_on": "2025-08-22T14:30:00Z",
+      "confidence": 0.95,
+      "use_count": 3,
+      "success_rate": 1.0,
+      "code_template": "const verifyJWT = (req, res, next) => {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({error: 'No token provided'});\n  \n  try {\n    const decoded = jwt.verify(token, process.env.JWT_SECRET);\n    req.user = decoded;\n    next();\n  } catch (error) {\n    res.status(401).json({error: 'Invalid token'});\n  }\n};",
+      "variations": [
+        {
+          "name": "with_refresh_token",
+          "description": "Includes refresh token handling",
+          "use_case": "Long-lived sessions"
+        }
+      ],
+      "prerequisites": [
+        "Express.js framework",
+        "jsonwebtoken library",
+        "Environment variables configured"
+      ],
+      "common_pitfalls": [
+        "Not handling token expiration gracefully",
+        "Storing sensitive data in token payload",
+        "Using weak JWT secrets"
+      ],
+      "related_patterns": ["error_handling_middleware", "async_route_wrapper"]
+    }
+  ],
+  
+  "error_solutions": [
+    {
+      "error_pattern": "TypeError: Cannot read property 'exp' of null",
+      "context": "JWT token validation",
+      "root_cause": "Attempting to access token payload without null check",
+      "solution": "Add null/undefined checks before accessing token properties",
+      "code_fix": "const payload = jwt.decode(token);\nif (!payload || !payload.exp) {\n  throw new Error('Invalid token structure');\n}",
+      "prevention": "Always validate token structure before accessing properties",
+      "frequency": 3,
+      "last_encountered": "2025-08-22T15:15:00Z",
+      "resolution_time_minutes": 15,
+      "severity": "medium"
+    },
+    {
+      "error_pattern": "JsonWebTokenError: invalid signature",
+      "context": "JWT token verification",
+      "root_cause": "Token signed with different secret than verification key",
+      "solution": "Ensure consistent JWT_SECRET across environments",
+      "code_fix": "// Verify environment variables are set correctly\nif (!process.env.JWT_SECRET) {\n  throw new Error('JWT_SECRET environment variable required');\n}",
+      "prevention": "Use environment variable validation at startup",
+      "frequency": 2,
+      "last_encountered": "2025-08-20T10:30:00Z",
+      "resolution_time_minutes": 30,
+      "severity": "high"
+    }
+  ],
+  
+  "workflow_patterns": [
+    {
+      "workflow": "jwt_implementation",
+      "description": "Complete workflow for implementing JWT authentication",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Install dependencies",
+          "command": "npm install jsonwebtoken bcryptjs",
+          "expected_outcome": "Dependencies added to package.json"
+        },
+        {
+          "step": 2,
+          "action": "Configure environment variables",
+          "command": "echo 'JWT_SECRET=your-secret-key' >> .env",
+          "expected_outcome": "JWT_SECRET available in process.env"
+        },
+        {
+          "step": 3,
+          "action": "Create authentication middleware",
+          "file": "middleware/auth.js",
+          "expected_outcome": "Reusable authentication middleware"
+        },
+        {
+          "step": 4,
+          "action": "Apply to protected routes",
+          "example": "app.get('/protected', authMiddleware, handler)",
+          "expected_outcome": "Routes require valid JWT token"
+        },
+        {
+          "step": 5,
+          "action": "Add token generation to login",
+          "example": "const token = jwt.sign({userId: user.id}, JWT_SECRET)",
+          "expected_outcome": "Login endpoint returns JWT token"
+        }
+      ],
+      "duration_estimate": "2-3 hours",
+      "difficulty": "intermediate",
+      "prerequisites": ["Express.js knowledge", "Authentication concepts"],
+      "success_indicators": [
+        "Protected routes reject unauthorized requests",
+        "Valid tokens allow access",
+        "Token expiration handled correctly"
+      ]
+    }
+  ],
+  
+  "optimization_patterns": [
+    {
+      "optimization": "jwt_token_caching",
+      "category": "performance",
+      "description": "Cache decoded JWT tokens to avoid repeated verification",
+      "performance_impact": "50% reduction in token verification time",
+      "implementation_effort": "low",
+      "trade_offs": [
+        "Increased memory usage",
+        "Complexity in cache invalidation",
+        "Security considerations for token caching"
+      ],
+      "code_example": "const tokenCache = new Map();\nconst getCachedToken = (token) => {\n  if (tokenCache.has(token)) {\n    const cached = tokenCache.get(token);\n    if (cached.exp > Date.now() / 1000) {\n      return cached;\n    }\n    tokenCache.delete(token);\n  }\n  return null;\n};",
+      "metrics": {
+        "before": "200ms average verification time",
+        "after": "100ms average verification time",
+        "memory_overhead": "5MB for 1000 cached tokens"
+      },
+      "applicable_when": [
+        "High token verification frequency",
+        "Limited token variety",
+        "Memory is not constrained"
+      ]
+    }
+  ],
+  
+  "project_templates": [
+    {
+      "template": "express_jwt_api",
+      "description": "Express.js API with JWT authentication boilerplate",
+      "use_case": "REST API with user authentication",
+      "structure": {
+        "directories": [
+          "middleware/",
+          "routes/",
+          "models/",
+          "utils/",
+          "tests/"
+        ],
+        "key_files": [
+          "middleware/auth.js",
+          "routes/auth.js",
+          "utils/jwt.js",
+          "config/database.js"
+        ]
+      },
+      "dependencies": [
+        "express",
+        "jsonwebtoken",
+        "bcryptjs",
+        "cors",
+        "helmet",
+        "dotenv"
+      ],
+      "environment_variables": [
+        "JWT_SECRET",
+        "JWT_EXPIRES_IN",
+        "DATABASE_URL",
+        "PORT"
+      ],
+      "setup_commands": [
+        "npm init -y",
+        "npm install express jsonwebtoken bcryptjs cors helmet dotenv",
+        "npm install -D jest supertest nodemon",
+        "mkdir -p middleware routes models utils tests",
+        "touch .env .gitignore"
+      ]
+    }
+  ],
+  
+  "user_preferences": {
+    "code_style": {
+      "indentation": "2_spaces",
+      "semicolons": "required",
+      "quotes": "single",
+      "trailing_commas": "es5"
+    },
+    "workflow": {
+      "memory_automation": "preferred",
+      "verbosity": "minimal",
+      "context_switching": "automatic"
+    },
+    "tools": {
+      "test_framework": "jest",
+      "linter": "eslint",
+      "package_manager": "npm",
+      "editor": "vscode"
+    }
+  },
+  
+  "frequent_operations": [
+    {
+      "operation": "jwt_token_verification",
+      "frequency": 15,
+      "last_used": "2025-08-22T16:00:00Z",
+      "success_rate": 0.93,
+      "average_duration_seconds": 120,
+      "common_issues": [
+        "Invalid token format",
+        "Token expiration handling"
+      ]
+    },
+    {
+      "operation": "middleware_implementation",
+      "frequency": 8,
+      "last_used": "2025-08-22T14:30:00Z",
+      "success_rate": 0.95,
+      "average_duration_seconds": 300,
+      "common_issues": [
+        "Error handling edge cases",
+        "Request context preservation"
+      ]
+    }
+  ],
+  
+  "insights": [
+    {
+      "insight": "JWT middleware pattern provides consistent authentication across all protected routes",
+      "category": "architecture",
+      "confidence": 0.95,
+      "evidence": [
+        "Successfully implemented in 3 different projects",
+        "Reduced authentication code duplication by 80%",
+        "Improved security consistency"
+      ],
+      "date": "2025-08-22T14:30:00Z",
+      "impact": "high"
+    },
+    {
+      "insight": "Token caching significantly improves API performance",
+      "category": "performance",
+      "confidence": 0.9,
+      "evidence": [
+        "50% reduction in token verification time",
+        "Measurable improvement in API response times",
+        "No security issues observed"
+      ],
+      "date": "2025-08-20T12:00:00Z",
+      "impact": "medium"
+    }
+  ],
+  
+  "last_updated": "2025-08-22T16:15:00Z"
+}

@@ -1,0 +1,70 @@
+{
+  "project_id": "example-project-a1b2",
+  "project_name": "example-project",
+  "display_name": "Example Project",
+  "project_type": "web-application",
+  "structure_version": "2.0",
+  "created": "2025-08-22T00:00:00Z",
+  "last_updated": "2025-08-22T00:00:00Z",
+  "last_accessed": "2025-08-22T00:00:00Z",
+  
+  "location": {
+    "root_directory": "/path/to/project",
+    "git_repository": "https://github.com/user/project.git",
+    "parent_directory": "src"
+  },
+  
+  "technology_stack": {
+    "primary_language": "javascript",
+    "frameworks": ["react", "node.js"],
+    "databases": ["postgresql"],
+    "tools": ["webpack", "jest", "docker"]
+  },
+  
+  "active_contexts": [
+    "authentication",
+    "api-refactor"
+  ],
+  
+  "statistics": {
+    "total_sessions": 12,
+    "total_contexts": 5,
+    "lines_modified": 2847,
+    "files_modified": 34,
+    "last_major_change": "2025-08-20T00:00:00Z"
+  },
+  
+  "key_files": [
+    "package.json",
+    "README.md",
+    "src/index.js",
+    "tests/setup.js"
+  ],
+  
+  "build_commands": {
+    "install": "npm install",
+    "build": "npm run build",
+    "test": "npm test",
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck"
+  },
+  
+  "patterns": {
+    "code_style": "eslint-standard",
+    "testing_approach": "jest-with-coverage",
+    "commit_style": "conventional-commits",
+    "branch_strategy": "git-flow"
+  },
+  
+  "preferences": {
+    "auto_save_frequency": 15,
+    "context_switching": "auto",
+    "memory_verbosity": "silent"
+  },
+  
+  "migration": {
+    "migrated_from": null,
+    "migration_date": null,
+    "original_structure": null
+  }
+}

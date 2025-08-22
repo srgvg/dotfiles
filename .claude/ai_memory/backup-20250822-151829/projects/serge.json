@@ -1,0 +1,64 @@
+{
+  "project_name": "serge",
+  "project_type": "home_directory",
+  "last_session": "2025-08-22T12:30:00Z",
+  "working_directory": "/home/serge",
+  "environment": {
+    "python": {
+      "global_version": "3.13.5",
+      "global_path": "/usr/bin/python",
+      "mise_versions": {
+        "3.8.20": "/home/serge/.local/share/mise/installs/python/3.8.20",
+        "3.10.11": "/home/serge/.local/share/mise/installs/python/3.10.11",
+        "3.13.2": "/home/serge/.local/share/mise/installs/python/3.13.2"
+      },
+      "resolved_issues": {
+        "spotify_cli": "Successfully installed with Python 3.8.20 using uv tool"
+      }
+    },
+    "package_managers": ["pipx", "uv", "mise"],
+    "claude_settings": {
+      "config_path": "/home/serge/.claude/settings.json",
+      "memory_permissions": ["Read", "Write", "MultiEdit for ~/.claude/ai_memory/**"]
+    }
+  },
+  "pending_tasks": [],
+  "completed_tasks": [
+    {
+      "task": "Install spotify-cli with Python 3.8",
+      "command": "uv tool install --python /home/serge/.local/share/mise/installs/python/3.8.20/bin/python3.8 --force spotify-cli",
+      "post_install": "ln -sf ~/.local/bin/spotify ~/.local/bin/spotify-cli",
+      "status": "completed",
+      "date": "2025-08-22"
+    },
+    {
+      "task": "Configure Claude memory permissions",
+      "date": "2025-08-22",
+      "result": "Added Read/Write/MultiEdit permissions for ~/.claude/ai_memory/**"
+    }
+  ],
+  "user_preferences": {
+    "package_management": "prefers uv over pipx when available",
+    "python_version_management": "uses mise for multiple Python versions",
+    "binary_naming": "maintains separate names to avoid conflicts (spotify vs spotify-cli)",
+    "memory_system": "follows AUTOMATIC_MEMORY_SYSTEM.md instructions"
+  },
+  "technical_decisions": [
+    {
+      "decision": "Use Python 3.8.20 via mise for spotify-cli",
+      "reason": "Bug in global Python 3.13.5 affecting spotify-cli",
+      "date": "2025-08-22"
+    },
+    {
+      "decision": "Use uv tool with --python flag for version-specific installations",
+      "reason": "Modern alternative to pipx with better Python version handling",
+      "date": "2025-08-22"
+    }
+  ],
+  "context_notes": [
+    "Home directory serves as general workspace",
+    "Multiple Python versions managed via mise",
+    "AI memory system configured for cross-session persistence",
+    "spotify-cli successfully installed with Python 3.8.20"
+  ]
+}

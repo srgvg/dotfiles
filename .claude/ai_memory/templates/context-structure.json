@@ -1,0 +1,140 @@
+{
+  "context_id": "example-context",
+  "display_name": "Example Context",
+  "description": "Description of what this context covers",
+  "status": "active",
+  "created": "2025-08-22T00:00:00Z",
+  "last_active": "2025-08-22T00:00:00Z",
+  "last_updated": "2025-08-22T00:00:00Z",
+  
+  "detection_trigger": {
+    "type": "explicit_mention",
+    "pattern": "working on authentication",
+    "confidence": 0.95
+  },
+  
+  "scope": {
+    "directories": [
+      "src/auth/",
+      "tests/auth/"
+    ],
+    "files": [
+      "src/auth/login.js",
+      "src/auth/middleware.js"
+    ],
+    "components": [
+      "LoginComponent",
+      "AuthMiddleware"
+    ]
+  },
+  
+  "related_contexts": [
+    "security",
+    "api"
+  ],
+  
+  "git_branches": [
+    "feature/auth-system",
+    "fix/auth-bug-123"
+  ],
+  
+  "session_history": [
+    {
+      "session_id": "2025-08-22-14-30",
+      "duration_minutes": 45,
+      "changes_made": 23,
+      "files_touched": 5
+    }
+  ],
+  
+  "pending_tasks": [
+    {
+      "task": "Implement JWT token refresh",
+      "priority": "high",
+      "estimated_effort": "2h"
+    },
+    {
+      "task": "Add rate limiting to login endpoint",
+      "priority": "medium",
+      "estimated_effort": "1h"
+    }
+  ],
+  
+  "completed_tasks": [
+    {
+      "task": "Setup OAUTH2 provider integration",
+      "completed_date": "2025-08-20T00:00:00Z",
+      "actual_effort": "3h"
+    }
+  ],
+  
+  "key_decisions": [
+    {
+      "decision": "Use JWT for session management",
+      "rationale": "Better scalability than server-side sessions",
+      "date": "2025-08-18T00:00:00Z",
+      "alternatives_considered": ["Redis sessions", "Database sessions"]
+    }
+  ],
+  
+  "learned_patterns": [
+    {
+      "pattern": "JWT middleware pattern",
+      "code_snippet": "const verifyToken = (req, res, next) => { ... }",
+      "use_case": "Protecting API endpoints"
+    }
+  ],
+  
+  "common_errors": [
+    {
+      "error": "Invalid token signature",
+      "solution": "Check JWT secret configuration",
+      "frequency": 3
+    }
+  ],
+  
+  "dependencies": {
+    "packages": [
+      "jsonwebtoken",
+      "bcryptjs",
+      "passport"
+    ],
+    "internal": [
+      "database/user-model",
+      "utils/crypto"
+    ]
+  },
+  
+  "performance_notes": [
+    {
+      "metric": "login_response_time",
+      "current_value": "150ms",
+      "target_value": "100ms",
+      "bottleneck": "password hashing"
+    }
+  ],
+  
+  "testing": {
+    "test_coverage": 85,
+    "test_files": [
+      "tests/auth/login.test.js",
+      "tests/auth/middleware.test.js"
+    ],
+    "integration_tests": [
+      "auth-flow-e2e.test.js"
+    ]
+  },
+  
+  "documentation": {
+    "api_docs": "docs/api/authentication.md",
+    "setup_guide": "docs/setup/auth-setup.md",
+    "troubleshooting": "docs/troubleshooting/auth-issues.md"
+  },
+  
+  "completion_criteria": [
+    "All authentication flows implemented",
+    "Security audit passed",
+    "Performance targets met",
+    "Documentation complete"
+  ]
+}
