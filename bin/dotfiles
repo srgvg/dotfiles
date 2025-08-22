@@ -114,16 +114,6 @@ Videos
 Wallpapers
 "
 
-# Include .claude/dotfiles entries if file exists
-if [ -f "$HOME/.claude/dotfiles" ]; then
-	# Read non-comment, non-empty lines from .claude/dotfiles
-	claude_entries=$(grep -v '^#' "$HOME/.claude/dotfiles" | grep -v '^$')
-	if [ -n "$claude_entries" ]; then
-		dotadds="${dotadds}
-${claude_entries}"
-	fi
-fi
-
 	sdotadds="
 .azure
 .azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry.txt .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json
@@ -155,6 +145,15 @@ etc/
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')
 "
+# Include .claude/dotfiles entries if file exists
+if [ -f "$HOME/.claude/dotfiles" ]; then
+	# Read non-comment, non-empty lines from .claude/dotfiles
+	claude_entries=$(grep -v '^#' "$HOME/.claude/dotfiles" | grep -v '^$')
+	if [ -n "$claude_entries" ]; then
+		sdotadds="${sdotadds}
+${claude_entries}"
+	fi
+fi
 }
 
 ###############################################################################
