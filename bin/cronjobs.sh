@@ -102,6 +102,21 @@ function execute() {
 			-type f \
 			-delete
 
+		# cleanupo claude files
+		logtitle cleanup ~/.claude files
+		## Archive todos older than 30 days - Run daily at 2:30 AM
+        find $HOME/.claude/todos/ \
+            -type f -name "*.json" \
+            -mtime +30 \
+            -delete
+        # Dekete shell snapshots older than 7 days
+        find $HOME/.claude/shell-snapshots/ \
+            -type f -name "snapshot-*.sh" \
+            -mtime +7 \
+            -delete
+
+  2>/dev/null
+
 	###############################################################################
 	elif [ "${command}" = "update-tools" ]
 	then
