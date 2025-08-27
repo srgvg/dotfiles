@@ -71,7 +71,6 @@ mise-global.toml
 .gitattributes
 .gitconfig
 .gitconfig.d/
-.gitignore
 .gitignore.d/dot
 .git-template/
 .i3/
@@ -145,15 +144,6 @@ etc/
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')
 "
-# Include .claude/dotfiles entries if file exists
-if [ -f "$HOME/.claude/dotfiles" ]; then
-	# Read non-comment, non-empty lines from .claude/dotfiles
-	claude_entries=$(grep -v '^#' "$HOME/.claude/dotfiles" | grep -v '^$')
-	if [ -n "$claude_entries" ]; then
-		sdotadds="${sdotadds}
-${claude_entries}"
-	fi
-fi
 }
 
 ###############################################################################
