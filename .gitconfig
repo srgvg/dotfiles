@@ -190,15 +190,9 @@
 	ignorecase = false
 	whitespace = trailing-space,space-before-tab
 	quotepath = false
-	#pager = diff-so-fancy | less --tabs=4 -RFX
-	# https://veronneau.org/a-better-git-diff.html
-	#pager = diff-highlight | less --tabs=4 -RFX
-	# -X:           don't talk to X11 on startup
-	# -R:           read only mode
-	# -n:           don't use a swap file
-	# -c:           run command on start, after autocmd/modeline
-	#pager = ifne vim -X -R - -n -c 'set filetype=git nowrap noro'
+	pager = delta
 	sparseCheckoutCone = 1
+	fsmonitor = true
 
 
 [diff]
@@ -208,6 +202,8 @@
 	compactionheuristic = true
 	fallbackToNoIndex = true
 	mnemonicPrefix = true
+	# Some tools expect the a/ and b/ prefixes.
+	# If you ever hit tooling that fails to apply patches, consider disabling this:
 	noprefix = true
 	renames = true
 	tool = difftastic
@@ -247,6 +243,8 @@
 	fsckobjects = false
 	pruneTags = true
 	all = true
+	recurseSubmodules = on-demand
+	parallel = 5
 
 
 [format]
@@ -267,6 +265,7 @@
 [gpg]
 
 	program = gpg
+	format = ssh
 
 
 [init]
@@ -278,7 +277,7 @@
 
 [merge]
 
-	conflictstyle = zdiff3
+	conflictStyle = zdiff3
 
 
 [pager]
@@ -296,6 +295,7 @@
 
 	#ff = only
 	rebase = true
+	ff = only
 
 
 [push]
@@ -339,6 +339,7 @@
 	showUntrackedFiles = all
 	submodulesummary = true
 	showStash = true
+	aheadBehind = true
 
 
 [svn]
@@ -357,7 +358,7 @@
 
 	name = Serge van Ginderachter
     email = serge@ginsys.eu
-	signingkey = 3148E9B9232D65E5
+	signingkey = /home/serge/.ssh/id_ed25519_serge_ginsys.pub
 
 
 
@@ -381,14 +382,32 @@
 [diff "dyff"]
 	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"
 [credential "https://github.com"]
-	helper =
-	#helper = !gh auth git-credential
+	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
-	helper =
-	#helper = !gh auth git-credential
+	helper = !gh auth git-credential
 [column]
 	ui = auto
 [tag]
 	sort = version:refname
+	gpgSign = true
 [help]
 	autocorrect = prompt
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+	side-by-side = false
+[rerere]
+	enabled = true
+	autoupdate = true
+[log]
+	date = iso8601-strict
+[submodule]
+	recurse = false
+[maintenance]
+	auto = true
+[worktree]
+	guessRemote = true
+[gpg "ssh"]
+	allowedSignersFile = /home/serge/.config/git/allowed_signers
