@@ -68,7 +68,7 @@ function execute() {
         logtitle looking for files in temp folders
 		nice -n 20 ionice -c 3 find \
 			${tempfolders} \
-			-maxdepth 1 \
+			-depth -mindepth 1 \
 			-mmin ${cleantime} \( -type f -o -type l \) \
 			-print0 | xargs -r -0 rm -fv
 
