@@ -31,6 +31,7 @@ completion_bash_commands=(
     eksctl
     flux
     flux-operator
+    forward-email
     go-chromecast
     hcloud
     helm

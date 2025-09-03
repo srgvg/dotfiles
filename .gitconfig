@@ -5,6 +5,11 @@
 # resources
 # - https://github.com/henrebotha/dotfiles/blob/main/git/dot-gitconfig
 
+[advice]
+
+	addIgnoredFile = false
+
+
 [alias]
 
 	# Display all aliases :)
@@ -163,6 +168,7 @@
 
 
 [color "diff-highlight"]
+
     oldNormal = red bold
     oldHighlight = red bold 52
     newNormal = green bold
@@ -174,6 +180,10 @@
 	added = yellow
 	changed = green
 	untracked = cyan
+
+[column]
+
+	ui = auto
 
 
 [commit]
@@ -195,6 +205,50 @@
 	fsmonitor = true
 
 
+[credential "https://github.com"]
+
+	helper = !gh auth git-credential
+
+
+[credential "https://gist.github.com"]
+
+	helper = !gh auth git-credential
+
+
+[credential "https://gitlab.com"]
+
+	helper = !glab auth git-credential
+
+
+[credential "https://gitlab.example.com"]
+
+	helper = !glab auth git-credential
+
+
+[delta]
+
+	navigate = true
+	line-numbers = true
+	side-by-side = true
+	syntax-theme = Dracula
+	features = line-numbers side-by-side filebox
+	whitespace-error-style = 22 reverse
+
+
+[delta "filebox"]
+
+	file-decoration-style = bold yellow box ul ol
+	file-style = white "#303030"
+	hunk-header-decoration-style = ul ol dim
+	hunk-header-style = dim italic file line-number syntax
+	file-modified-label = " Δ "
+	file-added-label = " + "
+	file-removed-label = " − "
+	file-transformation = "s|^|     |"
+	line-numbers-left-format = {nm:^4}⋮
+	line-numbers-right-format = {np:^4}
+
+
 [diff]
 
 	colorMoved = plain
@@ -206,8 +260,16 @@
 	# If you ever hit tooling that fails to apply patches, consider disabling this:
 	noprefix = true
 	renames = true
-	tool = difftastic
+	tool = difft
 	algorithm = histogram
+	context = 10                    # Show more context lines
+	interHunkContext = 5           # Context between hunks
+	wordRegex = [a-zA-Z0-9_]+     # Word-level diff boundaries
+
+
+[diff "dyff"]
+
+	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"
 
 
 [difftool]
@@ -220,17 +282,14 @@
 	cmd = difft "$LOCAL" "$REMOTE"
 
 
-#[difftool "icdiff"]
-#
-#	cmd = icdiff --line-numbers $LOCAL $REMOTE
-
-
 [diff-so-fancy]
+
 	first-run = false
 	changeHunkIndicators = false
 
 
 [grep]
+
 	lineNumber = true
 	extendedRegexp = true
 	fallbackToNoIndex = true
@@ -250,6 +309,7 @@
 [format]
 
 	signOff = true
+	pretty = fuller                # More detailed commit info
 
 
 [github]
@@ -268,11 +328,35 @@
 	format = ssh
 
 
+[gpg "ssh"]
+
+	allowedSignersFile = /home/serge/.config/git/allowed_signers
+
+
+[help]
+
+	autocorrect = prompt
+
+
 [init]
+
 	templateDir = /home/serge/.git-template
 	defaultBranch = main
 
-	#defaultBranch = main
+
+[interactive]
+
+	diffFilter = delta --color-only
+
+
+[log]
+
+	date = iso8601-strict
+
+
+[maintenance]
+
+	auto = true
 
 
 [merge]
@@ -293,7 +377,6 @@
 
 [pull]
 
-	#ff = only
 	rebase = true
 	ff = only
 
@@ -303,7 +386,6 @@
 	# git push will by default push all branches that have the same name on the remote
 	# to limit this behavior to just the current branch, set this configuration option:
 	default = simple
-	#default = matching
 
 	# Instead of manually pushing new tags with --follow-tags, you always send
 	# your local tags up along with a git push.
@@ -324,14 +406,9 @@
 	fsckobjects = true
 
 
-#[sendemail]
-#
-#	smtpserver = smtp.gmail.com
-#	smtpserverport = 587
-#	smtpencryption = tls
-#	smtpuser = serge@vanginderachter.be
-#	verify = off
-
+[rerere]
+	enabled = true
+	autoupdate = true
 
 [status]
 
@@ -342,11 +419,20 @@
 	aheadBehind = true
 
 
+[submodule]
+
+	recurse = false
+
 [svn]
 
 	# push empty directory removals back to svn as directory deletes
 	rmdir = true
 
+
+[tag]
+
+	sort = version:refname
+	gpgSign = true
 
 [transfer]
 
@@ -361,53 +447,30 @@
 	signingkey = /home/serge/.ssh/id_ed25519_serge_ginsys.pub
 
 
+[worktree]
+
+	guessRemote = true
 
 ## includes
 
 [include]
+
 	path = ~/.gitconfig.d/git-repo
 
+
 [includeIf "gitdir:~/src/autops/"]
+
 	path = ~/.gitconfig.d/autops
 
+
 [includeIf "gitdir:~/src/ginsys/"]
+
 	path = ~/.gitconfig.d/ginsys
 
+
 [includeIf "gitdir:~/src/srgvg/"]
+
 	path = ~/.gitconfig.d/srgvg
 
 
-[advice]
-	addIgnoredFile = false
-[diff "dyff"]
-	command = "dyff_between() { dyff --color on between --omit-header \"$2\" \"$5\"; }; dyff_between"
-[credential "https://github.com"]
-	helper = !gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = !gh auth git-credential
-[column]
-	ui = auto
-[tag]
-	sort = version:refname
-	gpgSign = true
-[help]
-	autocorrect = prompt
-[interactive]
-	diffFilter = delta --color-only
-[delta]
-	navigate = true
-	line-numbers = true
-	side-by-side = false
-[rerere]
-	enabled = true
-	autoupdate = true
-[log]
-	date = iso8601-strict
-[submodule]
-	recurse = false
-[maintenance]
-	auto = true
-[worktree]
-	guessRemote = true
-[gpg "ssh"]
-	allowedSignersFile = /home/serge/.config/git/allowed_signers
+## END

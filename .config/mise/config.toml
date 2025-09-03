@@ -18,6 +18,7 @@ missing_tools = "always"
 MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 
 [alias]
+forward-email = "ubi:ginsys/forward-email"
 hurl = "ubi:Orange-OpenSource/hurl"
 hurlfmt = "ubi:Orange-OpenSource/hurl"
 regbot = "ubi:regclient/regclient"
@@ -45,6 +46,7 @@ doctl = "latest"
 eksctl = "latest"
 flux2 = "latest"
 "ubi:controlplaneio-fluxcd/flux-operator" = { version = "latest", exe = "flux-operator" }
+forward-email = { version = "latest" }
 gcloud = "latest"
 github-cli = "latest"
 go = "latest"
