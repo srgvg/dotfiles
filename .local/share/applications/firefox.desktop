@@ -9,16 +9,17 @@ DBusActivatable=false
 Categories=GNOME;GTK;Network;WebBrowser;
 StartupNotify=true
 Actions=new-window;new-private-window;open-profile-manager;
-Exec=/home/serge/Documents/Applications/firefox/firefox-bin %u
+Exec=/usr/bin/firefox %u
 Name=Local Firefox
 GenericName=Firefox
 Comment=Local Bin Web Browser Instance
-MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
 
 [Desktop Action new-window]
 Name=New Window
-Exec=/home/serge/Documents/Applications/firefox/firefox-bin --new-window %u
+Exec=/usr/bin/firefox %u
 
 [Desktop Action new-private-window]
 Name=New Private Window
-Exec=/home/serge/Documents/Applications/firefox/firefox-bin --private-window %u
+Exec=/usr/bin/firefox %u
+MimeType=x-scheme-handler/unknown;x-scheme-handler/about;text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
+TryExec=/usr/bin/firefox
