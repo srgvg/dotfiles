@@ -96,9 +96,9 @@ function execute() {
 
         # cleanup logs
         logtitle cleanup my logs
-		find $HOME/logs/cronjobs \
+		find $HOME/logs \
 			-mindepth 1 \
-			-mmin +4500 \
+			-mmin +11520 \
 			-type f \
 			-delete
 
