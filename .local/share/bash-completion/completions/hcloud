@@ -8636,6 +8636,1247 @@ _hcloud_volume()
     noun_aliases=()
 }
 
+_hcloud_zone_add-label()
+{
+    last_command="hcloud_zone_add-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--overwrite")
+    flags+=("-o")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_add-records()
+{
+    last_command="hcloud_zone_add-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_change-primary-nameservers()
+{
+    last_command="hcloud_zone_change-primary-nameservers"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--primary-nameservers-file=")
+    two_word_flags+=("--primary-nameservers-file")
+    flags_with_completion+=("--primary-nameservers-file")
+    flags_completion+=("__hcloud_handle_filename_extension_flag json")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--primary-nameservers-file=")
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_change-ttl()
+{
+    last_command="hcloud_zone_change-ttl"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--ttl=")
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_create()
+{
+    last_command="hcloud_zone_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--enable-protection=")
+    two_word_flags+=("--enable-protection")
+    flags_with_completion+=("--enable-protection")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--label=")
+    two_word_flags+=("--label")
+    flags+=("--mode=")
+    two_word_flags+=("--mode")
+    flags_with_completion+=("--mode")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--primary-nameservers-file=")
+    two_word_flags+=("--primary-nameservers-file")
+    flags_with_completion+=("--primary-nameservers-file")
+    flags_completion+=("__hcloud_handle_filename_extension_flag json")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--zonefile=")
+    two_word_flags+=("--zonefile")
+    flags_with_completion+=("--zonefile")
+    flags_completion+=("_filedir")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_hcloud_zone_delete()
+{
+    last_command="hcloud_zone_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_describe()
+{
+    last_command="hcloud_zone_describe"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_disable-protection()
+{
+    last_command="hcloud_zone_disable-protection"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_enable-protection()
+{
+    last_command="hcloud_zone_enable-protection"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_export-zonefile()
+{
+    last_command="hcloud_zone_export-zonefile"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_import-zonefile()
+{
+    last_command="hcloud_zone_import-zonefile"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--zonefile=")
+    two_word_flags+=("--zonefile")
+    flags_with_completion+=("--zonefile")
+    flags_completion+=("_filedir")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--zonefile=")
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_list()
+{
+    last_command="hcloud_zone_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--mode=")
+    two_word_flags+=("--mode")
+    flags_with_completion+=("--mode")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    flags+=("--sort=")
+    two_word_flags+=("--sort")
+    two_word_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_hcloud_zone_remove-label()
+{
+    last_command="hcloud_zone_remove-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    flags+=("-a")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_remove-records()
+{
+    last_command="hcloud_zone_remove-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_add-label()
+{
+    last_command="hcloud_zone_rrset_add-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--overwrite")
+    flags+=("-o")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_add-records()
+{
+    last_command="hcloud_zone_rrset_add-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_change-ttl()
+{
+    last_command="hcloud_zone_rrset_change-ttl"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--unset")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_create()
+{
+    last_command="hcloud_zone_rrset_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--label=")
+    two_word_flags+=("--label")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--ttl=")
+    two_word_flags+=("--ttl")
+    flags+=("--type=")
+    two_word_flags+=("--type")
+    flags_with_completion+=("--type")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("--type=")
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_delete()
+{
+    last_command="hcloud_zone_rrset_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_describe()
+{
+    last_command="hcloud_zone_rrset_describe"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_disable-protection()
+{
+    last_command="hcloud_zone_rrset_disable-protection"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_enable-protection()
+{
+    last_command="hcloud_zone_rrset_enable-protection"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_list()
+{
+    last_command="hcloud_zone_rrset_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags_with_completion+=("--output")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    two_word_flags+=("-o")
+    flags_with_completion+=("-o")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--selector=")
+    two_word_flags+=("--selector")
+    two_word_flags+=("-l")
+    flags+=("--sort=")
+    two_word_flags+=("--sort")
+    two_word_flags+=("-s")
+    flags+=("--type=")
+    two_word_flags+=("--type")
+    flags_with_completion+=("--type")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_remove-label()
+{
+    last_command="hcloud_zone_rrset_remove-label"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    flags+=("-a")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_remove-records()
+{
+    last_command="hcloud_zone_rrset_remove-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset_set-records()
+{
+    last_command="hcloud_zone_rrset_set-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone_rrset()
+{
+    last_command="hcloud_zone_rrset"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add-label")
+    commands+=("add-records")
+    commands+=("change-ttl")
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("disable-protection")
+    commands+=("enable-protection")
+    commands+=("list")
+    commands+=("remove-label")
+    commands+=("remove-records")
+    commands+=("set-records")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_hcloud_zone_set-records()
+{
+    last_command="hcloud_zone_set-records"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--record=")
+    two_word_flags+=("--record")
+    flags+=("--records-file=")
+    two_word_flags+=("--records-file")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_hcloud_zone()
+{
+    last_command="hcloud_zone"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add-label")
+    commands+=("add-records")
+    commands+=("change-primary-nameservers")
+    commands+=("change-ttl")
+    commands+=("create")
+    commands+=("delete")
+    commands+=("describe")
+    commands+=("disable-protection")
+    commands+=("enable-protection")
+    commands+=("export-zonefile")
+    commands+=("import-zonefile")
+    commands+=("list")
+    commands+=("remove-label")
+    commands+=("remove-records")
+    commands+=("rrset")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("record")
+        aliashash["record"]="rrset"
+        command_aliases+=("records")
+        aliashash["records"]="rrset"
+    fi
+    commands+=("set-records")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--context=")
+    two_word_flags+=("--context")
+    flags_with_completion+=("--context")
+    flags_completion+=("__hcloud_handle_go_custom_completion")
+    flags+=("--debug")
+    flags+=("--debug-file=")
+    two_word_flags+=("--debug-file")
+    flags+=("--endpoint=")
+    two_word_flags+=("--endpoint")
+    flags+=("--no-experimental-warnings")
+    flags+=("--poll-interval=")
+    two_word_flags+=("--poll-interval")
+    flags+=("--quiet")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _hcloud_root_command()
 {
     last_command="hcloud"
@@ -8724,6 +9965,13 @@ _hcloud_root_command()
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("volumes")
         aliashash["volumes"]="volume"
+    fi
+    commands+=("zone")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("dns")
+        aliashash["dns"]="zone"
+        command_aliases+=("zones")
+        aliashash["zones"]="zone"
     fi
 
     flags=()
