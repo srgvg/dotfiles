@@ -99,7 +99,9 @@ assign		[window_role="irc"]										$ws_chat
 assign		[instance="IRCWINDOW"]									$ws_chat
 
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
+assign		[app_id="org.signal.Signal" shell="xdg_shell"]	$ws_chat
 for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
+for_window  [app_id="org.signal.Signal" shell="xdg_shell"]	layout tabbed
 assign      [app_id="com.rtosta.zapzap" shell="xdg_shell"]     $ws_chat
 for_window  [app_id="com.rtosta.zapzap" shell="xdg_shell"]     layout tabbed
 

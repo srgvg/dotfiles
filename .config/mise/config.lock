@@ -7,13 +7,13 @@ version = "3.1.9"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.31.23"
+version = "2.31.27"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli.platforms.linux-x64]
-checksum = "blake3:8cee81c2e5009ae54d0c3d8bf50d430fca909041d6dce558b5aa866e48b844f4"
-size = 62284701
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.23.zip"
+checksum = "blake3:adf95c8b0939a3b3d1264c741540bd5ccd66ec6b39569b44070873d4571e7fa8"
+size = 62199575
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.27.zip"
 
 [[tools.azure-cli]]
 version = "2.78.0"
@@ -47,27 +47,40 @@ version = "2.37.1"
 backend = "aqua:direnv/direnv"
 
 [[tools.docker-compose]]
-version = "2.40.2"
+version = "2.40.3"
 backend = "ubi:docker/compose"
+
+[tools.docker-compose.platforms.linux-x64-docker-compose]
+checksum = "blake3:c0e11d2dd5b4880f3792ae1ff2670431d2478ed8e8f12a5fedd3215977affc1d"
 
 [[tools.doctl]]
 version = "1.146.0"
 backend = "aqua:digitalocean/doctl"
 
 [[tools.eksctl]]
-version = "0.215.0"
+version = "0.216.0"
 backend = "aqua:eksctl-io/eksctl"
 
+[tools.eksctl.platforms.linux-x64]
+checksum = "sha256:999ff5f14b820adf0af5845e720a2aeae34d8c262e28d1e5dec7c919680da297"
+size = 37166849
+url = "https://github.com/eksctl-io/eksctl/releases/download/v0.216.0/eksctl_Linux_amd64.tar.gz"
+
 [[tools.flux2]]
-version = "2.7.2"
+version = "2.7.3"
 backend = "aqua:fluxcd/flux2"
+
+[tools.flux2.platforms.linux-x64]
+checksum = "sha256:8882b5d1f37815a99ae92deb045ea052529c627a2ddbda59382cdfa075511132"
+size = 24257703
+url = "https://github.com/fluxcd/flux2/releases/download/v2.7.3/flux_2.7.3_linux_amd64.tar.gz"
 
 [[tools.forward-email]]
 version = "0.1.0"
 backend = "ubi:ginsys/forward-email"
 
 [[tools.gcloud]]
-version = "544.0.0"
+version = "545.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
@@ -75,8 +88,15 @@ version = "2.82.1"
 backend = "aqua:cli/cli"
 
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.74.0"
+version = "1.75.0"
 backend = "gitlab:gitlab-org/cli"
+
+[tools."gitlab:gitlab-org/cli".platforms.linux-x64]
+checksum = "blake3:0ae32e058f4bd4d403bd5df13626b5d172b8160fa80917a8e15b74b78f5ea278"
+name = "glab_1.75.0_linux_amd64.tar.gz"
+size = 16687747
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.75.0/downloads/glab_1.75.0_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E75%2E0/glab_1%2E75%2E0_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.3"
@@ -188,12 +208,22 @@ version = "3.11.8"
 backend = "aqua:FairwindsOps/nova"
 
 [[tools.pluto]]
-version = "5.22.5"
+version = "5.22.6"
 backend = "aqua:FairwindsOps/pluto"
 
+[tools.pluto.platforms.linux-x64]
+checksum = "sha256:62a7f92aac9ede14e81d73a2a0c25fcd0fb05982efe2e6bb880d55e90907db10"
+size = 14555004
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.22.6/pluto_5.22.6_linux_amd64.tar.gz"
+
 [[tools.pnpm]]
-version = "10.19.0"
+version = "10.20.0"
 backend = "aqua:pnpm/pnpm"
+
+[tools.pnpm.platforms.linux-x64]
+checksum = "sha256:d25defac8655080add042decfa94b5c3b28cafbb048edd4de6dc2c41f9220418"
+size = 65892053
+url = "https://github.com/pnpm/pnpm/releases/download/v10.20.0/pnpm-linux-x64"
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -220,7 +250,7 @@ version = "15.1.0"
 backend = "ubi:BurntSushi/ripgrep"
 
 [[tools.rust]]
-version = "1.90.0"
+version = "1.91.0"
 backend = "core:rust"
 
 [[tools.satty]]
@@ -243,13 +273,27 @@ backend = "aqua:starship/starship"
 version = "1.33.0"
 backend = "aqua:stern/stern"
 
+[[tools.talhelper]]
+version = "3.0.38"
+backend = "aqua:budimanjojo/talhelper"
+
+[tools.talhelper.platforms.linux-x64]
+checksum = "sha256:4e7403dbcf9ad572eefd916ead7f567e4429c6a1bb2d189cb299ca80125d1c2b"
+size = 16406504
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.0.38/talhelper_linux_amd64.tar.gz"
+
 [[tools.talosctl]]
 version = "1.11.3"
 backend = "ubi:siderolabs/talos[exe=talosctl]"
 
 [[tools.ubi]]
-version = "0.8.2"
+version = "0.8.4"
 backend = "aqua:houseabsolute/ubi"
+
+[tools.ubi.platforms.linux-x64]
+checksum = "sha256:db53ab41ada9f877bc3313e9c06b44c8ea116805002c6e0f892e6ddb506caa26"
+size = 4134887
+url = "https://github.com/houseabsolute/ubi/releases/download/v0.8.4/ubi-Linux-musl-x86_64.tar.gz"
 
 [[tools."ubi:BeryJu/korb"]]
 version = "2.3.4"
@@ -291,12 +335,18 @@ backend = "ubi:cilium/hubble[exe=hubble]"
 checksum = "blake3:bdc511e88e10429c47f0512d7a64ab39152053439090d89604a6a75e01333e6d"
 
 [[tools."ubi:civo/cli"]]
-version = "1.4.3"
+version = "1.4.4"
 backend = "ubi:civo/cli[exe=civo]"
 
+[tools."ubi:civo/cli".platforms.linux-x64-civo-civo]
+checksum = "blake3:c032995d0dfabad6e92a573865064bf14e71cf030edd7482fdd3aa494fbe639b"
+
 [[tools."ubi:controlplaneio-fluxcd/flux-operator"]]
-version = "0.32.0"
+version = "0.33.0"
 backend = "ubi:controlplaneio-fluxcd/flux-operator[exe=flux-operator]"
+
+[tools."ubi:controlplaneio-fluxcd/flux-operator".platforms.linux-x64-flux-operator-flux-operator]
+checksum = "blake3:e8096fb8123d88bb68421b93d33f353b280b4dc29905cc951a2a934570bc0837"
 
 [[tools."ubi:direnv/direnv"]]
 version = "2.37.1"
@@ -311,8 +361,11 @@ version = "0.20.6"
 backend = "ubi:google/go-containerregistry[exe=crane]"
 
 [[tools."ubi:google/osv-scanner"]]
-version = "2.2.3"
+version = "2.2.4"
 backend = "ubi:google/osv-scanner"
+
+[tools."ubi:google/osv-scanner".platforms.linux-x64-osv-scanner]
+checksum = "blake3:f4a0c0694a4c11f45e557ec9070d7e9242f7fef3285377eca8b75aecc5a7ab8c"
 
 [[tools."ubi:grampelberg/kty"]]
 version = "0.3.1"
@@ -351,8 +404,11 @@ version = "2.2.2"
 backend = "ubi:mirceanton/talswitcher[exe=talswitcher]"
 
 [[tools."ubi:mongodb/kingfisher"]]
-version = "1.60.0"
+version = "1.61.0"
 backend = "ubi:mongodb/kingfisher"
+
+[tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
+checksum = "blake3:5246c3424d475627547fd175bdd44821e8224ad2ccc9859e0d0817f7910ad44b"
 
 [[tools."ubi:nats-io/nats-server"]]
 version = "2.12.1"
@@ -407,17 +463,22 @@ version = "1.4.0"
 backend = "ubi:yorukot/superfile[exe=spf]"
 
 [[tools.usage]]
-version = "2.5.1"
+version = "2.5.2"
 backend = "aqua:jdx/usage"
 
 [tools.usage.platforms.linux-x64]
-checksum = "sha256:6b78bc816d34315fbfd39c83e99d434b2d6935899ddea6edaca5f07272e08ea4"
-size = 2781639
-url = "https://github.com/jdx/usage/releases/download/v2.5.1/usage-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:27354a54df835ec7de4d8f973e7f759e0c7546bf5e0acbc8dfd797bf8d4f2907"
+size = 2775735
+url = "https://github.com/jdx/usage/releases/download/v2.5.2/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
-version = "0.9.5"
+version = "0.9.7"
 backend = "aqua:astral-sh/uv"
+
+[tools.uv.platforms.linux-x64]
+checksum = "sha256:611d1e4d340c6b78519891d37d512c184f58b5424aebecdbd983585ff659ff16"
+size = 21645895
+url = "https://github.com/astral-sh/uv/releases/download/0.9.7/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.vcluster]]
 version = "0.30.0"
