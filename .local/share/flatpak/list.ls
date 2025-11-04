@@ -4,7 +4,7 @@ com.github.tchx84.Flatseal	2.4.0	flathub	system
 com.google.Chrome	141.0.7390.122-1	flathub	system
 com.mattermost.Desktop	5.13.2	flathub	system
 com.nextcloud.desktopclient.nextcloud	4.0.1	flathub	system
-com.rtosta.zapzap	6.2.1	flathub	system
+com.rtosta.zapzap	6.2.2	flathub	system
 com.saivert.pwvucontrol	0.5.1	flathub	system
 com.slack.Slack	4.46.99	flathub	system
 com.spotify.Client	1.2.63.394.g126b0d89	flathub	system

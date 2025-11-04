@@ -16,7 +16,7 @@ size = 62199575
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.27.zip"
 
 [[tools.azure-cli]]
-version = "2.78.0"
+version = "2.79.0"
 backend = "asdf:azure-cli"
 
 [[tools.cilium-cli]]
@@ -164,8 +164,11 @@ version = "4.9.0"
 backend = "aqua:kubernetes-sigs/kubebuilder"
 
 [[tools.kubecolor]]
-version = "0.5.2"
+version = "0.5.3"
 backend = "ubi:kubecolor/kubecolor"
+
+[tools.kubecolor.platforms.linux-x64-kubecolor]
+checksum = "blake3:59e757a2bc399b1f968beb725643f47e518f124dac6815de584df3a2940d35ec"
 
 [[tools.kubeconform]]
 version = "0.7.0"
@@ -204,8 +207,13 @@ version = "0.11.1"
 backend = "aqua:neovim/neovim"
 
 [[tools.nova]]
-version = "3.11.8"
+version = "3.11.9"
 backend = "aqua:FairwindsOps/nova"
+
+[tools.nova.platforms.linux-x64]
+checksum = "sha256:a1c272030e7dbc6dd7921b02faa1d90665ac52e26a4c350de1aec083190f8b95"
+size = 10893886
+url = "https://github.com/FairwindsOps/nova/releases/download/v3.11.9/nova_3.11.9_linux_amd64.tar.gz"
 
 [[tools.pluto]]
 version = "5.22.6"
@@ -228,6 +236,10 @@ url = "https://github.com/pnpm/pnpm/releases/download/v10.20.0/pnpm-linux-x64"
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
+
+[[tools.python]]
+version = "3.13.9"
+backend = "core:python"
 
 [[tools.rbac-lookup]]
 version = "0.10.3"
@@ -376,16 +388,22 @@ version = "1.10.2"
 backend = "ubi:homeport/dyff[exe=dyff]"
 
 [[tools."ubi:jonas-grgt/ktea"]]
-version = "0.6.0"
+version = "0.6.1"
 backend = "ubi:jonas-grgt/ktea"
+
+[tools."ubi:jonas-grgt/ktea".platforms.linux-x64-ktea]
+checksum = "blake3:89b5fc245ff53239fcc0381ca1e004ab96dcb5d40b0f2b32bb2413f031b70fd4"
 
 [[tools."ubi:josephburnett/jd"]]
 version = "2.3.0"
 backend = "ubi:josephburnett/jd[exe=jd]"
 
 [[tools."ubi:ksdme/ut"]]
-version = "0.4.0"
+version = "0.5.0"
 backend = "ubi:ksdme/ut"
+
+[tools."ubi:ksdme/ut".platforms.linux-x64-ut]
+checksum = "blake3:2ae11444915f7af9223420d09e55bb6d0ffa2021183a8bda351265b5ccbd1397"
 
 [[tools."ubi:kubeshark/kubeshark"]]
 version = "52.9.0"
@@ -463,13 +481,13 @@ version = "1.4.0"
 backend = "ubi:yorukot/superfile[exe=spf]"
 
 [[tools.usage]]
-version = "2.5.2"
+version = "2.6.0"
 backend = "aqua:jdx/usage"
 
 [tools.usage.platforms.linux-x64]
-checksum = "sha256:27354a54df835ec7de4d8f973e7f759e0c7546bf5e0acbc8dfd797bf8d4f2907"
-size = 2775735
-url = "https://github.com/jdx/usage/releases/download/v2.5.2/usage-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:a776b5999b3d190a26bf9e2e3ceaefc2601289f522367f31d6e264657a6b6249"
+size = 2801366
+url = "https://github.com/jdx/usage/releases/download/v2.6.0/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
 version = "0.9.7"
