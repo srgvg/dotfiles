@@ -179,8 +179,13 @@ version = "1.34.1"
 backend = "aqua:kubernetes/kubectl"
 
 [[tools.kubent]]
-version = "0.7.1"
+version = "0.7.3"
 backend = "asdf:kubent"
+
+[tools.kubent.platforms.linux-x64]
+checksum = "blake3:179a6820ef614fed62fca99a89a992eef521dc330d075129d536de35f855e630"
+size = 13885177
+url = "https://github.com/doitintl/kube-no-trouble/releases/download/0.7.3/kubent-0.7.3-linux-amd64.tar.gz"
 
 [[tools.kubeseal]]
 version = "0.32.2"
@@ -223,6 +228,9 @@ backend = "aqua:FairwindsOps/pluto"
 checksum = "sha256:62a7f92aac9ede14e81d73a2a0c25fcd0fb05982efe2e6bb880d55e90907db10"
 size = 14555004
 url = "https://github.com/FairwindsOps/pluto/releases/download/v5.22.6/pluto_5.22.6_linux_amd64.tar.gz"
+
+[tools.pluto.platforms.linux-x64-pluto]
+checksum = "blake3:284bb72911d4742e82f17675e612d25bafc7476e315a492609e68b99f19abea5"
 
 [[tools.pnpm]]
 version = "10.20.0"
@@ -306,6 +314,9 @@ backend = "aqua:houseabsolute/ubi"
 checksum = "sha256:db53ab41ada9f877bc3313e9c06b44c8ea116805002c6e0f892e6ddb506caa26"
 size = 4134887
 url = "https://github.com/houseabsolute/ubi/releases/download/v0.8.4/ubi-Linux-musl-x86_64.tar.gz"
+
+[tools.ubi.platforms.linux-x64-ubi]
+checksum = "blake3:625848d30604c95c008335b90a91770f5a855edf488fdf81f065a30914543d3f"
 
 [[tools."ubi:BeryJu/korb"]]
 version = "2.3.4"
