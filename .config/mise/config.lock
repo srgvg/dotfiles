@@ -1,19 +1,33 @@
+[[tools.age]]
+version = "1.2.1"
+backend = "aqua:FiloSottile/age"
+
+[tools.age.platforms.linux-x64]
+checksum = "blake3:8441277927f75428a6d22897a5cc05e8cdc03562d7a203b2bb9a7c6cd1d0c3bd"
+size = 5194720
+url = "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-linux-amd64.tar.gz"
+
 [[tools."aqua:Azure/kubelogin"]]
 version = "0.2.12"
 backend = "aqua:Azure/kubelogin"
 
 [[tools.argocd]]
-version = "3.1.9"
+version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
+[tools.argocd.platforms.linux-x64]
+checksum = "sha256:b76ec97bedc59d1e1a0913d4fe3894d2f2a6f765e0cc1cabf362141636002051"
+size = 213481175
+url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.0/argocd-linux-amd64"
+
 [[tools.awscli]]
-version = "2.31.27"
+version = "2.31.29"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli.platforms.linux-x64]
-checksum = "blake3:adf95c8b0939a3b3d1264c741540bd5ccd66ec6b39569b44070873d4571e7fa8"
-size = 62199575
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.27.zip"
+checksum = "blake3:07d2dd6ea07a015639225fcd4df6416df62d4e8c9a44b011c814bef37de1c52f"
+size = 62204729
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.29.zip"
 
 [[tools.azure-cli]]
 version = "2.79.0"
@@ -31,8 +45,13 @@ backend = "ubi:cilium/hubble"
 checksum = "blake3:bdc511e88e10429c47f0512d7a64ab39152053439090d89604a6a75e01333e6d"
 
 [[tools.clusterctl]]
-version = "1.11.2"
+version = "1.11.3"
 backend = "aqua:kubernetes-sigs/cluster-api"
+
+[tools.clusterctl.platforms.linux-x64]
+checksum = "sha256:d65ec7a42c36e863847103d48216c3dad248b82c447a27b3b2325a61e26ead9a"
+size = 69533149
+url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.11.3/clusterctl-linux-amd64"
 
 [[tools.cmctl]]
 version = "2.3.0"
@@ -80,23 +99,28 @@ version = "0.1.0"
 backend = "ubi:ginsys/forward-email"
 
 [[tools.gcloud]]
-version = "545.0.0"
+version = "546.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
-version = "2.82.1"
+version = "2.83.0"
 backend = "aqua:cli/cli"
 
+[tools.github-cli.platforms.linux-x64]
+checksum = "sha256:a5cf6cdb40fc67751adf561126b3314044779cea81ba4f254fbe8e9a69f1676f"
+size = 18175244
+url = "https://github.com/cli/cli/releases/download/v2.83.0/gh_2.83.0_linux_amd64.tar.gz"
+
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.75.0"
+version = "1.76.1"
 backend = "gitlab:gitlab-org/cli"
 
 [tools."gitlab:gitlab-org/cli".platforms.linux-x64]
-checksum = "blake3:0ae32e058f4bd4d403bd5df13626b5d172b8160fa80917a8e15b74b78f5ea278"
-name = "glab_1.75.0_linux_amd64.tar.gz"
-size = 16687747
-url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.75.0/downloads/glab_1.75.0_linux_amd64.tar.gz"
-url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E75%2E0/glab_1%2E75%2E0_linux_amd64%2Etar%2Egz"
+checksum = "blake3:128041676f4474ae26e16ed2bdbb1e14b456a898baf5b2da0a4915cda6c8ef40"
+name = "glab_1.76.1_linux_amd64.tar.gz"
+size = 16688620
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.76.1/downloads/glab_1.76.1_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E76%2E1/glab_1%2E76%2E1_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.3"
@@ -285,13 +309,27 @@ backend = "aqua:scaleway/scaleway-cli"
 version = "2.7.1"
 backend = "ubi:slsa-framework/slsa-verifier"
 
+[[tools.sops]]
+version = "3.11.0"
+backend = "aqua:getsops/sops"
+
+[tools.sops.platforms.linux-x64]
+checksum = "sha256:775f1384d55decfad228e7196a3f683791914f92a473f78fc47700531c29dfef"
+size = 46346424
+url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64"
+
 [[tools.starship]]
 version = "1.23.0"
 backend = "aqua:starship/starship"
 
 [[tools.stern]]
-version = "1.33.0"
+version = "1.33.1"
 backend = "aqua:stern/stern"
+
+[tools.stern.platforms.linux-x64]
+checksum = "sha256:185be29c6a22bd07c0791ec697900943c0cc27292e5a5640a07a543886f1bfc9"
+size = 14481386
+url = "https://github.com/stern/stern/releases/download/v1.33.1/stern_1.33.1_linux_amd64.tar.gz"
 
 [[tools.talhelper]]
 version = "3.0.38"
@@ -335,8 +373,11 @@ version = "39.1.0"
 backend = "ubi:antonmedv/fx[exe=fx]"
 
 [[tools."ubi:apple/pkl"]]
-version = "0.29.1"
+version = "0.30.0"
 backend = "ubi:apple/pkl[exe=pkl]"
+
+[tools."ubi:apple/pkl".platforms.linux-x64-pkl-pkl]
+checksum = "blake3:310eac92e1a968420001a9622bfc663d11023c47d4df9692947b8a8a7091f58c"
 
 [[tools."ubi:aristocratos/btop"]]
 version = "1.4.5"

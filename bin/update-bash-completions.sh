@@ -49,6 +49,7 @@ completion_bash_commands=(
     regctl
     regsync
     regbot
+    sops
     talosctl
     talhelper
     yq
