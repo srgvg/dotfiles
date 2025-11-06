@@ -123,8 +123,13 @@ url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.76.1/downloads/glab_1.76.
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E76%2E1/glab_1%2E76%2E1_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
-version = "1.25.3"
+version = "1.25.4"
 backend = "core:go"
+
+[tools.go.platforms.linux-x64]
+checksum = "sha256:9fa5ffeda4170de60f67f3aa0f824e426421ba724c21e133c1e35d6159ca1bec"
+size = 59766394
+url = "https://dl.google.com/go/go1.25.4.linux-amd64.tar.gz"
 
 [[tools.hcloud]]
 version = "1.55.0"

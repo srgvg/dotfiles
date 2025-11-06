@@ -2,9 +2,6 @@
 ## PATH #
 #
 
-export GOPATH=$HOME/src/go
-
-pathmunge ${GOPATH}/bin         after
 pathmunge $HOME/.local/bin      after
 pathmunge $HOME/.cargo/bin      after
 pathmunge $HOME/.krew/bin       after
