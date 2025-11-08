@@ -21,13 +21,13 @@ size = 213481175
 url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.0/argocd-linux-amd64"
 
 [[tools.awscli]]
-version = "2.31.29"
+version = "2.31.32"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli.platforms.linux-x64]
-checksum = "blake3:07d2dd6ea07a015639225fcd4df6416df62d4e8c9a44b011c814bef37de1c52f"
-size = 62204729
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.29.zip"
+checksum = "blake3:8f623ff9f1e286fde29a5b30e09662d1574cc2a75c3c095acc21b58ad8b4ac3b"
+size = 62327284
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.32.zip"
 
 [[tools.azure-cli]]
 version = "2.79.0"
@@ -73,8 +73,11 @@ backend = "ubi:docker/compose"
 checksum = "blake3:c0e11d2dd5b4880f3792ae1ff2670431d2478ed8e8f12a5fedd3215977affc1d"
 
 [[tools.doctl]]
-version = "1.146.0"
+version = "1.147.0"
 backend = "aqua:digitalocean/doctl"
+
+[tools.doctl.platforms.linux-x64-doctl]
+checksum = "blake3:de76fef32d57f20d7931791dce9daff8bb6b4f7b5991b838f1046cfa6c19ae64"
 
 [[tools.eksctl]]
 version = "0.216.0"
@@ -112,15 +115,15 @@ size = 18175244
 url = "https://github.com/cli/cli/releases/download/v2.83.0/gh_2.83.0_linux_amd64.tar.gz"
 
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.76.1"
+version = "1.76.2"
 backend = "gitlab:gitlab-org/cli"
 
 [tools."gitlab:gitlab-org/cli".platforms.linux-x64]
-checksum = "blake3:128041676f4474ae26e16ed2bdbb1e14b456a898baf5b2da0a4915cda6c8ef40"
-name = "glab_1.76.1_linux_amd64.tar.gz"
-size = 16688620
-url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.76.1/downloads/glab_1.76.1_linux_amd64.tar.gz"
-url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E76%2E1/glab_1%2E76%2E1_linux_amd64%2Etar%2Egz"
+checksum = "blake3:fb497d2d541bc95ce94f823a5256f61968d3ce4a0bb2f78d137d27928f9925e2"
+name = "glab_1.76.2_linux_amd64.tar.gz"
+size = 16689389
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.76.2/downloads/glab_1.76.2_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E76%2E2/glab_1%2E76%2E2_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.4"
@@ -217,8 +220,13 @@ size = 13885177
 url = "https://github.com/doitintl/kube-no-trouble/releases/download/0.7.3/kubent-0.7.3-linux-amd64.tar.gz"
 
 [[tools.kubeseal]]
-version = "0.32.2"
+version = "0.33.1"
 backend = "asdf:kubeseal"
+
+[tools.kubeseal.platforms.linux-x64]
+checksum = "sha256:74b1f8fa1bc92fdf65fad34d5fbb72d6a2a2c954db9cec711704e2ebcba0a1af"
+size = 23740650
+url = "https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.33.1/kubeseal-0.33.1-linux-amd64.tar.gz"
 
 [[tools.kubesec]]
 version = "2.14.2"
@@ -337,17 +345,20 @@ size = 14481386
 url = "https://github.com/stern/stern/releases/download/v1.33.1/stern_1.33.1_linux_amd64.tar.gz"
 
 [[tools.talhelper]]
-version = "3.0.38"
+version = "3.0.39"
 backend = "aqua:budimanjojo/talhelper"
 
 [tools.talhelper.platforms.linux-x64]
-checksum = "sha256:4e7403dbcf9ad572eefd916ead7f567e4429c6a1bb2d189cb299ca80125d1c2b"
-size = 16406504
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.0.38/talhelper_linux_amd64.tar.gz"
+checksum = "sha256:48e5a17a2a057a60d863662a64ebeaccaa65ce7b17df03b58ac509766e962f35"
+size = 16710953
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.0.39/talhelper_linux_amd64.tar.gz"
 
 [[tools.talosctl]]
-version = "1.11.3"
+version = "1.11.5"
 backend = "ubi:siderolabs/talos[exe=talosctl]"
+
+[tools.talosctl.platforms.linux-x64-talosctl-talosctl]
+checksum = "blake3:1027878b8289dd7765fc9a1b7f98216f8f44b48fd6d4bfa346202117e723879a"
 
 [[tools.ubi]]
 version = "0.8.4"
@@ -518,8 +529,11 @@ version = "25.5.31"
 backend = "ubi:sxyazi/yazi[exe=yazi]"
 
 [[tools."ubi:updatecli/updatecli"]]
-version = "0.109.0"
+version = "0.110.0"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
+
+[tools."ubi:updatecli/updatecli".platforms.linux-x64-updatecli-updatecli]
+checksum = "blake3:bcd387febecc9395288d9a1c3e86ae1028d68c26bef60906455a38aa718d8e73"
 
 [[tools."ubi:versity/versitygw"]]
 version = "1.0.18"
@@ -547,13 +561,13 @@ size = 2801366
 url = "https://github.com/jdx/usage/releases/download/v2.6.0/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
-version = "0.9.7"
+version = "0.9.8"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv.platforms.linux-x64]
-checksum = "sha256:611d1e4d340c6b78519891d37d512c184f58b5424aebecdbd983585ff659ff16"
-size = 21645895
-url = "https://github.com/astral-sh/uv/releases/download/0.9.7/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:7763091b882874ae80d162ff77284032ce83174da68c3a759988c81e677e1286"
+size = 21566033
+url = "https://github.com/astral-sh/uv/releases/download/0.9.8/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.vcluster]]
 version = "0.30.0"
@@ -565,8 +579,13 @@ size = 95604920
 url = "https://github.com/loft-sh/vcluster/releases/download/v0.30.0/vcluster-linux-amd64"
 
 [[tools.velero]]
-version = "1.17.0"
+version = "1.17.1"
 backend = "aqua:vmware-tanzu/velero"
+
+[tools.velero.platforms.linux-x64]
+checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8"
+size = 58504413
+url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"
 
 [[tools.yamlfmt]]
 version = "0.20.0"

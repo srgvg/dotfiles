@@ -13,41 +13,73 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-
 inputfile=${1:-}
-compress=${2:-ebook}
+action=${2:-200k}
 
-if [ -d "${inputfile}" ]
-then
-	echo Bad input file "${inputfile}" >&2
+if [ ! -r "${inputfile}" ]; then
+	echo "Something is wrong with input file '${inputfile}'" >&2
 	exit 1
 fi
 
-if [ "${compress}" = "prepress" ]
-then
-	dpi=300
-elif [ "${compress}" = "ebook" ]
-then
-	dpi=150
-elif [ "${compress}" = "screen" ]
-then
-	dpi=72
-else
-	echo Wrong compression "${compress}" >&2
-	exit 2
-fi
+case "${action}" in
+	dpi* )
+		# Backward-compatible behavior renamed to dpiXXX
+		case "${action}" in
+			dpi300) compress="prepress"; dpi=300 ;;
+			dpi150) compress="ebook";   dpi=150 ;;
+			dpi72)  compress="screen";  dpi=72 ;;
+			*) echo "Unknown dpi mode '${action}'" >&2; exit 2 ;;
+		esac
 
-outputfile="${inputfile%.*}_${dpi}dpi.pdf"
+		outputfile="${inputfile%.*}_${dpi}dpi.pdf"
+		echo "Compressing '${inputfile}' to ${compress} / ${dpi} dpi"
 
-echo Compressing "${inputfile}" to ${compress} / ${dpi} dpi:
+		gs \
+			-sDEVICE=pdfwrite \
+			-dCompatibilityLevel=1.4 \
+			-dPDFSETTINGS=/${compress} \
+			-dNOPAUSE -dQUIET -dBATCH \
+			-sOutputFile="${outputfile}" \
+			"${inputfile}"
 
-gs \
-	-sDEVICE=pdfwrite \
-	-dCompatibilityLevel=1.4 \
-	-dPDFSETTINGS=/${compress} \
-	-dNOPAUSE \
-	-dQUIET \
-	-dBATCH \
-	-sOutputFile="${outputfile}" \
-	"${inputfile}"
-echo "${outputfile}"
+		echo "${outputfile}"
+		;;
+
+	200k )
+		# New auto-compress mode targeting ≤200 KB
+		tmp=$(mktemp /tmp/pdfcompress.XXXXXX.pdf)
+		outputfile="${inputfile%.*}_200k.pdf"
+
+		for quality in printer ebook screen; do
+			gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+			   -dPDFSETTINGS=/$quality \
+			   -dNOPAUSE -dQUIET -dBATCH \
+			   -sOutputFile="$tmp" "$inputfile"
+
+			size=$(stat -c%s "$tmp")
+			if (( size <= 200000 )); then
+				mv "$tmp" "$outputfile"
+				echo "Compressed to $((size/1024)) KB using $quality → $outputfile"
+				exit 0
+			fi
+		done
+
+		# Aggressive fallback
+		gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+		   -dPDFSETTINGS=/screen \
+		   -dDownsampleColorImages=true -dColorImageResolution=72 \
+		   -dNOPAUSE -dQUIET -dBATCH \
+		   -sOutputFile="$outputfile" "$inputfile"
+
+		size=$(stat -c%s "$outputfile")
+		echo "Final size: $((size/1024)) KB → $outputfile"
+		[[ $size -le 200000 ]] || echo "Warning: still above 200 KB."
+		rm -f "$tmp"
+		;;
+
+	* )
+		echo "Unknown action '${action}'. Use dpi72|dpi150|dpi300|200k" >&2
+		exit 3
+		;;
+esac
+
