@@ -2,11 +2,6 @@
 version = "1.2.1"
 backend = "aqua:FiloSottile/age"
 
-[tools.age.platforms.linux-x64]
-checksum = "blake3:8441277927f75428a6d22897a5cc05e8cdc03562d7a203b2bb9a7c6cd1d0c3bd"
-size = 5194720
-url = "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-linux-amd64.tar.gz"
-
 [[tools."aqua:Azure/kubelogin"]]
 version = "0.2.12"
 backend = "aqua:Azure/kubelogin"
@@ -15,19 +10,9 @@ backend = "aqua:Azure/kubelogin"
 version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
-[tools.argocd.platforms.linux-x64]
-checksum = "sha256:b76ec97bedc59d1e1a0913d4fe3894d2f2a6f765e0cc1cabf362141636002051"
-size = 213481175
-url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.0/argocd-linux-amd64"
-
 [[tools.awscli]]
-version = "2.31.32"
+version = "2.31.33"
 backend = "aqua:aws/aws-cli"
-
-[tools.awscli.platforms.linux-x64]
-checksum = "blake3:8f623ff9f1e286fde29a5b30e09662d1574cc2a75c3c095acc21b58ad8b4ac3b"
-size = 62327284
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.32.zip"
 
 [[tools.azure-cli]]
 version = "2.79.0"
@@ -41,17 +26,9 @@ backend = "aqua:cilium/cilium-cli"
 version = "1.18.3"
 backend = "ubi:cilium/hubble"
 
-[tools.cilium-hubble.platforms.linux-x64-hubble]
-checksum = "blake3:bdc511e88e10429c47f0512d7a64ab39152053439090d89604a6a75e01333e6d"
-
 [[tools.clusterctl]]
 version = "1.11.3"
 backend = "aqua:kubernetes-sigs/cluster-api"
-
-[tools.clusterctl.platforms.linux-x64]
-checksum = "sha256:d65ec7a42c36e863847103d48216c3dad248b82c447a27b3b2325a61e26ead9a"
-size = 69533149
-url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.11.3/clusterctl-linux-amd64"
 
 [[tools.cmctl]]
 version = "2.3.0"
@@ -69,87 +46,49 @@ backend = "aqua:direnv/direnv"
 version = "2.40.3"
 backend = "ubi:docker/compose"
 
-[tools.docker-compose.platforms.linux-x64-docker-compose]
-checksum = "blake3:c0e11d2dd5b4880f3792ae1ff2670431d2478ed8e8f12a5fedd3215977affc1d"
-
 [[tools.doctl]]
 version = "1.147.0"
 backend = "aqua:digitalocean/doctl"
-
-[tools.doctl.platforms.linux-x64-doctl]
-checksum = "blake3:de76fef32d57f20d7931791dce9daff8bb6b4f7b5991b838f1046cfa6c19ae64"
 
 [[tools.eksctl]]
 version = "0.216.0"
 backend = "aqua:eksctl-io/eksctl"
 
-[tools.eksctl.platforms.linux-x64]
-checksum = "sha256:999ff5f14b820adf0af5845e720a2aeae34d8c262e28d1e5dec7c919680da297"
-size = 37166849
-url = "https://github.com/eksctl-io/eksctl/releases/download/v0.216.0/eksctl_Linux_amd64.tar.gz"
-
 [[tools.flux2]]
 version = "2.7.3"
 backend = "aqua:fluxcd/flux2"
-
-[tools.flux2.platforms.linux-x64]
-checksum = "sha256:8882b5d1f37815a99ae92deb045ea052529c627a2ddbda59382cdfa075511132"
-size = 24257703
-url = "https://github.com/fluxcd/flux2/releases/download/v2.7.3/flux_2.7.3_linux_amd64.tar.gz"
 
 [[tools.forward-email]]
 version = "0.1.0"
 backend = "ubi:ginsys/forward-email"
 
 [[tools.gcloud]]
-version = "546.0.0"
+version = "547.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
 version = "2.83.0"
 backend = "aqua:cli/cli"
 
-[tools.github-cli.platforms.linux-x64]
-checksum = "sha256:a5cf6cdb40fc67751adf561126b3314044779cea81ba4f254fbe8e9a69f1676f"
-size = 18175244
-url = "https://github.com/cli/cli/releases/download/v2.83.0/gh_2.83.0_linux_amd64.tar.gz"
-
 [[tools."gitlab:gitlab-org/cli"]]
 version = "1.76.2"
 backend = "gitlab:gitlab-org/cli"
-
-[tools."gitlab:gitlab-org/cli".platforms.linux-x64]
-checksum = "blake3:fb497d2d541bc95ce94f823a5256f61968d3ce4a0bb2f78d137d27928f9925e2"
-name = "glab_1.76.2_linux_amd64.tar.gz"
-size = 16689389
-url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.76.2/downloads/glab_1.76.2_linux_amd64.tar.gz"
-url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E76%2E2/glab_1%2E76%2E2_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.4"
 backend = "core:go"
 
-[tools.go.platforms.linux-x64]
-checksum = "sha256:9fa5ffeda4170de60f67f3aa0f824e426421ba724c21e133c1e35d6159ca1bec"
-size = 59766394
-url = "https://dl.google.com/go/go1.25.4.linux-amd64.tar.gz"
-
 [[tools.hcloud]]
-version = "1.55.0"
+version = "1.57.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
-version = "3.19.0"
+version = "3.19.1"
 backend = "aqua:helm/helm"
 
 [[tools.hugo]]
 version = "0.152.2"
 backend = "aqua:gohugoio/hugo"
-
-[tools.hugo.platforms.linux-x64]
-checksum = "sha256:52b6eda6c00f4449d96f0cbfd7300e834c26179c4fe68e0510ef566db52dba04"
-size = 18177513
-url = "https://github.com/gohugoio/hugo/releases/download/v0.152.2/hugo_0.152.2_linux-amd64.tar.gz"
 
 [[tools.hurl]]
 version = "7.0.0"
@@ -199,9 +138,6 @@ backend = "aqua:kubernetes-sigs/kubebuilder"
 version = "0.5.3"
 backend = "ubi:kubecolor/kubecolor"
 
-[tools.kubecolor.platforms.linux-x64-kubecolor]
-checksum = "blake3:59e757a2bc399b1f968beb725643f47e518f124dac6815de584df3a2940d35ec"
-
 [[tools.kubeconform]]
 version = "0.7.0"
 backend = "aqua:yannh/kubeconform"
@@ -211,22 +147,12 @@ version = "1.34.1"
 backend = "aqua:kubernetes/kubectl"
 
 [[tools.kubent]]
-version = "0.7.3"
+version = "0.7.1"
 backend = "asdf:kubent"
-
-[tools.kubent.platforms.linux-x64]
-checksum = "blake3:179a6820ef614fed62fca99a89a992eef521dc330d075129d536de35f855e630"
-size = 13885177
-url = "https://github.com/doitintl/kube-no-trouble/releases/download/0.7.3/kubent-0.7.3-linux-amd64.tar.gz"
 
 [[tools.kubeseal]]
 version = "0.33.1"
 backend = "asdf:kubeseal"
-
-[tools.kubeseal.platforms.linux-x64]
-checksum = "sha256:74b1f8fa1bc92fdf65fad34d5fbb72d6a2a2c954db9cec711704e2ebcba0a1af"
-size = 23740650
-url = "https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.33.1/kubeseal-0.33.1-linux-amd64.tar.gz"
 
 [[tools.kubesec]]
 version = "2.14.2"
@@ -244,11 +170,6 @@ backend = "aqua:sbstp/kubie"
 version = "5.8.0"
 backend = "aqua:kubernetes-sigs/kustomize"
 
-[tools.kustomize.platforms.linux-x64]
-checksum = "sha256:4dfa8307358dd9284aa4d2b1d5596766a65b93433e8fa3f9f74498941f01c5ef"
-size = 5177607
-url = "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v5.8.0/kustomize_v5.8.0_linux_amd64.tar.gz"
-
 [[tools.neovim]]
 version = "0.11.1"
 backend = "aqua:neovim/neovim"
@@ -257,31 +178,13 @@ backend = "aqua:neovim/neovim"
 version = "3.11.9"
 backend = "aqua:FairwindsOps/nova"
 
-[tools.nova.platforms.linux-x64]
-checksum = "sha256:a1c272030e7dbc6dd7921b02faa1d90665ac52e26a4c350de1aec083190f8b95"
-size = 10893886
-url = "https://github.com/FairwindsOps/nova/releases/download/v3.11.9/nova_3.11.9_linux_amd64.tar.gz"
-
 [[tools.pluto]]
 version = "5.22.6"
 backend = "aqua:FairwindsOps/pluto"
 
-[tools.pluto.platforms.linux-x64]
-checksum = "sha256:62a7f92aac9ede14e81d73a2a0c25fcd0fb05982efe2e6bb880d55e90907db10"
-size = 14555004
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.22.6/pluto_5.22.6_linux_amd64.tar.gz"
-
-[tools.pluto.platforms.linux-x64-pluto]
-checksum = "blake3:284bb72911d4742e82f17675e612d25bafc7476e315a492609e68b99f19abea5"
-
 [[tools.pnpm]]
-version = "10.20.0"
+version = "10.21.0"
 backend = "aqua:pnpm/pnpm"
-
-[tools.pnpm.platforms.linux-x64]
-checksum = "sha256:d25defac8655080add042decfa94b5c3b28cafbb048edd4de6dc2c41f9220418"
-size = 65892053
-url = "https://github.com/pnpm/pnpm/releases/download/v10.20.0/pnpm-linux-x64"
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -299,29 +202,20 @@ backend = "aqua:FairwindsOps/rbac-lookup"
 version = "0.10.0"
 backend = "ubi:regclient/regclient"
 
-[tools.regbot.platforms.linux-x64-regbot-regbot-regbot]
-checksum = "blake3:12ef9e9d77ad97481c7c8d22fd37783419b908730ce0e5c26c2343ec744ec442"
-
 [[tools.regctl]]
 version = "0.10.0"
 backend = "ubi:regclient/regclient"
 
-[tools.regctl.platforms.linux-x64-regctl-regctl-regctl]
-checksum = "blake3:4b8a25b8a4d8d4cd3e9600e15109b149791029e63addfc356ca0375fe84a5120"
-
 [[tools.regsync]]
 version = "0.10.0"
 backend = "ubi:regclient/regclient"
-
-[tools.regsync.platforms.linux-x64-regsync-regsync-regsync]
-checksum = "blake3:09051a232a145ce101cdedbfe32c724cfca30712a0be63dbf76c6d347d882a6a"
 
 [[tools.ripgrep]]
 version = "15.1.0"
 backend = "ubi:BurntSushi/ripgrep"
 
 [[tools.rust]]
-version = "1.91.0"
+version = "1.91.1"
 backend = "core:rust"
 
 [[tools.satty]]
@@ -340,11 +234,6 @@ backend = "ubi:slsa-framework/slsa-verifier"
 version = "3.11.0"
 backend = "aqua:getsops/sops"
 
-[tools.sops.platforms.linux-x64]
-checksum = "sha256:775f1384d55decfad228e7196a3f683791914f92a473f78fc47700531c29dfef"
-size = 46346424
-url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64"
-
 [[tools.starship]]
 version = "1.23.0"
 backend = "aqua:starship/starship"
@@ -353,38 +242,17 @@ backend = "aqua:starship/starship"
 version = "1.33.1"
 backend = "aqua:stern/stern"
 
-[tools.stern.platforms.linux-x64]
-checksum = "sha256:185be29c6a22bd07c0791ec697900943c0cc27292e5a5640a07a543886f1bfc9"
-size = 14481386
-url = "https://github.com/stern/stern/releases/download/v1.33.1/stern_1.33.1_linux_amd64.tar.gz"
-
 [[tools.talhelper]]
 version = "3.0.39"
 backend = "aqua:budimanjojo/talhelper"
-
-[tools.talhelper.platforms.linux-x64]
-checksum = "sha256:48e5a17a2a057a60d863662a64ebeaccaa65ce7b17df03b58ac509766e962f35"
-size = 16710953
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.0.39/talhelper_linux_amd64.tar.gz"
 
 [[tools.talosctl]]
 version = "1.11.5"
 backend = "ubi:siderolabs/talos[exe=talosctl]"
 
-[tools.talosctl.platforms.linux-x64-talosctl-talosctl]
-checksum = "blake3:1027878b8289dd7765fc9a1b7f98216f8f44b48fd6d4bfa346202117e723879a"
-
 [[tools.ubi]]
 version = "0.8.4"
 backend = "aqua:houseabsolute/ubi"
-
-[tools.ubi.platforms.linux-x64]
-checksum = "sha256:db53ab41ada9f877bc3313e9c06b44c8ea116805002c6e0f892e6ddb506caa26"
-size = 4134887
-url = "https://github.com/houseabsolute/ubi/releases/download/v0.8.4/ubi-Linux-musl-x86_64.tar.gz"
-
-[tools.ubi.platforms.linux-x64-ubi]
-checksum = "blake3:625848d30604c95c008335b90a91770f5a855edf488fdf81f065a30914543d3f"
 
 [[tools."ubi:BeryJu/korb"]]
 version = "2.3.4"
@@ -406,15 +274,12 @@ backend = "ubi:antonmedv/fx[exe=fx]"
 version = "0.30.0"
 backend = "ubi:apple/pkl[exe=pkl]"
 
-[tools."ubi:apple/pkl".platforms.linux-x64-pkl-pkl]
-checksum = "blake3:310eac92e1a968420001a9622bfc663d11023c47d4df9692947b8a8a7091f58c"
-
 [[tools."ubi:aristocratos/btop"]]
 version = "1.4.5"
 backend = "ubi:aristocratos/btop"
 
 [[tools."ubi:ayoisaiah/f2"]]
-version = "2.2.1"
+version = "2.2.2"
 backend = "ubi:ayoisaiah/f2"
 
 [[tools."ubi:c-bata/kube-prompt"]]
@@ -425,22 +290,13 @@ backend = "ubi:c-bata/kube-prompt[exe=kube-prompt]"
 version = "1.18.3"
 backend = "ubi:cilium/hubble[exe=hubble]"
 
-[tools."ubi:cilium/hubble".platforms.linux-x64-hubble-hubble]
-checksum = "blake3:bdc511e88e10429c47f0512d7a64ab39152053439090d89604a6a75e01333e6d"
-
 [[tools."ubi:civo/cli"]]
 version = "1.4.4"
 backend = "ubi:civo/cli[exe=civo]"
 
-[tools."ubi:civo/cli".platforms.linux-x64-civo-civo]
-checksum = "blake3:c032995d0dfabad6e92a573865064bf14e71cf030edd7482fdd3aa494fbe639b"
-
 [[tools."ubi:controlplaneio-fluxcd/flux-operator"]]
 version = "0.33.0"
 backend = "ubi:controlplaneio-fluxcd/flux-operator[exe=flux-operator]"
-
-[tools."ubi:controlplaneio-fluxcd/flux-operator".platforms.linux-x64-flux-operator-flux-operator]
-checksum = "blake3:e8096fb8123d88bb68421b93d33f353b280b4dc29905cc951a2a934570bc0837"
 
 [[tools."ubi:direnv/direnv"]]
 version = "2.37.1"
@@ -458,9 +314,6 @@ backend = "ubi:google/go-containerregistry[exe=crane]"
 version = "2.2.4"
 backend = "ubi:google/osv-scanner"
 
-[tools."ubi:google/osv-scanner".platforms.linux-x64-osv-scanner]
-checksum = "blake3:f4a0c0694a4c11f45e557ec9070d7e9242f7fef3285377eca8b75aecc5a7ab8c"
-
 [[tools."ubi:grampelberg/kty"]]
 version = "0.3.1"
 backend = "ubi:grampelberg/kty"
@@ -473,9 +326,6 @@ backend = "ubi:homeport/dyff[exe=dyff]"
 version = "0.6.3"
 backend = "ubi:jonas-grgt/ktea"
 
-[tools."ubi:jonas-grgt/ktea".platforms.linux-x64-ktea]
-checksum = "blake3:2e861dd4136430b394f5d21051b91fccd10358abb820dfc0353ad520e8fdae22"
-
 [[tools."ubi:josephburnett/jd"]]
 version = "2.3.0"
 backend = "ubi:josephburnett/jd[exe=jd]"
@@ -483,9 +333,6 @@ backend = "ubi:josephburnett/jd[exe=jd]"
 [[tools."ubi:ksdme/ut"]]
 version = "0.5.0"
 backend = "ubi:ksdme/ut"
-
-[tools."ubi:ksdme/ut".platforms.linux-x64-ut]
-checksum = "blake3:2ae11444915f7af9223420d09e55bb6d0ffa2021183a8bda351265b5ccbd1397"
 
 [[tools."ubi:kubeshark/kubeshark"]]
 version = "52.9.0"
@@ -500,15 +347,12 @@ version = "0.25.1"
 backend = "ubi:macropower/kat"
 
 [[tools."ubi:mirceanton/talswitcher"]]
-version = "2.2.2"
+version = "2.2.4"
 backend = "ubi:mirceanton/talswitcher[exe=talswitcher]"
 
 [[tools."ubi:mongodb/kingfisher"]]
-version = "1.61.0"
+version = "1.63.1"
 backend = "ubi:mongodb/kingfisher"
-
-[tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
-checksum = "blake3:5246c3424d475627547fd175bdd44821e8224ad2ccc9859e0d0817f7910ad44b"
 
 [[tools."ubi:nats-io/nats-server"]]
 version = "2.12.1"
@@ -543,11 +387,8 @@ version = "25.5.31"
 backend = "ubi:sxyazi/yazi[exe=yazi]"
 
 [[tools."ubi:updatecli/updatecli"]]
-version = "0.110.1"
+version = "0.110.2"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
-
-[tools."ubi:updatecli/updatecli".platforms.linux-x64-updatecli-updatecli]
-checksum = "blake3:87510859625d9e0a9c7d0da7413401681b7f9ada4789e341565d9b9f1af246d2"
 
 [[tools."ubi:versity/versitygw"]]
 version = "1.0.18"
@@ -566,40 +407,20 @@ version = "1.4.0"
 backend = "ubi:yorukot/superfile[exe=spf]"
 
 [[tools.usage]]
-version = "2.6.0"
+version = "2.7.0"
 backend = "aqua:jdx/usage"
-
-[tools.usage.platforms.linux-x64]
-checksum = "sha256:a776b5999b3d190a26bf9e2e3ceaefc2601289f522367f31d6e264657a6b6249"
-size = 2801366
-url = "https://github.com/jdx/usage/releases/download/v2.6.0/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
 version = "0.9.8"
 backend = "aqua:astral-sh/uv"
 
-[tools.uv.platforms.linux-x64]
-checksum = "sha256:7763091b882874ae80d162ff77284032ce83174da68c3a759988c81e677e1286"
-size = 21566033
-url = "https://github.com/astral-sh/uv/releases/download/0.9.8/uv-x86_64-unknown-linux-musl.tar.gz"
-
 [[tools.vcluster]]
 version = "0.30.0"
 backend = "aqua:loft-sh/vcluster"
 
-[tools.vcluster.platforms.linux-x64]
-checksum = "sha256:7f9ff9b92d615872b049486da6b0055a5c6e980764dfc463c69ab5821ef475c0"
-size = 95604920
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.30.0/vcluster-linux-amd64"
-
 [[tools.velero]]
 version = "1.17.1"
 backend = "aqua:vmware-tanzu/velero"
-
-[tools.velero.platforms.linux-x64]
-checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8"
-size = 58504413
-url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"
 
 [[tools.yamlfmt]]
 version = "0.20.0"
