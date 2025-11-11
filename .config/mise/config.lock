@@ -14,6 +14,11 @@ backend = "aqua:argoproj/argo-cd"
 version = "2.31.33"
 backend = "aqua:aws/aws-cli"
 
+[tools.awscli.platforms.linux-x64]
+checksum = "blake3:669cb82335b881c6aa257d30e085c1e449f9b709d859955498e53871655cf7ca"
+size = 62332641
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.33.zip"
+
 [[tools.azure-cli]]
 version = "2.79.0"
 backend = "asdf:azure-cli"
@@ -85,6 +90,11 @@ backend = "asdf:hcloud"
 [[tools.helm]]
 version = "3.19.1"
 backend = "aqua:helm/helm"
+
+[tools.helm.platforms.linux-x64]
+checksum = "sha256:966bed9b1e0dda11268f59bd7268c3cd3e308b37b070546e1d78a02526ff63f2"
+size = 18009509
+url = "https://get.helm.sh/helm-v3.19.1-linux-amd64.tar.gz"
 
 [[tools.hugo]]
 version = "0.152.2"
@@ -186,6 +196,11 @@ backend = "aqua:FairwindsOps/pluto"
 version = "10.21.0"
 backend = "aqua:pnpm/pnpm"
 
+[tools.pnpm.platforms.linux-x64]
+checksum = "sha256:5b937dc0f043dc0224caf3bc607cc2ec17af72e10d85c8d85cffb03c1c13a4c0"
+size = 65804807
+url = "https://github.com/pnpm/pnpm/releases/download/v10.21.0/pnpm-linux-x64"
+
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
@@ -282,6 +297,9 @@ backend = "ubi:aristocratos/btop"
 version = "2.2.2"
 backend = "ubi:ayoisaiah/f2"
 
+[tools."ubi:ayoisaiah/f2".platforms.linux-x64-f2]
+checksum = "blake3:dd85a5dd97d1841485ad054dad06e5bd56f4f6551067c3886607d18de9009c78"
+
 [[tools."ubi:c-bata/kube-prompt"]]
 version = "1.0.11"
 backend = "ubi:c-bata/kube-prompt[exe=kube-prompt]"
@@ -354,6 +372,9 @@ backend = "ubi:mirceanton/talswitcher[exe=talswitcher]"
 version = "1.63.1"
 backend = "ubi:mongodb/kingfisher"
 
+[tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
+checksum = "blake3:ac256d8a9d2107e0f069b00f7cdd1c0ef189b2163219fb1eac593bc8a7606535"
+
 [[tools."ubi:nats-io/nats-server"]]
 version = "2.12.1"
 backend = "ubi:nats-io/nats-server[exe=nats-server]"
@@ -390,6 +411,9 @@ backend = "ubi:sxyazi/yazi[exe=yazi]"
 version = "0.110.2"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
 
+[tools."ubi:updatecli/updatecli".platforms.linux-x64-updatecli-updatecli]
+checksum = "blake3:ae1a011148c54a91e4c2502754a68fc402a72f12bec86d82592faff95927ba69"
+
 [[tools."ubi:versity/versitygw"]]
 version = "1.0.18"
 backend = "ubi:versity/versitygw[exe=versitygw]"
@@ -409,6 +433,11 @@ backend = "ubi:yorukot/superfile[exe=spf]"
 [[tools.usage]]
 version = "2.7.0"
 backend = "aqua:jdx/usage"
+
+[tools.usage.platforms.linux-x64]
+checksum = "sha256:1cebc14a38f08d1a173c529dab36df86fda2214b7fc79181300164dfe5d77344"
+size = 2803501
+url = "https://github.com/jdx/usage/releases/download/v2.7.0/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
 version = "0.9.8"
