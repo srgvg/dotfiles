@@ -75,11 +75,11 @@ function execute() {
         # cleanup empty directories
         logtitle looking for empty dirs in temp folders
 		nice -n 20 ionice -c 3 find \
-			${tempfolders} \
-			-depth -mindepth 1 \
+			$HOME/scratch/ \
+			-depth -mindepth 2 \
 			-not -path '/home/serge/scratch/.stfolder*' \
 			-type d -empty \
-			-print0 | xargs -r -0 rmdir -v
+			-print0 | xargs -r -0 rmdir --parents -verbose
 
         logtitle misc stuff
 
