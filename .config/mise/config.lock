@@ -11,13 +11,13 @@ version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.31.33"
+version = "2.31.37"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli.platforms.linux-x64]
-checksum = "blake3:669cb82335b881c6aa257d30e085c1e449f9b709d859955498e53871655cf7ca"
-size = 62332641
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.33.zip"
+checksum = "blake3:b82540518f147d4dae226d1ad84068a0df81928ec4284017dab4e3fbd017d740"
+size = 62349323
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.37.zip"
 
 [[tools.azure-cli]]
 version = "2.79.0"
@@ -77,8 +77,13 @@ version = "547.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
-version = "2.83.0"
+version = "2.83.1"
 backend = "aqua:cli/cli"
+
+[tools.github-cli.platforms.linux-x64]
+checksum = "sha256:1c5252d4ce3db07b51c01ff0b909583da6364ff3fdc06d0c2e75e62dc0380a34"
+size = 18174787
+url = "https://github.com/cli/cli/releases/download/v2.83.1/gh_2.83.1_linux_amd64.tar.gz"
 
 [[tools."gitlab:gitlab-org/cli"]]
 version = "1.77.0"
@@ -153,8 +158,13 @@ version = "1.20.0"
 backend = "aqua:zegl/kube-score"
 
 [[tools.kubebuilder]]
-version = "4.9.0"
+version = "4.10.0"
 backend = "aqua:kubernetes-sigs/kubebuilder"
+
+[tools.kubebuilder.platforms.linux-x64]
+checksum = "sha256:04da92c99820276686d2b57fdf800accbd5c286ee0683745abfeb893b25b13a0"
+size = 26159994
+url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.10.0/kubebuilder_linux_amd64"
 
 [[tools.kubecolor]]
 version = "0.5.3"
@@ -389,15 +399,18 @@ version = "2.2.4"
 backend = "ubi:mirceanton/talswitcher[exe=talswitcher]"
 
 [[tools."ubi:mongodb/kingfisher"]]
-version = "1.63.1"
+version = "1.64.0"
 backend = "ubi:mongodb/kingfisher"
 
 [tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
-checksum = "blake3:ac256d8a9d2107e0f069b00f7cdd1c0ef189b2163219fb1eac593bc8a7606535"
+checksum = "blake3:5f4300a8ff54859e3afecdf10eed02163203aa97a651b0027ea47eeca8082d3c"
 
 [[tools."ubi:nats-io/nats-server"]]
-version = "2.12.1"
+version = "2.12.2"
 backend = "ubi:nats-io/nats-server[exe=nats-server]"
+
+[tools."ubi:nats-io/nats-server".platforms.linux-x64-nats-server-nats-server]
+checksum = "blake3:45df56f61d10cdfe6487270259bfbbf5b794d08241c225cb819f50957658811b"
 
 [[tools."ubi:nats-io/natscli"]]
 version = "0.3.0"
@@ -428,11 +441,11 @@ version = "25.5.31"
 backend = "ubi:sxyazi/yazi[exe=yazi]"
 
 [[tools."ubi:updatecli/updatecli"]]
-version = "0.110.2"
+version = "0.110.3"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
 
 [tools."ubi:updatecli/updatecli".platforms.linux-x64-updatecli-updatecli]
-checksum = "blake3:ae1a011148c54a91e4c2502754a68fc402a72f12bec86d82592faff95927ba69"
+checksum = "blake3:eaf313157abc12a3bd531b281aaff5d5fb2e392e28b10423c34cc69e3ef61f59"
 
 [[tools."ubi:versity/versitygw"]]
 version = "1.0.18"
@@ -451,13 +464,13 @@ version = "1.4.0"
 backend = "ubi:yorukot/superfile[exe=spf]"
 
 [[tools.usage]]
-version = "2.7.0"
+version = "2.8.0"
 backend = "aqua:jdx/usage"
 
 [tools.usage.platforms.linux-x64]
-checksum = "sha256:1cebc14a38f08d1a173c529dab36df86fda2214b7fc79181300164dfe5d77344"
-size = 2803501
-url = "https://github.com/jdx/usage/releases/download/v2.7.0/usage-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:45b1c2942324650969b4d16c83a62d2018aa48fa0274365fb10bd3aed5f0589e"
+size = 2810306
+url = "https://github.com/jdx/usage/releases/download/v2.8.0/usage-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.uv]]
 version = "0.9.9"
@@ -481,5 +494,8 @@ version = "0.20.0"
 backend = "aqua:google/yamlfmt"
 
 [[tools.yq]]
-version = "4.48.1"
+version = "4.48.2"
 backend = "ubi:mikefarah/yq"
+
+[tools.yq.platforms.linux-x64-yq]
+checksum = "blake3:e9f2e192789ef23b331702043eee174d1783be623a2040871e31603f6605171c"
