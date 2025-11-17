@@ -158,13 +158,13 @@ version = "1.20.0"
 backend = "aqua:zegl/kube-score"
 
 [[tools.kubebuilder]]
-version = "4.10.0"
+version = "4.10.1"
 backend = "aqua:kubernetes-sigs/kubebuilder"
 
 [tools.kubebuilder.platforms.linux-x64]
-checksum = "sha256:04da92c99820276686d2b57fdf800accbd5c286ee0683745abfeb893b25b13a0"
-size = 26159994
-url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.10.0/kubebuilder_linux_amd64"
+checksum = "sha256:d502bb409ef2f27ce7e69a6eddaf50501f876bb7fe4730c2fa087fe4e14a7e12"
+size = 26160770
+url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.10.1/kubebuilder_linux_amd64"
 
 [[tools.kubecolor]]
 version = "0.5.3"
@@ -198,6 +198,10 @@ backend = "aqua:controlplaneio/kubesec"
 [[tools.kubespy]]
 version = "0.6.3"
 backend = "aqua:pulumi/kubespy"
+
+[[tools.kubetail]]
+version = "1.6.22"
+backend = "asdf:kubetail"
 
 [[tools.kubie]]
 version = "0.26.0"
@@ -305,8 +309,11 @@ version = "0.3.10"
 backend = "ubi:JakWai01/lurk[exe=lurk]"
 
 [[tools."ubi:Wilfred/difftastic"]]
-version = "0.65.0"
+version = "0.67.0"
 backend = "ubi:Wilfred/difftastic[exe=difft]"
+
+[tools."ubi:Wilfred/difftastic".platforms.linux-x64-difft-difft]
+checksum = "blake3:b0b02a0ceb982ee107836521bff6fbf3c21830a795374deb83e379d317e7d5fa"
 
 [[tools."ubi:antonmedv/fx"]]
 version = "39.2.0"

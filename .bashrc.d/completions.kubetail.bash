@@ -1,1 +1,0 @@
-/home/serge/src/util/kubetail/completion/kubetail.bash
