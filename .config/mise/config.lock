@@ -3,7 +3,7 @@ version = "1.2.1"
 backend = "aqua:FiloSottile/age"
 
 [[tools."aqua:Azure/kubelogin"]]
-version = "0.2.12"
+version = "0.2.13"
 backend = "aqua:Azure/kubelogin"
 
 [[tools.argocd]]
@@ -11,16 +11,11 @@ version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.31.37"
+version = "2.32.3"
 backend = "aqua:aws/aws-cli"
 
-[tools.awscli.platforms.linux-x64]
-checksum = "blake3:b82540518f147d4dae226d1ad84068a0df81928ec4284017dab4e3fbd017d740"
-size = 62349323
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.31.37.zip"
-
 [[tools.azure-cli]]
-version = "2.79.0"
+version = "2.80.0"
 backend = "asdf:azure-cli"
 
 [[tools.cilium-cli]]
@@ -59,11 +54,6 @@ backend = "aqua:digitalocean/doctl"
 version = "0.217.0"
 backend = "aqua:eksctl-io/eksctl"
 
-[tools.eksctl.platforms.linux-x64]
-checksum = "sha256:8fc7898ff9b28702d9a4e3694039cf245ec31bf9e029832aa63643daa43affdf"
-size = 37180371
-url = "https://github.com/eksctl-io/eksctl/releases/download/v0.217.0/eksctl_Linux_amd64.tar.gz"
-
 [[tools.flux2]]
 version = "2.7.3"
 backend = "aqua:fluxcd/flux2"
@@ -73,28 +63,16 @@ version = "0.1.0"
 backend = "ubi:ginsys/forward-email"
 
 [[tools.gcloud]]
-version = "547.0.0"
+version = "548.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
 version = "2.83.1"
 backend = "aqua:cli/cli"
 
-[tools.github-cli.platforms.linux-x64]
-checksum = "sha256:1c5252d4ce3db07b51c01ff0b909583da6364ff3fdc06d0c2e75e62dc0380a34"
-size = 18174787
-url = "https://github.com/cli/cli/releases/download/v2.83.1/gh_2.83.1_linux_amd64.tar.gz"
-
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.77.0"
+version = "1.78.0"
 backend = "gitlab:gitlab-org/cli"
-
-[tools."gitlab:gitlab-org/cli".platforms.linux-x64]
-checksum = "blake3:6aad948fa8cbbaca3b234420cfb196723de38a69ea60daf2c99d2600b63f0ec2"
-name = "glab_1.77.0_linux_amd64.tar.gz"
-size = 16705901
-url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.77.0/downloads/glab_1.77.0_linux_amd64.tar.gz"
-url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E77%2E0/glab_1%2E77%2E0_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.4"
@@ -108,21 +86,16 @@ backend = "asdf:hcloud"
 version = "4.0.0"
 backend = "aqua:helm/helm"
 
-[tools.helm.platforms.linux-x64]
-checksum = "sha256:c77e9e7c1cc96e066bd240d190d1beed9a6b08060b2043ef0862c4f865eca08f"
-size = 19965910
-url = "https://get.helm.sh/helm-v4.0.0-linux-amd64.tar.gz"
-
 [[tools.hugo]]
 version = "0.152.2"
 backend = "aqua:gohugoio/hugo"
 
 [[tools.hurl]]
-version = "7.0.0"
+version = "7.1.0"
 backend = "ubi:Orange-OpenSource/hurl"
 
 [[tools.hurlfmt]]
-version = "7.0.0"
+version = "7.1.0"
 backend = "ubi:Orange-OpenSource/hurl"
 
 [[tools.jb]]
@@ -161,11 +134,6 @@ backend = "aqua:zegl/kube-score"
 version = "4.10.1"
 backend = "aqua:kubernetes-sigs/kubebuilder"
 
-[tools.kubebuilder.platforms.linux-x64]
-checksum = "sha256:d502bb409ef2f27ce7e69a6eddaf50501f876bb7fe4730c2fa087fe4e14a7e12"
-size = 26160770
-url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.10.1/kubebuilder_linux_amd64"
-
 [[tools.kubecolor]]
 version = "0.5.3"
 backend = "ubi:kubecolor/kubecolor"
@@ -177,11 +145,6 @@ backend = "aqua:yannh/kubeconform"
 [[tools.kubectl]]
 version = "1.34.2"
 backend = "aqua:kubernetes/kubectl"
-
-[tools.kubectl.platforms.linux-x64]
-checksum = "sha256:9591f3d75e1581f3f7392e6ad119aab2f28ae7d6c6e083dc5d22469667f27253"
-size = 60559544
-url = "https://dl.k8s.io/v1.34.2/bin/linux/amd64/kubectl"
 
 [[tools.kubent]]
 version = "0.7.1"
@@ -198,10 +161,6 @@ backend = "aqua:controlplaneio/kubesec"
 [[tools.kubespy]]
 version = "0.6.3"
 backend = "aqua:pulumi/kubespy"
-
-[[tools.kubetail]]
-version = "1.6.22"
-backend = "asdf:kubetail"
 
 [[tools.kubie]]
 version = "0.26.0"
@@ -224,20 +183,15 @@ version = "5.22.6"
 backend = "aqua:FairwindsOps/pluto"
 
 [[tools.pnpm]]
-version = "10.22.0"
+version = "10.23.0"
 backend = "aqua:pnpm/pnpm"
-
-[tools.pnpm.platforms.linux-x64]
-checksum = "sha256:6730cd0d7a247133e971b8d0b85d6d5de5b9d6a05fc099b2d72540b36725b328"
-size = 65805843
-url = "https://github.com/pnpm/pnpm/releases/download/v10.22.0/pnpm-linux-x64"
 
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
 
 [[tools.python]]
-version = "3.13.9"
+version = "3.14.0"
 backend = "core:python"
 
 [[tools.rbac-lookup]]
@@ -269,7 +223,7 @@ version = "0.20.0"
 backend = "ubi:gabm/Satty"
 
 [[tools.scaleway-cli]]
-version = "2.45.0"
+version = "2.46.0"
 backend = "aqua:scaleway/scaleway-cli"
 
 [[tools.slsa-verifier]]
@@ -312,15 +266,9 @@ backend = "ubi:JakWai01/lurk[exe=lurk]"
 version = "0.67.0"
 backend = "ubi:Wilfred/difftastic[exe=difft]"
 
-[tools."ubi:Wilfred/difftastic".platforms.linux-x64-difft-difft]
-checksum = "blake3:b0b02a0ceb982ee107836521bff6fbf3c21830a795374deb83e379d317e7d5fa"
-
 [[tools."ubi:antonmedv/fx"]]
 version = "39.2.0"
 backend = "ubi:antonmedv/fx[exe=fx]"
-
-[tools."ubi:antonmedv/fx".platforms.linux-x64-fx-fx]
-checksum = "blake3:a17f53bd0db9de15df8cad41f0876f1eb6063752eb6c771a38e87f2140087308"
 
 [[tools."ubi:apple/pkl"]]
 version = "0.30.0"
@@ -333,9 +281,6 @@ backend = "ubi:aristocratos/btop"
 [[tools."ubi:ayoisaiah/f2"]]
 version = "2.2.2"
 backend = "ubi:ayoisaiah/f2"
-
-[tools."ubi:ayoisaiah/f2".platforms.linux-x64-f2]
-checksum = "blake3:dd85a5dd97d1841485ad054dad06e5bd56f4f6551067c3886607d18de9009c78"
 
 [[tools."ubi:c-bata/kube-prompt"]]
 version = "1.0.11"
@@ -366,7 +311,7 @@ version = "0.20.6"
 backend = "ubi:google/go-containerregistry[exe=crane]"
 
 [[tools."ubi:google/osv-scanner"]]
-version = "2.2.4"
+version = "2.3.0"
 backend = "ubi:google/osv-scanner"
 
 [[tools."ubi:grampelberg/kty"]]
@@ -401,23 +346,13 @@ backend = "ubi:kubewall/kubewall"
 version = "0.25.1"
 backend = "ubi:macropower/kat"
 
-[[tools."ubi:mirceanton/talswitcher"]]
-version = "2.2.4"
-backend = "ubi:mirceanton/talswitcher[exe=talswitcher]"
-
 [[tools."ubi:mongodb/kingfisher"]]
-version = "1.64.0"
+version = "1.66.0"
 backend = "ubi:mongodb/kingfisher"
-
-[tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
-checksum = "blake3:5f4300a8ff54859e3afecdf10eed02163203aa97a651b0027ea47eeca8082d3c"
 
 [[tools."ubi:nats-io/nats-server"]]
 version = "2.12.2"
 backend = "ubi:nats-io/nats-server[exe=nats-server]"
-
-[tools."ubi:nats-io/nats-server".platforms.linux-x64-nats-server-nats-server]
-checksum = "blake3:45df56f61d10cdfe6487270259bfbbf5b794d08241c225cb819f50957658811b"
 
 [[tools."ubi:nats-io/natscli"]]
 version = "0.3.0"
@@ -451,11 +386,8 @@ backend = "ubi:sxyazi/yazi[exe=yazi]"
 version = "0.110.3"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
 
-[tools."ubi:updatecli/updatecli".platforms.linux-x64-updatecli-updatecli]
-checksum = "blake3:eaf313157abc12a3bd531b281aaff5d5fb2e392e28b10423c34cc69e3ef61f59"
-
 [[tools."ubi:versity/versitygw"]]
-version = "1.0.18"
+version = "1.0.19"
 backend = "ubi:versity/versitygw[exe=versitygw]"
 
 [[tools."ubi:wait4x/wait4x"]]
@@ -474,22 +406,12 @@ backend = "ubi:yorukot/superfile[exe=spf]"
 version = "2.8.0"
 backend = "aqua:jdx/usage"
 
-[tools.usage.platforms.linux-x64]
-checksum = "sha256:45b1c2942324650969b4d16c83a62d2018aa48fa0274365fb10bd3aed5f0589e"
-size = 2810306
-url = "https://github.com/jdx/usage/releases/download/v2.8.0/usage-x86_64-unknown-linux-musl.tar.gz"
-
 [[tools.uv]]
-version = "0.9.9"
+version = "0.9.11"
 backend = "aqua:astral-sh/uv"
 
-[tools.uv.platforms.linux-x64]
-checksum = "sha256:b0e4530c1fed09720d7eb703703047f097fe23d6b266945a98422f0a0e5c74b4"
-size = 21541880
-url = "https://github.com/astral-sh/uv/releases/download/0.9.9/uv-x86_64-unknown-linux-musl.tar.gz"
-
 [[tools.vcluster]]
-version = "0.30.0"
+version = "0.30.1"
 backend = "aqua:loft-sh/vcluster"
 
 [[tools.velero]]
@@ -501,8 +423,8 @@ version = "0.20.0"
 backend = "aqua:google/yamlfmt"
 
 [[tools.yq]]
-version = "4.48.2"
+version = "4.49.1"
 backend = "ubi:mikefarah/yq"
 
 [tools.yq.platforms.linux-x64-yq]
-checksum = "blake3:e9f2e192789ef23b331702043eee174d1783be623a2040871e31603f6605171c"
+checksum = "blake3:76bfe2103ec97050fabe265acc15256453cd9205636eb9b407fe251802d17378"
