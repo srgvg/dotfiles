@@ -11,7 +11,7 @@ version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.32.3"
+version = "2.32.2"
 backend = "aqua:aws/aws-cli"
 
 [[tools.azure-cli]]
@@ -63,7 +63,7 @@ version = "0.1.0"
 backend = "ubi:ginsys/forward-email"
 
 [[tools.gcloud]]
-version = "548.0.0"
+version = "547.0.0"
 backend = "asdf:gcloud"
 
 [[tools.github-cli]]
@@ -71,7 +71,7 @@ version = "2.83.1"
 backend = "aqua:cli/cli"
 
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.78.0"
+version = "1.77.0"
 backend = "gitlab:gitlab-org/cli"
 
 [[tools.go]]
@@ -189,10 +189,6 @@ backend = "aqua:pnpm/pnpm"
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
-
-[[tools.python]]
-version = "3.14.0"
-backend = "core:python"
 
 [[tools.rbac-lookup]]
 version = "0.10.3"
@@ -423,8 +419,5 @@ version = "0.20.0"
 backend = "aqua:google/yamlfmt"
 
 [[tools.yq]]
-version = "4.49.1"
+version = "4.48.2"
 backend = "ubi:mikefarah/yq"
-
-[tools.yq.platforms.linux-x64-yq]
-checksum = "blake3:76bfe2103ec97050fabe265acc15256453cd9205636eb9b407fe251802d17378"
