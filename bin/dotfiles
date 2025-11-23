@@ -101,8 +101,7 @@ function define_adds() {
 bin/
 Applications
 Backgrounds
-bin
-bin2
+bin/  :!*/__pycache__/*
 Desktop
 Downloads
 Music
@@ -140,7 +139,7 @@ Wallpapers
 .ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
 .talos/
 .terraform.d/credentials.tfrc.json
-bins/
+bins/  :!*/__pycache__/*
 etc/
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')

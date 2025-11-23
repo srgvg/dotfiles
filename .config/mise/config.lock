@@ -71,8 +71,15 @@ version = "2.83.1"
 backend = "aqua:cli/cli"
 
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.77.0"
+version = "1.78.2"
 backend = "gitlab:gitlab-org/cli"
+
+[tools."gitlab:gitlab-org/cli".platforms.linux-x64]
+checksum = "blake3:786556829b47746479190f43937a33e74deeb8e068159717db5b8a28d6ea96af"
+name = "glab_1.78.2_linux_amd64.tar.gz"
+size = 16732931
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.78.2/downloads/glab_1.78.2_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E78%2E2/glab_1%2E78%2E2_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.4"

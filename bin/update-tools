@@ -346,6 +346,7 @@ get_asdf() {
 get_mise() {
 
     title "mise-en-place"
+
     if ! hash mise >/dev/null 2>&1
     then
         title "install mise"
@@ -354,14 +355,20 @@ get_mise() {
         then
             mv -v cmp $HOME/.local/bin/mise $HOME/bin/mise
         fi
-    else
-        pushd $HOME
-        # https://github.com/mise-plugins/mise-gcloud/issues/2
-        export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
-        mise self-update --yes --no-plugins
-        mise upgrade --yes  --jobs 8
-        popd
     fi
+
+    pushd $HOME
+    # https://github.com/mise-plugins/mise-gcloud/issues/2
+    export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
+    mise settings lockfile=true
+    mise self-update --yes --no-plugins
+    mise plugins update
+    mise outdated --verbose
+    mise cache prune --verbose
+    mise upgrade --yes  --jobs 8
+    mise reshim
+    mise doctor --verbose
+    popd
 
 }
 
