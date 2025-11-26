@@ -11,8 +11,13 @@ version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.32.2"
+version = "2.32.4"
 backend = "aqua:aws/aws-cli"
+
+[tools.awscli.platforms.linux-x64]
+checksum = "blake3:5845fa309908990a0b681d87cada5f0b63c2509907dad90d8fb95a09fdcca4d1"
+size = 62727324
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.32.4.zip"
 
 [[tools.azure-cli]]
 version = "2.80.0"
@@ -51,12 +56,22 @@ version = "1.147.0"
 backend = "aqua:digitalocean/doctl"
 
 [[tools.eksctl]]
-version = "0.217.0"
+version = "0.218.0"
 backend = "aqua:eksctl-io/eksctl"
 
+[tools.eksctl.platforms.linux-x64]
+checksum = "sha256:5e6472b47c54b55cde2b423fab57ceb6a0157afb81dbdfcea54425b1a266cb7e"
+size = 36758934
+url = "https://github.com/eksctl-io/eksctl/releases/download/v0.218.0/eksctl_Linux_amd64.tar.gz"
+
 [[tools.flux2]]
-version = "2.7.3"
+version = "2.7.4"
 backend = "aqua:fluxcd/flux2"
+
+[tools.flux2.platforms.linux-x64]
+checksum = "sha256:cc74636a893994f526f3742adbe5c087f2b4806cf625a0b7666b83bfdb968efe"
+size = 24294779
+url = "https://github.com/fluxcd/flux2/releases/download/v2.7.4/flux_2.7.4_linux_amd64.tar.gz"
 
 [[tools.forward-email]]
 version = "0.1.0"
@@ -71,15 +86,15 @@ version = "2.83.1"
 backend = "aqua:cli/cli"
 
 [[tools."gitlab:gitlab-org/cli"]]
-version = "1.78.2"
+version = "1.78.3"
 backend = "gitlab:gitlab-org/cli"
 
 [tools."gitlab:gitlab-org/cli".platforms.linux-x64]
-checksum = "blake3:786556829b47746479190f43937a33e74deeb8e068159717db5b8a28d6ea96af"
-name = "glab_1.78.2_linux_amd64.tar.gz"
-size = 16732931
-url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.78.2/downloads/glab_1.78.2_linux_amd64.tar.gz"
-url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E78%2E2/glab_1%2E78%2E2_linux_amd64%2Etar%2Egz"
+checksum = "blake3:4b6639d358d736e5aec45183f138889d5d6f236518f6f99c2ab6dfb1d08e7639"
+name = "glab_1.78.3_linux_amd64.tar.gz"
+size = 16699528
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.78.3/downloads/glab_1.78.3_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E78%2E3/glab_1%2E78%2E3_linux_amd64%2Etar%2Egz"
 
 [[tools.go]]
 version = "1.25.4"
@@ -90,8 +105,13 @@ version = "1.57.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
-version = "4.0.0"
+version = "4.0.1"
 backend = "aqua:helm/helm"
+
+[tools.helm.platforms.linux-x64]
+checksum = "sha256:e0365548f01ed52a58a1181ad310b604a3244f59257425bb1739499372bdff60"
+size = 19966059
+url = "https://get.helm.sh/helm-v4.0.1-linux-amd64.tar.gz"
 
 [[tools.hugo]]
 version = "0.152.2"
@@ -246,8 +266,13 @@ version = "1.33.1"
 backend = "aqua:stern/stern"
 
 [[tools.talhelper]]
-version = "3.0.39"
+version = "3.0.41"
 backend = "aqua:budimanjojo/talhelper"
+
+[tools.talhelper.platforms.linux-x64]
+checksum = "sha256:d2ac1bcfb88a301b9b0c40aebda037b1a499d9fadd1d7fc8b845faa249e1d8f0"
+size = 16920051
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.0.41/talhelper_linux_amd64.tar.gz"
 
 [[tools.talosctl]]
 version = "1.11.5"
@@ -294,12 +319,18 @@ version = "1.18.3"
 backend = "ubi:cilium/hubble[exe=hubble]"
 
 [[tools."ubi:civo/cli"]]
-version = "1.4.4"
+version = "1.4.6"
 backend = "ubi:civo/cli[exe=civo]"
 
+[tools."ubi:civo/cli".platforms.linux-x64-civo-civo]
+checksum = "blake3:c6aba8dbe749bfea5a8c7b2933c4a0111c25063a6f3b2de7a5b2161cd87305e4"
+
 [[tools."ubi:controlplaneio-fluxcd/flux-operator"]]
-version = "0.33.0"
+version = "0.34.0"
 backend = "ubi:controlplaneio-fluxcd/flux-operator[exe=flux-operator]"
+
+[tools."ubi:controlplaneio-fluxcd/flux-operator".platforms.linux-x64-flux-operator-flux-operator]
+checksum = "blake3:78f23c63e1433068b66dad3a721f106107d561914464ce0d117110f355f4fdd8"
 
 [[tools."ubi:direnv/direnv"]]
 version = "2.37.1"
@@ -310,8 +341,11 @@ version = "1.9.3"
 backend = "ubi:fullstorydev/grpcurl[exe=grpcurl]"
 
 [[tools."ubi:google/go-containerregistry"]]
-version = "0.20.6"
+version = "0.20.7"
 backend = "ubi:google/go-containerregistry[exe=crane]"
+
+[tools."ubi:google/go-containerregistry".platforms.linux-x64-crane-crane]
+checksum = "blake3:559e88c2cb1be01f88f59625806e3e1389e9bc326af01082f4b19bc5c49b01ab"
 
 [[tools."ubi:google/osv-scanner"]]
 version = "2.3.0"
@@ -346,12 +380,18 @@ version = "0.0.14"
 backend = "ubi:kubewall/kubewall"
 
 [[tools."ubi:macropower/kat"]]
-version = "0.25.1"
+version = "0.27.0"
 backend = "ubi:macropower/kat"
 
+[tools."ubi:macropower/kat".platforms.linux-x64-kat]
+checksum = "blake3:df0e72555235a1803ed8003c912a61b84f47291bfee3272641a6285b27a6001f"
+
 [[tools."ubi:mongodb/kingfisher"]]
-version = "1.66.0"
+version = "1.68.0"
 backend = "ubi:mongodb/kingfisher"
+
+[tools."ubi:mongodb/kingfisher".platforms.linux-x64-kingfisher]
+checksum = "blake3:234f3b37a0e142bdcf8cb75e4de51b95846b1443c90035693f39d7486f9cfb49"
 
 [[tools."ubi:nats-io/nats-server"]]
 version = "2.12.2"
@@ -426,5 +466,8 @@ version = "0.20.0"
 backend = "aqua:google/yamlfmt"
 
 [[tools.yq]]
-version = "4.48.2"
+version = "4.49.2"
 backend = "ubi:mikefarah/yq"
+
+[tools.yq.platforms.linux-x64-yq]
+checksum = "blake3:77df1d5b37ee1e2e27dabebda801898c86e61980908c96294ad3abfd0ac2a613"
