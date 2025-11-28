@@ -49,10 +49,14 @@ function pause_displays() {
 }
 function resume_displays(){
 	echo "== resume displays"
-	for display in $(wlr-randr --json | jq -r .[].name ||:)
+	# Use wildcard first - don't rely on wlr-randr when display is off
+	echo swaymsg 'output * dpms on' ||:
+	swaymsg 'output * dpms on' &
+	# Then handle any disabled outputs (non-blocking)
+	for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null)
 	do
 		echo swaymsg "output ${display} dpms on" ||:
-		swaymsg "output ${display} dpms on" ||:
+		swaymsg "output ${display} dpms on" &
 		if [ $(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled") = "false" ]
 		then
 			echo wlr-randr --output ${display} --on ||:
@@ -60,16 +64,16 @@ function resume_displays(){
 			sleep 1
 		fi
 	done
-	#sleep 1
-	#echo swaymsg reload ||:
-	#swaymsg reload ||:
-	#echo setsbg next ||:
-	#setsbg next ||:
 }
 #
 #############################################################################
 #
 function lock() {
+	# Skip if already locked
+	if pgrep -x swaylock > /dev/null; then
+		echo "=== lock (skipped - swaylock already running)"
+		return 0
+	fi
 	echo "=== lock"
 	pause_notifications
 	pause_mouse
