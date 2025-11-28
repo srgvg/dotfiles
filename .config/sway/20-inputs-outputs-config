@@ -1,5 +1,5 @@
 set $primary DP-3
-set $secondary DP-2
+#set $secondary DP-2
 set $tv HDMI-A-1
 
 # https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
@@ -43,25 +43,25 @@ Input "1386:965:Wacom_Intuos_BT_S_Pen" {
 output $primary {
     enable
     dpms on
-    pos 2560 0 res 3440x1440
+    pos 1920 0 res 5120x1440
 }
-output $secondary {
-    enable
-    dpms on
-    pos 0 0 res 3840x2160
-    scale 1.5
-    #transform 270
-}
+#output $secondary {
+#    enable
+#    dpms on
+#    pos 0 0 res 3840x2160
+#    scale 1.5
+#    #transform 270
+#}
 output $tv {
     enable
     #dpms on
-    pos 0 1440 res 1920x1080
+    pos 0 0 res 1920x1080
 }
 
 seat seat0 keyboard_grouping smart
 
 ## Automatically putting workspaces on specific screens
-workspace 0     output $secondary
+workspace 0     output $primary
 workspace 1     output $primary
 workspace 2     output $primary
 workspace 3     output $primary
@@ -72,15 +72,15 @@ workspace 7     output $primary
 workspace 8     output $primary
 workspace 9     output $primary
 workspace 10    output $primary
-workspace 11    output $secondary
-workspace 12    output $secondary
-workspace 13    output $secondary
-workspace 14    output $secondary
-workspace 15    output $secondary
-workspace 16    output $secondary
-workspace 17    output $secondary
-workspace 18    output $secondary
+workspace 11    output $primary
+workspace 12    output $primary
+workspace 13    output $primary
+workspace 14    output $primary
+workspace 15    output $primary
+workspace 16    output $primary
+workspace 17    output $primary
+workspace 18    output $primary
 workspace 19    output $tv
 workspace 20    output $tv
-workspace 21    output $secondary
-workspace 22    output $secondary
+workspace 21    output $tv
+workspace 22    output $tv

@@ -38,6 +38,8 @@ for_window [app_id="alacritty-floating"] opacity 0.9
 for_window [app_id="alacritty-tiled"] opacity 0.9
 for_window [app_id=org.gnome.Calculator ] floating enable
 
+for_window [title="Extension: " app_id="firefox" shell="xdg_shell"] floating enable
+
 for_window [class="Gedit" instance="gedit"] border $defaultborder
 
 # http://build.i3wm.org/docs/userguide.html#_list_of_commands
@@ -100,35 +102,35 @@ assign		[instance="IRCWINDOW"]									$ws_chat
 
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 assign		[app_id="org.signal.Signal" shell="xdg_shell"]	$ws_chat
-for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
-for_window  [app_id="org.signal.Signal" shell="xdg_shell"]	layout tabbed
+#for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
+#for_window  [app_id="org.signal.Signal" shell="xdg_shell"]	layout tabbed
 assign      [app_id="com.rtosta.zapzap" shell="xdg_shell"]     $ws_chat
-for_window  [app_id="com.rtosta.zapzap" shell="xdg_shell"]     layout tabbed
+#for_window  [app_id="com.rtosta.zapzap" shell="xdg_shell"]     layout tabbed
 
 # flatpak com.microsoft.Teams
 assign	   [class="Microsoft Teams" instance="microsoft teams"  window_role="browser-window"] $ws_chat
-for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
+#for_window [class="Microsoft Teams" instance="microsoft teams" window_role="browser-window"] layout tabbed, border $defaultborder
 assign	   [class="Microsoft Teams" title="^(?!Microsoft Teams Notification)"]	$ws_chat
 for_window [class="Microsoft Teams" title="Microsoft Teams Notification"] floating enable
 
 # flatpak com.github.IsmaelMartinez.teams_for_linux
 assign  [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] $ws_chat
-for_window [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] layout tabbed, border $defaultborder
+#for_window [class="teams-for-linux" instance="teams-for-linux" window_role="browser-window"] layout tabbed, border $defaultborder
 
 # flatpak whatsapp app_id=com.ktechpit.whatsie
 assign     [app_id="whatsapp-for-linux"] $ws_chat
-for_window [app_id="whatsapp-for-linux"] layout tabbed, border $defaultborder
+#for_window [app_id="whatsapp-for-linux"] layout tabbed, border $defaultborder
 
 for_window	[class="Skype"]									floating enable
 
 assign	[class="discord" instance="discord"] $ws_chat
-for_window	[class="discord" instance="discord"] layout tabbed
+#for_window	[class="discord" instance="discord"] layout tabbed
 
 assign	[app_id="org.telegram.desktop"] $ws_chat
-for_window	[app_id="org.telegram.desktop"] layout tabbed
+#for_window	[app_id="org.telegram.desktop"] layout tabbed
 
 assign [class="Mattermost" instance="mattermost" window_role="browser-window"] $ws_chat
-for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
+#for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
 
 #######################################################################################################################
 #
@@ -151,14 +153,14 @@ for_window  [app_id="com.saivert.pwvucontrol"]                                  
 
 
 assign		[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	$ws_music
-for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
+#for_window	[class="(nuvolaplayer|rhythmbox|Tomahawk|Google Play Music Desktop Player|vlc)"]	layout tabbed
 
 # https://github.com/swaywm/sway/issues/3793
 assign	[class="Spotify" instance="spotify"] $ws_music
-for_window	[ class="Spotify" instance="spotify"] move container|window to workspace $ws_music, layout tabbed
+#for_window	[ class="Spotify" instance="spotify"] move container|window to workspace $ws_music, layout tabbed
 
 # tools
 assign		[app_id="i3jobs"]				$ws_util
 assign		[app_id="htop"]	     			$ws_util
-for_window  [app_id="(i3jobs|htop)"]        layout tabbed
+#for_window  [app_id="(i3jobs|htop)"]        layout tabbed
 

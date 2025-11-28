@@ -1,9 +1,9 @@
 com.discordapp.Discord	0.0.116	flathub	system
-com.getpostman.Postman	11.72.9	flathub	system
+com.getpostman.Postman	11.73.4	flathub	system
 com.github.tchx84.Flatseal	2.4.0	flathub	system
 com.google.Chrome	142.0.7444.175-1	flathub	system
 com.mattermost.Desktop	6.0.1	flathub	system
-com.nextcloud.desktopclient.nextcloud	4.0.1	flathub	system
+com.nextcloud.desktopclient.nextcloud	4.0.2	flathub	system
 com.rtosta.zapzap	6.2.4	flathub	system
 com.saivert.pwvucontrol	0.5.1	flathub	system
 com.slack.Slack	4.46.99	flathub	system
@@ -16,7 +16,7 @@ io.kinvolk.Headlamp	0.38.0	flathub	system
 org.chromium.Chromium	142.0.7444.175	flathub	system
 org.ferdium.Ferdium	7.1.1	flathub	system
 org.gnome.NetworkDisplays	0.97.0	flathub	system
-org.signal.Signal	7.80.0	flathub	system
+org.signal.Signal	7.80.1	flathub	system
 org.sonusmix.Sonusmix		sonusmix.org	system
-org.telegram.desktop	6.3.3	flathub	system
+org.telegram.desktop	6.3.4	flathub	system
 rest.insomnia.Insomnia	12.1.0	flathub	system

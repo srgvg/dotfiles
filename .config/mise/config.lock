@@ -11,13 +11,13 @@ version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.32.4"
+version = "2.32.6"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli.platforms.linux-x64]
-checksum = "blake3:5845fa309908990a0b681d87cada5f0b63c2509907dad90d8fb95a09fdcca4d1"
-size = 62727324
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.32.4.zip"
+checksum = "blake3:33ee491a877373ae38a069cd7363b8a0c404ea7e51c74d5d0d6de04504417a51"
+size = 62741032
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.32.6.zip"
 
 [[tools.azure-cli]]
 version = "2.80.0"
@@ -56,22 +56,22 @@ version = "1.147.0"
 backend = "aqua:digitalocean/doctl"
 
 [[tools.eksctl]]
-version = "0.218.0"
+version = "0.219.0"
 backend = "aqua:eksctl-io/eksctl"
 
 [tools.eksctl.platforms.linux-x64]
-checksum = "sha256:5e6472b47c54b55cde2b423fab57ceb6a0157afb81dbdfcea54425b1a266cb7e"
-size = 36758934
-url = "https://github.com/eksctl-io/eksctl/releases/download/v0.218.0/eksctl_Linux_amd64.tar.gz"
+checksum = "sha256:8672bdcc468571fae8eb99e2d190fc385c9d1472c64a4377d9815ff5069c7f4b"
+size = 36757882
+url = "https://github.com/eksctl-io/eksctl/releases/download/v0.219.0/eksctl_Linux_amd64.tar.gz"
 
 [[tools.flux2]]
-version = "2.7.4"
+version = "2.7.5"
 backend = "aqua:fluxcd/flux2"
 
 [tools.flux2.platforms.linux-x64]
-checksum = "sha256:cc74636a893994f526f3742adbe5c087f2b4806cf625a0b7666b83bfdb968efe"
-size = 24294779
-url = "https://github.com/fluxcd/flux2/releases/download/v2.7.4/flux_2.7.4_linux_amd64.tar.gz"
+checksum = "sha256:1e92141e8498289e4b27411385aeb18396053176cf297b0cb99abd6ca8293e75"
+size = 24293102
+url = "https://github.com/fluxcd/flux2/releases/download/v2.7.5/flux_2.7.5_linux_amd64.tar.gz"
 
 [[tools.forward-email]]
 version = "0.1.0"
@@ -210,12 +210,21 @@ version = "5.22.6"
 backend = "aqua:FairwindsOps/pluto"
 
 [[tools.pnpm]]
-version = "10.23.0"
+version = "10.24.0"
 backend = "aqua:pnpm/pnpm"
+
+[tools.pnpm.platforms.linux-x64]
+checksum = "sha256:985824ae016db3c7bbd7b39dcb4e6f5740b11cce79f5c43d5e5e640768fd4806"
+size = 65768111
+url = "https://github.com/pnpm/pnpm/releases/download/v10.24.0/pnpm-linux-x64"
 
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
+
+[[tools.python]]
+version = "3.14.0"
+backend = "core:python"
 
 [[tools.rbac-lookup]]
 version = "0.10.3"
@@ -326,11 +335,11 @@ backend = "ubi:civo/cli[exe=civo]"
 checksum = "blake3:c6aba8dbe749bfea5a8c7b2933c4a0111c25063a6f3b2de7a5b2161cd87305e4"
 
 [[tools."ubi:controlplaneio-fluxcd/flux-operator"]]
-version = "0.34.0"
+version = "0.35.0"
 backend = "ubi:controlplaneio-fluxcd/flux-operator[exe=flux-operator]"
 
 [tools."ubi:controlplaneio-fluxcd/flux-operator".platforms.linux-x64-flux-operator-flux-operator]
-checksum = "blake3:78f23c63e1433068b66dad3a721f106107d561914464ce0d117110f355f4fdd8"
+checksum = "blake3:2e9430843c1c0a2786d296334ec3e496283fba8b647626cc4b144c0c1af659a2"
 
 [[tools."ubi:direnv/direnv"]]
 version = "2.37.1"
@@ -372,8 +381,11 @@ version = "0.5.0"
 backend = "ubi:ksdme/ut"
 
 [[tools."ubi:kubeshark/kubeshark"]]
-version = "52.9.0"
+version = "52.10.0"
 backend = "ubi:kubeshark/kubeshark[exe=kubeshark]"
+
+[tools."ubi:kubeshark/kubeshark".platforms.linux-x64-kubeshark-kubeshark]
+checksum = "blake3:21fd2274bba39c7a97c3e1ba96803bf53a9660871c2ad6c00ad420284ab434e0"
 
 [[tools."ubi:kubewall/kubewall"]]
 version = "0.0.14"
@@ -450,8 +462,13 @@ version = "2.8.0"
 backend = "aqua:jdx/usage"
 
 [[tools.uv]]
-version = "0.9.11"
+version = "0.9.13"
 backend = "aqua:astral-sh/uv"
+
+[tools.uv.platforms.linux-x64]
+checksum = "sha256:04cf326d2d742ce5c8890fdc0b9f71bd707be8640979bf6e53ddd52da74dfb41"
+size = 21914060
+url = "https://github.com/astral-sh/uv/releases/download/0.9.13/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [[tools.vcluster]]
 version = "0.30.1"

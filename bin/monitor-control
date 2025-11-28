@@ -1,24 +1,498 @@
 #!/bin/bash
+#
+# monitor-control - Control Samsung Odyssey G95NC monitor via DDC/CI
+#
+# Usage: monitor-control <command> [value]
+#
 
-# http://systembash.com/content/how-to-turn-off-your-monitor-via-command-line-in-ubuntu/
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 expandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
 
-if [ $# -eq 0 ]; then
-  echo usage: $(basename $0) "on|off|status"
-  exit 1
-fi
+set -o nounset
+set -o errexit
+set -o pipefail
 
-if [ $1 = "off" ]; then
-  echo -en "Turning monitor off..."
-  xset dpms force off
-  echo -en "done.\nCheck:"
-  xset -q|grep "Monitor is"
-elif [ $1 = "on" ]; then
-  echo -en "Turning monitor on..."
-  xset dpms force on
-  echo -en "done.\nCheck:"
-  xset -q|grep "Monitor is"
-elif [ $1 = "status" ]; then
-  xset -q|sed -ne 's/^[ ]*Monitor is //p'
-else
-  echo usage: $(basename $0) "on|off|status"
-fi
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+MONITOR_MODEL="Odyssey G95NC"
+SCRIPT_NAME="monitor-control"
+
+# VCP codes
+VCP_BRIGHTNESS=0x10
+VCP_CONTRAST=0x12
+VCP_COLOR_PRESET=0x14
+VCP_RGB_RED=0x16
+VCP_RGB_GREEN=0x18
+VCP_RGB_BLUE=0x1a
+VCP_INPUT=0x60
+VCP_VOLUME=0x62
+VCP_SHARPNESS=0x87
+VCP_MUTE=0x8d
+VCP_OSD=0xca
+
+# Input source mapping
+declare -A INPUT_MAP=(
+    [dp1]=0x0f
+    [dp2]=0x10
+    [hdmi1]=0x11
+    [hdmi2]=0x12
+)
+
+declare -A INPUT_NAMES=(
+    [0x0f]="dp1"
+    [0x10]="dp2"
+    [0x11]="hdmi1"
+    [0x12]="hdmi2"
+    [15]="dp1"
+    [16]="dp2"
+    [17]="hdmi1"
+    [18]="hdmi2"
+)
+
+# Color preset mapping (VCP 0x14)
+declare -A COLOR_PRESET_MAP=(
+    [native]=0x02
+    [srgb]=0x01
+    [warm]=0x04
+    [cool]=0x05
+    [user]=0x0b
+)
+
+declare -A COLOR_PRESET_NAMES=(
+    [0x01]="srgb"
+    [0x02]="native"
+    [0x04]="warm"
+    [0x05]="cool"
+    [0x0b]="user"
+    [1]="srgb"
+    [2]="native"
+    [4]="warm"
+    [5]="cool"
+    [11]="user"
+)
+
+# Mute mapping (VCP 0x8d)
+declare -A MUTE_NAMES=(
+    [0x00]="off"
+    [0x01]="on"
+    [0]="off"
+    [1]="on"
+)
+
+# OSD mapping (VCP 0xca)
+declare -A OSD_NAMES=(
+    [0x01]="off"
+    [0x02]="on"
+    [1]="off"
+    [2]="on"
+)
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") <command> [value]
+
+DDC/CI commands (Samsung Odyssey G95NC):
+  brightness [0-100]   Get/set brightness
+  contrast [0-100]     Get/set contrast
+  volume [0-100]       Get/set volume
+  sharpness [0-10]     Get/set sharpness
+  input [dp1|dp2|hdmi1|hdmi2]  Get/set input source
+  color [native|srgb|warm|cool|user]  Get/set color preset
+  mute [on|off]        Get/set audio mute
+  osd [on|off]         Get/set OSD enabled
+  rgb [r g b]          Get/set RGB gains (0-100 each)
+  status               Show all current DDC values
+
+DPMS commands:
+  on                   Turn monitor on (DPMS)
+  off                  Turn monitor off (DPMS)
+
+Examples:
+  $(basename "$0") brightness 80
+  $(basename "$0") volume 50
+  $(basename "$0") input dp1
+  $(basename "$0") color warm
+  $(basename "$0") mute on
+  $(basename "$0") rgb 50 50 50
+EOF
+    exit 1
+}
+
+# Check if ddcutil is available
+check_ddcutil() {
+    if ! command -v ddcutil &>/dev/null; then
+        errexit "ddcutil is not installed. Install with: sudo apt install ddcutil"
+    fi
+}
+
+# Run ddcutil with auto sudo detection
+run_ddcutil() {
+    local output
+    local rc
+
+    # Try without sudo first
+    if output=$(ddcutil --model "$MONITOR_MODEL" "$@" 2>&1); then
+        echo "$output"
+        return 0
+    fi
+    rc=$?
+
+    # Check if it's a permission error
+    if echo "$output" | grep -qi "permission denied\|EACCES"; then
+        # Retry with sudo
+        if output=$(sudo ddcutil --model "$MONITOR_MODEL" "$@" 2>&1); then
+            echo "$output"
+            return 0
+        fi
+        rc=$?
+    fi
+
+    # Check for DDC retry errors and retry with slower timing
+    if echo "$output" | grep -qi "Maximum DDC retries"; then
+        notify_debug "DDC communication unstable, retrying with slower timing..."
+        if output=$(sudo ddcutil --model "$MONITOR_MODEL" --sleep-multiplier 2 "$@" 2>&1); then
+            echo "$output"
+            return 0
+        fi
+        rc=$?
+    fi
+
+    # Still failed
+    if echo "$output" | grep -qi "permission denied\|EACCES"; then
+        errexit "Permission denied. Fix with: sudo usermod -aG i2c \$USER (then re-login)"
+    fi
+
+    echo "$output" >&2
+    return $rc
+}
+
+# Get a VCP value, returns just the current value
+get_vcp() {
+    local vcp=$1
+    local output
+    output=$(run_ddcutil getvcp "$vcp" 2>/dev/null) || return 1
+    # Extract current value from output like "current value =    50"
+    echo "$output" | grep -oP 'current value\s*=\s*\K\d+' | head -1
+}
+
+# Get a VCP SL value (for non-continuous values like input, color preset, etc.)
+# Returns decimal value from "sl=0xNN" format
+get_vcp_sl() {
+    local vcp=$1
+    local output
+    output=$(run_ddcutil getvcp "$vcp" 2>/dev/null) || return 1
+    # Extract sl=0xNN value and convert to decimal
+    local hex_val
+    hex_val=$(echo "$output" | grep -oP 'sl=0x\K[0-9a-fA-F]+' | head -1)
+    if [[ -n "$hex_val" ]]; then
+        printf "%d" "0x$hex_val"
+    else
+        return 1
+    fi
+}
+
+# Set a VCP value
+set_vcp() {
+    local vcp=$1
+    local value=$2
+    run_ddcutil setvcp "$vcp" "$value" >/dev/null 2>&1
+}
+
+# Validate numeric argument
+validate_range() {
+    local value=$1
+    local min=${2:-0}
+    local max=${3:-100}
+
+    if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+        errexit "Value must be a number: $value"
+    fi
+
+    if (( value < min || value > max )); then
+        errexit "Value must be between $min and $max: $value"
+    fi
+}
+
+cmd_brightness() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val
+        val=$(get_vcp $VCP_BRIGHTNESS) || errexit "Failed to get brightness"
+        echo "$val"
+    else
+        validate_range "$1" 0 100
+        local old_val
+        old_val=$(get_vcp $VCP_BRIGHTNESS 2>/dev/null) || old_val="?"
+        set_vcp $VCP_BRIGHTNESS "$1" || errexit "Failed to set brightness"
+        notify_desktop low "Monitor Brightness" "${old_val} → $1" display-brightness "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_contrast() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val
+        val=$(get_vcp $VCP_CONTRAST) || errexit "Failed to get contrast"
+        echo "$val"
+    else
+        validate_range "$1" 0 100
+        local old_val
+        old_val=$(get_vcp $VCP_CONTRAST 2>/dev/null) || old_val="?"
+        set_vcp $VCP_CONTRAST "$1" || errexit "Failed to set contrast"
+        notify_desktop low "Monitor Contrast" "${old_val} → $1" video-display "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_volume() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val
+        val=$(get_vcp $VCP_VOLUME) || errexit "Failed to get volume"
+        echo "$val"
+    else
+        validate_range "$1" 0 100
+        local old_val
+        old_val=$(get_vcp $VCP_VOLUME 2>/dev/null) || old_val="?"
+        set_vcp $VCP_VOLUME "$1" || errexit "Failed to set volume"
+        notify_desktop low "Monitor Volume" "${old_val} → $1" audio-volume-medium "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_sharpness() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val
+        val=$(get_vcp_sl $VCP_SHARPNESS) || errexit "Failed to get sharpness"
+        echo "$val"
+    else
+        validate_range "$1" 0 10
+        local old_val
+        old_val=$(get_vcp_sl $VCP_SHARPNESS 2>/dev/null) || old_val="?"
+        set_vcp $VCP_SHARPNESS "$1" || errexit "Failed to set sharpness"
+        notify_desktop low "Monitor Sharpness" "${old_val} → $1" video-display "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_input() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val name
+        val=$(get_vcp_sl $VCP_INPUT) || errexit "Failed to get input"
+        name="${INPUT_NAMES[$val]:-unknown($val)}"
+        echo "$name"
+    else
+        local input="${1,,}"  # lowercase
+        if [[ ! -v INPUT_MAP[$input] ]]; then
+            errexit "Unknown input: $1. Use: dp1, dp2, hdmi1, hdmi2"
+        fi
+        local old_val old_name
+        old_val=$(get_vcp_sl $VCP_INPUT 2>/dev/null) || old_val=""
+        if [[ -n "$old_val" ]]; then
+            old_name="${INPUT_NAMES[$old_val]:-?}"
+        else
+            old_name="?"
+        fi
+        set_vcp $VCP_INPUT "${INPUT_MAP[$input]}" || errexit "Failed to set input"
+        notify_desktop low "Monitor Input" "${old_name} → ${input}" video-display "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_color() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val name
+        val=$(get_vcp_sl $VCP_COLOR_PRESET) || errexit "Failed to get color preset"
+        name="${COLOR_PRESET_NAMES[$val]:-unknown($val)}"
+        echo "$name"
+    else
+        local preset="${1,,}"  # lowercase
+        if [[ ! -v COLOR_PRESET_MAP[$preset] ]]; then
+            errexit "Unknown color preset: $1. Use: native, srgb, warm, cool, user"
+        fi
+        local old_val old_name
+        old_val=$(get_vcp_sl $VCP_COLOR_PRESET 2>/dev/null) || old_val=""
+        if [[ -n "$old_val" ]]; then
+            old_name="${COLOR_PRESET_NAMES[$old_val]:-?}"
+        else
+            old_name="?"
+        fi
+        set_vcp $VCP_COLOR_PRESET "${COLOR_PRESET_MAP[$preset]}" || errexit "Failed to set color preset"
+        notify_desktop low "Monitor Color" "${old_name} → ${preset}" video-display "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_mute() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val name
+        val=$(get_vcp_sl $VCP_MUTE) || errexit "Failed to get mute status"
+        name="${MUTE_NAMES[$val]:-unknown($val)}"
+        echo "$name"
+    else
+        local mute="${1,,}"  # lowercase
+        local mute_val
+        case "$mute" in
+            on|1|true|yes)   mute_val=1; mute="on" ;;
+            off|0|false|no)  mute_val=0; mute="off" ;;
+            *)  errexit "Unknown mute value: $1. Use: on, off" ;;
+        esac
+        local old_val old_name
+        old_val=$(get_vcp_sl $VCP_MUTE 2>/dev/null) || old_val=""
+        if [[ -n "$old_val" ]]; then
+            old_name="${MUTE_NAMES[$old_val]:-?}"
+        else
+            old_name="?"
+        fi
+        set_vcp $VCP_MUTE "$mute_val" || errexit "Failed to set mute"
+        notify_desktop low "Monitor Mute" "${old_name} → ${mute}" audio-volume-muted "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_osd() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local val name
+        val=$(get_vcp_sl $VCP_OSD) || errexit "Failed to get OSD status"
+        name="${OSD_NAMES[$val]:-unknown($val)}"
+        echo "$name"
+    else
+        local osd="${1,,}"  # lowercase
+        local osd_val
+        case "$osd" in
+            on|1|true|yes)   osd_val=2; osd="on" ;;
+            off|0|false|no)  osd_val=1; osd="off" ;;
+            *)  errexit "Unknown OSD value: $1. Use: on, off" ;;
+        esac
+        local old_val old_name
+        old_val=$(get_vcp_sl $VCP_OSD 2>/dev/null) || old_val=""
+        if [[ -n "$old_val" ]]; then
+            old_name="${OSD_NAMES[$old_val]:-?}"
+        else
+            old_name="?"
+        fi
+        set_vcp $VCP_OSD "$osd_val" || errexit "Failed to set OSD"
+        notify_desktop low "Monitor OSD" "${old_name} → ${osd}" video-display "${SCRIPT_NAME}"
+    fi
+}
+
+cmd_rgb() {
+    check_ddcutil
+    if [[ $# -eq 0 ]]; then
+        local r g b
+        r=$(get_vcp $VCP_RGB_RED) || errexit "Failed to get RGB"
+        g=$(get_vcp $VCP_RGB_GREEN) || errexit "Failed to get RGB"
+        b=$(get_vcp $VCP_RGB_BLUE) || errexit "Failed to get RGB"
+        echo "$r $g $b"
+    elif [[ $# -eq 3 ]]; then
+        validate_range "$1" 0 100
+        validate_range "$2" 0 100
+        validate_range "$3" 0 100
+        local old_r old_g old_b
+        old_r=$(get_vcp $VCP_RGB_RED 2>/dev/null) || old_r="?"
+        old_g=$(get_vcp $VCP_RGB_GREEN 2>/dev/null) || old_g="?"
+        old_b=$(get_vcp $VCP_RGB_BLUE 2>/dev/null) || old_b="?"
+        set_vcp $VCP_RGB_RED "$1" || errexit "Failed to set red"
+        set_vcp $VCP_RGB_GREEN "$2" || errexit "Failed to set green"
+        set_vcp $VCP_RGB_BLUE "$3" || errexit "Failed to set blue"
+        notify_desktop low "Monitor RGB" "${old_r}/${old_g}/${old_b} → $1/$2/$3" video-display "${SCRIPT_NAME}"
+    else
+        errexit "RGB requires 3 values: r g b (0-100 each)"
+    fi
+}
+
+cmd_status() {
+    check_ddcutil
+    echo "Samsung Odyssey G95NC Status"
+    echo "--------------------------------"
+
+    local brightness contrast volume sharpness input_val input_name
+    local color_val color_name mute_val mute_name osd_val osd_name r g b
+
+    brightness=$(get_vcp $VCP_BRIGHTNESS 2>/dev/null) || brightness="N/A"
+    contrast=$(get_vcp $VCP_CONTRAST 2>/dev/null) || contrast="N/A"
+    volume=$(get_vcp $VCP_VOLUME 2>/dev/null) || volume="N/A"
+    sharpness=$(get_vcp_sl $VCP_SHARPNESS 2>/dev/null) || sharpness="N/A"
+
+    input_val=$(get_vcp_sl $VCP_INPUT 2>/dev/null) || input_val=""
+    if [[ -n "$input_val" ]]; then
+        input_name="${INPUT_NAMES[$input_val]:-unknown($input_val)}"
+    else
+        input_name="N/A"
+    fi
+
+    color_val=$(get_vcp_sl $VCP_COLOR_PRESET 2>/dev/null) || color_val=""
+    if [[ -n "$color_val" ]]; then
+        color_name="${COLOR_PRESET_NAMES[$color_val]:-unknown($color_val)}"
+    else
+        color_name="N/A"
+    fi
+
+    mute_val=$(get_vcp_sl $VCP_MUTE 2>/dev/null) || mute_val=""
+    if [[ -n "$mute_val" ]]; then
+        mute_name="${MUTE_NAMES[$mute_val]:-unknown($mute_val)}"
+    else
+        mute_name="N/A"
+    fi
+
+    osd_val=$(get_vcp_sl $VCP_OSD 2>/dev/null) || osd_val=""
+    if [[ -n "$osd_val" ]]; then
+        osd_name="${OSD_NAMES[$osd_val]:-unknown($osd_val)}"
+    else
+        osd_name="N/A"
+    fi
+
+    r=$(get_vcp $VCP_RGB_RED 2>/dev/null) || r="N/A"
+    g=$(get_vcp $VCP_RGB_GREEN 2>/dev/null) || g="N/A"
+    b=$(get_vcp $VCP_RGB_BLUE 2>/dev/null) || b="N/A"
+
+    printf "%-12s %s\n" "Brightness:" "$brightness"
+    printf "%-12s %s\n" "Contrast:" "$contrast"
+    printf "%-12s %s\n" "Volume:" "$volume"
+    printf "%-12s %s\n" "Sharpness:" "$sharpness"
+    printf "%-12s %s\n" "Input:" "$input_name"
+    printf "%-12s %s\n" "Color:" "$color_name"
+    printf "%-12s %s\n" "Mute:" "$mute_name"
+    printf "%-12s %s\n" "OSD:" "$osd_name"
+    printf "%-12s %s %s %s\n" "RGB:" "$r" "$g" "$b"
+}
+
+cmd_on() {
+    echo -n "Turning monitor on..."
+    xset dpms force on
+    echo "done"
+    xset -q | grep "Monitor is"
+    notify_desktop low "Monitor" "DPMS on" video-display "${SCRIPT_NAME}"
+}
+
+cmd_off() {
+    echo -n "Turning monitor off..."
+    xset dpms force off
+    echo "done"
+    xset -q | grep "Monitor is"
+    notify_desktop low "Monitor" "DPMS off" video-display "${SCRIPT_NAME}"
+}
+
+# Main
+[[ $# -eq 0 ]] && usage
+
+cmd="${1,,}"  # lowercase
+shift
+
+case "$cmd" in
+    brightness) cmd_brightness "$@" ;;
+    contrast)   cmd_contrast "$@" ;;
+    volume)     cmd_volume "$@" ;;
+    sharpness)  cmd_sharpness "$@" ;;
+    input)      cmd_input "$@" ;;
+    color)      cmd_color "$@" ;;
+    mute)       cmd_mute "$@" ;;
+    osd)        cmd_osd "$@" ;;
+    rgb)        cmd_rgb "$@" ;;
+    status)     cmd_status ;;
+    on)         cmd_on ;;
+    off)        cmd_off ;;
+    -h|--help|help) usage ;;
+    *)          errexit "Unknown command: $cmd. Use --help for usage." ;;
+esac
