@@ -1,0 +1,211 @@
+#!/bin/bash
+# picwide - Manage ultrawide wallpaper symlinks for Samsung Odyssey 57" (7680x2160)
+# Usage: picwide [-u|--update] [-c|--clean] [-v|--verbose] [-h|--help]
+#
+# Default is dry-run mode (preview). Use -u/--update to actually create/remove symlinks.
+
+set -euo pipefail
+
+#=============================================================================
+# CONFIGURATION - Edit these to match your setup, or override via environment
+#=============================================================================
+WALLPAPER_ROOT="${PICWIDE_ROOT:-/home/serge/Documents/Pictures/Wallpapers}"
+ULTRAWIDE_DIR="${PICWIDE_OUTPUT:-$WALLPAPER_ROOT/ultrawide}"
+MIN_WIDTH="${PICWIDE_MIN_WIDTH:-2560}"       # Minimum image width in pixels
+MIN_RATIO="${PICWIDE_MIN_RATIO:-2.0}"        # Minimum aspect ratio (width/height)
+JOBS="${PICWIDE_JOBS:-8}"                    # Parallel jobs for identify
+#=============================================================================
+
+# Runtime flags (dry-run is default for safety)
+DRY_RUN=true
+VERBOSE=false
+CLEAN_ONLY=false
+
+# Parse flags
+for arg in "$@"; do
+    case $arg in
+        -u|--update) DRY_RUN=false ;;
+        -v|--verbose) VERBOSE=true ;;
+        -c|--clean) CLEAN_ONLY=true ;;
+        -h|--help)
+            echo "Usage: picwide [-u|--update] [-c|--clean] [-v|--verbose]"
+            echo ""
+            echo "Manage ultrawide wallpaper symlinks. Scans wallpaper collection and creates"
+            echo "symlinks to wide images in an 'ultrawide' folder, mirroring the topic structure."
+            echo ""
+            echo "Options:"
+            echo "  -u, --update   Actually create/remove symlinks (default is dry-run)"
+            echo "  -c, --clean    Only remove stale symlinks, don't scan for new ones"
+            echo "  -v, --verbose  Show detailed output"
+            echo "  -h, --help     Show this help"
+            echo ""
+            echo "Environment variables:"
+            echo "  PICWIDE_ROOT       Wallpaper source directory (default: $WALLPAPER_ROOT)"
+            echo "  PICWIDE_OUTPUT     Ultrawide symlink directory (default: \$PICWIDE_ROOT/ultrawide)"
+            echo "  PICWIDE_MIN_WIDTH  Minimum width in pixels (default: $MIN_WIDTH)"
+            echo "  PICWIDE_MIN_RATIO  Minimum aspect ratio (default: $MIN_RATIO)"
+            echo "  PICWIDE_JOBS       Parallel jobs for scanning (default: $JOBS)"
+            echo ""
+            echo "Examples:"
+            echo "  picwide                          # Preview what would be done"
+            echo "  picwide -v                       # Preview with details"
+            echo "  picwide -u                       # Actually create symlinks"
+            echo "  picwide -c -u                    # Only remove stale symlinks"
+            echo "  PICWIDE_MIN_WIDTH=3840 picwide   # Override minimum width"
+            exit 0
+            ;;
+    esac
+done
+
+log() { echo "[INFO] $1"; }
+vlog() { $VERBOSE && echo "[VERB] $1" || true; }
+
+# Clean stale symlinks
+clean_stale() {
+    log "Cleaning stale symlinks..."
+    local count=0
+
+    if [[ ! -d "$ULTRAWIDE_DIR" ]]; then
+        vlog "Ultrawide directory does not exist yet, skipping cleanup"
+        return
+    fi
+
+    while IFS= read -r -d '' link; do
+        if [[ ! -e "$link" ]]; then
+            vlog "Removing broken: $link"
+            $DRY_RUN || rm "$link"
+            ((count++)) || true
+        fi
+    done < <(find "$ULTRAWIDE_DIR" -type l -print0 2>/dev/null)
+
+    if ! $DRY_RUN; then
+        find "$ULTRAWIDE_DIR" -type d -empty -delete 2>/dev/null || true
+    fi
+
+    [[ $count -gt 0 ]] && log "Removed $count stale symlinks" || log "No stale symlinks found"
+}
+
+# Scan and create symlinks (parallelized)
+scan_and_link() {
+    log "Scanning for ultrawide images (ratio >= $MIN_RATIO, width >= $MIN_WIDTH)..."
+
+    # Count total files first (fast)
+    local total_files
+    total_files=$(find "$WALLPAPER_ROOT" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) \
+        ! -path "$ULTRAWIDE_DIR/*" 2>/dev/null | wc -l)
+    log "Found $total_files images to scan (using $JOBS parallel jobs)..."
+
+    # Create temp file for candidates
+    local tmpfile
+    tmpfile=$(mktemp)
+    trap "rm -f '$tmpfile'" EXIT
+
+    # Parallel scan in background with progress indicator
+    find "$WALLPAPER_ROOT" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) \
+        ! -path "$ULTRAWIDE_DIR/*" -print0 2>/dev/null | \
+        xargs -0 -P"$JOBS" -I{} sh -c '
+            dims=$(identify -format "%w %h" "$1" 2>/dev/null) || exit 0
+            echo "$dims $1"
+        ' _ {} > "$tmpfile" &
+    local scan_pid=$!
+
+    # Show progress while scanning
+    while kill -0 $scan_pid 2>/dev/null; do
+        local done_count=$(wc -l < "$tmpfile" 2>/dev/null || echo 0)
+        local pct=$((done_count * 100 / total_files))
+        printf "\r[INFO] Progress: %d / %d (%d%%)  " "$done_count" "$total_files" "$pct"
+        sleep 0.5
+    done
+    wait $scan_pid
+    printf "\r[INFO] Scanned %d images                     \n" "$total_files"
+
+    local added=0 skipped=0 scanned=0
+
+    # Pre-compute min_ratio as integer for faster comparison
+    local min_ratio_x100
+    min_ratio_x100=$(awk "BEGIN {printf \"%d\", $MIN_RATIO * 100}")
+
+    while IFS=' ' read -r w h img; do
+        [[ -z "$w" || -z "$h" || -z "$img" ]] && continue
+        ((scanned++)) || true
+
+        # Check minimum width
+        (( w >= MIN_WIDTH )) || continue
+
+        # Check aspect ratio using bash arithmetic (faster than awk per-iteration)
+        local ratio_x100=$(( w * 100 / h ))
+        (( ratio_x100 >= min_ratio_x100 )) || continue
+
+        local ratio
+        ratio=$(awk "BEGIN {printf \"%.2f\", $w / $h}")
+
+        # Extract topic path
+        local rel_path="${img#$WALLPAPER_ROOT/}"
+        local topic_path
+        topic_path=$(dirname "$rel_path")
+        local filename
+        filename=$(basename "$img")
+
+        local target_dir="$ULTRAWIDE_DIR/$topic_path"
+        local target_link="$target_dir/$filename"
+
+        # Skip if symlink exists
+        if [[ -L "$target_link" ]]; then
+            ((skipped++)) || true
+            continue
+        fi
+
+        vlog "Adding: $rel_path (${w}x${h}, ratio $ratio)"
+
+        if ! $DRY_RUN; then
+            mkdir -p "$target_dir"
+            local rel_source
+            rel_source=$(realpath --relative-to="$target_dir" "$img")
+            ln -s "$rel_source" "$target_link"
+        fi
+        ((added++)) || true
+
+    done < "$tmpfile"
+
+    log "Scanned $scanned images"
+    if $DRY_RUN; then
+        log "Would add $added new symlinks (skipped $skipped existing)"
+    else
+        log "Added $added new symlinks (skipped $skipped existing)"
+    fi
+}
+
+# Main
+main() {
+    log "Ultrawide Wallpaper Manager"
+    log "Source: $WALLPAPER_ROOT"
+    log "Output: $ULTRAWIDE_DIR"
+    log "Criteria: width >= $MIN_WIDTH, ratio >= $MIN_RATIO"
+
+    if $DRY_RUN; then
+        log "DRY RUN - no changes will be made (use --update to apply)"
+    fi
+    echo ""
+
+    # Create output directory if updating
+    if ! $DRY_RUN; then
+        mkdir -p "$ULTRAWIDE_DIR"
+    fi
+
+    clean_stale
+    echo ""
+
+    if ! $CLEAN_ONLY; then
+        scan_and_link
+        echo ""
+    fi
+
+    # Summary
+    local total=0
+    if [[ -d "$ULTRAWIDE_DIR" ]]; then
+        total=$(find "$ULTRAWIDE_DIR" -type l 2>/dev/null | wc -l)
+    fi
+    log "Total ultrawide symlinks: $total"
+}
+
+main
