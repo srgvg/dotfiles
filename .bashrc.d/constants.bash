@@ -6,9 +6,6 @@ export EDITOR=vi
 export DEBFULLNAME="Serge van Ginderachter"
 export DEBEMAIL="serge@vanginderachter.be"
 
-export GIT_COMMITTER_NAME=$(git config --get user.name)
-export GIT_COMMITTER_EMAIL=$(git config --get user.email)
-
 # set variable identifying the chroot you work in (used in the prompt below)
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)

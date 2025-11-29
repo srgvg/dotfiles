@@ -468,9 +468,24 @@
 	path = ~/.gitconfig.d/ginsys
 
 
+[includeIf "gitdir:~/src/vanginderachter/"]
+
+	path = ~/.gitconfig.d/srgvg
+
+
 [includeIf "gitdir:~/src/srgvg/"]
 
 	path = ~/.gitconfig.d/srgvg
+
+
+[includeIf "hasconfig:remote.*.url:**://github.com/siderolabs/**"]
+
+	path = ~/.gitconfig.d/gpgsigning
+
+
+[includeIf "hasconfig:remote.*.url:git@github.com:siderolabs/**"]
+
+	path = ~/.gitconfig.d/gpgsigning
 
 
 ## END
