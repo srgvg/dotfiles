@@ -23,12 +23,12 @@ LOGDIR="${HOME}/logs/cronjobs"
 function log() {
 	local command
 	local logfile
-	command=${1-:default}
+	command=${1:-default}
 	logfile="${LOGDIR}/$(hostname)-${command}-$(date +%y%m%d%H).log"
-	mkdir -p "$(dirname ${logfile})"
-	tee ${logfile}
+	mkdir -p "$(dirname "${logfile}")"
+	tee "${logfile}"
 	# delete file if empty
-	test -s ${logfile} || rm ${logfile}
+	test -s "${logfile}" || rm "${logfile}"
 }
 
 function logline() {
@@ -44,7 +44,7 @@ function logtitle() {
 
 function execute() {
 	local command
-	command=${1-:default}
+	command=${1:-default}
 
 	###############################################################################
 	if [ "${command}" = "cleanup" ]
@@ -109,13 +109,11 @@ function execute() {
             -type f -name "*.json" \
             -mtime +30 \
             -delete
-        # Dekete shell snapshots older than 7 days
+        # Delete shell snapshots older than 7 days
         find $HOME/.claude/shell-snapshots/ \
             -type f -name "snapshot-*.sh" \
             -mtime +7 \
             -delete
-
-  2>/dev/null
 
 	###############################################################################
 	elif [ "${command}" = "update-tools" ]
@@ -127,7 +125,7 @@ function execute() {
 	elif [ "${command}" = "backup-vaultwarden" ]
 	then
 
-		$HOME/bins/backup-vaultwarden.sh
+		$HOME/bin/backup-vaultwarden.sh
 
 	###############################################################################
 	elif [ "${command}" = "default" ]

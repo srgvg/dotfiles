@@ -6,10 +6,10 @@
 # :indentSize=4:tabSize=4:noTabs=false:
 
 PATH=$HOME/bin:$PATH
-source $HOME/bin/parameters.bash
-source $HOME/.bashrc.d/functions.bash
-eval "$(mise env -s bash)"
-export PATH="$PATH:$HOME/.local/share/mise/shims"
+source "$HOME/bin/parameters.bash"
+source "$HOME/.bashrc.d/functions.bash"
+# Use shims for non-interactive scripts (faster than eval "$(mise env -s bash)")
+export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 
 # make sure DEBUG is not exported
@@ -58,11 +58,9 @@ function ifinteractive() {
 function _time() {
 	if command -v time >/dev/null
 	then
-		# shellcheck disable=SC2048
-		/usr/bin/time --format %E $*
+		/usr/bin/time --format %E "$@"
 	else
-		# shellcheck disable=SC2048
-		time $*
+		time "$@"
 	fi
 }
 
@@ -75,7 +73,7 @@ function time2() {
 		all="$*"
 	fi
 	notify_debug "Executing: ${all}"
-	duration="$(_time ${all} 2>&1)"
+	duration="$(_time "$@" 2>&1)"
 	notify "Execution of ${info} took ${duration}s."
 }
 
@@ -83,7 +81,7 @@ function _check_debug_logging() {
 	if ifdebug1 || [ -n "${FORCE_DEBUG_LOGGING:-}" ]
 	then
 		# log this scripts full output
-		mkdir -p ${LOGS_PATH}
+		mkdir -p "${LOGS_PATH}"
 		LOGFILE="$(readlink -f "$0" | sed -e 's@/home/serge/@@' \
 					-e 's@/@_@g' -e 's@ @@g').log"
 		LOGFILE="$LOGS_PATH/${LOGFILE}"
@@ -189,7 +187,7 @@ function parse_notify_desktop() {
 	summary=${2}
 	body=${3}
 	icon=${4:-dialog-info}
-	app=${5:-$(basename $0)}
+	app=${5:-$(basename "$0")}
 
 	case $urgency in
 		"low")

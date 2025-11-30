@@ -6,7 +6,7 @@
 #
 
 HOMETMPDIRNAME="scratch"
-HOMETMPDIR="$(readlink --canonicalize-missing --no-newline $HOME/$HOMETMPDIRNAME)"
+HOMETMPDIR="$(readlink --canonicalize-missing --no-newline "$HOME/$HOMETMPDIRNAME")"
 TMPDIR="${HOMETMPDIR}/tmp"
 BACKGROUND_PICTURES="$HOME/Pictures/Wallpapers"
 
@@ -32,7 +32,7 @@ SETBG_LOOP_DELAY=${SETBG_LOOP_DELAY:-59}
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"
 
-source $HOME/.bashrc.d/0-windowmanager.bash
+source "$HOME/.bashrc.d/0-windowmanager.bash"
 
 # colors
 # these colors must be used with `echo -e`

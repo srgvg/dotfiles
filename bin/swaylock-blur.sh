@@ -18,19 +18,20 @@ source "$HOME/bin/common.bash"
 # grim
 # corrupter (https://github.com/r00tman/corrupter)
 
-IMAGES=""
-IMAGE=""
-LOCK=$HOME/Documents/Pictures/icons/i3lock/lock.png
+LOCK="$HOME/Documents/Pictures/icons/i3lock/lock.png"
 LOCKARGS="$*"
 
-for OUTPUT in `swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name'`
+# Create secure temp directory
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "${TMPDIR}"' EXIT
+
+for OUTPUT in $(swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name')
 do
-    IMAGE=/tmp/$OUTPUT-lock.png
-    grim -o $OUTPUT $IMAGE
-    corrupter -mag 5 -boffset 10  -meanabber 5 $IMAGE $IMAGE
-    composite -gravity center $LOCK $IMAGE $IMAGE
+    IMAGE="${TMPDIR}/${OUTPUT}-lock.png"
+    grim -o "${OUTPUT}" "${IMAGE}"
+    corrupter -mag 5 -boffset 10 -meanabber 5 "${IMAGE}" "${IMAGE}"
+    composite -gravity center "${LOCK}" "${IMAGE}" "${IMAGE}"
     LOCKARGS="${LOCKARGS} --image ${OUTPUT}:${IMAGE}"
-    IMAGES="${IMAGES} ${IMAGE}"
 done
-swaylock $LOCKARGS
-rm $IMAGES
+swaylock ${LOCKARGS}
+# Cleanup handled by trap

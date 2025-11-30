@@ -353,7 +353,7 @@ get_mise() {
         curl https://mise.run | sh
         if ! cmp $HOME/.local/bin/mise $HOME/bin/mise >/dev/null 2>&1
         then
-            mv -v cmp $HOME/.local/bin/mise $HOME/bin/mise
+            mv -v $HOME/.local/bin/mise $HOME/bin/mise
         fi
     fi
 
