@@ -4,17 +4,12 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
-# i3-get-window-criteria - Get criteria for use with i3 config commands
-
-# source https://faq.i3wm.org/question/2172/how-do-i-find-the-criteria-for-use-with-i3-config-commands-like-for_window-eg-to-force-splashscreens-and-dialogs-to-show-in-floating-mode/
-
-# To use, run this script, then click on a window.
-# Output is in the format: [<name>=<value> <name>=<value> ...]
-
-# Known problem: when WM_NAME is used as fallback for the 'title="<string>"'
-# criterion, quotes in "<string>" are not escaped properly. This is a problem
-# with the output of `xprop`,
-# reported upstream: https://bugs.freedesktop.org/show_bug.cgi?id=66807
+# sway-get-window-criteria - Get criteria for use with Sway for_window commands
+#
+# Usage: Run this script, then click on a window (3s delay if interactive).
+# Output format: [app_id="..." title="..." shell="..."] ready for Sway config
+#
+# Copies formatted criteria to clipboard via wl-copy.
 
 set -o nounset
 set -o errexit
@@ -26,20 +21,40 @@ source "$HOME/bin/common.bash"
 
 ifinteractive && sleep 3
 
-props="$(
-	swaymsg --type get_tree --raw \
-		| jq -r 'recurse | try select(.focused == true) | to_entries[] | select(.key == "app_id" or .key == "name" or .key == "shell")' \
-		| jq -s 'map(.key + "=\"" + .value|tostring + "\"" ) |.[]' \
-		| jq -r ||:
-	swaymsg --type get_tree --raw \
-		| jq  'recurse | try select(.focused == true) | try .window_properties' \
-		| grep -v null | jq -s \
-		| jq '.[] | to_entries | .[] | select(.key == "class" or .key == "instance" or .key == "title" or .key == "window_role" )  ' \
-		| jq -s 'map(.key + "=\"" + .value|tostring + "\"" ) |.[]' \
-		| jq -r ||:
-	)"
-echo $props
+# Single swaymsg call
+tree_json="$(swaymsg -t get_tree -r)" || {
+	notify_desktop_always critical "Sway Window Properties" "Failed to get window tree"
+	exit 1
+}
+
+# Extract all properties in one jq pass (newline-separated)
+props="$(echo "$tree_json" | jq -r '
+	recurse | select(.focused? == true) |
+	[
+		(if .app_id then "app_id=\"\(.app_id)\"" else empty end),
+		(if .name then "title=\"\(.name)\"" else empty end),
+		(if .shell then "shell=\"\(.shell)\"" else empty end),
+		(.window_properties // {} | to_entries[] |
+			select(.key == "class" or .key == "instance" or .key == "window_role" or .key == "window_type") |
+			"\(.key)=\"\(.value)\""
+		)
+	] | .[]
+')"
+
+# Handle no focused window
+if [[ -z "$props" ]]; then
+	notify_desktop_always normal "Sway Window Properties" "No focused window found"
+	exit 0
+fi
+
+# Format for Sway config (space-separated in brackets)
+props_inline="$(echo "$props" | paste -sd ' ')"
+formatted="[$props_inline]"
+
+# Output
+echo "$props"
 echo
-echo $props | xargs -n1
-notify_desktop_always low "Sway Window Properties" "${props}"
-echo -n $props | wl-copy
+echo "$formatted"
+echo
+notify_desktop_always low "Sway Window Properties" "$formatted"
+echo -n "$formatted" | wl-copy

@@ -128,9 +128,17 @@ function execute() {
 		$HOME/bin/backup-vaultwarden.sh
 
 	###############################################################################
+	elif [ "${command}" = "picwide" ]
+	then
+
+		$HOME/bin/picwide --verbose --update
+		PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide3 PICWIDE_MIN_WIDTH="3600" PICWIDE_MIN_RATIO="3" $HOME/bin/picwide --verbose --update
+
+	###############################################################################
 	elif [ "${command}" = "default" ]
 	then
-		:
+	    echo "supported options:"
+		grep 'if .* "${command}" = ' ~/bin/cronjobs.sh  | grep -v grep | cut -d\" -f4 | sed s/'^/  - /'
 
 	###############################################################################
 	else

@@ -13,6 +13,8 @@ Exec=/usr/bin/firefox %u
 Name=Local Firefox
 GenericName=Firefox
 Comment=Local Bin Web Browser Instance
+MimeType=x-scheme-handler/unknown;x-scheme-handler/about;text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
+TryExec=/usr/bin/firefox
 
 [Desktop Action new-window]
 Name=New Window
@@ -20,6 +22,8 @@ Exec=/usr/bin/firefox %u
 
 [Desktop Action new-private-window]
 Name=New Private Window
-Exec=/usr/bin/firefox %u
-MimeType=x-scheme-handler/unknown;x-scheme-handler/about;text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
-TryExec=/usr/bin/firefox
+Exec=/usr/bin/firefox --private-window %u
+
+[Desktop Action open-profile-manager]
+Name=Open Profile Manager
+Exec=/usr/bin/firefox --ProfileManager

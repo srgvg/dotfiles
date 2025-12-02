@@ -1,5 +1,5 @@
 com.discordapp.Discord	0.0.116	flathub	system
-com.getpostman.Postman	11.73.4	flathub	system
+com.getpostman.Postman	11.73.5	flathub	system
 com.github.tchx84.Flatseal	2.4.0	flathub	system
 com.google.Chrome	142.0.7444.175-1	flathub	system
 com.mattermost.Desktop	6.0.1	flathub	system
