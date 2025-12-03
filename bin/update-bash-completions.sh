@@ -25,6 +25,7 @@ completion_bash_commands=(
     civo
     clusterctl
     cmctl
+    codex
     datree
     doctl
     dyff
