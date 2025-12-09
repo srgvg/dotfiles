@@ -1,7 +1,7 @@
 com.discordapp.Discord	0.0.117	flathub	system
-com.getpostman.Postman	11.74.3	flathub	system
+com.getpostman.Postman	11.74.5	flathub	system
 com.github.tchx84.Flatseal	2.4.0	flathub	system
-com.google.Chrome	142.0.7444.175-1	flathub	system
+com.google.Chrome	143.0.7499.40-1	flathub	system
 com.mattermost.Desktop	6.0.1	flathub	system
 com.nextcloud.desktopclient.nextcloud	4.0.3	flathub	system
 com.rtosta.zapzap	6.2.4	flathub	system
@@ -11,12 +11,12 @@ com.spotify.Client	1.2.74.477.g3be53afe	flathub	system
 eu.scarpetta.PDFMixTool	1.1.1	flathub	system
 io.dbeaver.DBeaverCommunity	25.2.5	flathub	system
 io.github.dyegoaurelio.simple-wireplumber-gui	0.2.2	flathub	system
-io.github.ungoogled_software.ungoogled_chromium	142.0.7444.175-1	flathub	system
+io.github.ungoogled_software.ungoogled_chromium	143.0.7499.40-1	flathub	system
 io.kinvolk.Headlamp	0.38.0	flathub	system
-org.chromium.Chromium	142.0.7444.175	flathub	system
+org.chromium.Chromium	143.0.7499.40	flathub	system
 org.ferdium.Ferdium	7.1.1	flathub	system
 org.gnome.NetworkDisplays	0.97.0	flathub	system
 org.signal.Signal	7.81.0	flathub	system
 org.sonusmix.Sonusmix		sonusmix.org	system
-org.telegram.desktop	6.3.4	flathub	system
+org.telegram.desktop	6.3.6	flathub	system
 rest.insomnia.Insomnia	12.1.0	flathub	system

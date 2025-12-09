@@ -71,9 +71,9 @@ case ${1:-} in
 		if [ -n "$player0" ]
 		then
 			stat=""
-			player="$(echo -n $player0 | tr '[:lower:]' '[:upper:]')"
-			player0="-p $player0"
-			state="$(playerctl $player0 status 2>&1 ||:)"
+			player="$(echo -n $player0 | tr '[:upper:]' '[:lower:]')"
+			pplayer="-p $player"
+			state="$(playerctl $pplayer status 2>&1 ||:)"
 
 			if   [ "${state}" = "Playing" ]
 			then
@@ -81,10 +81,10 @@ case ${1:-} in
 					if [ "${player}" = "VLC" ]
 					then
 						artist=""
-						title="$( playerctl $player0 metadata vlc:nowplaying 2>/dev/null||:)"
+						title="$( playerctl $pplayer metadata vlc:nowplaying 2>/dev/null||playerctl $pplayer metadata xesam:title 2>/dev/null ||:)"
 					else
-						artist="$(playerctl $player0 metadata xesam:artist 2>/dev/null||:)"
-						title="$( playerctl $player0 metadata xesam:title 2>/dev/null ||:)"
+						artist="$(playerctl $pplayer metadata xesam:artist 2>/dev/null||:)"
+						title="$( playerctl $pplayer metadata xesam:title 2>/dev/null ||:)"
 					fi
 					if [ -n "$artist" ]
 					then
