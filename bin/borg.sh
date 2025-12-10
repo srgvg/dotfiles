@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 self=`readlink -f $0`
 basedir=`dirname $self`

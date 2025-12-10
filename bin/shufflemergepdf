@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 FILENAME=$(date +%Y%m%d%H%M%S)-${1%.*}-shufflemerged.pdf
 pdftk A=$1 B=$2 shuffle A1-end Bend-1 output $FILENAME.tmp
 cat <<EOF | pdftk $FILENAME.tmp update_info - output $FILENAME 

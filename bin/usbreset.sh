@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 PWD=`dirname $0`
 USBRESET="/home/serge/bin2/usbreset"

@@ -1,2 +1,37 @@
 #!/usr/bin/env bash
-NVIM_APPNAME=astronvim nvim "$@"
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# Default to LunarVim
+NVIM_CONFIG="lvim"
+
+# Parse first argument for config switching
+case "$1" in
+    --astro|--astronvim)
+        NVIM_CONFIG="astronvim"
+        shift
+        ;;
+    --lazy|--lazyvim)
+        NVIM_CONFIG="lazyvim"
+        shift
+        ;;
+    --chad|--nvchad)
+        NVIM_CONFIG="chadnvim"
+        shift
+        ;;
+    --lvim|--lunar|--lunarvim)
+        NVIM_CONFIG="lvim"
+        shift
+        ;;
+    --list)
+        echo "Available neovim configs:"
+        echo "  vi [--lvim|--lunar]    LunarVim (default)"
+        echo "  vi --astro             AstroNvim"
+        echo "  vi --lazy              LazyVim"
+        echo "  vi --chad              NvChad"
+        exit 0
+        ;;
+esac
+
+NVIM_APPNAME="$NVIM_CONFIG" nvim "$@"

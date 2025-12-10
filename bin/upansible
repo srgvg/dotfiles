@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 pushd /home/serge/src/ansible/ansible
 git up && (

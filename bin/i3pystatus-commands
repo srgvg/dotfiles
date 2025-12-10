@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 expandtab:
@@ -114,12 +114,6 @@ case ${1:-} in
 		else
 				output="◼ "
 		fi
-		;;
-	refresh)
-		p3spid=$(pgrep -f "python3 $HOME/.i3/i3pystatusconf.py")
-		kill -SIGUSR1 ${p3spid}
-		output=""
-		echo "py3status process ${p3spid} refreshed"
 		;;
 	*)
 		notify_error "$(

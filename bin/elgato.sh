@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 expandtab:
@@ -14,4 +14,4 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 elgato lights || elgato lights --discover
-elgato $@ && notify_desktop_always low "Elgato Desktop Light" "$((elgato lights | grep 'power: off' || elgato lights | grep -e brightness -e color) | xargs)" night-light-symbolic
+elgato "$@" && notify_desktop_always low "Elgato Desktop Light" "$( (elgato lights | grep 'power: off' || elgato lights | grep -e brightness -e color) | xargs)" night-light-symbolic

@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 if [ -z "$1" -o ! "${1##*.}" = "pdf" -a ! "${1##*.}" = "PDF" ]
         then # first parameter is empty or no pdf extension

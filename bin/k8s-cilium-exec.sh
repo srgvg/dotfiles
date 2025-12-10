@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Authors of Cilium
 

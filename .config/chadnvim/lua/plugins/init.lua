@@ -13,6 +13,10 @@ return {
     end,
   },
 
+  -- User plugins
+  { "editorconfig/editorconfig-vim" },
+  { "jamessan/vim-gnupg" },
+
   -- test new blink
   -- { import = "nvchad.blink.lazyspec" },
 

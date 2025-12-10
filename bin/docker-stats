@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # This script is used to complete the output of the docker stats command.
 # The docker stats command does not compute the total amount of resources (RAM or CPU)

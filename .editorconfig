@@ -1,64 +1,31 @@
-# http://editorconfig.org
-
+# EditorConfig for ~/bin scripts
+# https://editorconfig.org/
 root = true
 
+# Default for all files
 [*]
-indent_style = space
-indent_size = 4
-insert_final_newline = true
-trim_trailing_whitespace = true
+charset = utf-8
 end_of_line = lf
-charset = utf-8
-max_line_length = 119
+insert_final_newline = true
+trim_trailing_whitespace = true
 
-# Docstrings and comments use max_line_length = 72
-# https://www.python.org/dev/peps/pep-0008/#maximum-line-length
+# Shell scripts: tabs
+[*.{sh,bash}]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+# Python scripts: spaces
 [*.py]
-end_of_line = LF
-charset = utf-8
-indent_size = 4
-max_line_length = 79
-trim_trailing_whitespace = true
-
-[*.sh]
-indent_style = tab
-
-[*.vim]
 indent_style = space
 indent_size = 4
-insert_final_newline = true
-trim_trailing_whitespace = true
-max_line_length = 79
 
-[*.rb]
-indent_style = space
-indent_size = 2
-insert_final_newline = true
-trim_trailing_whitespace = true
-max_line_length = 119
-
-# The JSON files contain newlines inconsistently
-[*.json]
-indent_size = 2
-insert_final_newline = ignore
-
-[*.yml]
+# YAML/JSON: spaces (common convention)
+[*.{yml,yaml,json}]
 indent_style = space
 indent_size = 2
 
-# Use 2 spaces for the HTML files
-[*.html]
+# Markdown: spaces
+[*.md]
+indent_style = space
 indent_size = 2
-
-# Minified JavaScript files shouldn't be changed
-[**.min.js]
-indent_style = ignore
-insert_final_newline = ignore
-
-# Makefiles always use tabs for indentation
-[Makefile]
-indent_style = tab
-
-# Batch files use tabs for indentation
-[*.bat]
-indent_style = tab

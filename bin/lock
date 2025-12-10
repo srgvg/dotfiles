@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
@@ -8,10 +13,6 @@
 #   Source: https://bbs.archlinux.org/viewtopic.php?pid=1170536#p1170536 by 65kid
 #   Also: https://wiki.debian.org/ScreenLockingOnSleep
 #
-
-set -o nounset
-set -o errexit
-set -o pipefail
 
 # always log
 # shellcheck disable=SC2034

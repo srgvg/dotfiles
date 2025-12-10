@@ -44,9 +44,13 @@ function define_adds() {
 .config/htop/
 .config/krew-index-list
 .config/krew-list
-.config/lvim/			:!.config/lvim/lazy-lock.json
-.config/lazyvim/    .config/chadnvim/   .config/astronvim/			:!.config/*vim/lazy-lock.json
-.config/mako/
+
+.config/nvim-shared/
+.config/lvim/                   :!.config/lvim/lazy-lock.json :!.config/lvim/lv-settings.lua
+.config/lazyvim/                :!.config/lazyvim/lazy-lock.json
+.config/chadnvim/               :!.config/chadnvim/lazy-lock.json
+.config/astronvim/              :!.config/astronvim/lazy-lock.json
+
 .config/mimeapps.list
 .config/mise/
 .mise-global.toml
@@ -74,7 +78,6 @@ function define_adds() {
 .gitignore
 .gitignore.d/dot
 .git-template/
-.i3/
 .kube/kubie.yaml
 .kube/plugin-completion-config/
 .local/etc
@@ -88,7 +91,6 @@ function define_adds() {
 .local/share/icons/
 .local/share/nautilus/ :!.local/share/nautilus/tags/
 .local/share/nemo/
-.pam_environment
 .pastebinit.xml
 .profile
 .screenlayout
@@ -97,7 +99,6 @@ function define_adds() {
 .swaybg
 .tigrc
 .XCompose
-.Xresources
 bin/
 Applications
 Backgrounds

@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # alternative dpkg -P $( dpkg -l linux-{image,headers}*-3* | awk '/ii/{ if ( $2 !~ "'$(uname -r | sed -e 's/-[a-z]*$//')'" ) print $2 }' )
 

@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
@@ -10,11 +13,6 @@
 # Output format: [app_id="..." title="..." shell="..."] ready for Sway config
 #
 # Copies formatted criteria to clipboard via wl-copy.
-
-set -o nounset
-set -o errexit
-set -o pipefail
-
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"

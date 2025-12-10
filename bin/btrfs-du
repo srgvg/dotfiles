@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 #
 # Script that outputs the filesystem usage of snapshots in a location ( root if omited )

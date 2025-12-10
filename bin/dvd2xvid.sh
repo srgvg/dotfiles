@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 #http://straps4linux.blogspot.com/2006/11/script-dvd2xvidsh.html
 
 . utility.sh

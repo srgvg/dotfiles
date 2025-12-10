@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # openvpn route-up/down script
 # for use with route-noexec to avoid being set a default gateway

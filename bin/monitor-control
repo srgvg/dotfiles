@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 #
 # monitor-control - Control Samsung Odyssey G95NC monitor via DDC/CI
 #
@@ -8,10 +13,6 @@
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
 # vi: set shiftwidth=4 tabstop=4 expandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
-
-set -o nounset
-set -o errexit
-set -o pipefail
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"

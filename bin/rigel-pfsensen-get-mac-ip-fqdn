@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 (ssh root@rigel.lan.vanginderachter.be grep hardware /var/dhcpd/etc/dhcpd.conf -A1 | grep -e 'hardware ethernet' -e \
 'fixed-address' | sed -e 's/.*hardware ethernet //' -e 's/.*fixed-address //' -e 's/;//' | sed 'N;s/\n/ /' | awk \

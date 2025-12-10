@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 # shellcheck disable=SC2034
 
 # c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
-# vi: set shiftwidth=4 tabstop=4
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
 #
 
 HOMETMPDIRNAME="scratch"

@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 export GIT_EDITOR="sed -i '2s/pick/squash/;/# This is the 2nd commit message:/,$ {d}'"
 git rebase -i HEAD~2

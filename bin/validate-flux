@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # https://github.com/fluxcd/flux2-kustomize-helm-example/blob/main/scripts/validate.sh
 

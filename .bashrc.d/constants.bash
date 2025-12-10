@@ -17,7 +17,7 @@ export SHELLCHECK_OPTS='--shell=bash --exclude=SC2086'
 # my defaults for mtr
 export MTR_OPTIONS="--show-ips --ipinfo 2 --order LDRSNBAWVGJMXI"
 
-export LANGUAGE="en_US:en"
-export LC_MESSAGES="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
-export LC_COLLATE="en_US.UTF-8"
+export LANGUAGE="en_GB:en"
+export LC_MESSAGES="en_GB.UTF-8"
+export LC_CTYPE="en_GB.UTF-8"
+export LC_COLLATE="en_GB.UTF-8"

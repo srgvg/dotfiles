@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+set -o pipefail
 
 # source:
 # https://github.com/tfnico/prefs/blob/master/bin-source/git-svn-relocate

@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
 #
 # Safe /tmp cleanup script.
 #
@@ -7,8 +12,6 @@
 #   - Age threshold:    7 days
 #   - Scope:            current user only
 #   - Mode:             dry-run (no deletions)
-
-set -euo pipefail
 
 DEFAULT_TARGET="/tmp"
 DEFAULT_AGE_DAYS=7
