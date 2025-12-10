@@ -4,6 +4,7 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
+# shellcheck source=/dev/null
 source  ~/.bashrc.d/keychain.bash
 
 set -o nounset

@@ -9,14 +9,15 @@ set -o pipefail
 ## route-up ovpn-setroutes.sh
 ## route-pre-down ovpn-setroutes.sh
 
-for i in `seq 1 9`
+# shellcheck disable=SC2154  # route_netmask, route_gateway, script_type set by OpenVPN
+for i in $(seq 1 9)
 do
     for vartype in route_gateway route_netmask route_network
     do
         varname=${vartype}_${i}
-        [ ! -z "${!varname}" ] && eval ${vartype}[$i]=${!varname}
+        [ -n "${!varname}" ] && eval "${vartype}[$i]=${!varname}"
     done
-    if [ ! -z "${route_network[$i]}" ]
+    if [ -n "${route_network[$i]}" ]
     then
         case ${script_type} in
             "route-up")

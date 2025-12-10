@@ -11,6 +11,7 @@ set -o pipefail
 
 # vars
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+# shellcheck disable=SC2034  # SCRIPT_NAME kept for potential future use
 SCRIPT_NAME="$(echo $0 | sed 's|\.\/||g')"
 OUTPUT_DIR=${SCRIPT_PATH}/out_dir
 PLUTO_DIR=${SCRIPT_PATH}/pluto

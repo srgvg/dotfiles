@@ -20,6 +20,7 @@ then
 	exit 1
 elif [ -f "${TALOSCONFIG}" ]
 then
+	# shellcheck disable=SC2034  # TALOSCONFIG_EXISTED kept for potential future use
 	TALOSCONFIG_EXISTED=1
 	CONFIG="$(talosctl --talosconfig "${TALOSCONFIG}" config info -o json)"
 	CONTEXT="$(echo ${CONFIG} | jq -rc .context)"
