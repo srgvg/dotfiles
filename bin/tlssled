@@ -636,9 +636,9 @@ echo "$PREFERED_CIPHERS" | grep "RC4"
 # TLS v1.1 & v1.2, if not, the openssl help is displayed in the command 
 # output.
 #
-OUTPUT_TLS1_1=$((echo Q; sleep $DELAY) | \
+OUTPUT_TLS1_1=$( (echo Q; sleep $DELAY) | \
 openssl s_client -tls1_1 -connect $HOST:$PORT 2>&1)
-OUTPUT_TLS1_2=$((echo Q; sleep $DELAY) | \
+OUTPUT_TLS1_2=$( (echo Q; sleep $DELAY) | \
 openssl s_client -tls1_2 -connect $HOST:$PORT 2>&1)
 
 #      if "DONE":                   TLS v1.x supported

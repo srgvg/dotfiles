@@ -36,9 +36,8 @@ update_fork(){
 	local tmpdir=$(mktemp -d)
 
 
-	if [[ " ${ignore_repos[@]} " =~ " ${repo} " ]]; then
-		return
-	fi
+	local r
+	for r in "${ignore_repos[@]}"; do [[ "$r" == "$repo" ]] && return; done
 
 	echo
 	echo "Updating Fork: ${forked_repo} -> Upstream: ${upstream_repo}"

@@ -344,14 +344,14 @@ trap kill_kubectl_processes EXIT
 all_pods_containers=$(echo -e `${KUBECTL_BIN} get pods ${namespace_arg} ${context:+--context=${context}} --output=jsonpath="{range .items[*]}{.metadata.name} {.spec['containers', 'initContainers'][*].name} \n{end}"`)
 
 
-for pod in ${matching_pods[@]}; do
+for pod in "${matching_pods[@]}"; do
 	if [ ${#containers[@]} -eq 0 ]; then
 		pod_containers=($(echo -e "$all_pods_containers" | grep "$pod " | cut -d ' ' -f2- | xargs -n1))
 	else
 		pod_containers=("${containers[@]}")
 	fi
 
-	for container in ${pod_containers[@]}; do
+	for container in "${pod_containers[@]}"; do
 		[ ${matching_pods_size} -eq 1 -a ${#pod_containers[@]} -eq 1 ] && single_stream="true" || single_stream="false"
 
 		if [ ${colored_output} == "false" ] || [ ${single_stream} == "true" ]; then

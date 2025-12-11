@@ -16,7 +16,7 @@ fi
 on_exit() {
     kill $ssh_nc_pid
 }
-trap on_exit INT TERM KILL EXIT
+trap on_exit INT TERM EXIT
 
 set -x
 # setup remote listener

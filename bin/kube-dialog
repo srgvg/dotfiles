@@ -43,7 +43,7 @@ OBJ_LIST=(       # k8s objects to observe, list will be updated
 )
 
 outputypes=(json yaml wide name)
-printf -v outputypes_list '%s|' ${outputypes[@]}
+printf -v outputypes_list '%s|' "${outputypes[@]}"
 cmds_regen(){  # Commands to run, list will be updated
                #-----------------------+--------------------------------------------------------------+
                #   Command name        |   Description                                                |
@@ -377,7 +377,7 @@ filter_items(){
                               filtered_list+=( "${to_filter[n]}" "${to_filter[d]}" )
                           }
                       done
-                      [[ ${filtered_list[@]} ]] || { clear; pause 'Nothing found'; $2; }
+                      [[ ${#filtered_list[@]} -gt 0 ]] || { clear; pause 'Nothing found'; $2; }
                       case $1 in
                            ns) namespaces=( "${filtered_list[@]}" ) nfilter=$fpattern;;
                           obj) objects=(    "${filtered_list[@]}" ) ofilter=$fpattern;;
@@ -393,7 +393,7 @@ filter_items(){
 
 select_namespace(){  with_labels=
     [[ $labels ]] && with_labels="-l $labels"
-    [[ ${namespaces[@]} ]] || {
+    [[ ${#namespaces[@]} -gt 0 ]] || {
         WAIT
         data=$(kube get ns $with_labels)
         objlist_gen namespace
@@ -473,7 +473,7 @@ select_object(){
     incontainer=
     containers=
     container=
-    [[  ${objects[@]}  ]] || get_objects
+    [[ ${#objects[@]} -gt 0 ]] || get_objects
           object=$(D menu "$short_title" SELECT LABELS '--extra-button --extra-label RELOAD --help-button --help-label SELECT_TYPE' "${objects[@]}" "${quick_butt[@]}")
 	case $object:$? in
 		 $quickl:*) select_object;;

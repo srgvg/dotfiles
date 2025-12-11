@@ -28,7 +28,7 @@ set -o pipefail
 if [ $# -ne 1 ]
 then
   echo "Usage: `basename $0` {new subversion url}"
-  exit -1
+  exit 1
 fi
 
 if [[ $1 = "--help" || $1 = "-h" ]]

@@ -17,7 +17,7 @@ then
 	target="$1"
 	shift
 else
-	target="${$HOME/Pictures}"
+	target="${HOME}/Pictures"
 fi
 target="$(readlink -e "${target}")"
 
@@ -37,4 +37,4 @@ then
 	target=$(dirname "${target}")
 fi
 
-/usr/bin/feh ${options[@]} "${options2}" "${target}" $*
+/usr/bin/feh "${options[@]}" "${options2}" "${target}" "$@"
