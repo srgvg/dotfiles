@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=all  # External script - do not modify
 
 # vim: ts=8
 #########################################################################

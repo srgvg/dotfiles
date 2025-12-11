@@ -19,6 +19,13 @@ DIRS=("$HOME/bin" "$HOME/bin2" "$HOME/bins")
 VERBOSE=0
 COUNT_ONLY=0
 
+# External scripts to exclude (from EXTERNAL_SCRIPTS.txt)
+EXTERNAL_SCRIPTS=(
+	"tcpping"
+	"rescan-scsi-bus.sh"
+	"tuning-primer.sh"
+)
+
 usage() {
 	cat <<-'EOF'
 	Usage: shellcheck-all.sh [OPTIONS]
@@ -85,6 +92,16 @@ case $SEVERITY in
 		;;
 esac
 
+# Check if a file is in the external scripts list
+is_external_script() {
+	local filename
+	filename=$(basename "$1")
+	for external in "${EXTERNAL_SCRIPTS[@]}"; do
+		[[ "$filename" == "$external" ]] && return 0
+	done
+	return 1
+}
+
 # Find all shell scripts by checking shebang
 find_shell_scripts() {
 	local dir="$1"
@@ -93,6 +110,8 @@ find_shell_scripts() {
 	while IFS= read -r -d '' file; do
 		# Skip non-regular files
 		[[ -f "$file" ]] || continue
+		# Skip external scripts
+		is_external_script "$file" && continue
 		# Check if file starts with shell shebang
 		if head -1 "$file" 2>/dev/null | grep -qE '^#!.*(bash|sh)'; then
 			echo "$file"

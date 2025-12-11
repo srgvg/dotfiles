@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=all  # External script - do not modify
 # Skript to rescan SCSI bus, using the 
 # scsi add-single-device mechanism
 # (c) 1998--2008 Kurt Garloff <kurt@garloff.de>, GNU GPL v2 or later
