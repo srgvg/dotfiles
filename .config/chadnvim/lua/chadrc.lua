@@ -6,7 +6,7 @@
 local M = {}
 
 M.base46 = {
-	theme = "onedark",
+	theme = "onedark", -- NvChad uses base46, not vim colorscheme
 
 	-- hl_override = {
 	-- 	Comment = { italic = true },

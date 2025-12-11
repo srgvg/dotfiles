@@ -3,26 +3,19 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-# Default to LunarVim
-NVIM_CONFIG="lvim"
-
 # Parse first argument for config switching
-case "$1" in
+case "${1:-}" in
     --astro|--astronvim)
-        NVIM_CONFIG="astronvim"
-        shift
+        NVIM_APPNAME="astronvim" exec nvim "${@:2}"
         ;;
     --lazy|--lazyvim)
-        NVIM_CONFIG="lazyvim"
-        shift
+        NVIM_APPNAME="lazyvim" exec nvim "${@:2}"
         ;;
     --chad|--nvchad)
-        NVIM_CONFIG="chadnvim"
-        shift
+        NVIM_APPNAME="chadnvim" exec nvim "${@:2}"
         ;;
     --lvim|--lunar|--lunarvim)
-        NVIM_CONFIG="lvim"
-        shift
+        exec lvim "${@:2}"
         ;;
     --list)
         echo "Available neovim configs:"
@@ -32,6 +25,8 @@ case "$1" in
         echo "  vi --chad              NvChad"
         exit 0
         ;;
+    *)
+        # Default to LunarVim
+        exec lvim "$@"
+        ;;
 esac
-
-NVIM_APPNAME="$NVIM_CONFIG" nvim "$@"

@@ -16,6 +16,7 @@ return {
   -- User plugins
   { "editorconfig/editorconfig-vim" },
   { "jamessan/vim-gnupg" },
+  { "folke/tokyonight.nvim", lazy = false, priority = 1000 },
 
   -- test new blink
   -- { import = "nvchad.blink.lazyspec" },

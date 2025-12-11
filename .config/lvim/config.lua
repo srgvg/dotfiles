@@ -6,6 +6,11 @@
 -- Load shared configuration
 dofile(os.getenv("HOME") .. "/.config/nvim-shared/common.lua")
 
+-- Colorscheme (LunarVim-specific)
+-- Check if tokyonight is available, otherwise use default
+local ok, _ = pcall(require, "tokyonight")
+lvim.colorscheme = ok and "tokyonight" or "lunar"
+
 -- general
 lvim.log.level = "info"
 lvim.format_on_save = {
@@ -30,6 +35,7 @@ lvim.builtin.nvimtree.setup.renderer.icons.show.git = false
 lvim.builtin.treesitter.auto_install = true
 
 lvim.plugins = {
+    { "folke/tokyonight.nvim" },
     { "editorconfig/editorconfig-vim" },
     { "jamessan/vim-gnupg" },
     { "getnf/getnf" },
