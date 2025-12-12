@@ -5,28 +5,28 @@ set -o pipefail
 
 # Parse first argument for config switching
 case "${1:-}" in
+    --list)
+        echo "Available neovim configs:"
+        echo "  vi [--lvim|--lunar]    LunarVim"
+        echo "  vi --astro             AstroNvim"
+        echo "  vi --lazy              LazyVim"
+        echo "  vi --chad              NvChad"
+        exit 0
+        ;;
     --astro|--astronvim)
         NVIM_APPNAME="astronvim" exec nvim "${@:2}"
         ;;
     --lazy|--lazyvim)
         NVIM_APPNAME="lazyvim" exec nvim "${@:2}"
         ;;
-    --chad|--nvchad)
-        NVIM_APPNAME="chadnvim" exec nvim "${@:2}"
-        ;;
     --lvim|--lunar|--lunarvim)
         exec lvim "${@:2}"
         ;;
-    --list)
-        echo "Available neovim configs:"
-        echo "  vi [--lvim|--lunar]    LunarVim (default)"
-        echo "  vi --astro             AstroNvim"
-        echo "  vi --lazy              LazyVim"
-        echo "  vi --chad              NvChad"
-        exit 0
+    --chad|--nvchad)
+        NVIM_APPNAME="chadnvim" exec nvim "${@:2}"
         ;;
-    *)
-        # Default to LunarVim
-        exec lvim "$@"
+    *) # Default to ...
+        #exec lvim "$@"
+        NVIM_APPNAME="lazyvim" exec nvim "$@"
         ;;
 esac

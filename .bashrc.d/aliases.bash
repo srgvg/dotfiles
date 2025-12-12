@@ -122,6 +122,7 @@ alias unwrap="printf '\033[?7l'"
 alias wrap="printf '\033[?7h'"
 # v
 alias v="vcsh"
+alias vd="dotfiles"
 alias vs="vcsh status --terse"
 alias vsd="vcsh foreach diff-index --patch HEAD --color=always | less --raw-control-chars --quit-if-one-screen"
 alias vsi="vcsh foreach myinfo"
