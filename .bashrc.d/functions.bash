@@ -191,6 +191,12 @@ function pbin() {
 	paste
 }
 
+function rp() {
+
+	realpath ${1:-} | copy
+	paste
+}
+
 function up() {
 	# Quickly CD Out Of n Directories
 	local x=''

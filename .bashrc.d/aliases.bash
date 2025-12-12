@@ -102,7 +102,6 @@ alias poweroff='sudo /sbin/poweroff'
 alias psless="ps auxwwf | less"
 # r
 alias r="ranger"
-alias rp="realpath"
 # s
 alias shredit='shred --verbose --iterations 5 --zero --remove'
 alias showpath="readlink -f"
