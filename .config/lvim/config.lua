@@ -71,7 +71,7 @@ code_actions.setup {
     },
 }
 
--- Configure yaml-language-server with K8s schema support
+-- Configure yaml-language-server with SchemaStore auto-detection
 require("lvim.lsp.manager").setup("yamlls", {
     settings = {
         yaml = {
@@ -79,9 +79,7 @@ require("lvim.lsp.manager").setup("yamlls", {
                 enable = true,
                 url = "https://www.schemastore.org/api/json/catalog.json",
             },
-            schemas = {
-                kubernetes = { "*.yaml", "*.yml" },
-            },
+            schemas = {},
             validate = true,
             completion = true,
             hover = true,

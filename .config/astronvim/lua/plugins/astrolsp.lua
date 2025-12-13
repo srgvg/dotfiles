@@ -50,9 +50,7 @@ return {
               enable = true,
               url = "https://www.schemastore.org/api/json/catalog.json",
             },
-            schemas = {
-              kubernetes = { "*.yaml", "*.yml" },
-            },
+            schemas = {},
             validate = true,
             completion = true,
             hover = true,

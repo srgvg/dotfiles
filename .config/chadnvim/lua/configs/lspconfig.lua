@@ -3,7 +3,7 @@ require("nvchad.configs.lspconfig").defaults()
 local servers = { "html", "cssls", "yamlls" }
 vim.lsp.enable(servers)
 
--- Configure yamlls with K8s schema support
+-- Configure yamlls with SchemaStore auto-detection
 vim.lsp.config.yamlls = {
   settings = {
     yaml = {
@@ -11,9 +11,7 @@ vim.lsp.config.yamlls = {
         enable = true,
         url = "https://www.schemastore.org/api/json/catalog.json",
       },
-      schemas = {
-        kubernetes = { "*.yaml", "*.yml" },
-      },
+      schemas = {},
       validate = true,
       completion = true,
       hover = true,
