@@ -13,8 +13,7 @@ alias bi="bash-it"
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'
 alias bwl='export BW_SESSION='
 # c
-if [ "${MY_WM}" = "sway" ]
-then
+if [ "${MY_WM}" = "sway" ]; then
     alias copy='wl-copy'
 else
     alias copy='xclip -in -selection clipboard'
@@ -47,7 +46,7 @@ alias glt='git lolt'
 #alias gpg='gpg2'
 alias grep='grep --color=auto'
 alias grepr='grep --line-number --initial-tab --recursive'
-hash gron >&/dev/null && alias ngron="gron --ungron" ||:
+hash gron >&/dev/null && alias ngron="gron --ungron" || :
 alias gsmu='git submodule update'
 alias gt='git tree'
 alias gtt='git treet'
@@ -63,8 +62,7 @@ alias jqc="jq -C . | less -r"
 alias kb="kustomize build"
 alias kbf="kustomize-build-flux"
 alias kbfad="kustomize-build-flux-apply-dry"
-if command -v /home/serge/.local/share/mise/shims/kubecolor >/dev/null 2>&1
-then
+if command -v /home/serge/.local/share/mise/shims/kubecolor >/dev/null 2>&1; then
     alias k="kubecolor"
     complete -o default -F __start_kubectl k
     alias kubectl="kubecolor"
@@ -73,7 +71,6 @@ else
     alias k="kubectl"
 fi
 complete -F _complete_alias k
-alias k9s="k9s --logoless --all-namespaces"
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
@@ -90,8 +87,7 @@ alias locate="locate --existing --ignore-case"
 # o
 alias o='xdg-open'
 # p
-if [ "${MY_WM}" = "sway" ]
-then
+if [ "${MY_WM}" = "sway" ]; then
     alias paste='wl-paste --no-newline'
 else
     alias paste='xclip -out -selection clipboard'
@@ -110,8 +106,7 @@ alias ssh-nokey="ssh -o PubkeyAuthentication=no"
 alias ssh-pw="ssh -o ControlPath=none -o PreferredAuthentications=password"
 alias sysl="tail -n 200 -f /var/log/syslog"
 # t
-if command -v /home/serge/.asdf/shims/talosctl >/dev/null 2>&1
-then
+if command -v /home/serge/.asdf/shims/talosctl >/dev/null 2>&1; then
     alias t="talosctl"
 fi
 alias _talosctl-reset-to-maintenance="echo talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --reboot --wait=false"
@@ -133,4 +128,3 @@ alias wheredoc="locate --all --existing --follow --ignore-case /home/serge/Docum
 # y
 hash yazi &>/dev/null && alias y="yazi"
 hash jless &>/dev/null && alias yless="jless --mode line --yaml"
-

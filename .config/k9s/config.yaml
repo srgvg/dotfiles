@@ -1,0 +1,42 @@
+k9s:
+  liveViewAutoRefresh: true
+  screenDumpDir: /home/serge/.local/state/k9s/screen-dumps
+  refreshRate: 5
+  maxConnRetry: 5
+  readOnly: false
+  noExitOnCtrlC: false
+  ui:
+    enableMouse: true
+    headless: false
+    logoless: true
+    crumbsless: true
+    noIcons: false
+  skipLatestRevCheck: false
+  disablePodCounting: false
+  shellPod:
+    image: busybox:1.37.0
+    namespace: default
+    limits:
+      cpu: 100m
+      memory: 100Mi
+  imageScans:
+    enable: false
+    exclusions:
+      namespaces: []
+      labels: {}
+  logger:
+    tail: 100
+    buffer: 5000
+    sinceSeconds: -1
+    #fullScreenLogs: false
+    textWrap: false
+    showTime: false
+  namespace:
+    active: all
+  thresholds:
+    cpu:
+      critical: 90
+      warn: 70
+    memory:
+      critical: 90
+      warn: 70

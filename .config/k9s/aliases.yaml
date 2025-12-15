@@ -1,0 +1,22 @@
+aliases:
+  # Standard K8s
+  dp: apps/v1/deployments
+  sec: v1/secrets
+  jo: batch/v1/jobs
+  cr: rbac.authorization.k8s.io/v1/clusterroles
+  crb: rbac.authorization.k8s.io/v1/clusterrolebindings
+  ro: rbac.authorization.k8s.io/v1/roles
+  rb: rbac.authorization.k8s.io/v1/rolebindings
+  np: networking.k8s.io/v1/networkpolicies
+  # FluxCD
+  ku: kustomize.toolkit.fluxcd.io/v1/kustomizations
+  oci: source.toolkit.fluxcd.io/v1beta2/ocirepositories
+  hr: helm.toolkit.fluxcd.io/v2/helmreleases
+  git: source.toolkit.fluxcd.io/v1/gitrepositories
+  helm: source.toolkit.fluxcd.io/v1/helmrepositories
+  ir: image.toolkit.fluxcd.io/v1beta2/imagerepositories
+  ip: image.toolkit.fluxcd.io/v1beta2/imagepolicies
+  iua: image.toolkit.fluxcd.io/v1beta2/imageupdateautomations
+  alert: notification.toolkit.fluxcd.io/v1beta3/alerts
+  prov: notification.toolkit.fluxcd.io/v1beta3/providers
+  recv: notification.toolkit.fluxcd.io/v1/receivers
