@@ -14,6 +14,37 @@ source "$HOME/bin/common.bash"
 
 ##########################################################################################################
 #
+# Error tracking
+declare -a FAILED_COMPONENTS=()
+
+# Run a component and track failures
+run_component() {
+    local name="$1"
+    local func="$2"
+
+    if ! "$func"; then
+        FAILED_COMPONENTS+=("$name")
+        err "Component '$name' failed"
+        return 0  # Continue despite failure
+    fi
+    return 0
+}
+
+# Report errors at the end
+report_errors() {
+    if [ ${#FAILED_COMPONENTS[@]} -gt 0 ]; then
+        title "FAILURES SUMMARY"
+        err "The following components failed:"
+        for component in "${FAILED_COMPONENTS[@]}"; do
+            err "  ✗ $component"
+        done
+        echo
+        exit 1
+    fi
+}
+#
+##########################################################################################################
+#
 #
 
 trap_exit() {
@@ -21,10 +52,14 @@ trap_exit() {
     cd $HOME
     rm -rfv "$(dirname $TMPPATH)"
     title "end"
+    report_errors
 }
 
 trap_error(){
-    err ${echo_bold_red}"Got error, continuing."
+    local exit_code=$?
+    local line_no=${BASH_LINENO[0]}
+    local cmd="${BASH_COMMAND}"
+    err "Error (code $exit_code) at line $line_no: $cmd"
     return 0
 }
 
@@ -472,15 +507,15 @@ get_misc() {
 
 update_all() {
 
-    get_mise
-    get_pipx
-    get_krew
-    get_helm
-    get_flatpak
-    get_misc
-    get_downloads
-    get_github
-    get_bash_completions
+    run_component "mise"              get_mise
+    run_component "pipx"              get_pipx
+    run_component "krew"              get_krew
+    run_component "helm"              get_helm
+    run_component "flatpak"           get_flatpak
+    run_component "misc"              get_misc
+    run_component "downloads"         get_downloads
+    run_component "github"            get_github
+    run_component "bash_completions"  get_bash_completions
 
 }
 
@@ -498,7 +533,10 @@ init() {
 post() {
 
     title "add dotfiles"
-    $HOME/bin/dotfiles add
+    if ! $HOME/bin/dotfiles add; then
+        FAILED_COMPONENTS+=("dotfiles")
+        err "dotfiles add failed"
+    fi
 
 }
 
@@ -542,39 +580,39 @@ do
             ;;
         mise)
             init
-            get_mise
+            run_component "mise" get_mise
             ;;
         pipx)
             init
-            get_pipx
+            run_component "pipx" get_pipx
             ;;
         krew)
             init
-            get_krew
+            run_component "krew" get_krew
             ;;
         helm)
             init
-            get_helm
+            run_component "helm" get_helm
             ;;
         flatpak)
             init
-            get_flatpak
+            run_component "flatpak" get_flatpak
             ;;
         misc)
             init
-            get_misc
+            run_component "misc" get_misc
             ;;
         downloads)
             init
-            get_downloads
+            run_component "downloads" get_downloads
             ;;
         github)
             init
-            get_github
+            run_component "github" get_github
             ;;
         completions)
             init
-            get_bash_completions
+            run_component "bash_completions" get_bash_completions
             ;;
         *)
 cat <<EOF

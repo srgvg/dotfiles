@@ -54,7 +54,6 @@ completion_bash_commands=(
     talosctl
     talhelper
     yq
-    zarf
     zli
 )
 completions_bash_commands=(
@@ -65,7 +64,7 @@ dashdash_completion_bash_commands=(
 )
 register_python_argcomplete_commands=(
     pipx
-    )
+)
 
 #######################################################################################################################
 #
@@ -74,27 +73,21 @@ generate_completion_bash() {
     local command
     type=$1
     command=$2
-    if hash $command >&/dev/null || type -a $command >&/dev/null
-    then
-        if [ -x "$(which ${command})" ]
-        then
-            if [ ${type} = "register-python-argcomplete" ]
-            then
-                errout=$(register-python-argcomplete ${command} 2>&1 > /tmp/${command}${complext})
+    if hash $command >&/dev/null || type -a $command >&/dev/null; then
+        if [ -x "$(which ${command})" ]; then
+            if [ ${type} = "register-python-argcomplete" ]; then
+                errout=$(register-python-argcomplete ${command} 2>&1 >/tmp/${command}${complext})
                 rc=$?
-            elif [ ${command} = "mise" ]
-            then
-                errout=$($command ${type} --include-bash-completion-lib bash 2>&1 > /tmp/${command}${complext})
+            elif [ ${command} = "mise" ]; then
+                errout=$($command ${type} --include-bash-completion-lib bash 2>&1 >/tmp/${command}${complext})
                 rc=$?
             else
-                errout=$($command ${type} bash 2>&1 > /tmp/${command}${complext})
+                errout=$($command ${type} bash 2>&1 >/tmp/${command}${complext})
                 rc=$?
             fi
             # [ -n "${errout:-}" ] && echo ERROUT $errout
-            if [ $rc -eq 0 ]
-            then
-                if cmp /tmp/${command}${complext} ${complpath}/${command}${complext} >/dev/null 2>&1
-                then
+            if [ $rc -eq 0 ]; then
+                if cmp /tmp/${command}${complext} ${complpath}/${command}${complext} >/dev/null 2>&1; then
                     echo "unchanged ${command}"
                 else
                     mv /tmp/${command}${complext} ${complpath}/${command}${complext}
@@ -123,21 +116,17 @@ generate_completion_bash() {
 
 #######################################################################################################################
 #
-for command in "${completion_bash_commands[@]}"
-do
-    generate_completion_bash completion $command ||:
+for command in "${completion_bash_commands[@]}"; do
+    generate_completion_bash completion $command || :
 done
-for command in "${completions_bash_commands[@]}"
-do
-    generate_completion_bash completions $command ||:
+for command in "${completions_bash_commands[@]}"; do
+    generate_completion_bash completions $command || :
 done
-for command in "${dashdash_completion_bash_commands[@]}"
-do
-    generate_completion_bash --completion $command ||:
+for command in "${dashdash_completion_bash_commands[@]}"; do
+    generate_completion_bash --completion $command || :
 done
-for command in "${register_python_argcomplete_commands[@]}"
-do
-    generate_completion_bash register-python-argcomplete $command ||:
+for command in "${register_python_argcomplete_commands[@]}"; do
+    generate_completion_bash register-python-argcomplete $command || :
 done
 #######################################################################################################################
 echo
@@ -147,75 +136,71 @@ echo
 # scw
 # https://github.com/scaleway/scaleway-cli/issues/1959#issuecomment-1451964559
 command=scw
-if scw autocomplete script shell=bash \
-    | sed -E 's#(_?)\/([^ \n]*)scw#\1scw#g' \
-    > ${complpath}/${command}${complext}
-then
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    if scw autocomplete script shell=bash |
+        sed -E 's#(_?)\/([^ \n]*)scw#\1scw#g' \
+            >${complpath}/${command}${complext}; then
+        chmod 644 ${complpath}/${command}${complext}
+        echo "OK  ${command}"
+    else
+        echo "NOK ${command}"
+    fi
 fi
 
 # gcloud
 command=gcloud
-if GCLOUD_VERSION="$(gcloud version 2>/dev/null | grep "Google Cloud SDK" | sed 's/Google Cloud SDK //')"
-then
-    echo "source $HOME/.local/share/mise/installs/gcloud/${GCLOUD_VERSION}/completion.bash.inc" \
-        > ${complpath}/gcloud${complext}
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    if GCLOUD_VERSION="$(gcloud version 2>/dev/null | grep "Google Cloud SDK" | sed 's/Google Cloud SDK //')"; then
+        echo "source $HOME/.local/share/mise/installs/gcloud/${GCLOUD_VERSION}/completion.bash.inc" \
+            >${complpath}/gcloud${complext}
+        chmod 644 ${complpath}/${command}${complext}
+        echo "OK  ${command}"
+    else
+        echo "NOK ${command}"
+    fi
 fi
 
 # kubie
 command=kubie
-KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
-if $CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
-    >  ${complpath}/${command}${complext}
-then
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    KUBIE_VERSION=$(kubie --version | sed 's/kubie /v/')
+    if $CURL_COMMAND https://raw.githubusercontent.com/sbstp/kubie/${KUBIE_VERSION}/completion/kubie.bash \
+        >${complpath}/${command}${complext}; then
+        chmod 644 ${complpath}/${command}${complext}
+        echo "OK  ${command}"
+    else
+        echo "NOK ${command}"
+    fi
 fi
 
 # golang
 command=go
-if $CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/${command}${complext}
-then
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    if $CURL_COMMAND https://raw.github.com/kura/go-bash-completion/master/etc/bash_completion.d/go -o ${complpath}/${command}${complext}; then
+        chmod 644 ${complpath}/${command}${complext}
+        echo "OK  ${command}"
+    else
+        echo "NOK ${command}"
+    fi
 fi
-
 
 # azure-cli
 command=az
-if $CURL_COMMAND https://raw.githubusercontent.com/Azure/azure-cli/dev/az.completion -o ${complpath}/${command}${complext}
-then
-    chmod 644 ${complpath}/${command}${complext}
-    echo "OK  ${command}"
-else
-    echo "NOK ${command}"
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    if $CURL_COMMAND https://raw.githubusercontent.com/Azure/azure-cli/dev/az.completion -o ${complpath}/${command}${complext}; then
+        chmod 644 ${complpath}/${command}${complext}
+        echo "OK  ${command}"
+    else
+        echo "NOK ${command}"
+    fi
 fi
-
-
-## asdf
-#command=asdf
-#if ln -nfs $HOME/.asdf/completions/asdf.bash ${complpath}/${command}${complext}
-#then
-#    chmod 644 ${complpath}/${command}${complext}
-#    echo "OK  ${command}"
-#else
-#    echo "NOK ${command}"
-#fi
 
 # kubectl stuff
 ln -nfs ${complpath}/kubectl ${complpath}/k
 ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
+
+# talosctl stuff
+ln -nfs ${complpath}/talosctl ${complpath}/t
 
 #command=kubectl-plugin_completion
 #if kubectl plugin_completion plugin-completion bash > ${complpath}/${command}${complext}
@@ -226,9 +211,7 @@ ln -nfs ${complpath}/kubectl ${complpath}/kubecolor
 #    echo "NOK ${command}"
 #fi
 
-
 # talosctl stuff
 ln -nfs ${complpath}/talosctl ${complpath}/t
-
 
 ####################
