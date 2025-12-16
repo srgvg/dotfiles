@@ -6,6 +6,6 @@ pathmunge /usr/local/bin    after
 pathmunge /usr/local/sbin   after
 pathmunge /usr/bin          after
 pathmunge /usr/sbin         after
-pathmunge $HOME/.local/share/mise/shims after
+# mise shims are now handled by 3-mise.bash with proper safeguards
 
 export PATH

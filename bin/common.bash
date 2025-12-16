@@ -13,8 +13,11 @@ set -o pipefail
 PATH=$HOME/bin:$PATH
 source "$HOME/bin/parameters.bash"
 source "$HOME/.bashrc.d/functions.bash"
-# Use shims for non-interactive scripts (faster than eval "$(mise env -s bash)")
-export PATH="$HOME/.local/share/mise/shims:$PATH"
+# Use shims for scripts (faster than eval "$(mise env -s bash)")
+# Only add shims if mise tools are not already in PATH
+if ! echo "$PATH" | grep -q "mise/installs\|mise/shims"; then
+	export PATH="$HOME/.local/share/mise/shims:$PATH"
+fi
 
 
 # make sure DEBUG is not exported
