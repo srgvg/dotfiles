@@ -1,0 +1,51 @@
+k9s:
+  liveViewAutoRefresh: false
+  refreshRate: 2
+  maxConnRetry: 5
+  enableMouse: false
+  headless: false
+  logoless: false
+  crumbsless: false
+  readOnly: false
+  noExitOnCtrlC: false
+  noIcons: false
+  skipLatestRevCheck: false
+  logger:
+    tail: 100
+    buffer: 5000
+    sinceSeconds: 300
+    fullScreenLogs: false
+    textWrap: false
+    showTime: false
+  currentContext: gke_prj-mtc-dev-workload_europe-west1_gke-dev-cloud-shared-euw1
+  currentCluster: gke_prj-mtc-dev-workload_europe-west1_gke-dev-cloud-shared-euw1
+  clusters:
+    gke_prj-mtc-dev-workload_europe-west1_gke-dev-cloud-shared-euw1:
+      namespace:
+        active: flux-system
+        lockFavorites: false
+        favorites:
+        - flux-system
+        - default
+      view:
+        active: clusterrolebinding
+      featureGates:
+        nodeShell: false
+      shellPod:
+        image: busybox:1.35.0
+        command: []
+        args: []
+        namespace: default
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        labels: {}
+      portForwardAddress: localhost
+  thresholds:
+    cpu:
+      critical: 90
+      warn: 70
+    memory:
+      critical: 90
+      warn: 70
+  screenDumpDir: /tmp/k9s-screens-serge
