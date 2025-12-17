@@ -20,7 +20,7 @@ NIFS=$'\n'
 IFS=$NIFS
 
 function define_adds() {
-	dotadds="
+    dotadds="
 .bash-preexec.sh
 .bash_completion
 .bash_logout
@@ -56,6 +56,7 @@ function define_adds() {
 .config/mise/
 .mise-global.toml
 .config/networkmanager-dmenu/
+.config/opencode/opencode.json
 .config/pip/
 .config/pulse/daemon.conf
 .config/ranger/
@@ -115,7 +116,7 @@ Videos
 Wallpapers
 "
 
-	sdotadds="
+    sdotadds="
 .aws/
 .azure
 .azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry.txt .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json :!.azure.d/*/az_survey.json
@@ -151,84 +152,80 @@ $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path 
 ###############################################################################
 
 function err() {
-	echo -e ${echo_bold_red}"\n*** ${*}\n"${echo_white}
+    echo -e ${echo_bold_red}"\n*** ${*}\n"${echo_white}
 }
 
 function dotsadd() {
-	define_adds
+    define_adds
 
-	cd $HOME
+    cd $HOME
 
-	set +o errexit
-	sub "dot"
-	echo "adding [dot] entries"
-	for entry in ${dotadds}
-	do
-		IFS=$OIFS
-		if ! vcsh run dot git add --force ${entry}
-		then
-			err=$?
-			echo
-			title "ERROR ADDING ${entry}"
-			exit $err
-		fi
-		IFS=$NIFS
-	done
-	echo
-	sub "sdot"
-	echo "adding [sdot] entries"
-	for entry in ${sdotadds}
-	do
-		IFS=$OIFS
-		if ! vcsh run sdot git add --force ${entry}
-		then
-			err=$?
-			echo
-			title "ERROR ADDING ${entry}"
-			exit $err
-		fi
-		IFS=$NIFS
-	done
-	echo
-	set -o errexit
+    set +o errexit
+    sub "dot"
+    echo "adding [dot] entries"
+    for entry in ${dotadds}; do
+        IFS=$OIFS
+        if ! vcsh run dot git add --force ${entry}; then
+            err=$?
+            echo
+            title "ERROR ADDING ${entry}"
+            exit $err
+        fi
+        IFS=$NIFS
+    done
+    echo
+    sub "sdot"
+    echo "adding [sdot] entries"
+    for entry in ${sdotadds}; do
+        IFS=$OIFS
+        if ! vcsh run sdot git add --force ${entry}; then
+            err=$?
+            echo
+            title "ERROR ADDING ${entry}"
+            exit $err
+        fi
+        IFS=$NIFS
+    done
+    echo
+    set -o errexit
 }
 
 function title() {
-	local msg
-	IFS=$OIFS
-	msg="${*}"
+    local msg
+    IFS=$OIFS
+    msg="${*}"
 
-	echo -e "\n--------------------------------"
-	echo -e "${msg} ... "
-	echo -e "--------------------------------\n"
-	IFS=$NIFS
+    echo -e "\n--------------------------------"
+    echo -e "${msg} ... "
+    echo -e "--------------------------------\n"
+    IFS=$NIFS
 }
 
 function sub() {
-	local msg
-	IFS=$OIFS
-	msg="${*}"
-	echo -e "\n*** ${msg} ... \n"
-	IFS=$NIFS
+    local msg
+    IFS=$OIFS
+    msg="${*}"
+    echo -e "\n*** ${msg} ... \n"
+    IFS=$NIFS
 }
 
 function log() {
-	local msg
-	IFS=$OIFS
-	msg="${*}"
-	echo -e "${msg} ... "
-	IFS=$NIFS
+    local msg
+    IFS=$OIFS
+    msg="${*}"
+    echo -e "${msg} ... "
+    IFS=$NIFS
 }
 
 function info() {
-	title Status
-	vcsh foreach status --short --branch --verbose --show-stash
+    title Status
+    vcsh foreach status --short --branch --verbose --show-stash
 }
 
 function err() {
-	echo -e ${echo_bold_red}
-	title ${echo_bold_red} ERROR - "$@"
-	echo -e ${echo_normal}
+    echo -e ${echo_bold_red}
+    title ${echo_bold_red} ERROR - "$@"
+    echo -e ${echo_normal}
 }
 
 ###############################################################################
@@ -238,60 +235,52 @@ action="${1:-}"
 shift
 comment="$*"
 
-if [ -z "${action:-}" ] || { \
-		[ "${action}" != "up" ] && \
-		[ "${action}" != "pull" ] && \
-		[ "${action}" != "add" ] && \
-		[ "${action}" != "commit" ] && \
-		[ "${action}" != "push" ] && \
-		[ "${action}" != "all" ]
-	}
-then
-	title Usage $0
-	echo "up | pull | add | commit | push | all"
-	echo
-	exit
+if [ -z "${action:-}" ] || {
+    [ "${action}" != "up" ] &&
+        [ "${action}" != "pull" ] &&
+        [ "${action}" != "add" ] &&
+        [ "${action}" != "commit" ] &&
+        [ "${action}" != "push" ] &&
+        [ "${action}" != "all" ]
+}; then
+    title Usage $0
+    echo "up | pull | add | commit | push | all"
+    echo
+    exit
 fi
 
-if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-then
-	title Update
-	vcsh foreach remote update --prune
+if [ "${action}" = "up" ] || [ "${action}" = "pull" ] || [ "${action}" = "all" ]; then
+    title Update
+    vcsh foreach remote update --prune
 fi
 
-if [ "${action}" = "add" ] || [ "${action}" = "all" ]
-then
-	title Add
-	dotsadd
-	info
+if [ "${action}" = "add" ] || [ "${action}" = "all" ]; then
+    title Add
+    dotsadd
+    info
 fi
 
-if [ "${action}" = "commit" ] || [ "${action}" = "all" ]
-then
-	title Committing
-	vcsh foreach commit -m "update from $HOSTNAME  ${comment:-}"
+if [ "${action}" = "commit" ] || [ "${action}" = "all" ]; then
+    title Committing
+    vcsh foreach commit -m "update from $HOSTNAME  ${comment:-}"
 fi
 
-if [ "${action}" = "pull" ] || [ "${action}" = "all" ]
-then
-	title Pull
-	vcsh foreach pull
-	info
-	if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]
-	then
-		err Merge conflicts detected
-		vcsh foreach diff --name-only --diff-filter=U --relative
-		exit 1
-	fi
+if [ "${action}" = "pull" ] || [ "${action}" = "all" ]; then
+    title Pull
+    vcsh foreach pull
+    info
+    if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]; then
+        err Merge conflicts detected
+        vcsh foreach diff --name-only --diff-filter=U --relative
+        exit 1
+    fi
 fi
 
-if [ "${action}" = "push" ] || [ "${action}" = "all" ]
-then
-	title Pushing
-	vcsh foreach pushall
+if [ "${action}" = "push" ] || [ "${action}" = "all" ]; then
+    title Pushing
+    vcsh foreach pushall
 fi
 
-if [ "${action}" = "all" ]
-then
-	info
+if [ "${action}" = "all" ]; then
+    info
 fi

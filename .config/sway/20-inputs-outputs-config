@@ -4,8 +4,8 @@ set $tv HDMI-A-1
 
 # https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
 # swaymsg -t get_inputs -r | jq -r '.[].identifier' | grep -i keyboard
-#input "type:keyboard" {
-input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard" {
+# Universal keyboard settings (applies to all keyboards)
+input "type:keyboard" {
 	xkb_layout "us"
 	xkb_variant "euro"
 	xkb_model "pc105"
@@ -13,27 +13,11 @@ input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard" {
 	xkb_capslock "disabled"
 	xkb_numlock "enabled"
 }
-input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard_Consumer_Control" {
-	xkb_layout "us"
-	xkb_variant "euro"
-	xkb_model "pc105"
-	xkb_options "compose:caps,lv3:ralt_switch,eurosign:e,nbsp:level3n"
-	xkb_capslock "disabled"
-	xkb_numlock "enabled"
-}
-input "9456:320:Metadot_-_Das_Keyboard_Das_Keyboard_System_Control" {
-	xkb_layout "us"
-	xkb_variant "euro"
-	xkb_model "pc105"
-	xkb_options "compose:caps,lv3:ralt_switch,eurosign:e,nbsp:level3n"
-	xkb_capslock "disabled"
-	xkb_numlock "enabled"
-}
-Input "1386:965:Wacom_Intuos_BT_S_Pad" {
+input "1386:965:Wacom_Intuos_BT_S_Pad" {
     map_to_output $primary
     tool_mode pen relative
 }
-Input "1386:965:Wacom_Intuos_BT_S_Pen" {
+input "1386:965:Wacom_Intuos_BT_S_Pen" {
     map_to_output $primary
     tool_mode pen relative
     pointer_accel 1

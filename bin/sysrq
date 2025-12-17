@@ -1,8 +1,0 @@
-#!/bin/sh
-[ `id -u` -eq 0 ] || exec sudo $0 $*
-
-echo 1 > /proc/sys/kernel/sysrq
-for i in s u b 
-do
-        echo $i > /proc/sysrq-trigger
-done
