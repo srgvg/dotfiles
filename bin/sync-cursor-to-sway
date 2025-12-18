@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+# Sync cursor theme from gsettings (set by nwg-look) to Sway
+###############################################################################
+
+CURSOR_THEME=$(gsettings get org.gnome.desktop.interface cursor-theme | tr -d "'")
+CURSOR_SIZE=$(gsettings get org.gnome.desktop.interface cursor-size)
+
+if [ -z "${CURSOR_THEME}" ] || [ -z "${CURSOR_SIZE}" ]; then
+	errexit "Could not read cursor settings from gsettings"
+fi
+
+notify "Syncing cursor to Sway: ${CURSOR_THEME} (size ${CURSOR_SIZE})"
+
+# Apply to running Sway session
+swaymsg "seat seat0 xcursor_theme ${CURSOR_THEME} ${CURSOR_SIZE}"
+
+# Update Sway config file for persistence
+CONFIG_FILE="$HOME/.config/sway/30-theme-config"
+if [ -f "${CONFIG_FILE}" ]; then
+	sed -i "s/^seat seat0 xcursor_theme .*/seat seat0 xcursor_theme ${CURSOR_THEME} ${CURSOR_SIZE}/" "${CONFIG_FILE}"
+	notify "Updated ${CONFIG_FILE}"
+fi
+
+notify2 "Cursor synced: ${CURSOR_THEME} (${CURSOR_SIZE}px)"
+
+# Reload Sway to apply all changes
+swaymsg reload

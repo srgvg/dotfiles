@@ -26,8 +26,9 @@ input "1386:965:Wacom_Intuos_BT_S_Pen" {
 
 output $primary {
     enable
+    mode 5120x1440
+    position 1920 0
     dpms on
-    pos 1920 0 res 5120x1440
 }
 #output $secondary {
 #    enable

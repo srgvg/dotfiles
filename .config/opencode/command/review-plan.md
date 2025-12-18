@@ -1,11 +1,13 @@
 ---
-description: Detailed plan review using GPT
-agent: plan-review-subagent
-model: openai/gpt-5.2-xhigh
+description: Detailed plan review using GPT-5.2 High
+agent: reviewer-openai
+subtask: true
 ---
 
-# Plan Review Objectives
-- Critically analyze generated plan
-- Identify potential improvements
-- Validate plan comprehensiveness
-- Suggest strategic refinements
+Review the current plan in this conversation. Critically analyze it for:
+- Completeness and feasibility
+- Potential risks and gaps
+- Missing validation steps
+- Strategic improvements
+
+You have access to the repository to verify technical feasibility.
