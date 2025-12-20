@@ -1225,6 +1225,7 @@ _hcloud_context_create()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--token-from-env")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--context=")
