@@ -13,5 +13,11 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
-elgato lights || elgato lights --discover
+# Try to list lights, if fails then discover and retry
+if ! elgato lights 2>/dev/null; then
+    elgato lights --discover
+    sleep 1
+    elgato lights || { echo "Error: Could not connect to Elgato light" >&2; exit 1; }
+fi
+
 elgato "$@" && notify_desktop_always low "Elgato Desktop Light" "$( (elgato lights | grep 'power: off' || elgato lights | grep -e brightness -e color) | xargs)" night-light-symbolic

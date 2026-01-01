@@ -14,113 +14,102 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 function execute() {
-	args=$1
-	output=$(eval $args 2>/dev/null ||:)
+    args=$1
+    output=$(eval $args 2>/dev/null || :)
 }
 
 case ${1:-} in
-	audio_current_sink)
-		execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' -e 's/HyperX 7.1 Audio Analog Stereo/Trust/' 2>/dev/null ||:"
-		;;
-	audio_current_sink_volume)
-		if ponymix is-muted
-		then
-			output="🚫"
-		else
-			execute "ponymix get-volume"
-			if [ -n "${output}" ]
-			then
-				if [ "${output}" -gt 0 ]
-				then
-					output="🔊${output}%"
-				else [ "${output}" -eq 0 ]
-					output="🚫"
-				fi
-			fi
-		fi
-		;;
-	audio_sonos_volume)
-		execute "sonos state 2>/dev/null ||:"
-		if [ "${output}" = "PLAYING" ]
-		then
-			execute "sonos volume 2>/dev/null ||:"
-			if [ "${output}" -gt 0 ]
-			then
-				output="Sonos 🔊${output}%"
-			else [ "${output}" -eq 0 ]
-				output="Sonos 🚫"
-			fi
-		else
-			output=""
-		fi
+    audio_current_sink)
+        execute "pa-default long | sed -e 's/ - / /' -e 's/Built-in.*/Builtin/' -e 's/HyperX 7.1 Audio Analog Stereo/Trust/' 2>/dev/null ||:"
+        ;;
+    audio_current_sink_volume)
+        if ponymix is-muted; then
+            output="🚫"
+        else
+            execute "ponymix get-volume"
+            if [ -n "${output}" ]; then
+                if [ "${output}" -gt 0 ]; then
+                    output="🔊${output}%"
+                else
+                    [ "${output}" -eq 0 ]
+                    output="🚫"
+                fi
+            fi
+        fi
+        ;;
+    audio_sonos_volume)
+        execute "sonos state 2>/dev/null ||:"
+        if [ "${output}" = "PLAYING" ]; then
+            execute "sonos volume 2>/dev/null ||:"
+            if [ "${output}" -gt 0 ]; then
+                output="Sonos 🔊${output}%"
+            else
+                [ "${output}" -eq 0 ]
+                output="Sonos 🚫"
+            fi
+        else
+            output=""
+        fi
 
-		;;
-	wifi)
-		execute "nmcli -t radio wifi"
-		if [ "${output}" = "enabled" ]
-		then
-			output=""
-		else
-			output="⊥"
-		fi
-		;;
-	now_playing)
-		output=""
-		player=""
-		player0=$(cat $HOME/.playerctl_active)
-		if [ -n "$player0" ]
-		then
-			stat=""
-			player="$(echo -n $player0 | tr '[:upper:]' '[:lower:]')"
-			pplayer="-p $player"
-			state="$(playerctl $pplayer status 2>&1 ||:)"
+        ;;
+    wifi)
+        execute "nmcli -t radio wifi"
+        if [ "${output}" = "enabled" ]; then
+            output=""
+        else
+            output="⊥"
+        fi
+        ;;
+    now_playing)
+        output=""
+        player=""
+        player0=$(cat $HOME/.playerctl_active)
+        if [ -n "$player0" ]; then
+            stat=""
+            player="$(echo -n $player0 | tr '[:upper:]' '[:lower:]')"
+            pplayer="-p $player"
+            state="$(playerctl $pplayer status 2>&1 || :)"
 
-			if   [ "${state}" = "Playing" ]
-			then
-					stat="▶  "
-					if [ "${player}" = "VLC" ]
-					then
-						artist=""
-						title="$( playerctl $pplayer metadata vlc:nowplaying 2>/dev/null||playerctl $pplayer metadata xesam:title 2>/dev/null ||:)"
-					else
-						artist="$(playerctl $pplayer metadata xesam:artist 2>/dev/null||:)"
-						title="$( playerctl $pplayer metadata xesam:title 2>/dev/null ||:)"
-					fi
-					if [ -n "$artist" ]
-					then
-						if [ -n "$title" ]
-						then
-							artist="${artist}: "
-							title="$title "
-						else
-							artist="${artist} "
-						fi
-					else
-						if [ -n "$title" ]
-						then
-							title="$title "
-						fi
-					fi
-					output="${player} ${stat}${artist}${title}"
-			elif [ "${state}" = "Paused" ]
-			then
-					stat="▌▌ "
-					output="${player} ${stat}"
-			elif [ "${state}" = "Stopped" ]
-			then
-					stat="◼ "
-					output="${player} ${stat}"
-			fi
-		else
-				output="◼ "
-		fi
-		;;
-	*)
-		notify_error "$(
-			echo "Possible options are:";
-			grep -e '^[[:space:]].*)' $0 | grep -v '(' | sed -e 's/\s//g' -e 's/\*//'  -e 's/)//')\n"
-		output="UNKNOWN ITEM"
-		;;
+            if [ "${state}" = "Playing" ]; then
+                stat="▶  "
+                if [ "${player}" = "vlc" ]; then
+                    title="$(playerctl $pplayer metadata vlc:nowplaying 2>/dev/null || :)"
+                    artist="$(playerctl $pplayer metadata xesam:title 2>/dev/null || :)"
+                else
+                    artist="$(playerctl $pplayer metadata xesam:artist 2>/dev/null || :)"
+                    title="$(playerctl $pplayer metadata xesam:title 2>/dev/null || :)"
+                fi
+                if [ -n "$artist" ]; then
+                    if [ -n "$title" ]; then
+                        artist="${artist}: "
+                        title="$title "
+                    else
+                        artist="${artist} "
+                    fi
+                else
+                    if [ -n "$title" ]; then
+                        title="$title "
+                    fi
+                fi
+                output="${player} ${stat}${artist}${title}"
+            elif [ "${state}" = "Paused" ]; then
+                stat="▌▌ "
+                output="${player} ${stat}"
+            elif [ "${state}" = "Stopped" ]; then
+                stat="◼ "
+                output="${player} ${stat}"
+            fi
+        else
+            output="◼ "
+        fi
+        ;;
+    *)
+        notify_error "$(
+            echo "Possible options are:"
+            grep -e '^[[:space:]].*)' $0 | grep -v '(' | sed -e 's/\s//g' -e 's/\*//' -e 's/)//'
+        )\n"
+        output="UNKNOWN ITEM"
+        ;;
 esac
 
 [ -z "${output}" ] && output="."

@@ -53,6 +53,7 @@ completion_bash_commands=(
     sops
     talosctl
     talhelper
+    wlout
     yq
     zli
 )

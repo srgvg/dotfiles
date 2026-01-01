@@ -14,13 +14,14 @@ show_symlink   = true
 scrolloff      = 5
 
 [preview]
+wrap            = "no"
 tab_size        = 2
 max_width       = 600
 max_height      = 900
 cache_dir       = ""
+image_delay     = 30
 image_filter    = "triangle"
 image_quality   = 75
-sixel_fraction  = 15
 ueberzug_scale  = 1
 ueberzug_offset = [ 0, 0, 0, 0 ]
 
@@ -79,6 +80,12 @@ suppress_preload = false
 
 [plugin]
 
+fetchers = [
+	# Mimetype
+	{ id = "mime", url = "*/",         run = "mime.dir", prio = "high" },
+	{ id = "mime", url = "local://*",  run = "mime.local", prio = "high" },
+	{ id = "mime", url = "remote://*", run = "mime.remote", prio = "high" },
+]
 preloaders = [
 	# Image
 	{ mime = "image/*", run = "image" },
@@ -88,24 +95,23 @@ preloaders = [
 	{ mime = "application/pdf", run = "pdf" },
 ]
 previewers = [
-	{ name = "*/", run = "folder", sync = true },
+	{ url = "*/", run = "folder" },
 	# Code
 	{ mime = "text/*", run = "code" },
-	{ mime = "*/{xml,javascript,x-wine-extension-ini}", run = "code" },
+	{ mime = "application/{mbox,javascript,wine-extension-ini}", run = "code" },
 	# JSON
-	{ mime = "application/json", run = "json" },
+	{ mime = "application/{json,ndjson}", run = "json" },
 	# Image
 	{ mime = "image/vnd.djvu", run = "noop" },
-	{ mime = "image/*",        run = "image" },
+	{ mime = "image/*", run = "image" },
 	# Video
 	{ mime = "video/*", run = "video" },
 	# PDF
 	{ mime = "application/pdf", run = "pdf" },
 	# Archive
-	{ mime = "application/*zip", run = "archive" },
-	{ mime = "application/x-{tar,bzip*,7z-compressed,xz,rar}", run = "archive" },
+	{ mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", run = "archive" },
 	# Fallback
-	{ name = "*", run = "file" },
+	{ url = "*", run = "file" },
 ]
 
 [input]
