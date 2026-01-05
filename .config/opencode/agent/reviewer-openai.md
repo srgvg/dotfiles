@@ -1,7 +1,7 @@
 ---
 description: Critically reviews implementation plans for completeness, risk, and testability
 mode: subagent
-model: openai/gpt-5.2-high
+model: openai/gpt-5.2-pro
 temperature: 0.3
 tools:
   write: false

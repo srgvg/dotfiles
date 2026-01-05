@@ -17,7 +17,7 @@ missing_tools = "always"
 # for gcloud
 MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 
-[alias]
+[itool_alias]
 forward-email = "ubi:ginsys/forward-email"
 hurl = "ubi:Orange-OpenSource/hurl"
 hurlfmt = "ubi:Orange-OpenSource/hurl"
@@ -45,7 +45,7 @@ direnv = "latest"
 doctl = "latest"
 eksctl = "latest"
 flux2 = "latest"
-"ubi:controlplaneio-fluxcd/flux-operator" = { version = "0.36.0", exe = "flux-operator" }
+"ubi:controlplaneio-fluxcd/flux-operator" = { version = "0.38.1", exe = "flux-operator" }
 forward-email = { version = "latest" }
 gcloud = "latest"
 github-cli = "latest"
@@ -78,7 +78,7 @@ pnpm = "latest"
 popeye = "latest"
 rbac-lookup = "latest"
 scaleway-cli = "latest"
-starship = "1.23.0"
+starship = "1.24.2"
 stern = "latest"
 talosctl = "latest"
 ubi = "latest"
@@ -139,3 +139,6 @@ sops = "latest"
 age = "latest"
 "ubi:dgunzy/flux9s" = "latest"
 "ubi:block/goose" = "latest"
+"ubi:khairul169/garage-webui" = "latest"
+npm = "latest"
+bun = "latest"
