@@ -39,8 +39,9 @@ bindsym $mod+space focus mode_toggle
 # 9 - forward
 # 10  scroll wheel button
 #
-bindsym --whole-window $mod+button2					exec setsbg next
-bindsym --whole-window $mod+Alt+Control+button2				exec showbg
+# --no-repeat for mouse button actions to prevent rapid cycling
+bindsym --whole-window --no-repeat $mod+button2					exec setsbg next
+bindsym --whole-window --no-repeat $mod+Alt+Control+button2				exec showbg
 
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
@@ -201,7 +202,7 @@ bindsym $mod+Shift+Escape unmark scratchpad
 # Show the first scratchpad window
 bindsym $mod+Escape scratchpad show
 # quickswitch select scratchpad window
-bindsym $mod+Alt+Escape exec i3-quickswitch --prompt --scratchpad
+bindsym --no-repeat $mod+Alt+Escape exec i3-quickswitch --prompt --scratchpad
 
 
 #######################################################################################################################
@@ -211,75 +212,81 @@ bindsym $mod+Alt+Escape exec i3-quickswitch --prompt --scratchpad
 # xmodmap -pke
 
 # start a terminal
-bindsym $mod+Return		exec $terminal
+# --no-repeat prevents spawning multiple terminals if key held accidentally
+bindsym --no-repeat $mod+Return		exec $terminal
 # start a floating terminal
-bindsym $mod+Control+Return	exec $terminalfl
+bindsym --no-repeat $mod+Control+Return	exec $terminalfl
 
 # kill focused window except..
 #bindsym $mod+x [con_id="__focused__" class="^(?!browser-serge|Terminator|Alacritty).*$"]	kill
 bindsym $mod+x [con_id="__focused__"] 	kill
 
-bindsym $mod+Control+Alt+x exec swaymsg -t get_tree | \
+bindsym --no-repeat $mod+Control+Alt+x exec swaymsg -t get_tree | \
           jq '.. | select(.type?) | select(.focused==true).pid' | \
           xargs -L 1 kill -9
 
 
 # quickswitch
 #bindsym $mod+q	exec sway-list-windows.py
-bindsym $mod+q	exec $dfzf_term dfzf-windows
+# --no-repeat for menu/picker tools - should only open once
+bindsym --no-repeat $mod+q	exec $dfzf_term dfzf-windows
 
 # run launcher
-bindsym $mod+r	        exec wofi --insensitive --show run  --gtk-dark
-bindsym $mod+Alt+r	    exec wofi --insensitive --show drun --gtk-dark
+bindsym --no-repeat $mod+r	        exec wofi --insensitive --show run  --gtk-dark
+bindsym --no-repeat $mod+Alt+r	    exec wofi --insensitive --show drun --gtk-dark
 #bindsym $mod+r	exec kickoff
 
 # get sway window criteria
-bindsym $mod+g	exec sway-get-window-criteria
+bindsym --no-repeat $mod+g	exec sway-get-window-criteria
 
 # reload the configuration file
 bindsym $mod+Shift+r			reload
 
 # set workspaces on default screens
-bindsym $mod+Control+r			exec i3-move-workspaces
+bindsym --no-repeat $mod+Control+r			exec i3-move-workspaces
 
 # Lock Screen / Suspend / Poweroff
-bindsym Pause				exec $lockscreen
-bindsym $mod+l				exec $lockscreen
-bindsym $mod+Pause			exec $suspend
-bindsym $mod+Control+l		exec $suspend
-bindsym $mod+Control+Alt+Pause   exec wlogout
+# --no-repeat prevents multiple triggers if key is held; combined with
+# debouncing in swayidle.sh, this provides defense against lock signal storms
+bindsym --no-repeat Pause			exec $lockscreen
+bindsym --no-repeat $mod+l			exec $lockscreen
+bindsym --no-repeat $mod+Pause			exec $suspend
+bindsym --no-repeat $mod+Control+l		exec $suspend
+bindsym --no-repeat $mod+Control+Alt+Pause	exec wlogout
 
 # start some tools
+# --no-repeat for app launchers - should only open one instance
 #bindsym $mod+c				exec gnome-calculator
-bindsym $mod+c				exec gnome-calculator
-bindsym $mod+Control+c		exec $dfzf_term dfzf-clipboard
-bindsym $mod+Control+d	    exec nautilus --new-window
-bindsym $mod+d		exec nemo
+bindsym --no-repeat $mod+c				exec gnome-calculator
+bindsym --no-repeat $mod+Control+c		exec $dfzf_term dfzf-clipboard
+bindsym --no-repeat $mod+Control+d	    exec nautilus --new-window
+bindsym --no-repeat $mod+d		exec nemo
 
 # start browsers
-bindsym $mod+o			exec firefox
-bindsym $mod+Control+o		exec firefox --private-window
+bindsym --no-repeat $mod+o			exec firefox
+bindsym --no-repeat $mod+Control+o		exec firefox --private-window
 
 # Show current Background filename
-bindsym $mod+Control+b		exec setsbg show
-bindsym $mod+Shift+Control+b	exec setsbg showpic
-bindsym $mod+Alt+b		exec setsbg next
-bindsym $mod+Control+Alt+b	exec setsbg
+bindsym --no-repeat $mod+Control+b		exec setsbg show
+bindsym --no-repeat $mod+Shift+Control+b	exec setsbg showpic
+bindsym --no-repeat $mod+Alt+b		exec setsbg next
+bindsym --no-repeat $mod+Control+Alt+b	exec setsbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 #bindsym $mod+p			exec presentation-mode
 #bindsym $mod+Shift+p		exec presentation-mode start2
 
 # Launch Printer config
-bindsym $mod+Control+p		exec /usr/share/system-config-printer/system-config-printer.py
+bindsym --no-repeat $mod+Control+p		exec /usr/share/system-config-printer/system-config-printer.py
 
 # dmenu networkmanager script
-bindsym $mod+n			exec i3-nmcli
-bindsym $mod+Control+n		exec nm-toggle-wifi
+# --no-repeat for menu tools and toggle actions
+bindsym --no-repeat $mod+n			exec i3-nmcli
+bindsym --no-repeat $mod+Control+n		exec nm-toggle-wifi
 
 
 
-bindsym $mod+a  exec makoctl dismiss --all
+bindsym --no-repeat $mod+a  exec makoctl dismiss --all
 
 
 # custom shit
@@ -292,17 +299,19 @@ bindsym $mod+a  exec makoctl dismiss --all
 ## Fn XF86WakeUp
 
 # Fn-F1  XF86AudioMute
-bindsym XF86AudioMute			exec i3-volume local toggle
-bindsym Control+XF86AudioMute		exec i3-volume sonos toggle
-bindsym $mod+XF86AudioMute		exec i3-volume local set 50
-bindsym $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
+# --no-repeat for toggle/set actions (but volume up/down should repeat)
+bindsym --no-repeat XF86AudioMute			exec i3-volume local toggle
+bindsym --no-repeat Control+XF86AudioMute		exec i3-volume sonos toggle
+bindsym --no-repeat $mod+XF86AudioMute		exec i3-volume local set 50
+bindsym --no-repeat $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
 # Fn-F2  XF86AudioLowerVolume
 # Fn-F3  XF86AudioRaiseVolume
 
 # Elgato light Office
-bindsym $mod+Control+slash			exec elgato.sh toggle
-bindsym $mod+Control+XF86AudioPlay	exec elgato.sh toggle
+# --no-repeat for toggle (but brightness/color adjustment should repeat)
+bindsym --no-repeat $mod+Control+slash			exec elgato.sh toggle
+bindsym --no-repeat $mod+Control+XF86AudioPlay	exec elgato.sh toggle
 bindsym $mod+Control+comma			exec elgato.sh brightness --dimmer 5
 bindsym $mod+Control+period			exec elgato.sh brightness --brighter 5
 bindsym $mod+Shift+Control+comma	exec elgato.sh color --warmer 100
@@ -320,23 +329,25 @@ bindsym Control+XF86AudioLowerVolume	exec i3-volume sonos down
 bindsym Control+XF86AudioRaiseVolume	exec i3-volume sonos up
 
 bindsym XF86AudioPrev			    exec playerctl previous
-bindsym XF86AudioPlay			    exec playerctl play-pause
-bindsym Shift+XF86AudioPlay		    exec playerctl stop
+# --no-repeat for play/pause/stop (but prev/next could repeat for skipping)
+bindsym --no-repeat XF86AudioPlay			    exec playerctl play-pause
+bindsym --no-repeat Shift+XF86AudioPlay		    exec playerctl stop
 bindsym XF86AudioNext			    exec playerctl next
 bindsym $mod+XF86AudioLowerVolume	exec playerctl previous
 bindsym $mod+XF86AudioRaiseVolume	exec playerctl next
 
 bindsym $mod+comma		    exec playerctl previous
 bindsym $mod+period		    exec playerctl next
-bindsym $mod+slash		    exec playerctl play-pause
-bindsym $mod+Shift+slash	exec playerctl stop
+bindsym --no-repeat $mod+slash		    exec playerctl play-pause
+bindsym --no-repeat $mod+Shift+slash	exec playerctl stop
 
-bindsym $mod+m			exec i3-playerctl-select-player
-bindsym $mod+Control+m	exec i3-pa-select-output
-bindsym $mod+Alt+m		exec pa-rotate-sinks
+# --no-repeat for menu/picker tools
+bindsym --no-repeat $mod+m			exec i3-playerctl-select-player
+bindsym --no-repeat $mod+Control+m	exec i3-pa-select-output
+bindsym --no-repeat $mod+Alt+m		exec pa-rotate-sinks
 
 # Fn-F4  XF86AudioMicMute
-bindsym XF86AudioMicMute				exec ponymix  --source --device 389 toggle
+bindsym --no-repeat XF86AudioMicMute				exec ponymix  --source --device 389 toggle
 
 # Fn-F5  XF86MonBrightnessDown
 #bindsym XF86MonBrightnessDown			exec i3-brightness down
@@ -353,19 +364,19 @@ bindsym XF86AudioMicMute				exec ponymix  --source --device 389 toggle
 ## Fn-F7 XF86Display
 
 # Fn-F8 XF86WLAN
-bindsym XF86WLAN		exec nm-toggle-wifi
+bindsym --no-repeat XF86WLAN		exec nm-toggle-wifi
 
 # Fn-F9  XF86Tools
 
 # Fn-F10 XF86Search
-# Screenshot
-bindsym Print			exec screengrab select
-bindsym Shift+Print		exec screengrab window
-bindsym Control+Print		exec screengrab screen
-bindsym Shift+Control+Print	exec screengrab full
+# Screenshot - --no-repeat to avoid taking multiple screenshots
+bindsym --no-repeat Print			exec screengrab select
+bindsym --no-repeat Shift+Print		exec screengrab window
+bindsym --no-repeat Control+Print		exec screengrab screen
+bindsym --no-repeat Shift+Control+Print	exec screengrab full
 
 # Fn-F10 XF86Bluetooth
-bindsym XF86Bluetooth 		exec --no-start-up-id bluetooth toggle
+bindsym --no-repeat XF86Bluetooth 		exec bluetooth toggle
 
 # Fn-F11 XF86LaunchA
 # Fn-F12 XF86Explorer

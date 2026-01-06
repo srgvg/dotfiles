@@ -102,6 +102,9 @@ backend = "aqua:helm/helm"
 version = "0.152.2"
 backend = "aqua:gohugoio/hugo"
 
+[tools.hugo.checksums]
+"hugo_0.152.2_linux-amd64.tar.gz" = "sha256:52b6eda6c00f4449d96f0cbfd7300e834c26179c4fe68e0510ef566db52dba04"
+
 [tools.hurl]
 version = "7.1.0"
 backend = "ubi:Orange-OpenSource/hurl"
@@ -125,6 +128,9 @@ backend = "ubi:derailed/k9s"
 [tools.kind]
 version = "0.30.0"
 backend = "aqua:kubernetes-sigs/kind"
+
+[tools.kind.checksums]
+kind-linux-amd64 = "sha256:517ab7fc89ddeed5fa65abf71530d90648d9638ef0c4cde22c2c11f8097b8889"
 
 [tools.kompose]
 version = "1.37.0"
@@ -178,6 +184,9 @@ backend = "aqua:pulumi/kubespy"
 version = "0.26.0"
 backend = "aqua:sbstp/kubie"
 
+[tools.kubie.checksums]
+kubie-linux-amd64 = "sha256:db98b1df7db620175f4c7d604e3e125b2cb095717addada967d04a0a6a5a8dcb"
+
 [tools.kustomize]
 version = "5.8.0"
 backend = "aqua:kubernetes-sigs/kustomize"
@@ -217,6 +226,9 @@ backend = "ubi:regclient/regclient"
 [tools.regctl]
 version = "0.10.0"
 backend = "ubi:regclient/regclient"
+
+[tools.regctl.checksums]
+regctl-regctl-regctl-linux-x86_64 = "sha256:b2450ad4ed69ed668ffc168d1b9e0b1371ac038e3d645eed3858791bf828909c"
 
 [tools.regsync]
 version = "0.10.0"
@@ -290,9 +302,16 @@ backend = "ubi:apple/pkl[exe=pkl]"
 version = "1.4.5"
 backend = "ubi:aristocratos/btop"
 
+[tools."ubi:aristocratos/btop".checksums]
+btop-linux-x86_64 = "sha256:f9ba9c854987659d83a4e855cbf20cf3fc0193a5caebc6d6670b7bb45b6436c9"
+
 [tools."ubi:ayoisaiah/f2"]
 version = "2.2.2"
 backend = "ubi:ayoisaiah/f2"
+
+[tools."ubi:block/goose"]
+version = "1.18.0"
+backend = "ubi:block/goose"
 
 [tools."ubi:c-bata/kube-prompt"]
 version = "1.0.11"
@@ -344,6 +363,9 @@ backend = "ubi:grampelberg/kty"
 version = "1.10.2"
 backend = "ubi:homeport/dyff[exe=dyff]"
 
+[tools."ubi:homeport/dyff".checksums]
+dyff-dyff-linux-x86_64 = "sha256:c43206e74ade8c11630bfd6921ad1c380195c86a7355931ba0e8072f85a1fa65"
+
 [tools."ubi:jonas-grgt/ktea"]
 version = "0.6.3"
 backend = "ubi:jonas-grgt/ktea"
@@ -358,6 +380,9 @@ jd-jd-linux-x86_64 = "sha256:ae76e6255b13031563240cf75168ae0e5456a3a95cf80498a43
 [tools."ubi:ksdme/ut"]
 version = "0.5.0"
 backend = "ubi:ksdme/ut"
+
+[tools."ubi:ksdme/ut".checksums]
+ut-linux-x86_64 = "sha256:a9866538b4673d77e997050499d204e1b5dff97bafcb8b9e7dbae448ecb59510"
 
 [tools."ubi:kubeshark/kubeshark"]
 version = "52.10.3"
@@ -413,6 +438,9 @@ backend = "ubi:sinclairtarget/git-who"
 version = "25.5.31"
 backend = "ubi:sxyazi/yazi[exe=yazi]"
 
+[tools."ubi:sxyazi/yazi".checksums]
+yazi-yazi-linux-x86_64 = "sha256:ddc761120ccc7e70dc074738d8a5bfc507dffde4cf3da8d2d914d81fcbeda481"
+
 [tools."ubi:updatecli/updatecli"]
 version = "0.110.3"
 backend = "ubi:updatecli/updatecli[exe=updatecli]"
@@ -420,6 +448,9 @@ backend = "ubi:updatecli/updatecli[exe=updatecli]"
 [tools."ubi:versity/versitygw"]
 version = "1.0.19"
 backend = "ubi:versity/versitygw[exe=versitygw]"
+
+[tools."ubi:versity/versitygw".checksums]
+versitygw-versitygw-linux-x86_64 = "sha256:5a38f3f653d8c7e246ba672e59b416451635b55c4bbd23164ef6c1cf91569c29"
 
 [tools."ubi:wait4x/wait4x"]
 version = "3.6.0"
@@ -456,3 +487,6 @@ backend = "aqua:google/yamlfmt"
 [tools.yq]
 version = "4.49.2"
 backend = "ubi:mikefarah/yq"
+
+[tools.yq.checksums]
+yq-linux-x86_64 = "sha256:be2c0ddcf426b6a231648610ec5d1666ae50e9f6473e82f6486f9f4cb6e3e2f7"
