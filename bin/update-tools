@@ -25,7 +25,7 @@ run_component() {
     if ! "$func"; then
         FAILED_COMPONENTS+=("$name")
         err "Component '$name' failed"
-        return 0  # Continue despite failure
+        return 0 # Continue despite failure
     fi
     return 0
 }
@@ -55,7 +55,7 @@ trap_exit() {
     report_errors
 }
 
-trap_error(){
+trap_error() {
     local exit_code=$?
     local line_no=${BASH_LINENO[0]}
     local cmd="${BASH_COMMAND}"
@@ -91,8 +91,7 @@ github_getlatestversion() {
 
     json="$($CURL_COMMAND ${url})"
     version="$(echo ${json} | jq -r .tag_name)"
-    if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]
-    then
+    if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]; then
         err failed retrieving latest version for ${project} version ${version} >&2
         err via ${url} >&2
         err "${json}" >&2
@@ -115,41 +114,37 @@ download_file() {
     tmppathname="${TMPPATH}/$(basename ${destpathname})"
 
     $CURL_COMMAND ${url} --output ${tmppathname}
-    rc=$?                                                   ; set +o pipefail
-    header="$(strings ${tmppathname} | head --lines 1)"     ; set -o pipefail
+    rc=$?
+    set +o pipefail
+    header="$(strings ${tmppathname} | head --lines 1)"
+    set -o pipefail
 
-    if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]
-    then
+    if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]; then
         err failed downloading ${url}
         return
-    elif [[ "${url}" =~ tar.gz$ ]] || \
-         [[ "${url}" =~ tgz$    ]] || \
-         [[ "${url}" =~ tar.xz$ ]] || \
-         [[ "${url}" =~ tar.bz$ ]] || \
-         [[ "${url}" =~ tbz$    ]] || \
-         [[ "${url}" =~ zip$    ]]
-    then
-        mv ${tmppathname} ${tmppathname}.archive  # when no subdir and nameclash
+    elif [[ "${url}" =~ tar.gz$ ]] ||
+        [[ "${url}" =~ tgz$ ]] ||
+        [[ "${url}" =~ tar.xz$ ]] ||
+        [[ "${url}" =~ tar.bz$ ]] ||
+        [[ "${url}" =~ tbz$ ]] ||
+        [[ "${url}" =~ zip$ ]]; then
+        mv ${tmppathname} ${tmppathname}.archive # when no subdir and nameclash
         # libarchive-tools
         pushd ${TMPPATH}
         bsdtar --extract --file ${tmppathname}.archive
         destname="$(basename ${destpathname})"
         tmppathname="$(find ${TMPPATH} -name ${destname})"
         popd
-        if [ "${tmppathname}" == "" ]
-        then
+        if [ "${tmppathname}" == "" ]; then
             err "could not find ${destname}" in archive
             return
         fi
         destpathname="$(dirname ${destpathname})/${destname}"
     fi
 
-
-    if ! cmp ${tmppathname} ${destpathname} >/dev/null 2>&1
-    then
+    if ! cmp ${tmppathname} ${destpathname} >/dev/null 2>&1; then
         mv ${tmppathname} ${destpathname}
-        if [[ "${destpathname}" =~ "/bin" ]]
-        then
+        if [[ "${destpathname}" =~ "/bin" ]]; then
             chmod +x ${destpathname}
         fi
         log "Downloaded "
@@ -158,7 +153,6 @@ download_file() {
         log ${tmppathname} already exists at ${destpathname}
     fi
 }
-
 
 github_download() {
 
@@ -181,37 +175,29 @@ github_download() {
 
     destpathname="${destpath}/${destname}"
 
-
-    if [ $type = release ]
-    then
+    if [ $type = release ]; then
         echo "consider for mise:   \"ubi:$project\" = { version = \"latest\", exe = \"$destname\" }"
     fi
 
     title "Fetch   ${project} ${type} ${artefact} to ${destpathname}"
-    if [ -z "${version}" ] || [ "${version}" = "latest" ]
-    then
+    if [ -z "${version}" ] || [ "${version}" = "latest" ]; then
         version="$(github_getlatestversion ${project})"
-        if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]
-        then
+        if [[ "${version}" =~ "null" ]] || [ -z "${version}" ]; then
             log "No version found, can't download"
             return
         fi
     fi
 
-    if [[ "${artefact}" =~ "@@VERSION@@" ]]
-    then
-        artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g )"
-        if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|dyff|nats) ]]
-        then
-            artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/ )"
+    if [[ "${artefact}" =~ "@@VERSION@@" ]]; then
+        artefact="$(echo -n ${artefact} | sed s/@@VERSION@@/${version}/g)"
+        if [[ "${artefact}" =~ (civo|korb|grpcurl|oras|dyff|nats) ]]; then
+            artefact="$(echo -n ${artefact} | sed s/${version}/${version#v}/)"
         fi
     fi
 
-    if [ "${type}" = "release" ]
-    then
+    if [ "${type}" = "release" ]; then
         url="https://github.com/${project}/releases/download/${version}/${artefact}"
-    elif [ "${type}" = "file" ]
-    then
+    elif [ "${type}" = "file" ]; then
         url="https://raw.githubusercontent.com/${project}/${version}/${artefact}"
     else
         err "Unknown download type ~${type}~"
@@ -235,13 +221,13 @@ get_github() {
     #trap "return 1" SIGINT SIGHUP SIGQUIT SIGABRT
 
     # github_download   release|file    project                 artefactname_${osarch}                  destpath    destname                    version
-    github_download     file            johanhaleby/kubetail    kubetail                                $BINPATH    kubetail                    master
-    github_download     file            johanhaleby/kubetail    completion/kubetail.bash                $COMPLPATH  completions.kubetail.bash   master
-    github_download     release         Orange-OpenSource/hurl  hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH hurl.bash           latest
-    github_download     release         Orange-OpenSource/hurl  hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH hurlfmt.bash        latest
-    github_download     release         gabm/Satty              satty-x86_64-unknown-linux-gnu.tar.gz   $COMPLPATH  satty.bash                  latest
-    github_download     release         sxyazi/yazi             yazi-x86_64-unknown-linux-gnu.zip       $COMPLPATH  yazi.bash                   latest
-    github_download     file            vaniacer/kui            kui                                     $BINPATH    kui                         master
+    github_download file johanhaleby/kubetail kubetail $BINPATH kubetail master
+    github_download file johanhaleby/kubetail completion/kubetail.bash $COMPLPATH completions.kubetail.bash master
+    github_download release Orange-OpenSource/hurl hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH hurl.bash latest
+    github_download release Orange-OpenSource/hurl hurl-@@VERSION@@-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH hurlfmt.bash latest
+    github_download release gabm/Satty satty-x86_64-unknown-linux-gnu.tar.gz $COMPLPATH satty.bash latest
+    github_download release sxyazi/yazi yazi-x86_64-unknown-linux-gnu.zip $COMPLPATH yazi.bash latest
+    github_download file vaniacer/kui kui $BINPATH kui master
 
     popd
 }
@@ -253,15 +239,14 @@ get_downloads() {
     pushd ${TMPPATH}
 
     title "go-chromecast"
-    download_file $($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest \
-                | jq -r '.assets[].browser_download_url' \
-                | grep Linux_x86_64 ) ${BINPATH}/go-chromecast
-
+    download_file $($CURL_COMMAND https://api.github.com/repos/vishen/go-chromecast/releases/latest |
+        jq -r '.assets[].browser_download_url' |
+        grep Linux_x86_64) ${BINPATH}/go-chromecast
 
     title "kubedash"
-    download_file "$($CURL_COMMAND https://api.github.com/repos/kdash-rs/kdash/releases/latest \
-                | jq -r '.assets[].browser_download_url' \
-                | grep 'linux\.tar.gz' )" ${BINPATH}/kdash
+    download_file "$($CURL_COMMAND https://api.github.com/repos/kdash-rs/kdash/releases/latest |
+        jq -r '.assets[].browser_download_url' |
+        grep 'linux\.tar.gz')" ${BINPATH}/kdash
 
     title "broot"
     download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}/broot
@@ -271,36 +256,28 @@ get_downloads() {
 
 ##########################################################################################################
 
-get_krew(){
+get_krew() {
 
     title "krew"
 
     log "\nkrew update index list"
-    if [ -f $HOME/.config/krew-index-list ]
-    then
-        if ! cmp --quiet $HOME/.config/krew-index-list <(krew index list)
-        then
-            for indexname in $(grep -v -e INDEX -e URL  $HOME/.config/krew-index-list | awk '{print $1}')
-            do
-                if ! krew index list | grep --quiet $indexname
-                then
-                    indexurl=$(grep --quiet $indexname  $HOME/.config/krew-index-list | awk '{print $2}')
+    if [ -f $HOME/.config/krew-index-list ]; then
+        if ! cmp --quiet $HOME/.config/krew-index-list <(krew index list); then
+            for indexname in $(grep -v -e INDEX -e URL $HOME/.config/krew-index-list | awk '{print $1}'); do
+                if ! krew index list | grep --quiet $indexname; then
+                    indexurl=$(grep --quiet $indexname $HOME/.config/krew-index-list | awk '{print $2}')
                     krew index add $indexname $indexurl
                 fi
             done
         fi
     fi
     log "\nkrew (un)install new/removed plugins"
-    if [ -f $HOME/.config/krew-list ]
-    then
-        if ! cmp --quiet $HOME/.config/krew-list <(krew list)
-        then
-            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^+ | sed 's/^+//')
-            do
+    if [ -f $HOME/.config/krew-list ]; then
+        if ! cmp --quiet $HOME/.config/krew-list <(krew list); then
+            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^+ | sed 's/^+//'); do
                 krew install $plugin
             done
-            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^- | sed 's/^-//')
-            do
+            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^- | sed 's/^-//'); do
                 krew uninstall $plugin
             done
         fi
@@ -312,11 +289,10 @@ get_krew(){
     log "\nkrew upgrade"
     kubectl-krew upgrade
 
-    if [ "${HOSTNAME}" = "goldorak" ]
-    then
+    if [ "${HOSTNAME}" = "goldorak" ]; then
         log "\nkrew make lists"
-        kubectl-krew index list > $HOME/.config/krew-index-list
-        kubectl-krew list -v1 > $HOME/.config/krew-list
+        kubectl-krew index list >$HOME/.config/krew-index-list
+        kubectl-krew list -v1 >$HOME/.config/krew-list
         # to restore: krew install <  $HOME/.config/krew-list
     fi
 
@@ -338,33 +314,28 @@ get_asdf() {
 
     plugins="$(asdf plugin-list)"
     log "asdf updating plugins\n$(echo $plugins | xargs)"
-    for plugin in $plugins
-    do
+    for plugin in $plugins; do
         log "asdf install $plugin latest"
-        asdf install $plugin latest ||:
+        asdf install $plugin latest || :
         log ""
 
-        if ! [[ "$plugin" =~ python|flux2 ]]
-        then
+        if ! [[ "$plugin" =~ python|flux2 ]]; then
             log "asdf global $plugin latest"
-            asdf global $plugin latest ||:
+            asdf global $plugin latest || :
             log ""
         fi
     done
     log "END of asdf updating plugins"
 
-    if [ "${HOSTNAME}" = "goldorak" ]
-    then
+    if [ "${HOSTNAME}" = "goldorak" ]; then
         log asdf make lists
-        asdf plugin-list     > $HOME/.config/asdf-plugin-list
-        asdf plugin-list-all > $HOME/.config/asdf-plugin-list-all
+        asdf plugin-list >$HOME/.config/asdf-plugin-list
+        asdf plugin-list-all >$HOME/.config/asdf-plugin-list-all
     fi
 
     title "asdf cleaning up old versions"
-    for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl)
-    do
-        for version in $(asdf list $plugin | grep -v '*' | head -n -5)
-        do
+    for plugin in $(asdf plugin-list | grep -v -e python -e flux2 -e kubectl -e gcloud -e azure-cli -e talosctl); do
+        for version in $(asdf list $plugin | grep -v '*' | head -n -5); do
             log "\nremoving $plugin $version"
             asdf uninstall $plugin $version
         done
@@ -382,14 +353,10 @@ get_mise() {
 
     title "mise-en-place"
 
-    if ! hash mise >/dev/null 2>&1
-    then
+    if ! hash mise >/dev/null 2>&1; then
         title "install mise"
         curl https://mise.run | sh
-        if ! cmp $HOME/.local/bin/mise $HOME/bin/mise >/dev/null 2>&1
-        then
-            mv -v $HOME/.local/bin/mise $HOME/bin/mise
-        fi
+        # comes in $HOME/.local/bin/mise $HOME/bin2/mise
     fi
 
     pushd $HOME
@@ -400,7 +367,7 @@ get_mise() {
     mise plugins update
     mise outdated --verbose
     mise cache prune --verbose
-    mise upgrade --yes  --jobs 8
+    mise upgrade --yes --jobs 8
     mise reshim
     mise doctor --verbose
     popd
@@ -419,13 +386,12 @@ get_flatpak() {
     flatpak update --assumeyes --noninteractive --user
     log ""
 
-    if [ "${HOSTNAME}" = "goldorak" ]
-    then
+    if [ "${HOSTNAME}" = "goldorak" ]; then
         log "flatpak make lists"
-        flatpak remotes --columns=name,url > $TMPPATH/flatpak.remotes \
-            && mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
-        flatpak list --app --columns=application,version,origin,installation > $TMPPATH/flatpak.list \
-            && mv $TMPPATH/flatpak.list    $HOME/.local/share/flatpak/list.ls
+        flatpak remotes --columns=name,url >$TMPPATH/flatpak.remotes &&
+            mv $TMPPATH/flatpak.remotes $HOME/.local/share/flatpak/remotes.ls
+        flatpak list --app --columns=application,version,origin,installation >$TMPPATH/flatpak.list &&
+            mv $TMPPATH/flatpak.list $HOME/.local/share/flatpak/list.ls
         log ""
     fi
 
@@ -437,9 +403,8 @@ get_helm() {
 
     title "helm repo update"
     helm repo update
-    if [ "${HOSTNAME}" = "goldorak" ]
-    then
-        helm repo list > $TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
+    if [ "${HOSTNAME}" = "goldorak" ]; then
+        helm repo list >$TMPPATH/helm-repo-list.yaml && mv $TMPPATH/helm-repo-list.yaml $HOME/.config/helm/repo-list.yaml
     fi
 
 }
@@ -459,11 +424,11 @@ get_pipx() {
 
     title update pipx
     log install new packages from pipx list
-    comm -13 <(pipx list --short | sed s/\ .*//) <( < ~/etc/packages/pipx.list sed s/\ .*// ) | xargs --no-run-if-empty -n1 pipx install
+    comm -13 <(pipx list --short | sed s/\ .*//) <(<~/etc/packages/pipx.list sed s/\ .*//) | xargs --no-run-if-empty -n1 pipx install
     log upgrade all
     pipx upgrade-all
     log save new pipx.list
-    pipx list --short > $TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
+    pipx list --short >$TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
 
 }
 
@@ -479,8 +444,7 @@ get_misc() {
     log ""
 
     log "ble.sh"
-    if hash ble-update 2> /dev/null
-    then
+    if hash ble-update 2>/dev/null; then
         ble-update
     else
         echo "# ble.sh not installed. install with:"
@@ -489,8 +453,7 @@ get_misc() {
     fi
 
     log "atuin"
-    if hash atuin 2> /dev/null
-    then
+    if hash atuin 2>/dev/null; then
         atuin-update
     else
         echo "# atuin not installed. install with:"
@@ -507,15 +470,15 @@ get_misc() {
 
 update_all() {
 
-    run_component "mise"              get_mise
-    run_component "pipx"              get_pipx
-    run_component "krew"              get_krew
-    run_component "helm"              get_helm
-    run_component "flatpak"           get_flatpak
-    run_component "misc"              get_misc
-    run_component "downloads"         get_downloads
-    run_component "github"            get_github
-    run_component "bash_completions"  get_bash_completions
+    run_component "mise" get_mise
+    run_component "pipx" get_pipx
+    run_component "krew" get_krew
+    run_component "helm" get_helm
+    run_component "flatpak" get_flatpak
+    run_component "misc" get_misc
+    run_component "downloads" get_downloads
+    run_component "github" get_github
+    run_component "bash_completions" get_bash_completions
 
 }
 
@@ -540,7 +503,6 @@ post() {
 
 }
 
-
 #
 ##########################################################################################################
 #
@@ -557,8 +519,7 @@ source $HOME/etc/keys/tokens.bash && CURL_COMMAND="$CURL_COMMAND -u $GITHUB_USER
 #
 
 commands=${*:-all}
-for command in ${commands}
-do
+for command in ${commands}; do
     case ${command} in
         all)
             init
@@ -615,7 +576,7 @@ do
             run_component "bash_completions" get_bash_completions
             ;;
         *)
-cat <<EOF
+            cat <<EOF
 
 Unknown command \`${command}\`
 
@@ -633,10 +594,10 @@ possible options are:
     pipx
 
 EOF
-exit 1
+            exit 1
+            ;;
 
     esac
 done
-
 
 ##########################################################################################################

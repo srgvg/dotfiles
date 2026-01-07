@@ -6,6 +6,9 @@ backend = "aqua:FiloSottile/age"
 version = "0.2.13"
 backend = "aqua:Azure/kubelogin"
 
+[tools."aqua:Azure/kubelogin".checksums]
+"kubelogin-linux-amd64.zip" = "sha256:21b7cfa009b3b4044663a0f9a9ec033deddd668ca4502348f763bd93c51fb806"
+
 [tools.argocd]
 version = "3.2.0"
 backend = "aqua:argoproj/argo-cd"
@@ -18,6 +21,10 @@ backend = "aqua:aws/aws-cli"
 version = "2.81.0"
 backend = "asdf:azure-cli"
 
+[tools.bun]
+version = "1.3.5"
+backend = "core:bun"
+
 [tools.cilium-cli]
 version = "0.18.9"
 backend = "aqua:cilium/cilium-cli"
@@ -25,6 +32,9 @@ backend = "aqua:cilium/cilium-cli"
 [tools.cilium-hubble]
 version = "1.18.3"
 backend = "ubi:cilium/hubble"
+
+[tools.cilium-hubble.checksums]
+hubble-linux-x86_64 = "sha256:b2a04f803d6e538d4e678cc4d0c2aef49ceb7a26bf4b715bf1d8c16ff6edd0e6"
 
 [tools.clusterctl]
 version = "1.11.3"
@@ -199,6 +209,10 @@ backend = "aqua:neovim/neovim"
 version = "3.11.9"
 backend = "aqua:FairwindsOps/nova"
 
+[tools.npm]
+version = "11.7.0"
+backend = "npm"
+
 [tools.pluto]
 version = "5.22.6"
 backend = "aqua:FairwindsOps/pluto"
@@ -259,7 +273,7 @@ version = "3.11.0"
 backend = "aqua:getsops/sops"
 
 [tools.starship]
-version = "1.23.0"
+version = "1.24.2"
 backend = "aqua:starship/starship"
 
 [tools.stern]
@@ -286,6 +300,9 @@ backend = "ubi:BeryJu/korb[exe=korb]"
 version = "0.3.10"
 backend = "ubi:JakWai01/lurk[exe=lurk]"
 
+[tools."ubi:JakWai01/lurk".checksums]
+lurk-lurk-linux-x86_64 = "sha256:d2d0bc8a60bd2edbfe2fc7d35d6dfde0c8d6945628c9b2ad6cb3baa46698d22c"
+
 [tools."ubi:Wilfred/difftastic"]
 version = "0.67.0"
 backend = "ubi:Wilfred/difftastic[exe=difft]"
@@ -310,7 +327,7 @@ version = "2.2.2"
 backend = "ubi:ayoisaiah/f2"
 
 [tools."ubi:block/goose"]
-version = "1.18.0"
+version = "1.19.0"
 backend = "ubi:block/goose"
 
 [tools."ubi:c-bata/kube-prompt"]
@@ -321,12 +338,15 @@ backend = "ubi:c-bata/kube-prompt[exe=kube-prompt]"
 version = "1.18.3"
 backend = "ubi:cilium/hubble[exe=hubble]"
 
+[tools."ubi:cilium/hubble".checksums]
+hubble-hubble-linux-x86_64 = "sha256:b2a04f803d6e538d4e678cc4d0c2aef49ceb7a26bf4b715bf1d8c16ff6edd0e6"
+
 [tools."ubi:civo/cli"]
 version = "1.4.6"
 backend = "ubi:civo/cli[exe=civo]"
 
 [tools."ubi:controlplaneio-fluxcd/flux-operator"]
-version = "0.36.0"
+version = "0.38.1"
 backend = "ubi:controlplaneio-fluxcd/flux-operator[exe=flux-operator]"
 
 [tools."ubi:dgunzy/flux9s"]
@@ -376,6 +396,10 @@ backend = "ubi:josephburnett/jd[exe=jd]"
 
 [tools."ubi:josephburnett/jd".checksums]
 jd-jd-linux-x86_64 = "sha256:ae76e6255b13031563240cf75168ae0e5456a3a95cf80498a433547d7f8b192c"
+
+[tools."ubi:khairul169/garage-webui"]
+version = "1.1.0"
+backend = "ubi:khairul169/garage-webui"
 
 [tools."ubi:ksdme/ut"]
 version = "0.5.0"
@@ -483,6 +507,9 @@ backend = "aqua:vmware-tanzu/velero"
 [tools.yamlfmt]
 version = "0.20.0"
 backend = "aqua:google/yamlfmt"
+
+[tools.yamlfmt.checksums]
+"yamlfmt_0.20.0_Linux_x86_64.tar.gz" = "sha256:b652b39aa91a3b54347f948a06dc95e422b245f7f068adc898acfafa91376e17"
 
 [tools.yq]
 version = "4.49.2"
