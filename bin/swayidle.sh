@@ -30,6 +30,11 @@ echo "==== swayidle called as '$0 $*' (SWAYSOCK=$SWAYSOCK)" | ts
 #
 #############################################################################
 #
+# Mouse device to disable during lock (prevents accidental wake from sleep)
+# NOTE: Don't use "type:pointer" as it disables composite keyboard/pointer devices (e.g., Keychron)
+# List pointer devices with: swaymsg -t get_inputs | jq -r '.[] | select(.type == "pointer") | "\(.identifier) - \(.name)"'
+MOUSE_DEVICE="1133:16507:Logitech_MX_Vertical"
+
 function pause_notifications() {
 	echo "== pause notifications"
 	echo makoctl mode -a do-not-disturb ||:
@@ -37,18 +42,16 @@ function pause_notifications() {
 }
 function pause_mouse() {
 	echo "== pause mouse"
-	echo swaymsg "input type:pointer events disabled" ||:
-	swaymsg "input type:pointer events disabled" ||:
+	swaymsg "input \"${MOUSE_DEVICE}\" events disabled" ||:
 }
 function resume_mouse() {
 	echo "== resume mouse"
-	echo swaymsg "input type:pointer events enabled" ||:
-	swaymsg "input type:pointer events enabled" ||:
+	swaymsg "input \"${MOUSE_DEVICE}\" events enabled" ||:
 	# Verify mouse was re-enabled
-	if ! swaymsg -t get_inputs | grep -q '"events": "enabled"'; then
+	if ! swaymsg -t get_inputs | jq -e ".[] | select(.identifier == \"${MOUSE_DEVICE}\") | select(.libinput.send_events == \"enabled\")" > /dev/null 2>&1; then
 	    echo "== mouse still disabled, retrying..."
 	    sleep 0.5
-	    swaymsg "input type:pointer events enabled" ||:
+	    swaymsg "input \"${MOUSE_DEVICE}\" events enabled" ||:
 	fi
 }
 function resume_notifications() {

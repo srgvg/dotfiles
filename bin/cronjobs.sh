@@ -120,9 +120,9 @@ function execute() {
         $HOME/bin/update-tools
 
     ###############################################################################
-    elif [ "${command}" = "backup-vaultwarden" ]; then
+    elif [ "${command}" = "backup" ]; then
 
-        $HOME/bin/backup-vaultwarden.sh
+        : # no-op
 
     ###############################################################################
     elif [ "${command}" = "picwide" ]; then
