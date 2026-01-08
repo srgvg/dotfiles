@@ -5,10 +5,10 @@ if ! echo "$PATH" | grep -q "mise/installs\|mise/shims"; then
     if [[ -t 0 ]]; then
         # Interactive terminal: full activation for better performance
         eval "$($MISE_PATH activate bash)"
-        eval "$(mise hook-env)"
+        eval "$($MISE_PATH hook-env)"
     else
         # Non-interactive: use shims only (faster, less overhead)
-        eval "$(mise activate --shims)"
+        eval "$($MISE_PATH activate --shims)"
     fi
 fi
 
