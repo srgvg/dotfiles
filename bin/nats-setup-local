@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# NATS Local Client Setup Script
+# Extracts NATS credentials from the cluster and configures local nats CLI and nsc
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${SCRIPT_DIR}/../src/ginsys/opsmaster"
+NATS_DIR="$HOME/.nats"
+NSC_DIR="$HOME/.local/share/nats/nsc"
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+info() { echo -e "${GREEN}[INFO]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+error() { echo -e "${RED}[ERROR]${NC} $*"; }
+
+# Check prerequisites
+check_prereqs() {
+  info "Checking prerequisites..."
+
+  if ! command -v kubectl &> /dev/null; then
+    error "kubectl not found. Please install kubectl first."
+    exit 1
+  fi
+
+  if ! command -v nats &> /dev/null; then
+    error "nats CLI not found. Install via: mise use nats"
+    exit 1
+  fi
+
+  if ! command -v nsc &> /dev/null; then
+    error "nsc not found. Install via: mise use nsc"
+    exit 1
+  fi
+
+  if ! command -v sops &> /dev/null; then
+    error "sops not found. Install via: mise use sops"
+    exit 1
+  fi
+
+  info "All prerequisites met"
+}
+
+# Extract NATS client credentials from cluster
+setup_nats_cli() {
+  info "Setting up nats CLI..."
+
+  mkdir -p "$NATS_DIR"
+
+  # Extract OpenCloud user credentials
+  info "Extracting opencloud-backend.creds..."
+  kubectl get secret opencloud-nats-credentials -n nats \
+    -o jsonpath='{.data.opencloud-backend\.creds}' | base64 -d > "$NATS_DIR/opencloud.creds"
+
+  # Extract TLS CA certificate
+  info "Extracting TLS CA certificate..."
+  kubectl get secret nats-tls -n nats \
+    -o jsonpath='{.data.ca\.crt}' | base64 -d > "$NATS_DIR/nats-ca.crt"
+
+  # Create nats context
+  info "Creating nats context 'opencloud'..."
+  nats context save opencloud \
+    --server="nats://nats.ginsys.net:4222" \
+    --creds="$NATS_DIR/opencloud.creds" \
+    --tlsca="$NATS_DIR/nats-ca.crt" \
+    || warn "Context already exists or failed to create"
+
+  # Set as default
+  nats context select opencloud || warn "Failed to select context"
+
+  info "Testing connection..."
+  if nats server info; then
+    info "✓ nats CLI configured successfully"
+  else
+    error "Failed to connect to NATS server"
+    exit 1
+  fi
+}
+
+# Extract NATS operator keys for nsc
+setup_nsc() {
+  info "Setting up nsc (NATS Security CLI)..."
+
+  mkdir -p "$NSC_DIR"/{keys/O,keys/A,keys/U,stores/ginsys/accounts}
+
+  if [ ! -f "$REPO_ROOT/net.ginsys.office.kube/fluxcd/infrastructure/nats/secrets-operator.sops.yaml" ]; then
+    error "Cannot find secrets-operator.sops.yaml in repo"
+    exit 1
+  fi
+
+  cd "$REPO_ROOT"
+
+  # Decrypt and extract operator JWT
+  info "Extracting operator JWT..."
+  sops -d net.ginsys.office.kube/fluxcd/infrastructure/nats/secrets-operator.sops.yaml \
+    | grep -A 1 'operator.jwt:' | tail -n 1 | sed 's/^[ \t]*//' \
+    > "$NSC_DIR/stores/ginsys/ginsys.jwt"
+
+  # Decrypt and extract operator signing key
+  info "Extracting operator signing key..."
+  OPERATOR_NK=$(sops -d net.ginsys.office.kube/fluxcd/infrastructure/nats/secrets-operator.sops.yaml \
+    | grep -A 1 'operator.nk:' | tail -n 1 | sed 's/^[ \t]*//')
+
+  # Get the public key from the nk to use as filename
+  OPERATOR_PUB=$(echo "$OPERATOR_NK" | nsc describe key -f - 2>/dev/null | grep "Public Key" | awk '{print $3}' || echo "operator")
+
+  echo "$OPERATOR_NK" > "$NSC_DIR/keys/O/${OPERATOR_PUB}.nk"
+
+  # Extract account JWTs
+  info "Extracting account JWTs..."
+  mkdir -p "$NSC_DIR/stores/ginsys/accounts/SYS"
+  mkdir -p "$NSC_DIR/stores/ginsys/accounts/opencloud"
+
+  sops -d net.ginsys.office.kube/fluxcd/infrastructure/nats/secrets-accounts.sops.yaml \
+    | grep -A 1 'SYS.jwt:' | tail -n 1 | sed 's/^[ \t]*//' \
+    > "$NSC_DIR/stores/ginsys/accounts/SYS/SYS.jwt"
+
+  sops -d net.ginsys.office.kube/fluxcd/infrastructure/nats/secrets-accounts.sops.yaml \
+    | grep -A 1 'opencloud.jwt:' | tail -n 1 | sed 's/^[ \t]*//' \
+    > "$NSC_DIR/stores/ginsys/accounts/opencloud/opencloud.jwt"
+
+  # Set nsc environment
+  info "Configuring nsc environment..."
+  export NSC_HOME="$NSC_DIR"
+
+  # Verify setup
+  info "Verifying nsc setup..."
+  if nsc env -s "$NSC_DIR/stores" -o ginsys; then
+    info "✓ nsc configured successfully"
+    nsc describe operator
+  else
+    error "Failed to configure nsc"
+    exit 1
+  fi
+}
+
+# Add environment variables to shell profile
+setup_shell_env() {
+  info "Setting up shell environment..."
+
+  SHELL_RC="$HOME/.bashrc"
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    SHELL_RC="$HOME/.zshrc"
+  fi
+
+  cat >> "$SHELL_RC" <<'ENVEOF'
+
+# NATS CLI configuration
+export NATS_URL="nats://nats.ginsys.net:4222"
+export NATS_CREDS="$HOME/.nats/opencloud.creds"
+export NATS_CA="$HOME/.nats/nats-ca.crt"
+
+# NSC configuration
+export NSC_HOME="$HOME/.local/share/nats/nsc"
+ENVEOF
+
+  info "Added environment variables to $SHELL_RC"
+  warn "Run 'source $SHELL_RC' or restart your shell to apply"
+}
+
+# Main
+main() {
+  info "NATS Local Client Setup"
+  info "======================="
+
+  check_prereqs
+  setup_nats_cli
+  setup_nsc
+
+  if [ "${1:-}" == "--setup-shell" ]; then
+    setup_shell_env
+  else
+    info "Skipping shell environment setup (use --setup-shell to add)"
+  fi
+
+  echo
+  info "Setup complete!"
+  info "Commands to try:"
+  echo "  nats server info"
+  echo "  nats stream ls"
+  echo "  nats kv ls"
+  echo "  nsc describe operator"
+  echo "  nsc list accounts"
+}
+
+main "$@"

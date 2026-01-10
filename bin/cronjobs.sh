@@ -50,7 +50,7 @@ function execute() {
     if [ "${command}" = "cleanup" ]; then
 
         cleantime="+2880" # 48 hours
-        tempfolders="$HOME/scratch/grabs $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/"
+        tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/"
 
         # cleanup files:
         # files in ~/scratch/ itself
@@ -64,7 +64,7 @@ function execute() {
             -mmin ${cleantime} \( -type f -o -type l \) \
             -print0 | xargs -r -0 rm -fv
 
-        # files in ~/scratch/grabs/ and other temp folders
+        # files in ~/scratch/clips/ and other temp folders
         logtitle looking for files in temp folders
         nice -n 20 ionice -c 3 find \
             ${tempfolders} \

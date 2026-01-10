@@ -187,12 +187,27 @@ function mv() {
 }
 
 function pbin() {
-    pbincli send --json | tee | jq -r .result.link | copy
+    local tmp link
+    tmp="$(mktemp -t pbin.XXXXXX)" || return
+    trap 'rm -f "$tmp"' RETURN
+
+    if [ "$#" -gt 0 ]; then
+        cat -- "$@"
+    else
+        cat
+    fi | tee "$tmp"
+
+    link="$(
+        pbincli send --json --expire 1hour <"$tmp" |
+            jq -r '.result.link'
+    )" || return
+
+    printf '%s\n' "$link" | copy
+    echo ---
     paste
 }
 
 function rp() {
-
     realpath ${1:-} | copy
     paste
 }

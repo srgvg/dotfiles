@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Garage S3 Bucket Creation Helper
+# Creates a bucket, key, and grants permissions in Garage
+
+BUCKET_NAME="${1:-}"
+KEY_NAME="${2:-${BUCKET_NAME}-key}"
+GARAGE_POD="garage-0"
+GARAGE_NS="garage"
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+info() { echo -e "${GREEN}[INFO]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+error() { echo -e "${RED}[ERROR]${NC} $*"; }
+step() { echo -e "${BLUE}[STEP]${NC} $*"; }
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <bucket-name> [key-name]
+
+Creates a Garage S3 bucket with access key.
+
+Examples:
+  $(basename "$0") opencloud
+  $(basename "$0") opencloud opencloud-app-key
+
+Arguments:
+  bucket-name   Name of the bucket to create
+  key-name      Name of the access key (default: <bucket-name>-key)
+EOF
+  exit 1
+}
+
+if [ -z "$BUCKET_NAME" ]; then
+  error "Bucket name is required"
+  usage
+fi
+
+info "Creating Garage S3 bucket: $BUCKET_NAME"
+info "Access key name: $KEY_NAME"
+echo
+
+# Check if garage pod exists
+step "Checking Garage cluster..."
+if ! kubectl get pod -n "$GARAGE_NS" "$GARAGE_POD" &>/dev/null; then
+  error "Garage pod $GARAGE_POD not found in namespace $GARAGE_NS"
+  exit 1
+fi
+
+# Create bucket
+step "Creating bucket..."
+if kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage bucket info "$BUCKET_NAME" &>/dev/null; then
+  warn "Bucket $BUCKET_NAME already exists"
+else
+  kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage bucket create "$BUCKET_NAME"
+  info "✓ Bucket created"
+fi
+
+# Create key
+step "Creating access key..."
+if kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage key info "$KEY_NAME" &>/dev/null; then
+  warn "Key $KEY_NAME already exists, using existing key"
+else
+  kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage key create "$KEY_NAME"
+  info "✓ Key created"
+fi
+
+# Grant permissions
+step "Granting bucket permissions..."
+kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage bucket allow "$BUCKET_NAME" --read --write --owner --key "$KEY_NAME"
+info "✓ Permissions granted"
+
+# Show key info
+echo
+step "Access Key Information:"
+kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- /garage key info "$KEY_NAME"
+
+echo
+info "✓ Setup complete!"
+echo
+info "Next steps:"
+echo "  1. Copy the Access Key ID and Secret Access Key from above"
+echo "  2. Create a secret in your application namespace:"
+echo "     kubectl create secret generic <app>-s3-credentials \\"
+echo "       --from-literal=ACCESS_KEY='<access-key-id>' \\"
+echo "       --from-literal=SECRET_KEY='<secret-access-key>' \\"
+echo "       -n <namespace> --dry-run=client -o yaml | kubectl apply -f -"
+echo "  3. Or encrypt with SOPS for GitOps:"
+echo "     # Create YAML, then: sops -e secrets.yaml > secrets.sops.yaml"

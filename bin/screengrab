@@ -11,7 +11,7 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-screenshotdir="$HOMETMPDIR/grabs"
+screenshotdir="$HOMETMPDIR/clips"
 filename="$(date +%Y%m%d-%H%M%S).png"
 imagefile="${screenshotdir}/${filename}"
 
@@ -24,14 +24,14 @@ case ${action} in
         options="active"
         ;;
     screen)
-	options="output"
+        options="output"
         ;;
     full)
         options="screen"
         ;;
-	*)
-	errexit "Unknown action ${action}"
-	;;
+    *)
+        errexit "Unknown action ${action}"
+        ;;
 esac
 
 mkdir -p ${screenshotdir}
