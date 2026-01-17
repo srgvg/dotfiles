@@ -50,15 +50,15 @@ function execute() {
     if [ "${command}" = "cleanup" ]; then
 
         cleantime="+2880" # 48 hours
-        tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/"
+        tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/ $HOME/logs $HOME/logs/cronjobs"
 
         # cleanup files:
         # files in ~/scratch/ itself
         logtitle Looking for files in ~/scratch itself
         nice -n 20 ionice -c 3 find \
             $HOME/scratch/ \
-            $HOME/tmp/
-        -maxdepth 1 \
+            $HOME/tmp/ \
+            -maxdepth 1 \
             -not -path '/home/serge/scratch/.stfolder' \
             -not -path '/home/serge/scratch/.stignore' \
             -mmin ${cleantime} \( -type f -o -type l \) \
@@ -66,20 +66,29 @@ function execute() {
 
         # files in ~/scratch/clips/ and other temp folders
         logtitle looking for files in temp folders
-        nice -n 20 ionice -c 3 find \
-            ${tempfolders} \
-            -depth -mindepth 1 \
-            -mmin ${cleantime} \( -type f -o -type l \) \
-            -print0 | xargs -r -0 rm -fv
+        for folder in ${tempfolders}; do
+            if [ -d ${folder} ]; then
+                logtitle === ${folder} ===
+                nice -n 20 ionice -c 3 find \
+                    ${folder} \
+                    -depth -mindepth 1 \
+                    -mmin ${cleantime} \( -type f -o -type l \) \
+                    -print0 | xargs -r -0 rm -fv
+            fi
+        done
 
         # cleanup empty directories
         logtitle looking for empty dirs in temp folders
-        nice -n 20 ionice -c 3 find \
-            $HOME/scratch/ \
-            -depth -mindepth 2 \
-            -not -path '/home/serge/scratch/.stfolder*' \
-            -type d -empty \
-            -print0 | xargs -r -0 rmdir --parents -verbose
+        for folder in ${tempfolders}; do
+            if [ -d ${folder} ]; then
+                nice -n 20 ionice -c 3 find \
+                    ${folder} \
+                    -depth -mindepth 2 \
+                    -not -path '/home/serge/scratch/.stfolder*' \
+                    -type d -empty \
+                    -print0 | xargs -r -0 rmdir --parents -verbose
+            fi
+        done
 
         logtitle misc stuff
 
