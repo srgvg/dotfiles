@@ -740,6 +740,10 @@ backend = "github:nats-io/nats-server"
 "platforms.windows-x64" = { checksum = "sha256:33cab92d3113cc5c209773748efdd910b85db49493716b31e74df80c659b83f0", url = "https://github.com/nats-io/nats-server/releases/download/v2.12.3/nats-server-v2.12.3-windows-amd64.zip", url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/329808040"}
 "platforms.windows-x64-baseline" = { checksum = "sha256:33cab92d3113cc5c209773748efdd910b85db49493716b31e74df80c659b83f0", url = "https://github.com/nats-io/nats-server/releases/download/v2.12.3/nats-server-v2.12.3-windows-amd64.zip", url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/329808040"}
 
+[[tools.nats-top]]
+version = "0.6.3"
+backend = "github:nats-io/nats-top"
+
 [[tools.neovim]]
 version = "0.11.5"
 backend = "aqua:neovim/neovim"
@@ -754,6 +758,10 @@ backend = "aqua:neovim/neovim"
 "platforms.macos-x64-baseline" = { checksum = "sha256:6612760a7037ca2518e456908baf5e43101fa79819d18979fc4d4e8441d9dfa5", url = "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-macos-x86_64.tar.gz"}
 "platforms.windows-x64" = { checksum = "sha256:718e731326e7759cf17bbbb33f38975707a2ac85642614686b818ef5fde38f48", url = "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-win64.zip"}
 "platforms.windows-x64-baseline" = { checksum = "sha256:718e731326e7759cf17bbbb33f38975707a2ac85642614686b818ef5fde38f48", url = "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-win64.zip"}
+
+[[tools.nkeys]]
+version = "0.4.12"
+backend = "go:github.com/nats-io/nkeys/nk"
 
 [[tools.nova]]
 version = "3.11.10"

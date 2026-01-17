@@ -17,6 +17,7 @@ missing_tools = "always"
 # for gcloud
 MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 
+### ALIASES #################################################################
 [tool_alias]
 bat            = "github:sharkdp/bat"
 btop           = "github:aristocratos/btop"
@@ -44,6 +45,9 @@ kubeshark      = "github:kubeshark/kubeshark"
 kubewall       = "github:kubewall/kubewall"
 nats-cli       = "github:nats-io/natscli"
 nats-server    = "github:nats-io/nats-server"
+nats-top       = "github:nats-io/nats-top"
+nkeys          = "go:github.com/nats-io/nkeys/nk"
+nsc            = "github:nats-io/nsc"
 oras           = "github:oras-project/oras"
 pkl            = "github:apple/pkl"
 regbot         = "github:regclient/regclient"
@@ -54,8 +58,10 @@ satty          = "github:gabm/Satty"
 snitch         = "github:karol-broda/snitch"
 updatecli      = "github:updatecli/updatecli"
 yazi           = "github:sxyazi/yazi"
+### ALIASES #################################################################
 
 
+### TOOLS ###################################################################
 [tools]
 age                   = { version = "latest" }
 argocd                = { version = "latest" }
@@ -123,10 +129,12 @@ kubie                 = { version = "latest" }
 kustomize             = { version = "latest" }
 nats-server           = { version = "latest", exe = "nats-server" }
 nats-cli              = { version = "latest", exe = "nats" }
+nats-top              = { version = "latest" }
 neovim                = { version = "latest" }
 nova                  = { version = "latest" }
 npm                   = { version = "latest" }
 nsc                   = { version = "latest" }
+nkeys                 = { version = "latest", exe = "nk" }
 oras                  = { version = "latest", exe = "oras" }
 osv-scanner           = { version = "latest" }
 pkl                   = { version = "latest", exe = "pkl" }
@@ -158,3 +166,4 @@ velero                = { version = "latest" }
 yamlfmt               = { version = "latest" }
 yazi                  = { version = "latest", exe = "yazi" }
 yq                    = { version = "latest" }
+### TOOLS ###################################################################
