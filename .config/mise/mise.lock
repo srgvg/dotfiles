@@ -17,9 +17,9 @@ backend = "aqua:argoproj/argo-cd"
 "platforms.linux-x64" = { checksum = "sha256:b6f0cda6b9b59a01b72d35afcbe3ce6302875766cd3120b58da8df11c85d06d4", url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.5/argocd-linux-amd64"}
 
 [[tools.awscli]]
-version = "2.33.0"
+version = "2.33.2"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:f6ee49ebacfcb35e6b23cc33c3c06b9791cad55003e3e4cd012af423257b4c32", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.0.zip"}
+"platforms.linux-x64" = { checksum = "blake3:4ab91160bf55a9b626f98cd9fd7f1698f774134e6f588e207bd7100b21618c5b", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.2.zip"}
 
 [[tools.azure-cli]]
 version = "2.82.0"
@@ -79,8 +79,9 @@ backend = "core:bun"
 "platforms.windows-x64-baseline" = { checksum = "sha256:2ab7cb878041529617dcb86f9e8cb59539779ecb5ebe115a9eba2fa8361736b6", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.6/bun-windows-x64-baseline.zip"}
 
 [[tools.cilium-cli]]
-version = "0.18.9"
-backend = "ubi:cilium/cilium-cli[exe=cilium]"
+version = "0.19.0"
+backend = "github:cilium/cilium-cli"
+"platforms.linux-x64-cilium-cilium" = { checksum = "blake3:dcf642915087d3f0f3f60a8fd3cc86b3ee466cfcca422102751bad6e298bfbff"}
 
 [[tools.cilium-hubble]]
 version = "1.18.5"
@@ -369,7 +370,7 @@ backend = "github:fullstorydev/grpcurl"
 "platforms.windows-x64-baseline" = { checksum = "sha256:895335dfa7be74803eeb5acf3ec5d3b06c1e9483fdda3c7622bdef9ad388f32a", url = "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_windows_x86_64.zip", url_api = "https://api.github.com/repos/fullstorydev/grpcurl/releases/assets/236574405"}
 
 [[tools.hcloud]]
-version = "1.59.0"
+version = "1.60.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
@@ -512,8 +513,9 @@ backend = "aqua:kubernetes-sigs/kind"
 "platforms.windows-x64-baseline" = { checksum = "sha256:2c3a9ff954de16244380778683cf99e271bfc2fac9c6c4e797e4623c45e59d9d", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-windows-amd64"}
 
 [[tools.kompose]]
-version = "1.37.0"
+version = "1.38.0"
 backend = "ubi:kubernetes/kompose"
+"platforms.linux-x64-kompose" = { checksum = "blake3:ff97409e5f4f5f4691b3b348a80a2813e1c75bb5225f6773776481a63a767c78"}
 
 [[tools.korb]]
 version = "2.3.4"
@@ -648,17 +650,9 @@ backend = "aqua:controlplaneio/kubesec"
 "platforms.macos-x64-baseline" = { checksum = "sha256:879e17fcaf7fb272d66a9e0b9df8c8ece88dbfa18643851cabb6bb7f3db68b72", url = "https://github.com/controlplaneio/kubesec/releases/download/v2.14.2/kubesec_darwin_amd64.tar.gz"}
 
 [[tools.kubeshark]]
-version = "52.11.0"
+version = "52.11.7"
 backend = "github:kubeshark/kubeshark"
-"platforms.linux-arm64" = { checksum = "sha256:d83c9d8de5977c2725cd856baa13593744819c4755a8b3d803ca28e9130b21c7", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_arm64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474432"}
-"platforms.linux-arm64-musl" = { checksum = "sha256:d83c9d8de5977c2725cd856baa13593744819c4755a8b3d803ca28e9130b21c7", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_arm64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474432"}
-"platforms.linux-x64" = { checksum = "sha256:a957cb42758fcc371893c679a81c6fad086bfce8be899a3aa31181f24cf1ea19", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474439"}
-"platforms.linux-x64-baseline" = { checksum = "sha256:a957cb42758fcc371893c679a81c6fad086bfce8be899a3aa31181f24cf1ea19", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474439"}
-"platforms.linux-x64-musl" = { checksum = "sha256:a957cb42758fcc371893c679a81c6fad086bfce8be899a3aa31181f24cf1ea19", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474439"}
-"platforms.linux-x64-musl-baseline" = { checksum = "sha256:a957cb42758fcc371893c679a81c6fad086bfce8be899a3aa31181f24cf1ea19", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474439"}
-"platforms.macos-arm64" = { checksum = "sha256:c4d73a371bbc3fa003139ea55b5867f57763c15efcd53899e6d2f5cd57eb0d2a", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_darwin_arm64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474450"}
-"platforms.macos-x64" = { checksum = "sha256:d3036d8e5ba22ddc812ce13ee8f3ba0bb4eec3b36e159814bc9e810f55b32ea8", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_darwin_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474458"}
-"platforms.macos-x64-baseline" = { checksum = "sha256:d3036d8e5ba22ddc812ce13ee8f3ba0bb4eec3b36e159814bc9e810f55b32ea8", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.0/kubeshark_darwin_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/329474458"}
+"platforms.linux-x64" = { checksum = "sha256:73ffa5bd4afb4d64676d60f9aa3c8293ef78a505c9540cd0b27f08ba4bc4e183", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.11.7/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/341131395"}
 
 [[tools.kubespy]]
 version = "0.6.3"
@@ -1055,19 +1049,9 @@ backend = "aqua:loft-sh/vcluster"
 "platforms.windows-x64-baseline" = { checksum = "sha256:68cf2d46deec3337d4ac6271cbaa98a5806d07cb5ab4a4e875df8517ac807bad", url = "https://github.com/loft-sh/vcluster/releases/download/v0.30.4/vcluster-windows-amd64.exe"}
 
 [[tools.velero]]
-version = "1.17.1"
+version = "1.17.2"
 backend = "aqua:vmware-tanzu/velero"
-"platforms.linux-arm64" = { checksum = "sha256:737e10d5d6b1e2a84e8b6371de9aa550b8f221a33286861bbdd25698c8702cc5", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-arm64.tar.gz"}
-"platforms.linux-arm64-musl" = { checksum = "sha256:737e10d5d6b1e2a84e8b6371de9aa550b8f221a33286861bbdd25698c8702cc5", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-arm64.tar.gz"}
-"platforms.linux-x64" = { checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"}
-"platforms.linux-x64-baseline" = { checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"}
-"platforms.linux-x64-musl" = { checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"}
-"platforms.linux-x64-musl-baseline" = { checksum = "sha256:a0f872ffb66ea3f1ede6274f0fe419b153de328b08e854747ba87c6fb6cb28e8", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-linux-amd64.tar.gz"}
-"platforms.macos-arm64" = { checksum = "sha256:8a1d7b383cec0f92a970b15afb990ed572c83b89a493b8683120a58e67ed6344", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-darwin-arm64.tar.gz"}
-"platforms.macos-x64" = { checksum = "sha256:f83c5bf6ff7cb2e992d4b5594039e6f92ebabe2ad3cbd1658aff9457c0156519", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-darwin-amd64.tar.gz"}
-"platforms.macos-x64-baseline" = { checksum = "sha256:f83c5bf6ff7cb2e992d4b5594039e6f92ebabe2ad3cbd1658aff9457c0156519", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-darwin-amd64.tar.gz"}
-"platforms.windows-x64" = { checksum = "sha256:be5281370de4064774bfd40a23379862a2a1e3619fdcaed5d9a837a589be6da9", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-windows-amd64.tar.gz"}
-"platforms.windows-x64-baseline" = { checksum = "sha256:be5281370de4064774bfd40a23379862a2a1e3619fdcaed5d9a837a589be6da9", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.1/velero-v1.17.1-windows-amd64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:2dfc9dd57753bae1c3853b461cdd6d59304ea51313d8368b8465a71c3697240a", url = "https://github.com/vmware-tanzu/velero/releases/download/v1.17.2/velero-v1.17.2-linux-amd64.tar.gz"}
 
 [[tools.yamlfmt]]
 version = "0.21.0"

@@ -20,6 +20,7 @@ MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 [tool_alias]
 bat            = "github:sharkdp/bat"
 btop           = "github:aristocratos/btop"
+cilium-cli     = "github:cilium/cilium-cli"
 civo           = "github:civo/cli"
 difftastic     = "github:Wilfred/difftastic"
 direnv         = "github:direnv/direnv"
@@ -64,7 +65,7 @@ bat                   = { version = "latest" }
 bitwarden             = { version = "latest" }
 btop                  = { version = "latest" }
 bun                   = { version = "latest" }
-cilium-cli            = { version = "latest" }
+cilium-cli            = { version = "latest", exe = "cilium" }
 cilium-hubble         = { version = "latest" }
 civo                  = { version = "latest", exe = "civo" }
 clusterctl            = { version = "latest" }
