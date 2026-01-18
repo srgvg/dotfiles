@@ -1658,68 +1658,6 @@ _forward-email_domain_members()
     noun_aliases=()
 }
 
-_forward-email_domain_quota()
-{
-    last_command="forward-email_domain_quota"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--debug")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--profile=")
-    two_word_flags+=("--profile")
-    two_word_flags+=("-p")
-    flags+=("--timeout=")
-    two_word_flags+=("--timeout")
-    flags+=("--verbose")
-    flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_forward-email_domain_stats()
-{
-    last_command="forward-email_domain_stats"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--debug")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--profile=")
-    two_word_flags+=("--profile")
-    two_word_flags+=("-p")
-    flags+=("--timeout=")
-    two_word_flags+=("--timeout")
-    flags+=("--verbose")
-    flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _forward-email_domain_update()
 {
     last_command="forward-email_domain_update"
@@ -1736,6 +1674,14 @@ _forward-email_domain_update()
 
     flags+=("--adult-content-protection")
     local_nonpersistent_flags+=("--adult-content-protection")
+    flags+=("--allowlist=")
+    two_word_flags+=("--allowlist")
+    local_nonpersistent_flags+=("--allowlist")
+    local_nonpersistent_flags+=("--allowlist=")
+    flags+=("--bounce-webhook=")
+    two_word_flags+=("--bounce-webhook")
+    local_nonpersistent_flags+=("--bounce-webhook")
+    local_nonpersistent_flags+=("--bounce-webhook=")
     flags+=("--caldav-port=")
     two_word_flags+=("--caldav-port")
     local_nonpersistent_flags+=("--caldav-port")
@@ -1744,8 +1690,20 @@ _forward-email_domain_update()
     two_word_flags+=("--carddav-port")
     local_nonpersistent_flags+=("--carddav-port")
     local_nonpersistent_flags+=("--carddav-port=")
+    flags+=("--catchall")
+    local_nonpersistent_flags+=("--catchall")
+    flags+=("--delivery-logs")
+    local_nonpersistent_flags+=("--delivery-logs")
+    flags+=("--denylist=")
+    two_word_flags+=("--denylist")
+    local_nonpersistent_flags+=("--denylist")
+    local_nonpersistent_flags+=("--denylist=")
+    flags+=("--disable-catchall-regex")
+    local_nonpersistent_flags+=("--disable-catchall-regex")
     flags+=("--executable-protection")
     local_nonpersistent_flags+=("--executable-protection")
+    flags+=("--ignore-mx-check")
+    local_nonpersistent_flags+=("--ignore-mx-check")
     flags+=("--imap-port=")
     two_word_flags+=("--imap-port")
     local_nonpersistent_flags+=("--imap-port")
@@ -1754,8 +1712,20 @@ _forward-email_domain_update()
     two_word_flags+=("--max-forwarded-addresses")
     local_nonpersistent_flags+=("--max-forwarded-addresses")
     local_nonpersistent_flags+=("--max-forwarded-addresses=")
+    flags+=("--max-quota=")
+    two_word_flags+=("--max-quota")
+    local_nonpersistent_flags+=("--max-quota")
+    local_nonpersistent_flags+=("--max-quota=")
+    flags+=("--max-recipients=")
+    two_word_flags+=("--max-recipients")
+    local_nonpersistent_flags+=("--max-recipients")
+    local_nonpersistent_flags+=("--max-recipients=")
     flags+=("--phishing-protection")
     local_nonpersistent_flags+=("--phishing-protection")
+    flags+=("--recipient-verification")
+    local_nonpersistent_flags+=("--recipient-verification")
+    flags+=("--regex")
+    local_nonpersistent_flags+=("--regex")
     flags+=("--retention-days=")
     two_word_flags+=("--retention-days")
     local_nonpersistent_flags+=("--retention-days")
@@ -1831,8 +1801,6 @@ _forward-email_domain()
     commands+=("get")
     commands+=("list")
     commands+=("members")
-    commands+=("quota")
-    commands+=("stats")
     commands+=("update")
     commands+=("verify")
 
@@ -2108,37 +2076,6 @@ _forward-email_email_send()
     noun_aliases=()
 }
 
-_forward-email_email_stats()
-{
-    last_command="forward-email_email_stats"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--debug")
-    flags+=("--output=")
-    two_word_flags+=("--output")
-    two_word_flags+=("-o")
-    flags+=("--profile=")
-    two_word_flags+=("--profile")
-    two_word_flags+=("-p")
-    flags+=("--timeout=")
-    two_word_flags+=("--timeout")
-    flags+=("--verbose")
-    flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _forward-email_email()
 {
     last_command="forward-email_email"
@@ -2151,7 +2088,6 @@ _forward-email_email()
     commands+=("list")
     commands+=("quota")
     commands+=("send")
-    commands+=("stats")
 
     flags=()
     two_word_flags=()
