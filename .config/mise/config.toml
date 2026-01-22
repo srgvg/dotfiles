@@ -9,8 +9,8 @@ lockfile = true
 log_level = "error"
 
 [settings.status]
-show_env = false
-show_tools = false
+show_env = true
+show_tools = true
 missing_tools = "always"
 
 [env]
@@ -58,6 +58,7 @@ satty          = "github:gabm/Satty"
 snitch         = "github:karol-broda/snitch"
 updatecli      = "github:updatecli/updatecli"
 yazi           = "github:sxyazi/yazi"
+zedis          = "github:vicanso/zedis"
 ### ALIASES #################################################################
 
 
@@ -166,3 +167,5 @@ velero                = { version = "latest" }
 yamlfmt               = { version = "latest" }
 yazi                  = { version = "latest", exe = "yazi" }
 yq                    = { version = "latest" }
+zedis                 = { version = "latest" }
+"github:vicanso/zedis" = "latest"

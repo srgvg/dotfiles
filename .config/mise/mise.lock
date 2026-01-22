@@ -7,9 +7,9 @@ version = "3.2.5"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.3"
+version = "2.33.4"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:71d59c3da22e447fbba16fbf75184ea0eb7341a99c9bcd1db6c3b43b5ee527c7", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.3.zip"}
+"platforms.linux-x64" = { checksum = "blake3:d0e10eec911dab7db0c01c11396f0cbc326dcc915b62cef0ae544671b0d9fe5d", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.4.zip"}
 
 [[tools.azure-cli]]
 version = "2.82.0"
@@ -34,6 +34,9 @@ backend = "core:bun"
 [[tools.cilium-cli]]
 version = "0.19.0"
 backend = "github:cilium/cilium-cli"
+
+[tools.cilium-cli.options]
+exe = "cilium"
 
 [[tools.cilium-hubble]]
 version = "1.18.5"
@@ -80,8 +83,9 @@ backend = "github:docker/compose"
 "platforms.linux-x64-docker-compose" = { checksum = "blake3:a07a12011b166169a5b4734d165fd7ed81d9a8216ea4414e6de76328a8aa6ea7"}
 
 [[tools.doctl]]
-version = "1.148.0"
+version = "1.149.0"
 backend = "aqua:digitalocean/doctl"
+"platforms.linux-x64" = { checksum = "sha256:9405e615fd4eb164c84019230955b6436f9059dc7499407c4ce9c18b11677f04", url = "https://github.com/digitalocean/doctl/releases/download/v1.149.0/doctl-1.149.0-linux-amd64.tar.gz"}
 
 [[tools.dyff]]
 version = "1.10.3"
@@ -142,7 +146,11 @@ backend = "github:sinclairtarget/git-who"
 [[tools.github-cli]]
 version = "2.86.0"
 backend = "aqua:cli/cli"
-"platforms.linux-x64" = { checksum = "sha256:5dcc4e282b9c22c0d31c217805976448c966cfc56c20157c78385a8a62c93cf0", url = "https://github.com/cli/cli/releases/download/v2.85.0/gh_2.85.0_linux_amd64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:f3b08bd6a28420cc2229b0a1a687fa25f2b838d3f04b297414c1041ca68103c7", url = "https://github.com/cli/cli/releases/download/v2.86.0/gh_2.86.0_linux_amd64.tar.gz"}
+
+[[tools."github:vicanso/zedis"]]
+version = "0.1.8"
+backend = "github:vicanso/zedis"
 
 [[tools.gitlab-cli]]
 version = "1.81.0"
@@ -166,8 +174,9 @@ version = "1.60.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
-version = "4.0.5"
+version = "4.1.0"
 backend = "aqua:helm/helm"
+"platforms.linux-x64" = { checksum = "sha256:8e7ae5cb890c56f53713bffec38e41cd8e7e4619ebe56f8b31cd383bfb3dbb83", url = "https://get.helm.sh/helm-v4.1.0-linux-amd64.tar.gz"}
 
 [[tools.hubble]]
 version = "1.18.5"
@@ -323,7 +332,7 @@ version = "3.11.10"
 backend = "aqua:FairwindsOps/nova"
 
 [[tools.npm]]
-version = "11.7.0"
+version = "11.8.0"
 backend = "npm"
 
 [[tools.nsc]]
@@ -416,8 +425,9 @@ backend = "github:gabm/Satty"
 exe = "satty"
 
 [[tools.scaleway-cli]]
-version = "2.50.0"
+version = "2.51.0"
 backend = "aqua:scaleway/scaleway-cli"
+"platforms.linux-x64" = { checksum = "sha256:091060ecaa6f74ef1381f4d024584aa8f5dc6226d66669e00ada005b51bc26b0", url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.51.0/scaleway-cli_2.51.0_linux_amd64"}
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
@@ -449,8 +459,9 @@ backend = "aqua:budimanjojo/talhelper"
 "platforms.linux-x64" = { checksum = "sha256:f06a306b81378a9a01dcaaddba0da72c46c37bf89aaa80caad3d378d32f4e6d6", url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.2/talhelper_linux_amd64.tar.gz"}
 
 [[tools.talosctl]]
-version = "1.12.1"
+version = "1.12.2"
 backend = "ubi:siderolabs/talos[exe=talosctl]"
+"platforms.linux-x64-talos" = { checksum = "blake3:4e0d87a659e2d62120a8b8b1b1efc2e2dc22703c4b5941ddefaee70b8e39544b"}
 
 [[tools.updatecli]]
 version = "0.113.0"
@@ -484,3 +495,8 @@ backend = "github:sxyazi/yazi"
 [[tools.yq]]
 version = "4.50.1"
 backend = "ubi:mikefarah/yq"
+
+[[tools.zedis]]
+version = "0.1.8"
+backend = "github:vicanso/zedis"
+"platforms.linux-x64" = { checksum = "sha256:c521d5d00142f5ee85e61950cbf9cb5e8481bc8ca2905b8f3a1d689875eb068a", url = "https://github.com/vicanso/zedis/releases/download/v0.1.8/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/340954362"}
