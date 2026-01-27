@@ -30,12 +30,12 @@ format = """
 (($status )($cmd_duration )\n)\
 ([┌$fill](bold green) \n)\
 ([│](bold green) $time $username $hostname $directory \n)\
-([│](bold green) ($kubernetes )($vcsh )($git_branch )($git_state )($git_commit )($git_status )\n)\
+([│](bold green) ($git_branch )($git_state )($git_commit )($git_status )($vcsh)\n)\
 ([│](bold green) ${custom.talosctl} \n)\
 ([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
 ([│](bold green) $gcloud$aws$azure \n)\
 ([│](bold green) ($jobs )($sudo )\n)\
-([└──](bold green)$character)\
+([└](bold green)$character)\
 """
 
 right_format = """
@@ -55,8 +55,8 @@ style = 'bold green'
 disabled = false
 
 [character]      # The name of the module we are configuring is "character"
-success_symbol = "[─🡲 ](bold green)"     # The "symbol" segment is being set to "➜"
-error_symbol = "[─🡲 ](bold red)"
+success_symbol = "[──────](bold green)"     # The "symbol" segment is being set to "➜"
+error_symbol   = "[──────](bold red)"
 #vicmd_symbol = "[❮](bold green)"
 
 [cmd_duration]
@@ -110,14 +110,14 @@ disabled = false
 disabled = false
 symbol = "vcsh"
 style = "bold yellow"
-format = "$symbol[$repo]($style)"
+format = "[$symbol-$repo]($style)"
 
 [git_branch]
 disabled = false
 always_show_remote = true
-symbol = 'ϟ'
+symbol = 'git ϟ'
 style = "green"
-format = "$symbol [$branch](bg:bright-green fg:black bold italic)[( $remote_name(/$remote_branch))]($style)"
+format = "[$symbol]($style) [$branch](bg:bright-green fg:black bold italic)[( $remote_name(/$remote_branch))]($style)"
 # Truncates a git branch to X graphemes.
 #truncation_length = "2^63 - 1"
 truncation_symbol = "…"
@@ -133,13 +133,13 @@ bisect = "BISECTING"
 am = "AM"
 am_or_rebase = "AM/REBASE"
 style = "green"
-format = "\\([ $state($progress_current/$progress_total)]($style)\\)"
+format = "\\([$state($progress_current/$progress_total)]($style)\\)"
 
 [git_commit]
 disabled = false
 tag_disabled = false
 commit_hash_length = 10
-format = "[ \\(([$tag](bg:bright-green fg:black bold italic)/)($hash)\\)]($style bold italic)"
+format = "[\\(([$tag](bg:bright-green fg:black bold italic)/)($hash)\\)]($style bold italic)"
 style = "green"
 only_detached = false
 tag_symbol = "🏷  "
@@ -157,7 +157,7 @@ staged = "+${count}"
 renamed = "»${count}"
 deleted = "✘${count}"
 style = "bold green"
-format = "[( ${all_status})( ${ahead_behind})]($style)"
+format = "[(${all_status})( ${ahead_behind})]($style)"
 
 [hostname]
 ssh_only = true
