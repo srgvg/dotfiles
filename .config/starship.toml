@@ -31,6 +31,7 @@ format = """
 ([┌$fill](bold green) \n)\
 ([│](bold green) $time $username $hostname $directory \n)\
 ([│](bold green) ($git_branch )($git_state )($git_commit )($git_status )($vcsh)\n)\
+([│](bold green) ($kubernetes )\n)\
 ([│](bold green) ${custom.talosctl} \n)\
 ([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
 ([│](bold green) $gcloud$aws$azure \n)\
