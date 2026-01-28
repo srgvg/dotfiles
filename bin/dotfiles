@@ -98,7 +98,6 @@ function define_adds() {
 .local/share/flatpak/ :!.local/share/flatpak/db/
 .local/share/nautilus/ :!.local/share/nautilus/tags/
 .local/share/nemo/
-.pastebinit.xml
 .profile
 .screenlayout
 .screenrc
@@ -142,14 +141,12 @@ Wallpapers
 .docker/ :!.docker/buildx/
 .gitignore.d/sdot
 .gnupg/ :!.gnupg/random_seed
-.hdns/
 .kube/ :!.kube/cache/ :!.kube/config :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history
 .local/share/nats/
 .local/share/remmina/
 .s3cfg
 .ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
 .talos/
-.terraform.d/credentials.tfrc.json
 bins/  :!*/__pycache__/*
 etc/
 src/*.sh

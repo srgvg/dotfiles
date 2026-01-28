@@ -8,9 +8,9 @@ backend = "aqua:argoproj/argo-cd"
 "platforms.linux-x64" = { checksum = "sha256:ebe1676c353ae3784551d859603f8d680e524659e120beb79be81a2645b09349", url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.6/argocd-linux-amd64"}
 
 [[tools.awscli]]
-version = "2.33.7"
+version = "2.33.8"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:4b6d6d449e81eed4cb198cf557740747dea0b1601f9ca4e1670855079e4720ad", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.7.zip"}
+"platforms.linux-x64" = { checksum = "blake3:90e22f0b33eba2bc2b22a70ca9c190a05c208730783b9479e297864f7e1e5005", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.8.zip"}
 
 [[tools.azure-cli]]
 version = "2.82.0"
@@ -36,6 +36,9 @@ backend = "core:bun"
 [[tools.cilium-cli]]
 version = "0.19.0"
 backend = "github:cilium/cilium-cli"
+
+[tools.cilium-cli.options]
+exe = "cilium"
 
 [[tools.cilium-hubble]]
 version = "1.18.5"
@@ -302,8 +305,9 @@ version = "5.8.0"
 backend = "aqua:kubernetes-sigs/kustomize"
 
 [[tools.nats-cli]]
-version = "0.3.0"
+version = "0.3.1"
 backend = "github:nats-io/natscli"
+"platforms.linux-x64" = { checksum = "sha256:f48374be6fc903b954b90b729321772bdd5bc745234edf3d31cd17ab79e85629", url = "https://github.com/nats-io/natscli/releases/download/v0.3.1/nats-0.3.1-linux-amd64.zip", url_api = "https://api.github.com/repos/nats-io/natscli/releases/assets/347066378"}
 
 [[tools.nats-server]]
 version = "2.12.4"

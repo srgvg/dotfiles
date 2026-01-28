@@ -23,7 +23,7 @@ continuation_prompt = "[└───🡲 ](bold green)"
 
 
 # Timeout for commands executed by starship (in milliseconds).
-command_timeout = 200
+command_timeout = 500
 
 # Configure the format of the prompt.
 format = """
@@ -33,8 +33,8 @@ format = """
 ([│](bold green) ($git_branch )($git_state )($git_commit )($git_status )($vcsh)\n)\
 ([│](bold green) ($kubernetes )\n)\
 ([│](bold green) ${custom.talosctl} \n)\
-([│](bold green) ($direnv )($package )($golang )($nodejs )($python )\n)\
-([│](bold green) $gcloud$aws$azure \n)\
+([│](bold green) ($mise )($direnv )($package )($golang )($nodejs )($python )\n)\
+([│](bold green) ($gcloud)($aws)($azure)\n)\
 ([│](bold green) ($jobs )($sudo )\n)\
 ([└](bold green)$character)\
 """
@@ -90,6 +90,17 @@ home_symbol = "~"
 #[directory.substitutions]
 #"/Volumes/network/path" = "/net"
 #"src/com/long/java/path" = "mypath"
+
+[mise]
+symbol = 'mise '	                    # The symbol used before displaying mise health.
+style = 'bold purple'	                # The style for the module.
+format = '[$symbol$health]($style) '	# The format for the module.
+detect_extensions = []	                # Which extensions should trigger this module.
+detect_files = ['mise.toml', 'mise.local.toml', '.mise.toml', '.mise.local.toml']	# Which filenames should trigger this module.
+detect_folders = ['.mise']              # 	Which folders should trigger this module.
+healthy_symbol = "healthy"              # 	The message displayed when mise is healthy.
+unhealthy_symbol = "unhealthy"          # 	The message displayed when mise is unhealthy.
+disabled = false                        # Disables the mise module.
 
 [direnv]
 disabled = false
@@ -177,14 +188,13 @@ style = "bold cyan"
 
 [gcloud]
 style = "bold bright-blue"
-format = "[($symbol $account(@$domain)( / [$project](underline bold ))( / $region)) \n[│ ](bold green)]($style)"
-symbol = "\\[GCP\\]"
-# \n[│ ](bold green)
+format = "([($symbol $account(@$domain)( / [$project](underline $style ))( / $region)) ]($style))"
+symbol = "|gcp|"
 
 [aws]
-format = "[\\[($symbol $profile(/$region))\\]]($style)"
+format = "([\\[($symbol $profile(/$region))\\]]($style))"
 style = "bold yellow"
-symbol = "\\[AWS\\]"
+symbol = "|aws|"
 
 [aws.region_aliases]
 #ap-southeast-2 = "au"
@@ -192,13 +202,22 @@ symbol = "\\[AWS\\]"
 
 [azure]
 disabled = false
-format = '[$symbol $username@$subscription]($style)'
+format = '([$symbol $username@$subscription]($style))'
 #symbol = 'ﴃ '
-symbol = "\\[AZR\\]"
+symbol = "|azr|"
 style = 'bold cyan'
 
 [package]
 disabled = true
+
+[golang]
+format = "[$symbol($version )]($style)"
+version_format = 'v${raw}(/$mod_version)'
+detect_extensions = ['go']
+detect_files = ['go.mod', 'go.sum', 'go.work', 'glide.yaml', 'Gopkg.yml', 'Gopkg.lock', '.go-version']
+detect_folders = ['Godeps']
+not_capable_style = 'bold red'
+disabled = false
 
 [python]
 disabled = false
