@@ -3,10 +3,9 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
-function _printline() {
-    local _char=$1
-    printf "%$(tput cols)s" | tr " " "$_char"
-}
+# NOTE: Removed duplicate _printline() function definition
+# It's already defined in 0-libmisc.bash (sourced first)
+# Keeping the duplicate caused maintenance issues
 
 function apk() {
     local notfirst=""
@@ -232,4 +231,21 @@ function wcc() {
     # quick character count
     local string="${*}"
     echo "${#string}"
+}
+
+# Shell init cache management functions
+function shell-cache-clear() {
+    rm -rf "$HOME/.cache/shell-init"
+    echo "Shell init cache cleared."
+    echo "Run 'update-tools shell-init' to regenerate, or wait for hourly cron."
+}
+
+function shell-cache-status() {
+    local cache_dir="$HOME/.cache/shell-init"
+    echo "Shell init cache: $cache_dir"
+    if [[ -d "$cache_dir" ]]; then
+        ls -lh "$cache_dir"
+    else
+        echo "No cache exists. Run 'update-tools shell-init' to generate."
+    fi
 }

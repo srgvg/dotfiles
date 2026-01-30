@@ -8,9 +8,9 @@ backend = "aqua:argoproj/argo-cd"
 "platforms.linux-x64" = { checksum = "sha256:ebe1676c353ae3784551d859603f8d680e524659e120beb79be81a2645b09349", url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.6/argocd-linux-amd64"}
 
 [[tools.awscli]]
-version = "2.33.8"
+version = "2.33.12"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:90e22f0b33eba2bc2b22a70ca9c190a05c208730783b9479e297864f7e1e5005", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.8.zip"}
+"platforms.linux-x64" = { checksum = "blake3:50bce8653654d211111a7537331e26047c3ede9a1cbf1612b7858c4a130005d9", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.12.zip"}
 
 [[tools.azure-cli]]
 version = "2.82.0"
@@ -29,16 +29,13 @@ version = "1.4.6"
 backend = "github:aristocratos/btop"
 
 [[tools.bun]]
-version = "1.3.7"
+version = "1.3.8"
 backend = "core:bun"
-"platforms.linux-x64" = { checksum = "blake3:11ad64fd15e9c83f492d42034e4c6114e1f2329c9abd2d0a72e31d32c21c5761"}
+"platforms.linux-x64" = { checksum = "blake3:8c77d1399200f47907b9b74909692a98a3dc8c62c953cf9ab778f0a8a0a828ac"}
 
 [[tools.cilium-cli]]
 version = "0.19.0"
 backend = "github:cilium/cilium-cli"
-
-[tools.cilium-cli.options]
-exe = "cilium"
 
 [[tools.cilium-hubble]]
 version = "1.18.5"
@@ -157,9 +154,9 @@ backend = "github:vicanso/zedis"
 "platforms.linux-x64" = { checksum = "sha256:dc130158c75650ee66ba10a34823ecf6278e073f24d70fe7af55928e47f1a8b9", url = "https://github.com/vicanso/zedis/releases/download/v0.1.9/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/344790484"}
 
 [[tools.gitlab-cli]]
-version = "1.81.0"
+version = "1.82.0"
 backend = "gitlab:gitlab-org/cli"
-"platforms.linux-x64" = { checksum = "sha256:df01aa3b8e10be2c8daa6e7d514c29596115b32bfc26a981f1ad894b5ff6f340", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.81.0/downloads/glab_1.81.0_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E81%2E0/glab_1%2E81%2E0_linux_amd64%2Etar%2Egz"}
+"platforms.linux-x64" = { checksum = "sha256:6589bd77e3042b728f0918090eb95ae63f8e9993ddd5db64bdb2a04e2c38ade6", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_linux_amd64%2Etar%2Egz"}
 
 [[tools.go]]
 version = "1.25.6"
@@ -187,8 +184,9 @@ version = "1.18.5"
 backend = "github:cilium/hubble"
 
 [[tools.hugo]]
-version = "0.154.5"
+version = "0.155.1"
 backend = "aqua:gohugoio/hugo"
+"platforms.linux-x64" = { checksum = "sha256:6056ac054f7a159c8c95c8d5cf4f5ee255f27c3aada9b302bc3197d94305d8a7", url = "https://github.com/gohugoio/hugo/releases/download/v0.155.1/hugo_0.155.1_linux-amd64.tar.gz"}
 
 [[tools.hurl]]
 version = "7.1.0"
@@ -325,7 +323,7 @@ backend = "aqua:neovim/neovim"
 "platforms.linux-x64" = { checksum = "sha256:2fc90b962327f73a78afbfb8203fd19db8db9cdf4ee5e2bef84704339add89cc", url = "https://github.com/neovim/neovim/releases/download/v0.11.6/nvim-linux-x86_64.tar.gz"}
 
 [[tools.nkeys]]
-version = "0.4.14"
+version = "0.4.15"
 backend = "go:github.com/nats-io/nkeys/nk"
 
 [[tools.nova]]
@@ -467,18 +465,19 @@ version = "0.113.0"
 backend = "github:updatecli/updatecli"
 
 [[tools.usage]]
-version = "2.15.0"
+version = "2.16.0"
 backend = "aqua:jdx/usage"
-"platforms.linux-x64" = { checksum = "sha256:48df61e87ee6f547bc2af9b01e90f0ae3c8e7c8c684ed2343b3ccd5aed4bbed2", url = "https://github.com/jdx/usage/releases/download/v2.15.0/usage-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:caeebaf305eeb02be0b78805bb4b6e0bfac6f8faa2d36597a249bd215b41a2a5", url = "https://github.com/jdx/usage/releases/download/v2.16.0/usage-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.uv]]
-version = "0.9.27"
+version = "0.9.28"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-x64" = { checksum = "sha256:9f269bfb9c2e80808c373902af6a4af6cd5f4b4668b28c44aa09639cfed925c5", url = "https://github.com/astral-sh/uv/releases/download/0.9.27/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:83cd032167b6b97ac94830608efe11159b3d485654e39fdb0bf84718ef236afe", url = "https://github.com/astral-sh/uv/releases/download/0.9.28/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
-version = "0.30.4"
+version = "0.31.0"
 backend = "aqua:loft-sh/vcluster"
+"platforms.linux-x64" = { checksum = "sha256:aab0709f8facfc5c11476c4c9b2457190b7371c9ff726eadae6710aff444127e", url = "https://github.com/loft-sh/vcluster/releases/download/v0.31.0/vcluster-linux-amd64"}
 
 [[tools.velero]]
 version = "1.17.2"

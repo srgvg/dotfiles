@@ -37,13 +37,12 @@ SETBG_LOOP_DELAY=${SETBG_LOOP_DELAY:-59}
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"
 
-source "$HOME/.bashrc.d/0-windowmanager.bash"
+source "$HOME/.bashrc.d/5-windowmanager.bash"
 
 # colors
 # these colors must be used with `echo -e`
 # if interactive shell
-if tty --silent
-then
+if tty --silent; then
     # interactive shell
     echo_black="\033[0;30m"
     echo_red="\033[0;31m"
@@ -140,4 +139,3 @@ fi
 function get_colors() {
     grep echo_ "$0" | sed 's/\s*\(echo_.*\)=.*/\1/' | sort -u
 }
-

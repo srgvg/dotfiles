@@ -3,13 +3,24 @@
 if ! echo "$PATH" | grep -q "mise/installs\|mise/shims"; then
     MISE_PATH="$HOME/.local/bin/mise"
     if [[ -t 0 ]]; then
-        # Interactive terminal: full activation for better performance
-        eval "$($MISE_PATH activate bash)"
-        eval "$($MISE_PATH hook-env)"
+        # Interactive terminal: use pre-generated cache (regenerated hourly via update-tools)
+        # To manually regenerate: update-tools shell-init
+        _mise_activate="$HOME/.cache/shell-init/mise-activate.bash"
+        _mise_hook="$HOME/.cache/shell-init/mise-hook.bash"
+        if [[ -f "$_mise_activate" ]] && [[ -f "$_mise_hook" ]]; then
+            source "$_mise_activate"
+            source "$_mise_hook"
+        else
+            # Fallback if cache missing (first run)
+            eval "$($MISE_PATH activate bash)"
+            eval "$($MISE_PATH hook-env)"
+        fi
+        unset _mise_activate _mise_hook
     else
-        # Non-interactive: use shims only (faster, less overhead)
+        # Non-interactive: use shims only (already fast)
         eval "$($MISE_PATH activate --shims)"
     fi
 fi
 
-FZF_COMPLETION_TRIGGER="~~"
+# NOTE: FZF_COMPLETION_TRIGGER removed from here (was duplicate)
+# Now defined only in 4-fzf.bash for clarity

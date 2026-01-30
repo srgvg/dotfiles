@@ -465,6 +465,41 @@ get_misc() {
 }
 
 ##########################################################################################################
+
+get_shell_init_cache() {
+
+    local cache_dir="$HOME/.cache/shell-init"
+    mkdir -p "$cache_dir"
+
+    title "shell init cache"
+
+    # Starship init
+    log "starship"
+    starship init bash > "$cache_dir/starship.bash.tmp" && \
+        mv "$cache_dir/starship.bash.tmp" "$cache_dir/starship.bash"
+
+    # Atuin init
+    log "atuin"
+    atuin init bash > "$cache_dir/atuin.bash.tmp" && \
+        mv "$cache_dir/atuin.bash.tmp" "$cache_dir/atuin.bash"
+
+    # Mise activate (interactive mode)
+    log "mise"
+    $HOME/.local/bin/mise activate bash > "$cache_dir/mise-activate.bash.tmp" && \
+        mv "$cache_dir/mise-activate.bash.tmp" "$cache_dir/mise-activate.bash"
+    $HOME/.local/bin/mise hook-env > "$cache_dir/mise-hook.bash.tmp" && \
+        mv "$cache_dir/mise-hook.bash.tmp" "$cache_dir/mise-hook.bash"
+
+    # Dircolors
+    log "dircolors"
+    dircolors > "$cache_dir/dircolors.bash.tmp" && \
+        mv "$cache_dir/dircolors.bash.tmp" "$cache_dir/dircolors.bash"
+
+    log "done"
+
+}
+
+##########################################################################################################
 #
 ##########################################################################################################
 
@@ -479,6 +514,7 @@ update_all() {
     run_component "downloads" get_downloads
     run_component "github" get_github
     run_component "bash_completions" get_bash_completions
+    run_component "shell_init" get_shell_init_cache
 
 }
 
@@ -575,6 +611,10 @@ for command in ${commands}; do
             init
             run_component "bash_completions" get_bash_completions
             ;;
+        shell-init|shell_init)
+            init
+            run_component "shell_init" get_shell_init_cache
+            ;;
         *)
             cat <<EOF
 
@@ -592,6 +632,7 @@ possible options are:
     misc
     mise
     pipx
+    shell-init
 
 EOF
             exit 1

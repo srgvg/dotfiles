@@ -1,4 +1,9 @@
 # window manager specifics
+# NOTE: Interactive shell guard added to prevent wmctrl execution
+# in non-interactive shells (scripts, automation). This improves
+# performance and prevents unnecessary process spawning.
+[[ $- != *i* ]] && return
+
 wm="$(wmctrl -m 2>/dev/null || : | grep Name: || : | cut -d: -f2)"
 if [[ "${wm}" =~ "wlroots" ]]; then
     export MY_WM="sway"

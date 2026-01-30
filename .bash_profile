@@ -10,4 +10,6 @@ if [ -f ~/.bashrc ]; then
     . ~/.bashrc
 fi
 
-. "$HOME/.atuin/bin/env"
+# NOTE: Atuin sourcing removed from here (was redundant)
+# Atuin is now loaded only once via ~/.bashrc.d/atuin.bash
+# This prevents loading atuin 4x on shell startup

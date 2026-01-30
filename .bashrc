@@ -1,3 +1,5 @@
+#################################
+
 if [ -d $HOME/.bashrc.d ]; then
     [ -n "${DEBUG:-}" ] && start_time0=$(date +%s.%3N)
     for bashrc in $HOME/.bashrc.d/*.bash; do
@@ -33,7 +35,8 @@ fi
 # that output. (you can use the script command to help you store the whole
 # shell session output, or for the bash approach, use 7> file.log instead ofbashrc
 
-. "$HOME/.atuin/bin/env"
+# NOTE: Atuin and bash-preexec sourcing removed from here (was redundant)
+# They are now loaded only once via ~/.bashrc.d/atuin.bash
+# This prevents duplicate sourcing and improves startup performance
 
-[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-eval "$(atuin init bash)"
+#################################

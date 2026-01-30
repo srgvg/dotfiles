@@ -16,5 +16,17 @@ if [ -n "$BASH_VERSION" ]; then
     fi
 fi
 
+# NOTE: Atuin sourcing removed from here (was redundant and caused
+# atuin to be loaded 4 times on shell startup)
+# Atuin is now loaded only once via ~/.bashrc.d/atuin.bash
+#
+# NOTE: This file is NOT read by bash if ~/.bash_profile exists
+# (which it does). Keep this minimal for POSIX shell compatibility
+# (dash, sh, etc.) only.
 
-. "$HOME/.atuin/bin/env"
+# Optional: source POSIX shell config from .profile.d/
+# if [ -d "$HOME/.profile.d" ]; then
+#     for f in "$HOME/.profile.d"/*.sh; do
+#         [ -r "$f" ] && . "$f"
+#     done
+# fi
