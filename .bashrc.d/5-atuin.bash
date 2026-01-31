@@ -19,10 +19,8 @@ fi
 unset _atuin_cache
 
 # bind to ctrl-r, add any other bindings you want here too
-# Only set up bindings in interactive shells
-if [[ $- == *i* ]]; then
-    bind -x '"\C-r": __atuin_history'
-fi
+# Atuin Ctrl-R binding is disabled - using fzf instead (see fzf-keys.bash)
+#bind -x '"\C-r": __atuin_history'
 
 # bind to the up key, which depends on terminal mode
 #bind -x '"\e[A": __atuin_history --shell-up-key-binding'

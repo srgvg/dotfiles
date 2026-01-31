@@ -37,7 +37,7 @@ SETBG_LOOP_DELAY=${SETBG_LOOP_DELAY:-59}
 
 SONOS_VOLUME_CACHE="$HOME/.cache/sonos-volume"
 
-source "$HOME/.bashrc.d/5-windowmanager.bash"
+source "$HOME/.bashrc.d/4-windowmanager.bash"
 
 # colors
 # these colors must be used with `echo -e`

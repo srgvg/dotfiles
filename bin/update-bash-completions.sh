@@ -197,6 +197,22 @@ if hash $command >&/dev/null || type -a $command >&/dev/null; then
     fi
 fi
 
+# fzf - tab completion (** trigger)
+# NOTE: Goes to .bashrc.d/, not ~/.local/share/bash-completion/completions/
+# because fzf's completion.bash sets up a global ** trigger mechanism that
+# must be sourced at shell init, not lazy-loaded per command.
+command=fzf
+if hash $command >&/dev/null || type -a $command >&/dev/null; then
+    fzf_target="$HOME/.bashrc.d/completions-fzf-tab.bash"
+    if $CURL_COMMAND https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.bash \
+        -o "$fzf_target"; then
+        chmod 644 "$fzf_target"
+        echo "OK  ${command} (completion)"
+    else
+        echo "NOK ${command} (completion)"
+    fi
+fi
+
 # kubectl stuff
 ln -nfs ${complpath}/kubectl ${complpath}/k
 ln -nfs ${complpath}/kubectl ${complpath}/kubecolor

@@ -493,8 +493,9 @@ backend = "github:sxyazi/yazi"
 "platforms.linux-x64" = { checksum = "sha256:a136269b2d5fbb5fb43f3fac3391446e8fbc72aba1c4bb4fae6e6d1556420750", url = "https://github.com/sxyazi/yazi/releases/download/v26.1.22/yazi-x86_64-unknown-linux-gnu.zip", url_api = "https://api.github.com/repos/sxyazi/yazi/releases/assets/344342410"}
 
 [[tools.yq]]
-version = "4.50.1"
+version = "4.52.1"
 backend = "ubi:mikefarah/yq"
+"platforms.linux-x64-yq" = { checksum = "blake3:e4afa8ef084ab3f2c6a9cbe5edfda54191bebcc277ce48ef04d6e7a1fff3772e"}
 
 [[tools.zedis]]
 version = "0.1.9"

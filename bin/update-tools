@@ -475,24 +475,24 @@ get_shell_init_cache() {
 
     # Starship init
     log "starship"
-    starship init bash > "$cache_dir/starship.bash.tmp" && \
+    starship init bash >"$cache_dir/starship.bash.tmp" &&
         mv "$cache_dir/starship.bash.tmp" "$cache_dir/starship.bash"
 
     # Atuin init
     log "atuin"
-    atuin init bash > "$cache_dir/atuin.bash.tmp" && \
+    atuin init bash --disable-up-arrow --disable-ctrl-r >"$cache_dir/atuin.bash.tmp" &&
         mv "$cache_dir/atuin.bash.tmp" "$cache_dir/atuin.bash"
 
     # Mise activate (interactive mode)
     log "mise"
-    $HOME/.local/bin/mise activate bash > "$cache_dir/mise-activate.bash.tmp" && \
+    $HOME/.local/bin/mise activate bash >"$cache_dir/mise-activate.bash.tmp" &&
         mv "$cache_dir/mise-activate.bash.tmp" "$cache_dir/mise-activate.bash"
-    $HOME/.local/bin/mise hook-env > "$cache_dir/mise-hook.bash.tmp" && \
+    $HOME/.local/bin/mise hook-env >"$cache_dir/mise-hook.bash.tmp" &&
         mv "$cache_dir/mise-hook.bash.tmp" "$cache_dir/mise-hook.bash"
 
     # Dircolors
     log "dircolors"
-    dircolors > "$cache_dir/dircolors.bash.tmp" && \
+    dircolors >"$cache_dir/dircolors.bash.tmp" &&
         mv "$cache_dir/dircolors.bash.tmp" "$cache_dir/dircolors.bash"
 
     log "done"
@@ -611,7 +611,7 @@ for command in ${commands}; do
             init
             run_component "bash_completions" get_bash_completions
             ;;
-        shell-init|shell_init)
+        shell-init | shell_init)
             init
             run_component "shell_init" get_shell_init_cache
             ;;
