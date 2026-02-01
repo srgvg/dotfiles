@@ -56,6 +56,7 @@ completion_bash_commands=(
     talhelper
     wlout
     yq
+    zitadel
     zli
 )
 completions_bash_commands=(

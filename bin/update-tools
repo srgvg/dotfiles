@@ -487,7 +487,9 @@ get_shell_init_cache() {
     log "mise"
     $HOME/.local/bin/mise activate bash >"$cache_dir/mise-activate.bash.tmp" &&
         mv "$cache_dir/mise-activate.bash.tmp" "$cache_dir/mise-activate.bash"
-    $HOME/.local/bin/mise hook-env >"$cache_dir/mise-hook.bash.tmp" &&
+    # Run hook-env without shims in PATH to avoid "shims + activation" conflict
+    PATH=$(echo "$PATH" | tr ':' '\n' | grep -v 'mise/shims' | tr '\n' ':' | sed 's/:$//') \
+        $HOME/.local/bin/mise hook-env >"$cache_dir/mise-hook.bash.tmp" &&
         mv "$cache_dir/mise-hook.bash.tmp" "$cache_dir/mise-hook.bash"
 
     # Dircolors

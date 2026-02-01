@@ -19,153 +19,131 @@ MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 
 ### ALIASES #################################################################
 [tool_alias]
-bat            = "github:sharkdp/bat"
-btop           = "github:aristocratos/btop"
-cilium-cli     = "github:cilium/cilium-cli"
-civo           = "github:civo/cli"
-difftastic     = "github:Wilfred/difftastic"
-direnv         = "github:direnv/direnv"
-docker-compose = "github:docker/compose"
-dyff           = "github:homeport/dyff"
+docker-compose = "aqua:docker/compose"
 flux-operator  = "github:controlplaneio-fluxcd/flux-operator"
 flux9s         = "github:dgunzy/flux9s"
 forward-email  = "github:ginsys/forward-email"
-fx             = "github:antonmedv/fx"
 garage-webui   = "github:khairul169/garage-webui"
 goit-who       = "github:sinclairtarget/git-who"
 gitlab-cli     = "gitlab:gitlab-org/cli"
-grpcurl        = "github:fullstorydev/grpcurl"
 hubble         = "github:cilium/hubble"
-hurl           = "github:Orange-OpenSource/hurl"
 hurlfmt        = "github:Orange-OpenSource/hurl"
-jd             = "github:josephburnett/jd"
 korb           = "github:BeryJu/korb"
-kubecolor      = "github:kubecolor/kubecolor"
-kubeshark      = "github:kubeshark/kubeshark"
 kubewall       = "github:kubewall/kubewall"
 nats-cli       = "github:nats-io/natscli"
 nats-server    = "github:nats-io/nats-server"
 nats-top       = "github:nats-io/nats-top"
-nkeys          = "go:github.com/nats-io/nkeys/nk"
 nsc            = "github:nats-io/nsc"
-oras           = "github:oras-project/oras"
-pkl            = "github:apple/pkl"
-regbot         = "github:regclient/regclient"
-regctl         = "github:regclient/regclient"
-regsync        = "github:regclient/regclient"
-ripgrep        = "github:BurntSushi/ripgrep"
 satty          = "github:gabm/Satty"
 snitch         = "github:karol-broda/snitch"
-updatecli      = "github:updatecli/updatecli"
-yazi           = "github:sxyazi/yazi"
-zedis          = "github:vicanso/zedis"
 ### ALIASES #################################################################
 
 
 ### TOOLS ###################################################################
 [tools]
-age                   = { version = "latest" }
-argocd                = { version = "latest" }
-awscli                = { version = "latest" }
-azure-cli             = { version = "latest" }
-bat                   = { version = "latest" }
-bitwarden             = { version = "latest" }
-btop                  = { version = "latest" }
-bun                   = { version = "latest" }
-cilium-cli            = { version = "latest", exe = "cilium" }
-cilium-hubble         = { version = "latest" }
-civo                  = { version = "latest", exe = "civo" }
-clusterctl            = { version = "latest" }
-cmctl                 = { version = "latest" }
-cosign                = { version = "latest" }
-difftastic            = { version = "latest", exe = "difft" }
-direnv                = { version = "latest", exe = "direnv" }
-docker-compose        = { version = "latest", rename_exe = "docker-compose" }
-doctl                 = { version = "latest" }
-dyff                  = { version = "latest", exe = "dyff" }
-eksctl                = { version = "latest" }
-fd                    = { version = "latest" }
-flux-operator         = { version = "latest", exe = "flux-operator" }
-flux2                 = { version = "latest" }
-flux9s                = { version = "latest" }
-forward-email         = { version = "v0.2.0-alpha.2" }
-fx                    = { version = "latest", exe = "fx" }
-garage-webui          = { version = "latest" }
-gcloud                = { version = "latest" }
-git-who               = { version = "latest" }
-github-cli            = { version = "latest" }
-gitlab-cli            = { version = "latest" }
-go                    = { version = "latest" }
-go-containerregistry  = { version = "latest", exe = "crane" }
-grpcurl               = { version = "latest", exe = "grpcurl" }
-hcloud                = { version = "latest" }
-helm                  = { version = "latest" }
-hubble                = { version = "latest", exe = "hubble" }
-hugo                  = { version = "latest" }
-hurl                  = { version = "latest", exe = "hurl" }
-hurlfmt               = { version = "latest", exe = "hurlfmt" }
-jb                    = { version = "latest" }
-jd                    = { version = "latest", exe = "jd" }
-jless                 = { version = "latest" }
-jnv                   = { version = "latest", exe = "jnv" }
-jqp                   = { version = "latest", exe = "jqp" }
-k9s                   = { version = "latest" }
-kind                  = { version = "latest" }
-kompose               = { version = "latest" }
-korb                  = { version = "latest", exe = "korb" }
-krew                  = { version = "latest" }
-kube-capacity         = { version = "latest" }
-kube-score            = { version = "latest" }
-kubebuilder           = { version = "latest" }
-kubecolor             = { version = "latest" }
-kubeconform           = { version = "latest" }
-kubectl               = { version = "latest" }
-kubent                = { version = "latest" }
-kubeseal              = { version = "latest" }
-kubesec               = { version = "latest" }
-kubeshark             = { version = "latest", exe = "kubeshark" }
-kubespy               = { version = "latest" }
-kubewall              = { version = "latest" }
-kubie                 = { version = "latest" }
-kustomize             = { version = "latest" }
-nats-server           = { version = "latest", exe = "nats-server" }
-nats-cli              = { version = "latest", exe = "nats" }
-nats-top              = { version = "latest" }
-neovim                = { version = "latest" }
-nova                  = { version = "latest" }
-npm                   = { version = "latest" }
-nsc                   = { version = "latest" }
-nkeys                 = { version = "latest", exe = "nk" }
-oras                  = { version = "latest", exe = "oras" }
-osv-scanner           = { version = "latest" }
-pkl                   = { version = "latest", exe = "pkl" }
-pluto                 = { version = "latest" }
-pnpm                  = { version = "latest" }
-popeye                = { version = "latest" }
-python                = { version = "latest" }
-rbac-lookup           = { version = "latest" }
-regbot                = { version = "latest", exe = "regbot", matching = "regbot" }
-regctl                = { version = "latest", exe = "regctl", matching = "regctl" }
-regsync               = { version = "latest", exe = "regsync", matching = "regsync" }
-ripgrep               = { version = "latest", exe = "rg" }
-rust                  = { version = "latest" }
-satty                 = { version = "latest", exe = "satty" }
-scaleway-cli          = { version = "latest" }
-slsa-verifier         = { version = "latest" }
-snitch                = { version = "latest" }
-sops                  = { version = "latest" }
-starship              = { version = "latest" }
-stern                 = { version = "latest" }
-superfile             = { version = "latest", exe = "spf" }
-talhelper             = { version = "latest" }
-talosctl              = { version = "latest", exe = "talosctl" }
-updatecli             = { version = "latest", exe = "updatecli" }
-usage                 = { version = "latest" }
-uv                    = { version = "latest" }
-vcluster              = { version = "latest" }
-velero                = { version = "latest" }
-yamlfmt               = { version = "latest" }
-yazi                  = { version = "latest", exe = "yazi" }
-yq                    = { version = "latest" }
-zedis                 = { version = "latest" }
-"github:vicanso/zedis" = "latest"
+age                                             = { version = "latest" }
+argocd                                          = { version = "latest" }
+awscli                                          = { version = "latest" }
+azure-cli                                       = { version = "latest" }
+bat                                             = { version = "latest" }
+bitwarden                                       = { version = "latest" }
+btop                                            = { version = "latest" }
+bun                                             = { version = "latest" }
+cilium-cli                                      = { version = "latest", exe = "cilium" }
+cilium-hubble                                   = { version = "latest" }
+civo                                            = { version = "latest", exe = "civo" }
+clusterctl                                      = { version = "latest" }
+cmctl                                           = { version = "latest" }
+cosign                                          = { version = "latest" }
+difftastic                                      = { version = "latest", exe = "difft" }
+direnv                                          = { version = "latest", exe = "direnv" }
+docker-compose                                  = { version = "2.30.3", rename_exe = "docker-compose" }
+doctl                                           = { version = "latest" }
+dyff                                            = { version = "latest", exe = "dyff" }
+eksctl                                          = { version = "latest" }
+fd                                              = { version = "latest" }
+flux-operator                                   = { version = "latest", exe = "flux-operator" }
+flux2                                           = { version = "latest" }
+flux9s                                          = { version = "latest" }
+forward-email                                   = { version = "v0.2.0-alpha.2" }
+fx                                              = { version = "latest", exe = "fx" }
+garage-webui                                    = { version = "latest" }
+gcloud                                          = { version = "latest" }
+git-who                                         = { version = "latest" }
+github-cli                                      = { version = "latest" }
+gitlab-cli                                      = { version = "latest" }
+go                                              = { version = "latest" }
+go-containerregistry                            = { version = "latest", exe = "crane" }
+grpcurl                                         = { version = "latest", exe = "grpcurl" }
+hcloud                                          = { version = "latest" }
+helm                                            = { version = "latest" }
+hubble                                          = { version = "latest", exe = "hubble" }
+hugo                                            = { version = "latest" }
+hurl                                            = { version = "latest", exe = "hurl" }
+hurlfmt                                         = { version = "latest", exe = "hurlfmt" }
+jb                                              = { version = "latest" }
+jd                                              = { version = "latest", exe = "jd" }
+jless                                           = { version = "latest" }
+jnv                                             = { version = "latest", exe = "jnv" }
+jqp                                             = { version = "latest", exe = "jqp" }
+k9s                                             = { version = "latest" }
+kind                                            = { version = "latest" }
+kompose                                         = { version = "latest" }
+korb                                            = { version = "latest", exe = "korb" }
+krew                                            = { version = "latest" }
+kube-capacity                                   = { version = "latest" }
+kube-score                                      = { version = "latest" }
+kubebuilder                                     = { version = "latest" }
+kubecolor                                       = { version = "latest" }
+kubeconform                                     = { version = "latest" }
+kubectl                                         = { version = "latest" }
+kubent                                          = { version = "latest" }
+kubeseal                                        = { version = "latest" }
+kubesec                                         = { version = "latest" }
+kubeshark                                       = { version = "latest", exe = "kubeshark" }
+kubespy                                         = { version = "latest" }
+kubewall                                        = { version = "latest" }
+kubie                                           = { version = "latest" }
+kustomize                                       = { version = "latest" }
+nats-server                                     = { version = "latest", exe = "nats-server" }
+nats-cli                                        = { version = "latest", exe = "nats" }
+nats-top                                        = { version = "latest" }
+"aqua:neovim/neovim"                            = "latest"
+node                                            = { version = "latest" }
+nova                                            = { version = "latest" }
+npm                                             = { version = "latest" }
+nsc                                             = { version = "latest" }
+"go:github.com/nats-io/nkeys/nk"                = "latest"
+oras                                            = { version = "latest", exe = "oras" }
+osv-scanner                                     = { version = "latest" }
+pkl                                             = { version = "latest", exe = "pkl" }
+pluto                                           = { version = "latest" }
+pnpm                                            = { version = "latest" }
+popeye                                          = { version = "latest" }
+python                                          = { version = "latest" }
+rbac-lookup                                     = { version = "latest" }
+regsync                                         = { version = "latest" }
+regbot                                          = { version = "latest" }
+regctl                                          = { version = "latest" }
+ripgrep                                         = { version = "latest", exe = "rg" }
+rust                                            = { version = "latest" }
+satty                                           = { version = "latest", exe = "satty" }
+scaleway-cli                                    = { version = "latest" }
+slsa-verifier                                   = { version = "latest" }
+snitch                                          = { version = "latest" }
+sops                                            = { version = "latest" }
+starship                                        = { version = "latest" }
+stern                                           = { version = "latest" }
+superfile                                       = { version = "latest", exe = "spf" }
+talhelper                                       = { version = "latest" }
+talosctl                                        = { version = "latest", exe = "talosctl" }
+updatecli                                       = { version = "latest", exe = "updatecli" }
+usage                                           = { version = "latest" }
+uv                                              = { version = "latest" }
+vcluster                                        = { version = "latest" }
+velero                                          = { version = "latest" }
+yamlfmt                                         = { version = "latest" }
+yazi                                            = { version = "latest", exe = "yazi" }
+yq                                              = { version = "latest" }
+"github:vicanso/zedis"                          = "latest"
+"github:zitadel/zitadel"                        = "latest"

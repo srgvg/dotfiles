@@ -1,16 +1,26 @@
 [[tools.age]]
 version = "1.3.1"
 backend = "aqua:FiloSottile/age"
+"platforms.linux-arm64" = { checksum = "sha256:c6878a324421b69e3e20b00ba17c04bc5c6dab0030cfe55bf8f68fa8d9e9093a", url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:bdc69c09cbdd6cf8b1f333d372a1f58247b3a33146406333e30c0f26e8f51377", url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-linux-amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:01120ea2cbf0463d4c6bd767f99f3271bbed1cdc8a9aa718a76ba1fe4f01998b", url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-darwin-arm64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:c56e8ce22f7e80cb85ad946cc82d198767b056366201d3e1a2b93d865be38154", url = "https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-windows-amd64.zip"}
+
+[[tools."aqua:neovim/neovim"]]
+version = "0.11.6"
+backend = "aqua:neovim/neovim"
 
 [[tools.argocd]]
 version = "3.2.6"
 backend = "aqua:argoproj/argo-cd"
-"platforms.linux-x64" = { checksum = "sha256:ebe1676c353ae3784551d859603f8d680e524659e120beb79be81a2645b09349", url = "https://github.com/argoproj/argo-cd/releases/download/v3.2.6/argocd-linux-amd64"}
 
 [[tools.awscli]]
 version = "2.33.12"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:50bce8653654d211111a7537331e26047c3ede9a1cbf1612b7858c4a130005d9", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.12.zip"}
+"platforms.linux-arm64" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.33.12.zip"}
+"platforms.linux-x64" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.12.zip"}
+"platforms.macos-arm64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.33.12.pkg"}
+"platforms.macos-x64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.33.12.pkg"}
 
 [[tools.azure-cli]]
 version = "2.82.0"
@@ -18,7 +28,7 @@ backend = "asdf:azure-cli"
 
 [[tools.bat]]
 version = "0.26.1"
-backend = "github:sharkdp/bat"
+backend = "aqua:sharkdp/bat"
 
 [[tools.bitwarden]]
 version = "2025.12.1"
@@ -26,39 +36,38 @@ backend = "aqua:bitwarden/clients"
 
 [[tools.btop]]
 version = "1.4.6"
-backend = "github:aristocratos/btop"
+backend = "aqua:aristocratos/btop"
 
 [[tools.bun]]
 version = "1.3.8"
 backend = "core:bun"
-"platforms.linux-x64" = { checksum = "blake3:8c77d1399200f47907b9b74909692a98a3dc8c62c953cf9ab778f0a8a0a828ac"}
+"platforms.linux-arm64" = { checksum = "sha256:4e9deb6814a7ec7f68725ddd97d0d7b4065bcda9a850f69d497567e995a7fa33", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-aarch64.zip"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:76dddebfd8c011c8b774991eb8ba47da770e4ce06ddc2b045aa0d659ef5fbe44", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-aarch64-musl.zip"}
+"platforms.linux-x64" = { checksum = "sha256:0322b17f0722da76a64298aad498225aedcbf6df1008a1dee45e16ecb226a3f1", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-x64.zip"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:bbe4632ac03d7495177d542ecefa8f21f9849273106525f6bb13172ec8e4ab2c", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-x64-baseline.zip"}
+"platforms.linux-x64-musl" = { checksum = "sha256:a810b5083a830596cff3715402371917a200940efdeed6189bcde191e79d4633", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-x64-musl.zip"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:f05311fc12304ff8eaca136fc934eede6728055ba3d00cdb7e7dac394853f159", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-linux-x64-musl-baseline.zip"}
+"platforms.macos-arm64" = { checksum = "sha256:672a0a9a7b744d085a1d2219ca907e3e26f5579fca9e783a9510a4f98a36212f", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-darwin-aarch64.zip"}
+"platforms.macos-x64" = { checksum = "sha256:4a0ecd703b37d66abaf51e5bc24fd1249e8dc392c17ee6235710cf51a0988b85", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-darwin-x64.zip"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:9812e5f6c7f818ef9c491e05a77481ab2e7a4a1580b378526e1611c102fe7ca3", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-darwin-x64-baseline.zip"}
+"platforms.windows-x64" = { checksum = "sha256:4c0a82866424e23d1bdaa9517307ec2f143ed513c15546dba0b859c6c55c47c7", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-windows-x64.zip"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:74f4dad7b4873ee70f63add9918400334e31acab9ba3fce9ef9906d96646e231", url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.8/bun-windows-x64-baseline.zip"}
 
 [[tools.cilium-cli]]
 version = "0.19.0"
-backend = "github:cilium/cilium-cli"
+backend = "aqua:cilium/cilium-cli"
 
 [[tools.cilium-hubble]]
 version = "1.18.5"
-backend = "ubi:cilium/hubble"
+backend = "github:cilium/hubble"
 
 [[tools.civo]]
 version = "1.4.7"
-backend = "github:civo/cli"
+backend = "github:civo/cli[exe=civo]"
 
 [[tools.clusterctl]]
 version = "1.12.2"
 backend = "aqua:kubernetes-sigs/cluster-api"
-"platforms.linux-arm64" = { checksum = "sha256:1bc20dc1106b82435fe30959227ab2241136252a9a08aeb2e831d50f2a4fe516", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-arm64"}
-"platforms.linux-arm64-musl" = { checksum = "sha256:1bc20dc1106b82435fe30959227ab2241136252a9a08aeb2e831d50f2a4fe516", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-arm64"}
-"platforms.linux-x64" = { checksum = "sha256:cedcb3ec1694dcae19f57368b69c4b9edce48648b2795fe5867edff27bfee65e", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-amd64"}
-"platforms.linux-x64-baseline" = { checksum = "sha256:cedcb3ec1694dcae19f57368b69c4b9edce48648b2795fe5867edff27bfee65e", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-amd64"}
-"platforms.linux-x64-musl" = { checksum = "sha256:cedcb3ec1694dcae19f57368b69c4b9edce48648b2795fe5867edff27bfee65e", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-amd64"}
-"platforms.linux-x64-musl-baseline" = { checksum = "sha256:cedcb3ec1694dcae19f57368b69c4b9edce48648b2795fe5867edff27bfee65e", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-linux-amd64"}
-"platforms.macos-arm64" = { checksum = "sha256:1ebe858a8b34b9a2156769f0d59dcb40343d52b959f8391413ed1c163342175d", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-darwin-arm64"}
-"platforms.macos-x64" = { checksum = "sha256:c06bf0d3e5d3530031f4db8691a451bfa14b87f3df36135d11af7d44ef5b3f98", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-darwin-amd64"}
-"platforms.macos-x64-baseline" = { checksum = "sha256:c06bf0d3e5d3530031f4db8691a451bfa14b87f3df36135d11af7d44ef5b3f98", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-darwin-amd64"}
-"platforms.windows-x64" = { checksum = "sha256:b7c23a73cf3d876b1fe8793edecc5cc05dd2eaf9a4b8ccff9326084e6cb649fd", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-windows-amd64.exe"}
-"platforms.windows-x64-baseline" = { checksum = "sha256:b7c23a73cf3d876b1fe8793edecc5cc05dd2eaf9a4b8ccff9326084e6cb649fd", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.1/clusterctl-windows-amd64.exe"}
 
 [[tools.cmctl]]
 version = "2.4.0"
@@ -70,25 +79,23 @@ backend = "aqua:sigstore/cosign"
 
 [[tools.difftastic]]
 version = "0.67.0"
-backend = "github:Wilfred/difftastic"
+backend = "aqua:Wilfred/difftastic"
 
 [[tools.direnv]]
 version = "2.37.1"
-backend = "github:direnv/direnv"
+backend = "aqua:direnv/direnv"
 
 [[tools.docker-compose]]
-version = "5.0.2"
-backend = "github:docker/compose"
-"platforms.linux-x64-docker-compose" = { checksum = "blake3:a07a12011b166169a5b4734d165fd7ed81d9a8216ea4414e6de76328a8aa6ea7"}
+version = "2.30.3"
+backend = "aqua:docker/compose"
 
 [[tools.doctl]]
 version = "1.149.0"
 backend = "aqua:digitalocean/doctl"
-"platforms.linux-x64" = { checksum = "sha256:9405e615fd4eb164c84019230955b6436f9059dc7499407c4ce9c18b11677f04", url = "https://github.com/digitalocean/doctl/releases/download/v1.149.0/doctl-1.149.0-linux-amd64.tar.gz"}
 
 [[tools.dyff]]
 version = "1.10.3"
-backend = "github:homeport/dyff"
+backend = "aqua:homeport/dyff"
 
 [[tools.eksctl]]
 version = "0.221.0"
@@ -101,17 +108,6 @@ backend = "aqua:sharkdp/fd"
 [[tools.flux-operator]]
 version = "0.40.0"
 backend = "github:controlplaneio-fluxcd/flux-operator"
-"platforms.linux-arm64" = { checksum = "sha256:3c496ca682b15744f08d692542e30f1b6deb2cc600abc2b7cae17898870cde07", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773993"}
-"platforms.linux-arm64-musl" = { checksum = "sha256:3c496ca682b15744f08d692542e30f1b6deb2cc600abc2b7cae17898870cde07", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773993"}
-"platforms.linux-x64" = { checksum = "sha256:b1ee1b60e11ddf42171b73dcd8592f113a3d58c457644ec6f072c44eaf1ba5c6", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773991"}
-"platforms.linux-x64-baseline" = { checksum = "sha256:b1ee1b60e11ddf42171b73dcd8592f113a3d58c457644ec6f072c44eaf1ba5c6", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773991"}
-"platforms.linux-x64-musl" = { checksum = "sha256:b1ee1b60e11ddf42171b73dcd8592f113a3d58c457644ec6f072c44eaf1ba5c6", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773991"}
-"platforms.linux-x64-musl-baseline" = { checksum = "sha256:b1ee1b60e11ddf42171b73dcd8592f113a3d58c457644ec6f072c44eaf1ba5c6", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773991"}
-"platforms.macos-arm64" = { checksum = "sha256:51bd5b36da6d9de0a779b522f813ec0f5ef3faa9c5e75c98a2e94ace2ecda8de", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_darwin_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773990"}
-"platforms.macos-x64" = { checksum = "sha256:f956ceddb073ac4e8b0ddb6b18337d8575ce33b6177fd5b8c9ea5cfa0c77f0bb", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773992"}
-"platforms.macos-x64-baseline" = { checksum = "sha256:f956ceddb073ac4e8b0ddb6b18337d8575ce33b6177fd5b8c9ea5cfa0c77f0bb", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331773992"}
-"platforms.windows-x64" = { checksum = "sha256:c4f260534a1a0a9cd3c904645a7c0bcaf765fc1a90a9443c4b71a9f790ac35b9", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_windows_amd64.zip", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331774001"}
-"platforms.windows-x64-baseline" = { checksum = "sha256:c4f260534a1a0a9cd3c904645a7c0bcaf765fc1a90a9443c4b71a9f790ac35b9", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.38.1/flux-operator-mcp_0.38.1_windows_amd64.zip", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/331774001"}
 
 [[tools.flux2]]
 version = "2.7.5"
@@ -124,11 +120,10 @@ backend = "github:dgunzy/flux9s"
 [[tools.forward-email]]
 version = "v0.2.0-alpha.2"
 backend = "github:ginsys/forward-email"
-"platforms.linux-x64-forward-email" = { checksum = "blake3:92caa3c1c39184a2d1d2128c29ae276ced04117122f87c389a117e8e016c04b7"}
 
 [[tools.fx]]
 version = "39.2.0"
-backend = "github:antonmedv/fx"
+backend = "aqua:antonmedv/fx"
 
 [[tools.garage-webui]]
 version = "1.1.0"
@@ -141,34 +136,48 @@ backend = "asdf:gcloud"
 [[tools.git-who]]
 version = "1.3"
 backend = "github:sinclairtarget/git-who"
-"platforms.linux-x64" = { checksum = "sha256:f031ea951f837d1a67c906e3a672c6afe09c4314fa5bf7e63a00b86749f86b72", url = "https://github.com/sinclairtarget/git-who/releases/download/v1.3/gitwho_v1.3_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/sinclairtarget/git-who/releases/assets/345228833"}
 
 [[tools.github-cli]]
 version = "2.86.0"
 backend = "aqua:cli/cli"
-"platforms.linux-x64" = { checksum = "sha256:f3b08bd6a28420cc2229b0a1a687fa25f2b838d3f04b297414c1041ca68103c7", url = "https://github.com/cli/cli/releases/download/v2.86.0/gh_2.86.0_linux_amd64.tar.gz"}
 
 [[tools."github:vicanso/zedis"]]
-version = "0.1.9"
+version = "0.2.1"
 backend = "github:vicanso/zedis"
-"platforms.linux-x64" = { checksum = "sha256:dc130158c75650ee66ba10a34823ecf6278e073f24d70fe7af55928e47f1a8b9", url = "https://github.com/vicanso/zedis/releases/download/v0.1.9/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/344790484"}
+
+[[tools."github:zitadel/zitadel"]]
+version = "4.10.1"
+backend = "github:zitadel/zitadel"
 
 [[tools.gitlab-cli]]
 version = "1.82.0"
 backend = "gitlab:gitlab-org/cli"
+"platforms.linux-arm64" = { checksum = "sha256:dbbdfb3f52dbf317af6564957fb3d54cb2da453f2242f7e43135567148dfe326", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_linux_arm64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_linux_arm64%2Etar%2Egz"}
 "platforms.linux-x64" = { checksum = "sha256:6589bd77e3042b728f0918090eb95ae63f8e9993ddd5db64bdb2a04e2c38ade6", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_linux_amd64%2Etar%2Egz"}
+"platforms.macos-arm64" = { checksum = "sha256:434dc43ac3148abbf46d56c679aa122abe570b7c02a81ab41d1d2fe2a218fe8d", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_darwin_arm64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_darwin_arm64%2Etar%2Egz"}
+"platforms.macos-x64" = { checksum = "sha256:30074cf012d97b1d0db8150fe9ec13dffe4404b735822fd0eae378cf512801ae", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_darwin_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_darwin_amd64%2Etar%2Egz"}
+"platforms.windows-x64" = { checksum = "sha256:7b55d2cfc47a84812bebc0d0f6ea099a0dc4bf5eb14aa0b1677c5774f3dec8a5", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.82.0/downloads/glab_1.82.0_windows_amd64.zip", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E82%2E0/glab_1%2E82%2E0_windows_amd64%2Ezip"}
 
 [[tools.go]]
 version = "1.25.6"
 backend = "core:go"
+"platforms.linux-arm64" = { checksum = "sha256:738ef87d79c34272424ccdf83302b7b0300b8b096ed443896089306117943dd5", url = "https://dl.google.com/go/go1.25.6.linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:f022b6aad78e362bcba9b0b94d09ad58c5a70c6ba3b7582905fababf5fe0181a", url = "https://dl.google.com/go/go1.25.6.linux-amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:984521ae978a5377c7d782fd2dd953291840d7d3d0bd95781a1f32f16d94a006", url = "https://dl.google.com/go/go1.25.6.darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:e2b5b237f5c262931b8e280ac4b8363f156e19bfad5270c099998932819670b7", url = "https://dl.google.com/go/go1.25.6.darwin-amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:19b4733b727ba5c611b5656187f3ac367d278d64c3d4199a845e39c0fdac5335", url = "https://dl.google.com/go/go1.25.6.windows-amd64.zip"}
 
 [[tools.go-containerregistry]]
 version = "0.20.7"
-backend = "aqua:google/go-containerregistry"
+backend = "aqua:google/go-containerregistry[exe=crane]"
+
+[[tools."go:github.com/nats-io/nkeys/nk"]]
+version = "0.4.15"
+backend = "go:github.com/nats-io/nkeys/nk"
 
 [[tools.grpcurl]]
 version = "1.9.3"
-backend = "github:fullstorydev/grpcurl"
+backend = "aqua:fullstorydev/grpcurl"
 
 [[tools.hcloud]]
 version = "1.61.0"
@@ -177,7 +186,11 @@ backend = "asdf:hcloud"
 [[tools.helm]]
 version = "4.1.0"
 backend = "aqua:helm/helm"
-"platforms.linux-x64" = { checksum = "sha256:8e7ae5cb890c56f53713bffec38e41cd8e7e4619ebe56f8b31cd383bfb3dbb83", url = "https://get.helm.sh/helm-v4.1.0-linux-amd64.tar.gz"}
+"platforms.linux-arm64" = { url = "https://get.helm.sh/helm-4.1.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { url = "https://get.helm.sh/helm-4.1.0-linux-amd64.tar.gz"}
+"platforms.macos-arm64" = { url = "https://get.helm.sh/helm-4.1.0-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { url = "https://get.helm.sh/helm-4.1.0-darwin-amd64.tar.gz"}
+"platforms.windows-x64" = { url = "https://get.helm.sh/helm-4.1.0-windows-amd64.tar.gz"}
 
 [[tools.hubble]]
 version = "1.18.5"
@@ -186,14 +199,10 @@ backend = "github:cilium/hubble"
 [[tools.hugo]]
 version = "0.155.1"
 backend = "aqua:gohugoio/hugo"
-"platforms.linux-x64" = { checksum = "sha256:6056ac054f7a159c8c95c8d5cf4f5ee255f27c3aada9b302bc3197d94305d8a7", url = "https://github.com/gohugoio/hugo/releases/download/v0.155.1/hugo_0.155.1_linux-amd64.tar.gz"}
 
 [[tools.hurl]]
 version = "7.1.0"
-backend = "github:Orange-OpenSource/hurl"
-
-[tools.hurl.options]
-exe = "hurl"
+backend = "aqua:Orange-OpenSource/hurl"
 
 [[tools.hurlfmt]]
 version = "7.1.0"
@@ -204,11 +213,11 @@ exe = "hurlfmt"
 
 [[tools.jb]]
 version = "0.6.0"
-backend = "asdf:jb"
+backend = "aqua:jsonnet-bundler/jsonnet-bundler"
 
 [[tools.jd]]
 version = "2.4.0"
-backend = "github:josephburnett/jd"
+backend = "aqua:josephburnett/jd"
 
 [[tools.jless]]
 version = "0.9.0"
@@ -216,15 +225,15 @@ backend = "aqua:PaulJuliusMartinez/jless"
 
 [[tools.jnv]]
 version = "0.6.1"
-backend = "aqua:ynqa/jnv"
+backend = "aqua:ynqa/jnv[exe=jnv]"
 
 [[tools.jqp]]
 version = "0.8.0"
-backend = "aqua:noahgorstein/jqp"
+backend = "aqua:noahgorstein/jqp[exe=jqp]"
 
 [[tools.k9s]]
 version = "0.50.18"
-backend = "ubi:derailed/k9s"
+backend = "aqua:derailed/k9s"
 
 [[tools.kind]]
 version = "0.31.0"
@@ -232,7 +241,7 @@ backend = "aqua:kubernetes-sigs/kind"
 
 [[tools.kompose]]
 version = "1.38.0"
-backend = "ubi:kubernetes/kompose"
+backend = "aqua:kubernetes/kompose"
 
 [[tools.korb]]
 version = "2.3.4"
@@ -241,7 +250,6 @@ backend = "github:BeryJu/korb"
 [[tools.krew]]
 version = "0.4.5"
 backend = "aqua:kubernetes-sigs/krew"
-"platforms.linux-x64" = { checksum = "sha256:bacc06800bda14ec063cd0b6f377a961fdf4661c00366bf9834723cd28bfabc7", url = "https://github.com/kubernetes-sigs/krew/releases/download/v0.4.5/krew-linux_amd64.tar.gz"}
 
 [[tools.kube-capacity]]
 version = "0.8.0"
@@ -254,11 +262,10 @@ backend = "aqua:zegl/kube-score"
 [[tools.kubebuilder]]
 version = "4.11.1"
 backend = "aqua:kubernetes-sigs/kubebuilder"
-"platforms.linux-x64" = { checksum = "sha256:834d26c233881ee1f0bb73a7fdcfa3ef8b264892827c50ee51a7653fac70e4f6", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.11.1/kubebuilder_linux_amd64"}
 
 [[tools.kubecolor]]
 version = "0.5.3"
-backend = "github:kubecolor/kubecolor"
+backend = "aqua:kubecolor/kubecolor"
 
 [[tools.kubeconform]]
 version = "0.7.0"
@@ -266,7 +273,12 @@ backend = "aqua:yannh/kubeconform"
 
 [[tools.kubectl]]
 version = "1.35.0"
-backend = "aqua:kubernetes/kubectl"
+backend = "aqua:kubernetes/kubernetes/kubectl"
+"platforms.linux-arm64" = { url = "https://dl.k8s.io/1.35.0/bin/linux/arm64/kubectl"}
+"platforms.linux-x64" = { url = "https://dl.k8s.io/1.35.0/bin/linux/amd64/kubectl"}
+"platforms.macos-arm64" = { url = "https://dl.k8s.io/1.35.0/bin/darwin/arm64/kubectl"}
+"platforms.macos-x64" = { url = "https://dl.k8s.io/1.35.0/bin/darwin/amd64/kubectl"}
+"platforms.windows-x64" = { url = "https://dl.k8s.io/1.35.0/bin/windows/amd64/kubectl.exe"}
 
 [[tools.kubent]]
 version = "0.7.1"
@@ -282,8 +294,7 @@ backend = "aqua:controlplaneio/kubesec"
 
 [[tools.kubeshark]]
 version = "52.12.0"
-backend = "github:kubeshark/kubeshark"
-"platforms.linux-x64" = { checksum = "sha256:2d7696f525c154840961d32fac9e3e05aa6ff8f7882a20682d497b57b3f8ef5c", url = "https://github.com/kubeshark/kubeshark/releases/download/v52.12.0/kubeshark_linux_amd64", url_api = "https://api.github.com/repos/kubeshark/kubeshark/releases/assets/345862897"}
+backend = "aqua:kubeshark/kubeshark"
 
 [[tools.kubespy]]
 version = "0.6.3"
@@ -292,7 +303,6 @@ backend = "aqua:pulumi/kubespy"
 [[tools.kubewall]]
 version = "0.0.16"
 backend = "github:kubewall/kubewall"
-"platforms.linux-x64" = { checksum = "sha256:90a1ee63c47d7a8bab2fc731baec8638c5749a9aa2d185293fa5f9c2b2e85b36", url = "https://github.com/kubewall/kubewall/releases/download/v0.0.16/kubewall_0.0.16_linux_amd64.pkg.tar.zst", url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/345677442"}
 
 [[tools.kubie]]
 version = "0.26.1"
@@ -305,26 +315,23 @@ backend = "aqua:kubernetes-sigs/kustomize"
 [[tools.nats-cli]]
 version = "0.3.1"
 backend = "github:nats-io/natscli"
-"platforms.linux-x64" = { checksum = "sha256:f48374be6fc903b954b90b729321772bdd5bc745234edf3d31cd17ab79e85629", url = "https://github.com/nats-io/natscli/releases/download/v0.3.1/nats-0.3.1-linux-amd64.zip", url_api = "https://api.github.com/repos/nats-io/natscli/releases/assets/347066378"}
 
 [[tools.nats-server]]
 version = "2.12.4"
 backend = "github:nats-io/nats-server"
-"platforms.linux-x64" = { checksum = "sha256:92388f2e4aa1e6dea402eb173cbdb1fcb1df9a9c899cb807b91ddbb45c131b65", url = "https://github.com/nats-io/nats-server/releases/download/v2.12.4/nats-server-v2.12.4-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/346681885"}
 
 [[tools.nats-top]]
 version = "0.6.3"
 backend = "github:nats-io/nats-top"
-"platforms.linux-x64" = { checksum = "sha256:3e5905114a86bd479f99c176713d078b1efa54277329dcc6c4b717070ce7a77f", url = "https://github.com/nats-io/nats-top/releases/download/v0.6.3/nats-top_0.6.3_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/nats-io/nats-top/releases/assets/213205148"}
 
-[[tools.neovim]]
-version = "0.11.6"
-backend = "aqua:neovim/neovim"
-"platforms.linux-x64" = { checksum = "sha256:2fc90b962327f73a78afbfb8203fd19db8db9cdf4ee5e2bef84704339add89cc", url = "https://github.com/neovim/neovim/releases/download/v0.11.6/nvim-linux-x86_64.tar.gz"}
-
-[[tools.nkeys]]
-version = "0.4.15"
-backend = "go:github.com/nats-io/nkeys/nk"
+[[tools.node]]
+version = "25.5.0"
+backend = "core:node"
+"platforms.linux-arm64" = { checksum = "sha256:20f9aa9f2174786754f1941a178a62b906216fcdcd923400817f4bfa72e12336", url = "https://nodejs.org/dist/v25.5.0/node-v25.5.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:e8e50aee2e5328bcbc2ead32d86d0b577220ccdd80c438583dca3aa2965873f2", url = "https://nodejs.org/dist/v25.5.0/node-v25.5.0-linux-x64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:568ff9aae73e82499346be25250c7caacab2ca4bbb697bc73056cf3b983b8211", url = "https://nodejs.org/dist/v25.5.0/node-v25.5.0-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:c36d2db9afc900b2cfa45b60a9423b4991ad86976acd3fe5b500abda91f21243", url = "https://nodejs.org/dist/v25.5.0/node-v25.5.0-darwin-x64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:4d2773e98d3f35d172478d5101de1f571d851053d2ed67bbe39a5bdeae87d804", url = "https://nodejs.org/dist/v25.5.0/node-v25.5.0-win-x64.zip"}
 
 [[tools.nova]]
 version = "3.11.10"
@@ -332,15 +339,20 @@ backend = "aqua:FairwindsOps/nova"
 
 [[tools.npm]]
 version = "11.8.0"
-backend = "npm"
+backend = "npm:npm"
 
 [[tools.nsc]]
 version = "2.12.0"
 backend = "github:nats-io/nsc"
+"platforms.linux-arm64" = { checksum = "sha256:7343f246746673bd887a107d8fecdb11e50f9fc079cf38f29f518763adac884e", url = "https://github.com/nats-io/nsc/releases/download/v2.12.0/nsc-linux-arm64.zip", url_api = "https://api.github.com/repos/nats-io/nsc/releases/assets/296070069"}
+"platforms.linux-x64" = { checksum = "sha256:5eb3ac4d1d07463572a18efe4432d79b2b2fea06759c9d016197b477d4c38bbc", url = "https://github.com/nats-io/nsc/releases/download/v2.12.0/nsc-linux-amd64.zip", url_api = "https://api.github.com/repos/nats-io/nsc/releases/assets/296070092"}
+"platforms.macos-arm64" = { checksum = "sha256:bb0bd7c7e7c3ccd2610e30d805d9b4d72512bbfd03cf62496fd69fe61e6a0130", url = "https://github.com/nats-io/nsc/releases/download/v2.12.0/nsc-darwin-arm64.zip", url_api = "https://api.github.com/repos/nats-io/nsc/releases/assets/296070067"}
+"platforms.macos-x64" = { checksum = "sha256:f99677a64f3ac9e671d1e05092ed9ffc6f7ed6074763aa6ca324f0324f810bbf", url = "https://github.com/nats-io/nsc/releases/download/v2.12.0/nsc-darwin-amd64.zip", url_api = "https://api.github.com/repos/nats-io/nsc/releases/assets/296070070"}
+"platforms.windows-x64" = { checksum = "sha256:1de2a761e4de6dff6a3dfd23276c99c75d294fc99b7305f8935e5c8b62160b4e", url = "https://github.com/nats-io/nsc/releases/download/v2.12.0/nsc-windows-amd64.zip", url_api = "https://api.github.com/repos/nats-io/nsc/releases/assets/296070091"}
 
 [[tools.oras]]
 version = "1.3.0"
-backend = "github:oras-project/oras"
+backend = "aqua:oras-project/oras"
 
 [[tools.osv-scanner]]
 version = "2.3.2"
@@ -348,7 +360,7 @@ backend = "aqua:google/osv-scanner"
 
 [[tools.pkl]]
 version = "0.30.2"
-backend = "github:apple/pkl"
+backend = "aqua:apple/pkl"
 
 [[tools.pluto]]
 version = "5.22.7"
@@ -357,7 +369,6 @@ backend = "aqua:FairwindsOps/pluto"
 [[tools.pnpm]]
 version = "10.28.2"
 backend = "aqua:pnpm/pnpm"
-"platforms.linux-x64" = { checksum = "sha256:9f38396f660cd3b1f71e0b0af0b7ba22dd1fd446dc37840a1b6a025868557390", url = "https://github.com/pnpm/pnpm/releases/download/v10.28.2/pnpm-linux-x64"}
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -373,34 +384,29 @@ backend = "aqua:FairwindsOps/rbac-lookup"
 
 [[tools.regbot]]
 version = "0.11.1"
-backend = "github:regclient/regclient"
-
-[tools.regbot.options]
-exe = "regbot"
-matching = "regbot"
+backend = "ubi:regclient/regclient"
 
 [[tools.regctl]]
 version = "0.11.1"
-backend = "github:regclient/regclient"
-
-[tools.regctl.options]
-exe = "regctl"
-matching = "regctl"
+backend = "aqua:regclient/regclient/regctl"
+"platforms.linux-arm64" = { checksum = "sha256:7caec09213a98e9e1b3c5f8aa4cfa1b6c12b5e3e96bfbb441b2289a4e6ba9758", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regctl-linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:d3de5d4e1bc4d771a56a835294f597815b67bb6c0c32462a8aa880e2ba831620", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regctl-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:c7adabf87acdb029e49b74346ec4860b1b4a5aa6ca7113acfc51a3497d0bf854", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regctl-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:9769b3b9cf86d188b4c3bb116a9f58260daff634552e7934c2f32e284947af82", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regctl-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:cb9f166e889d2317ebff54142eaa4ba7b5908b6d95551edae48788cbdb4d3fad", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regctl-windows-amd64.exe"}
 
 [[tools.regsync]]
 version = "0.11.1"
-backend = "github:regclient/regclient"
-
-[tools.regsync.options]
-exe = "regsync"
-matching = "regsync"
+backend = "aqua:regclient/regclient/regsync"
+"platforms.linux-arm64" = { checksum = "sha256:7b8c45e8ee466dc9ffa8331a94f89dd15d14b8a6a87182c092c258b3a9917f48", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regsync-linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:8f319afd49d64956671cd3cf6f34b19c1226fdc35d76d9f64e60f2a610bebfc4", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regsync-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:fd7d294225cca30a6fc01ef082150c0a175c34aaca317f954f542df54d600af7", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regsync-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:8c44ef07c6d7ae905f091f1b28dde39eef142fa64e8843f07584ff470cd4e402", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regsync-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:1097cbec712cc931bba97b5b5928d8409f977e702d54257d5b10d0cb1e0d5b9d", url = "https://github.com/regclient/regclient/releases/download/v0.11.1/regsync-windows-amd64.exe"}
 
 [[tools.ripgrep]]
 version = "15.1.0"
-backend = "github:BurntSushi/ripgrep"
-
-[tools.ripgrep.options]
-exe = "rg"
+backend = "aqua:BurntSushi/ripgrep"
 
 [[tools.rust]]
 version = "1.93.0"
@@ -416,11 +422,10 @@ exe = "satty"
 [[tools.scaleway-cli]]
 version = "2.51.0"
 backend = "aqua:scaleway/scaleway-cli"
-"platforms.linux-x64" = { checksum = "sha256:091060ecaa6f74ef1381f4d024584aa8f5dc6226d66669e00ada005b51bc26b0", url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.51.0/scaleway-cli_2.51.0_linux_amd64"}
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
-backend = "ubi:slsa-framework/slsa-verifier"
+backend = "aqua:slsa-framework/slsa-verifier"
 
 [[tools.snitch]]
 version = "0.2.2"
@@ -429,6 +434,11 @@ backend = "github:karol-broda/snitch"
 [[tools.sops]]
 version = "3.11.0"
 backend = "aqua:getsops/sops"
+"platforms.linux-arm64" = { checksum = "sha256:c71d32f74b3a73ce283affe6ed36e221a8f1476c3d37963f60bd962fb1676681", url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.arm64"}
+"platforms.linux-x64" = { checksum = "sha256:775f1384d55decfad228e7196a3f683791914f92a473f78fc47700531c29dfef", url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.linux.amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:45e7562b1f5d022c4d7a4e4c3d1b7b1a7ee6c328356629286cfd18a394b00e7c", url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.darwin.arm64"}
+"platforms.macos-x64" = { checksum = "sha256:c36583e178f7e83b947044b292e106e79615f7725f75cb147045fb0c81953e2b", url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.darwin.amd64"}
+"platforms.windows-x64" = { checksum = "sha256:f3d74d83006954f0d8cf770ad7e5380504270ded5a62f33eb2548ce5461af3b3", url = "https://github.com/getsops/sops/releases/download/v3.11.0/sops-v3.11.0.amd64.exe"}
 
 [[tools.starship]]
 version = "1.24.2"
@@ -440,44 +450,31 @@ backend = "aqua:stern/stern"
 
 [[tools.superfile]]
 version = "1.5.0"
-backend = "aqua:yorukot/superfile"
+backend = "aqua:yorukot/superfile[exe=spf]"
 
 [[tools.talhelper]]
 version = "3.1.3"
 backend = "aqua:budimanjojo/talhelper"
-"platforms.linux-x64" = { checksum = "sha256:474c65db098fb467c7f9e33a61780778a0c62a16e244de7bb41fcc29a6ab9384", url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.3/talhelper_linux_amd64.tar.gz"}
-
-[[tools.talos]]
-version = "1.12.2"
-backend = "aqua:siderolabs/talos"
-"platforms.linux-x64" = { checksum = "sha256:afdd8f7cacbcb0950f3884b4fb90475cc7ee8233331159d7b4d5935be90b5ceb", url = "https://github.com/siderolabs/talos/releases/download/v1.12.2/talosctl-linux-amd64"}
 
 [[tools.talosctl]]
 version = "1.12.2"
-backend = "ubi:siderolabs/talos"
-"platforms.linux-x64-talosctl-talosctl" = { checksum = "blake3:4e0d87a659e2d62120a8b8b1b1efc2e2dc22703c4b5941ddefaee70b8e39544b"}
-
-[tools.talosctl.options]
-exe = "talosctl"
+backend = "aqua:siderolabs/talos"
 
 [[tools.updatecli]]
 version = "0.113.0"
-backend = "github:updatecli/updatecli"
+backend = "aqua:updatecli/updatecli"
 
 [[tools.usage]]
-version = "2.16.0"
+version = "2.16.1"
 backend = "aqua:jdx/usage"
-"platforms.linux-x64" = { checksum = "sha256:caeebaf305eeb02be0b78805bb4b6e0bfac6f8faa2d36597a249bd215b41a2a5", url = "https://github.com/jdx/usage/releases/download/v2.16.0/usage-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.uv]]
 version = "0.9.28"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-x64" = { checksum = "sha256:83cd032167b6b97ac94830608efe11159b3d485654e39fdb0bf84718ef236afe", url = "https://github.com/astral-sh/uv/releases/download/0.9.28/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
 version = "0.31.0"
 backend = "aqua:loft-sh/vcluster"
-"platforms.linux-x64" = { checksum = "sha256:aab0709f8facfc5c11476c4c9b2457190b7371c9ff726eadae6710aff444127e", url = "https://github.com/loft-sh/vcluster/releases/download/v0.31.0/vcluster-linux-amd64"}
 
 [[tools.velero]]
 version = "1.17.2"
@@ -489,15 +486,13 @@ backend = "aqua:google/yamlfmt"
 
 [[tools.yazi]]
 version = "26.1.22"
-backend = "github:sxyazi/yazi"
-"platforms.linux-x64" = { checksum = "sha256:a136269b2d5fbb5fb43f3fac3391446e8fbc72aba1c4bb4fae6e6d1556420750", url = "https://github.com/sxyazi/yazi/releases/download/v26.1.22/yazi-x86_64-unknown-linux-gnu.zip", url_api = "https://api.github.com/repos/sxyazi/yazi/releases/assets/344342410"}
+backend = "aqua:sxyazi/yazi"
 
 [[tools.yq]]
-version = "4.52.1"
-backend = "ubi:mikefarah/yq"
-"platforms.linux-x64-yq" = { checksum = "blake3:e4afa8ef084ab3f2c6a9cbe5edfda54191bebcc277ce48ef04d6e7a1fff3772e"}
-
-[[tools.zedis]]
-version = "0.1.9"
-backend = "github:vicanso/zedis"
-"platforms.linux-x64" = { checksum = "sha256:dc130158c75650ee66ba10a34823ecf6278e073f24d70fe7af55928e47f1a8b9", url = "https://github.com/vicanso/zedis/releases/download/v0.1.9/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/344790484"}
+version = "4.52.2"
+backend = "aqua:mikefarah/yq"
+"platforms.linux-arm64" = { checksum = "sha256:c82856ac30da522f50dcdd4f53065487b5a2927e9b87ff637956900986f1f7c2", url = "https://github.com/mikefarah/yq/releases/download/v4.52.2/yq_linux_arm64"}
+"platforms.linux-x64" = { checksum = "sha256:a74bd266990339e0c48a2103534aef692abf99f19390d12c2b0ce6830385c459", url = "https://github.com/mikefarah/yq/releases/download/v4.52.2/yq_linux_amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:34613ea97c4c77e1894a8978dbf72588d187a69a6292c10dab396c767a1ecde7", url = "https://github.com/mikefarah/yq/releases/download/v4.52.2/yq_darwin_arm64"}
+"platforms.macos-x64" = { checksum = "sha256:54a63555210e73abed09108097072e28bf82a6bb20439a72b55509c4dd42378d", url = "https://github.com/mikefarah/yq/releases/download/v4.52.2/yq_darwin_amd64"}
+"platforms.windows-x64" = { checksum = "sha256:2b6cd8974004fa0511f6b6b359d2698214fadeb4599f0b00e8d85ae62b3922d4", url = "https://github.com/mikefarah/yq/releases/download/v4.52.2/yq_windows_amd64.exe"}
