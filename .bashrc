@@ -38,5 +38,3 @@ fi
 # NOTE: Atuin and bash-preexec sourcing removed from here (was redundant)
 # They are now loaded only once via ~/.bashrc.d/atuin.bash
 # This prevents duplicate sourcing and improves startup performance
-
-#################################
