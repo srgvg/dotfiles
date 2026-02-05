@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import urllib.parse
 import sys
@@ -8,11 +8,11 @@ import sys
 # wurden.
 
 if len(sys.argv) > 1:
-	for i in sys.argv[1:]:
-		print(urllib.parse.unquote(i))
+    for i in sys.argv[1:]:
+        print(urllib.parse.unquote(i))
 else:
-	for i in sys.stdin:
-		print(urllib.parse.unquote(i), end='')
+    for i in sys.stdin:
+        print(urllib.parse.unquote(i), end="")
 
 
 #
@@ -26,4 +26,3 @@ else:
 # pizza in return.
 # ------------------------------------------------------------------
 #
-

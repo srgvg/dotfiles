@@ -12,8 +12,9 @@ version = "3.3.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.14"
+version = "2.33.15"
 backend = "aqua:aws/aws-cli"
+"platforms.linux-x64" = { checksum = "blake3:88c73aa61dc0504b91eb724a03809a02b73b5c391a0f2ec52be6ca8d4e10e4d1", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.15.zip"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -138,8 +139,9 @@ version = "1.82.0"
 backend = "gitlab:gitlab-org/cli"
 
 [[tools.go]]
-version = "1.25.6"
+version = "1.25.7"
 backend = "core:go"
+"platforms.linux-x64" = { checksum = "sha256:12e6d6a191091ae27dc31f6efc630e3a3b8ba409baf3573d955b196fdf086005", url = "https://dl.google.com/go/go1.25.7.linux-amd64.tar.gz"}
 
 [[tools.go-containerregistry]]
 version = "0.20.7"
@@ -300,7 +302,7 @@ version = "3.11.10"
 backend = "aqua:FairwindsOps/nova"
 
 [[tools.npm]]
-version = "11.8.0"
+version = "11.9.0"
 backend = "npm:npm"
 
 [[tools.nsc]]
@@ -368,8 +370,9 @@ backend = "github:gabm/Satty"
 exe = "satty"
 
 [[tools.scaleway-cli]]
-version = "2.51.0"
+version = "2.52.0"
 backend = "aqua:scaleway/scaleway-cli"
+"platforms.linux-x64" = { checksum = "sha256:5c032e93cbb76ede358bfb1a77b278b60cb66f8b5970235781603dcadb9485f8", url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.52.0/scaleway-cli_2.52.0_linux_amd64"}
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
@@ -414,8 +417,9 @@ version = "2.16.1"
 backend = "aqua:jdx/usage"
 
 [[tools.uv]]
-version = "0.9.29"
+version = "0.9.30"
 backend = "aqua:astral-sh/uv"
+"platforms.linux-x64" = { checksum = "sha256:1caf8fe092e2005dd4c134ba515c1aa3eea3d3c143f8a1903bcb58fcdf169365", url = "https://github.com/astral-sh/uv/releases/download/0.9.30/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
 version = "0.31.0"
