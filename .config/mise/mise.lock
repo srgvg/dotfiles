@@ -2,19 +2,14 @@
 version = "1.3.1"
 backend = "aqua:FiloSottile/age"
 
-[[tools."aqua:neovim/neovim"]]
-version = "0.11.6"
-backend = "aqua:neovim/neovim"
-"platforms.linux-x64" = { checksum = "sha256:2fc90b962327f73a78afbfb8203fd19db8db9cdf4ee5e2bef84704339add89cc", url = "https://github.com/neovim/neovim/releases/download/v0.11.6/nvim-linux-x86_64.tar.gz"}
-
 [[tools.argocd]]
 version = "3.3.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.15"
+version = "2.33.17"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:88c73aa61dc0504b91eb724a03809a02b73b5c391a0f2ec52be6ca8d4e10e4d1", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.15.zip"}
+"platforms.linux-x64" = { checksum = "blake3:4c9a6abfb0f1d2d6cf5f0827a68300e707967b6283dccd4809f517e985ef5eb5", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.17.zip"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -25,8 +20,9 @@ version = "0.26.1"
 backend = "aqua:sharkdp/bat"
 
 [[tools.bitwarden]]
-version = "2025.12.1"
+version = "2026.1.0"
 backend = "aqua:bitwarden/clients"
+"platforms.linux-x64" = { checksum = "sha256:1d7b44c94b17a0a6c1264ba529f94b8b50fe059ab08d20aa5a5cbfdd25084aab", url = "https://github.com/bitwarden/clients/releases/download/cli-v2026.1.0/bw-linux-2026.1.0.zip"}
 
 [[tools.btop]]
 version = "1.4.6"
@@ -82,8 +78,9 @@ version = "1.10.3"
 backend = "aqua:homeport/dyff"
 
 [[tools.eksctl]]
-version = "0.221.0"
+version = "0.222.0"
 backend = "aqua:eksctl-io/eksctl"
+"platforms.linux-x64" = { checksum = "sha256:e7d9e9586c0bfef6fd386be8fcd314234be687d39ff6dcf801ebe938cb13ff7e", url = "https://github.com/eksctl-io/eksctl/releases/download/v0.222.0/eksctl_Linux_amd64.tar.gz"}
 
 [[tools.fd]]
 version = "10.3.0"
@@ -125,13 +122,18 @@ backend = "github:sinclairtarget/git-who"
 version = "2.86.0"
 backend = "aqua:cli/cli"
 
+[[tools."github:gruntwork-io/git-xargs"]]
+version = "0.1.16"
+backend = "github:gruntwork-io/git-xargs"
+
 [[tools."github:jedi4ever/addt"]]
 version = "0.0.9"
 backend = "github:jedi4ever/addt"
 
 [[tools."github:vicanso/zedis"]]
-version = "0.2.1"
+version = "0.2.3"
 backend = "github:vicanso/zedis"
+"platforms.linux-x64" = { checksum = "sha256:769e6b694659d7ccea54b1f10e21fafbcb19c26e639a0b42adb7df6d7f2726da", url = "https://github.com/vicanso/zedis/releases/download/v0.2.3/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/352162483"}
 
 [[tools."github:zitadel/zitadel"]]
 version = "4.10.1"
@@ -331,16 +333,13 @@ version = "5.22.7"
 backend = "aqua:FairwindsOps/pluto"
 
 [[tools.pnpm]]
-version = "10.28.2"
+version = "10.29.1"
 backend = "aqua:pnpm/pnpm"
+"platforms.linux-x64" = { checksum = "sha256:df728857c759d9d355b245ae889aee1c54a634d51486e76d1ecaaaead26569b2", url = "https://github.com/pnpm/pnpm/releases/download/v10.29.1/pnpm-linux-x64"}
 
 [[tools.popeye]]
 version = "0.22.1"
 backend = "aqua:derailed/popeye"
-
-[[tools.python]]
-version = "3.14.3"
-backend = "core:python"
 
 [[tools.rbac-lookup]]
 version = "0.10.3"
@@ -367,11 +366,8 @@ version = "1.93.0"
 backend = "core:rust"
 
 [[tools.satty]]
-version = "0.20.0"
+version = "0.20.1"
 backend = "github:gabm/Satty"
-
-[tools.satty.options]
-exe = "satty"
 
 [[tools.scaleway-cli]]
 version = "2.52.0"
@@ -407,9 +403,9 @@ version = "3.1.3"
 backend = "aqua:budimanjojo/talhelper"
 
 [[tools.talosctl]]
-version = "1.12.2"
+version = "1.12.3"
 backend = "aqua:siderolabs/talos"
-"platforms.linux-x64-talosctl-talosctl" = { checksum = "blake3:4e0d87a659e2d62120a8b8b1b1efc2e2dc22703c4b5941ddefaee70b8e39544b"}
+"platforms.linux-x64" = { checksum = "sha256:1b761b351964dcf764d3ec1a02ccd366428be22895a68dc641b6b4fa301589ed", url = "https://github.com/siderolabs/talos/releases/download/v1.12.3/talosctl-linux-amd64"}
 
 [[tools.updatecli]]
 version = "0.113.0"
@@ -421,9 +417,9 @@ version = "2.16.1"
 backend = "aqua:jdx/usage"
 
 [[tools.uv]]
-version = "0.9.30"
+version = "0.10.0"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-x64" = { checksum = "sha256:1caf8fe092e2005dd4c134ba515c1aa3eea3d3c143f8a1903bcb58fcdf169365", url = "https://github.com/astral-sh/uv/releases/download/0.9.30/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:312d37f31b6f2c3bfc65668ba0efea9f1f9eaf7bc3209fe1a109e5cf861b95fa", url = "https://github.com/astral-sh/uv/releases/download/0.10.0/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
 version = "0.31.0"
@@ -432,6 +428,10 @@ backend = "aqua:loft-sh/vcluster"
 [[tools.velero]]
 version = "1.17.2"
 backend = "aqua:vmware-tanzu/velero"
+
+[[tools."vfox:mise-plugins/vfox-neovim"]]
+version = "0.11.6"
+backend = "vfox:mise-plugins/vfox-neovim"
 
 [[tools.yamlfmt]]
 version = "0.21.0"

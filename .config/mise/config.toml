@@ -7,6 +7,7 @@ exec_auto_install = true
 experimental = true
 lockfile = true
 log_level = "error"
+disable_backends = ["asdf"]
 
 [settings.status]
 show_env = true
@@ -108,12 +109,12 @@ kustomize                                       = { version = "latest" }
 nats-server                                     = { version = "latest", exe = "nats-server" }
 nats-cli                                        = { version = "latest", exe = "nats" }
 nats-top                                        = { version = "latest" }
-"aqua:neovim/neovim"                            = "latest"
+"vfox:mise-plugins/vfox-neovim"                 = { version = "latest" }
 node                                            = { version = "latest" }
 nova                                            = { version = "latest" }
 npm                                             = { version = "latest" }
 nsc                                             = { version = "latest" }
-"go:github.com/nats-io/nkeys/nk"                = "latest"
+"go:github.com/nats-io/nkeys/nk"                = { version = "latest" }
 oras                                            = { version = "latest", exe = "oras" }
 osv-scanner                                     = { version = "latest" }
 pkl                                             = { version = "latest", exe = "pkl" }
@@ -147,3 +148,4 @@ yq                                              = { version = "latest" }
 "github:vicanso/zedis"                          = "latest"
 "github:zitadel/zitadel"                        = "latest"
 "github:jedi4ever/addt" = "latest"
+"github:gruntwork-io/git-xargs" = "latest"

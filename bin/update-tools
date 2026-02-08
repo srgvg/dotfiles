@@ -363,8 +363,8 @@ get_mise() {
     # https://github.com/mise-plugins/mise-gcloud/issues/2
     export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
     mise settings lockfile=true
-    mise self-update --yes --no-plugins
-    mise plugins update
+    mise self-update --yes --no-plugins --verbose
+    mise plugins update --verbose
     mise outdated --verbose
     mise cache prune --verbose
     mise upgrade --yes --jobs 8
