@@ -23,7 +23,7 @@ _satty() {
 
     case "${cmd}" in
         satty)
-            opts="-c -f -o -d -h -V --config --filename --fullscreen --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --save-after-copy --actions-on-enter --actions-on-escape --actions-on-right-click --default-hide-toolbars --focus-toggles-toolbars --default-fill-shapes --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --no-window-decoration --brush-smooth-history-size --right-click-copy --action-on-enter --help --version"
+            opts="-c -f -o -d -h -V --config --filename --fullscreen --resize --floating-hack --output-filename --early-exit --early-exit-save-as --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --save-after-copy --actions-on-enter --actions-on-escape --actions-on-right-click --default-hide-toolbars --focus-toggles-toolbars --default-fill-shapes --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --no-window-decoration --brush-smooth-history-size --zoom-factor --pan-step-size --text-move-length --input-scale --right-click-copy --action-on-enter --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -42,6 +42,14 @@ _satty() {
                     return 0
                     ;;
                 -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --fullscreen)
+                    COMPREPLY=($(compgen -W "all current-screen" -- "${cur}"))
+                    return 0
+                    ;;
+                --resize)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -74,15 +82,15 @@ _satty() {
                     return 0
                     ;;
                 --actions-on-enter)
-                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file save-to-file-as copy-filepath-to-clipboard exit" -- "${cur}"))
                     return 0
                     ;;
                 --actions-on-escape)
-                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file save-to-file-as copy-filepath-to-clipboard exit" -- "${cur}"))
                     return 0
                     ;;
                 --actions-on-right-click)
-                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file save-to-file-as copy-filepath-to-clipboard exit" -- "${cur}"))
                     return 0
                     ;;
                 --font-family)
@@ -101,8 +109,24 @@ _satty() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --zoom-factor)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --pan-step-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --text-move-length)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --input-scale)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --action-on-enter)
-                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file exit" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "save-to-clipboard save-to-file save-to-file-as copy-filepath-to-clipboard exit" -- "${cur}"))
                     return 0
                     ;;
                 *)

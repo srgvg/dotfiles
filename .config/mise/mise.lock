@@ -29,8 +29,9 @@ version = "1.4.6"
 backend = "aqua:aristocratos/btop"
 
 [[tools.bun]]
-version = "1.3.8"
+version = "1.3.9"
 backend = "core:bun"
+"platforms.linux-x64" = { checksum = "blake3:b1ef93f3692471e33b5b5ee7052299328b07bd0be8e6d24479978bd33beb9f26"}
 
 [[tools.cilium-cli]]
 version = "0.19.0"
@@ -74,8 +75,9 @@ version = "1.150.0"
 backend = "aqua:digitalocean/doctl"
 
 [[tools.dyff]]
-version = "1.10.3"
+version = "1.10.4"
 backend = "aqua:homeport/dyff"
+"platforms.linux-x64" = { checksum = "sha256:1d9394a561c3dbd1c9b3bc147dcb0ade27de5d245db8ac7e93a0ba13fa25948e", url = "https://github.com/homeport/dyff/releases/download/v1.10.4/dyff_1.10.4_linux_amd64.tar.gz"}
 
 [[tools.eksctl]]
 version = "0.222.0"
@@ -174,8 +176,9 @@ version = "1.18.5"
 backend = "github:cilium/hubble"
 
 [[tools.hugo]]
-version = "0.155.2"
+version = "0.155.3"
 backend = "aqua:gohugoio/hugo"
+"platforms.linux-x64" = { checksum = "sha256:6c280fb8aae09b0dea9a83dbb6c3429bf7fd683839b454bd00c4e21f60440c45", url = "https://github.com/gohugoio/hugo/releases/download/v0.155.3/hugo_0.155.3_linux-amd64.tar.gz"}
 
 [[tools.hurl]]
 version = "7.1.0"
@@ -333,9 +336,9 @@ version = "5.22.7"
 backend = "aqua:FairwindsOps/pluto"
 
 [[tools.pnpm]]
-version = "10.29.1"
+version = "10.29.2"
 backend = "aqua:pnpm/pnpm"
-"platforms.linux-x64" = { checksum = "sha256:df728857c759d9d355b245ae889aee1c54a634d51486e76d1ecaaaead26569b2", url = "https://github.com/pnpm/pnpm/releases/download/v10.29.1/pnpm-linux-x64"}
+"platforms.linux-x64" = { checksum = "sha256:f9a8e1652b83884da6a3c174f504220015001144cee8733c07df68c598d4c43a", url = "https://github.com/pnpm/pnpm/releases/download/v10.29.2/pnpm-linux-x64"}
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -399,8 +402,9 @@ version = "1.5.0"
 backend = "aqua:yorukot/superfile"
 
 [[tools.talhelper]]
-version = "3.1.3"
+version = "3.1.4"
 backend = "aqua:budimanjojo/talhelper"
+"platforms.linux-x64" = { checksum = "sha256:3cf5935edb1eeb8253f6c02e5ca26a810ea054554ed13e587687553389a19a8b", url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.4/talhelper_linux_amd64.tar.gz"}
 
 [[tools.talosctl]]
 version = "1.12.3"
@@ -429,6 +433,10 @@ backend = "aqua:loft-sh/vcluster"
 version = "1.17.2"
 backend = "aqua:vmware-tanzu/velero"
 
+[[tools.vfox]]
+version = "1.0.5"
+backend = "aqua:version-fox/vfox"
+
 [[tools."vfox:mise-plugins/vfox-neovim"]]
 version = "0.11.6"
 backend = "vfox:mise-plugins/vfox-neovim"
@@ -440,6 +448,7 @@ backend = "aqua:google/yamlfmt"
 [[tools.yazi]]
 version = "26.1.22"
 backend = "aqua:sxyazi/yazi"
+"platforms.linux-x64" = { checksum = "sha256:b977351968206c0b78d2ef5bf21351685cc191b58a4c7e1c98c37db5d0a381f8", url = "https://github.com/sxyazi/yazi/releases/download/v26.1.22/yazi-x86_64-unknown-linux-musl.zip"}
 
 [[tools.yq]]
 version = "4.52.2"

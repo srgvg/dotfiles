@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -o nounset
+set -o errexit
+set -o pipefail
+
+###############################################################################
+
+# wipe-removable
+# - Accepts "sdc" or "/dev/sdc"
+# - If no argument: lists block devices (fixed + removable for reference),
+#   but only allows selecting REMOVABLE ones (USB sticks, SD card readers, etc.)
+#
+# Usage:
+#   ./wipe-removable            # interactive (removable only)
+#   ./wipe-removable sdc        # direct
+#   ./wipe-removable /dev/sdc   # direct
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+is_whole_disk_name() {
+    local d="$1"
+    # allow: sdX, vdX, xvdX, nvmeXnY, mmcblkN
+    [[ "$d" =~ ^sd[a-z]+$ ]] || [[ "$d" =~ ^vd[a-z]+$ ]] || [[ "$d" =~ ^xvd[a-z]+$ ]] ||
+        [[ "$d" =~ ^nvme[0-9]+n[0-9]+$ ]] || [[ "$d" =~ ^mmcblk[0-9]+$ ]]
+}
+
+normalize_dev() {
+    local in="$1"
+    # strip /dev/ if given
+    in="${in#/dev/}"
+    echo "$in"
+}
+
+sys_block_path() {
+    local name="$1"
+    echo "/sys/block/$name"
+}
+
+is_removable() {
+    local name="$1"
+    local p
+    p="$(sys_block_path "$name")"
+    [[ -r "$p/removable" ]] || return 1
+    [[ "$(cat "$p/removable")" == "1" ]]
+}
+
+list_all_devices() {
+    # Reference list (shows fixed + removable)
+    # Exclude noisy pseudo devices
+    lsblk -d -o NAME,MODEL,SIZE,ROTA,HOTPLUG,RM,TRAN,TYPE |
+        awk 'NR==1 || ($1 !~ /^(loop|ram|zram|dm-|md)/ && $NF=="disk")'
+}
+
+list_removable_candidates() {
+    # Candidates = disks with RM=1 or /sys/block/*/removable=1 (prefer sysfs)
+    # Exclude loop/dm/md/etc
+    lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}' |
+        grep -Ev '^(loop|ram|zram|dm-|md)' |
+        while read -r d; do
+            if [[ -b "/dev/$d" ]] && is_removable "$d"; then
+                echo "$d"
+            fi
+        done
+}
+
+pick_device_interactive() {
+    echo "Block devices (reference):" >&2
+    list_all_devices >&2
+    echo >&2
+    echo "Removable candidates (allowed targets):" >&2
+    local cands=()
+    while read -r d; do
+        [[ -n "$d" ]] && cands+=("$d")
+    done < <(list_removable_candidates)
+
+    # Warn about removable devices with missing/corrupt /dev nodes
+    while read -r d; do
+        if [[ ! -b "/dev/$d" ]] && is_removable "$d"; then
+            echo "  SKIPPED: /dev/$d exists but is not a block device ($(stat -c '%F' "/dev/$d" 2>/dev/null || echo 'missing'))" >&2
+            echo "           Fix: sudo rm /dev/$d && sudo udevadm trigger --subsystem-match=block" >&2
+        fi
+    done < <(lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}' | grep -Ev '^(loop|ram|zram|dm-|md)')
+
+    if [[ "${#cands[@]}" -eq 0 ]]; then
+        die "No removable block devices detected."
+    fi
+
+    for d in "${cands[@]}"; do
+        # show nice per-device line
+        lsblk -d -o NAME,MODEL,SIZE,TRAN,RM,HOTPLUG "/dev/$d" | tail -n +2 | sed 's/^/  /' >&2
+    done
+    echo >&2
+    read -r -p "Enter device NAME to wipe (e.g. sdc): " ans >&2
+    ans="$(normalize_dev "$ans")"
+    echo "$ans"
+}
+
+assert_safe_target() {
+    local name="$1"
+    is_whole_disk_name "$name" || die "Invalid device name '$name' (need whole disk like sdc, nvme0n1, mmcblk0)."
+
+    if [[ ! -b "/dev/$name" ]]; then
+        if [[ -e "/dev/$name" ]]; then
+            die "/dev/$name exists but is not a block device ($(stat -c '%F' "/dev/$name")). Fix: sudo rm /dev/$name && sudo udevadm trigger --subsystem-match=block"
+        else
+            die "/dev/$name does not exist."
+        fi
+    fi
+
+    # Do not allow partitions as input
+    if [[ "$name" =~ ^sd[a-z]+[0-9]+$ ]] || [[ "$name" =~ ^nvme[0-9]+n[0-9]+p[0-9]+$ ]] || [[ "$name" =~ ^mmcblk[0-9]+p[0-9]+$ ]]; then
+        die "Give the WHOLE disk (e.g. sdc), not a partition."
+    fi
+
+    # Hard gate: only removable devices are allowed
+    is_removable "$name" || die "/dev/$name is NOT marked removable by the kernel. Refusing."
+}
+
+wipe_device() {
+    local DEV="/dev/$1"
+
+    echo "Target: $DEV"
+    lsblk -o NAME,MODEL,SIZE,TYPE,MOUNTPOINT,FSTYPE,UUID "$DEV"
+    echo
+    read -r -p "Type YES to WIPE $DEV permanently: " ans
+    [[ "$ans" == "YES" ]] || die "Aborted."
+
+    echo "==> Unmounting anything on $DEV..."
+    while read -r mp; do
+        [[ -n "$mp" ]] || continue
+        echo "  umount $mp"
+        umount -fl "$mp" || true
+    done < <(lsblk -nrpo MOUNTPOINT "$DEV" | sed '/^$/d')
+
+    echo "==> Disabling swap on partitions (if any)..."
+    while read -r part; do
+        [[ -b "$part" ]] || continue
+        if swapon --show=NAME --noheadings | grep -qx "$part"; then
+            echo "  swapoff $part"
+            swapoff "$part" || true
+        fi
+    done < <(lsblk -nrpo PATH "$DEV" | tail -n +2)
+
+    echo "==> Flushing I/O..."
+    sync
+    blockdev --flushbufs "$DEV" || true
+
+    echo "==> Settling udev + nudging kernel to drop stale partition state..."
+    partprobe "$DEV" 2>/dev/null || true
+    udevadm settle || true
+
+    echo "==> Wiping signatures (disk + any visible partitions)..."
+    wipefs -a "$DEV" || true
+    while read -r part; do
+        [[ -b "$part" ]] || continue
+        wipefs -a "$part" || true
+    done < <(lsblk -nrpo PATH "$DEV" | tail -n +2)
+
+    echo "==> Killing partition tables (GPT/MBR) with sgdisk if available..."
+    if command -v sgdisk >/dev/null 2>&1; then
+        sgdisk --zap-all "$DEV" || true
+        sgdisk --clear "$DEV" >/dev/null 2>&1 || true
+    else
+        echo "  (sgdisk not found; using dd fallback only)"
+    fi
+
+    echo "==> Wiping first and last 16 MiB (bootloader areas, stray metadata)..."
+    dd if=/dev/zero of="$DEV" bs=1M count=16 conv=fsync status=progress
+
+    local sectors
+    local tail_sectors
+    local seek
+    sectors=$(blockdev --getsz "$DEV") || die "blockdev --getsz failed"
+    tail_sectors=32768 # 16MiB in 512B sectors
+    if ((sectors > tail_sectors)); then
+        seek=$((sectors - tail_sectors))
+        dd if=/dev/zero of="$DEV" bs=512 seek="$seek" count="$tail_sectors" conv=fsync status=progress
+    else
+        echo "  Disk too small to wipe last 16MiB; skipping tail wipe."
+    fi
+
+    echo "==> Final sync + tell kernel to re-read partition table (flush host-side caches)..."
+    sync
+    blockdev --flushbufs "$DEV" || true
+    partprobe "$DEV" 2>/dev/null || true
+    blockdev --rereadpt "$DEV" 2>/dev/null || true
+    udevadm settle || true
+
+    echo "==> Result:"
+    lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT "$DEV"
+    echo "Done."
+}
+
+main() {
+    if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+        exec sudo "$(readlink -f "$0")" "$@"
+    fi
+
+    local arg="${1:-}"
+    local name=""
+    if [[ -z "$arg" ]]; then
+        name="$(pick_device_interactive)"
+    else
+        name="$(normalize_dev "$arg")"
+    fi
+
+    assert_safe_target "$name"
+    wipe_device "$name"
+}
+
+main "$@"
