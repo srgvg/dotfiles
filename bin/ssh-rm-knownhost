@@ -1,5 +1,7 @@
 #!/bin/sh
 
 ssh-keygen -R $1
-ip=$(dig +short $1)
-[ ! -z "$ip" ] && ssh-keygen -R $ip
+ips=$(dig +short $1)
+for ip in $ips; do
+    [ ! -z "$ip" ] && ssh-keygen -R $ip
+done

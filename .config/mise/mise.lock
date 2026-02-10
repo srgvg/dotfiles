@@ -7,9 +7,9 @@ version = "3.3.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.17"
+version = "2.33.18"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:4c9a6abfb0f1d2d6cf5f0827a68300e707967b6283dccd4809f517e985ef5eb5", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.17.zip"}
+"platforms.linux-x64" = { checksum = "blake3:fba1c26aa994ec62a39e5a56ce04b76ffb05986356fa9c491590c6c5f42a42ef", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.18.zip"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -22,7 +22,6 @@ backend = "aqua:sharkdp/bat"
 [[tools.bitwarden]]
 version = "2026.1.0"
 backend = "aqua:bitwarden/clients"
-"platforms.linux-x64" = { checksum = "sha256:1d7b44c94b17a0a6c1264ba529f94b8b50fe059ab08d20aa5a5cbfdd25084aab", url = "https://github.com/bitwarden/clients/releases/download/cli-v2026.1.0/bw-linux-2026.1.0.zip"}
 
 [[tools.btop]]
 version = "1.4.6"
@@ -38,8 +37,9 @@ version = "0.19.0"
 backend = "aqua:cilium/cilium-cli"
 
 [[tools.cilium-hubble]]
-version = "1.18.5"
+version = "1.18.6"
 backend = "github:cilium/hubble"
+"platforms.linux-x64" = { checksum = "sha256:93080f029b96ddf9c3513dc74b15b578190e206410f8f596ae404474f2ff2168", url = "https://github.com/cilium/hubble/releases/download/v1.18.6/hubble-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/cilium/hubble/releases/assets/351253482"}
 
 [[tools.civo]]
 version = "1.4.7"
@@ -68,7 +68,6 @@ backend = "aqua:direnv/direnv"
 [[tools.docker-compose]]
 version = "2.30.3"
 backend = "aqua:docker/compose"
-"platforms.linux-x64" = { checksum = "sha256:fbb4853d3f2148b0f2f0916f8971c9e500784e4e4949324934fc0b7dc2ed5016", url = "https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64", url_api = "https://api.github.com/repos/docker/compose/releases/assets/204800714"}
 
 [[tools.doctl]]
 version = "1.150.0"
@@ -127,6 +126,7 @@ backend = "aqua:cli/cli"
 [[tools."github:gruntwork-io/git-xargs"]]
 version = "0.1.16"
 backend = "github:gruntwork-io/git-xargs"
+"platforms.linux-x64" = { checksum = "sha256:0df4e37853249bf7ba0ff35066dedc8beb02a0660988414a07527f1a6bada984", url = "https://github.com/gruntwork-io/git-xargs/releases/download/v0.1.16/git-xargs_linux_amd64", url_api = "https://api.github.com/repos/gruntwork-io/git-xargs/releases/assets/237209725"}
 
 [[tools."github:jedi4ever/addt"]]
 version = "0.0.9"
@@ -140,7 +140,6 @@ backend = "github:vicanso/zedis"
 [[tools."github:zitadel/zitadel"]]
 version = "4.10.1"
 backend = "github:zitadel/zitadel"
-"platforms.linux-x64" = { checksum = "sha256:751a268f4fbb6f781fd27700b3cf7acdf9039ec6794d2bb7f3b612039d5c8743", url = "https://github.com/zitadel/zitadel/releases/download/v4.10.1/zitadel-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/348073143"}
 
 [[tools.gitlab-cli]]
 version = "1.82.0"
@@ -149,7 +148,6 @@ backend = "gitlab:gitlab-org/cli"
 [[tools.go]]
 version = "1.25.7"
 backend = "core:go"
-"platforms.linux-x64" = { checksum = "sha256:12e6d6a191091ae27dc31f6efc630e3a3b8ba409baf3573d955b196fdf086005", url = "https://dl.google.com/go/go1.25.7.linux-amd64.tar.gz"}
 
 [[tools.go-containerregistry]]
 version = "0.20.7"
@@ -173,8 +171,9 @@ backend = "aqua:helm/helm"
 "platforms.linux-x64" = { checksum = "sha256:5d4c7623283e6dfb1971957f4b755468ab64917066a8567dd50464af298f4031", url = "https://get.helm.sh/helm-v4.1.1-linux-amd64.tar.gz"}
 
 [[tools.hubble]]
-version = "1.18.5"
+version = "1.18.6"
 backend = "github:cilium/hubble"
+"platforms.linux-x64" = { checksum = "sha256:93080f029b96ddf9c3513dc74b15b578190e206410f8f596ae404474f2ff2168", url = "https://github.com/cilium/hubble/releases/download/v1.18.6/hubble-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/cilium/hubble/releases/assets/351253482"}
 
 [[tools.hugo]]
 version = "0.155.3"
@@ -215,7 +214,6 @@ backend = "aqua:noahgorstein/jqp"
 [[tools.k9s]]
 version = "0.50.18"
 backend = "aqua:derailed/k9s"
-"platforms.linux-x64-k9s" = { checksum = "blake3:d376371b07176367401ebdf14b9dc192ccc2db42e6d58d799bb90d8d4720faef"}
 
 [[tools.kind]]
 version = "0.31.0"
@@ -232,6 +230,7 @@ backend = "github:BeryJu/korb"
 [[tools.krew]]
 version = "0.4.5"
 backend = "aqua:kubernetes-sigs/krew"
+"platforms.linux-x64" = { checksum = "sha256:bacc06800bda14ec063cd0b6f377a961fdf4661c00366bf9834723cd28bfabc7", url = "https://github.com/kubernetes-sigs/krew/releases/download/v0.4.5/krew-linux_amd64.tar.gz"}
 
 [[tools.kube-capacity]]
 version = "0.8.0"
@@ -248,7 +247,6 @@ backend = "aqua:kubernetes-sigs/kubebuilder"
 [[tools.kubecolor]]
 version = "0.5.3"
 backend = "aqua:kubecolor/kubecolor"
-"platforms.linux-x64-kubecolor" = { checksum = "blake3:59e757a2bc399b1f968beb725643f47e518f124dac6815de584df3a2940d35ec"}
 
 [[tools.kubeconform]]
 version = "0.7.0"
@@ -306,7 +304,6 @@ backend = "github:nats-io/nats-top"
 [[tools.node]]
 version = "25.6.0"
 backend = "core:node"
-"platforms.linux-x64" = { checksum = "sha256:a218fdaee14cb399f6b33925d4615a4046ba8db144f6e883c3b81e78937429eb", url = "https://nodejs.org/dist/v25.6.0/node-v25.6.0-linux-x64.tar.gz"}
 
 [[tools.nova]]
 version = "3.11.10"
@@ -331,7 +328,6 @@ backend = "aqua:google/osv-scanner"
 [[tools.pkl]]
 version = "0.30.2"
 backend = "aqua:apple/pkl"
-"platforms.linux-x64" = { checksum = "sha256:1472b8b4a6bf703f6df9ed6957cc93794f9d3a2d6f1a735f4c09f563d036e997", url = "https://github.com/apple/pkl/releases/download/0.30.2/pkl-alpine-linux-amd64", url_api = "https://api.github.com/repos/apple/pkl/releases/assets/329030475"}
 
 [[tools.pluto]]
 version = "5.22.7"
@@ -373,11 +369,11 @@ backend = "core:rust"
 [[tools.satty]]
 version = "0.20.1"
 backend = "github:gabm/Satty"
+"platforms.linux-x64-satty-satty" = { checksum = "blake3:7a3d46e06c57143bdd42258430a3d341c85f0cfe684b71469dfa54021ae2e196"}
 
 [[tools.scaleway-cli]]
 version = "2.52.0"
 backend = "aqua:scaleway/scaleway-cli"
-"platforms.linux-x64" = { checksum = "sha256:5c032e93cbb76ede358bfb1a77b278b60cb66f8b5970235781603dcadb9485f8", url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.52.0/scaleway-cli_2.52.0_linux_amd64"}
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
@@ -416,7 +412,6 @@ backend = "aqua:siderolabs/talos"
 [[tools.updatecli]]
 version = "0.113.0"
 backend = "aqua:updatecli/updatecli"
-"platforms.linux-x64" = { checksum = "sha256:480e4678757971d7050a81ff08fa057684aaf5cb563270ea2684c8aee11433c8", url = "https://github.com/updatecli/updatecli/releases/download/v0.113.0/updatecli_Linux_x86_64.tar.gz", url_api = "https://api.github.com/repos/updatecli/updatecli/releases/assets/339377193"}
 
 [[tools.usage]]
 version = "2.16.1"
@@ -425,7 +420,6 @@ backend = "aqua:jdx/usage"
 [[tools.uv]]
 version = "0.10.0"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-x64" = { checksum = "sha256:312d37f31b6f2c3bfc65668ba0efea9f1f9eaf7bc3209fe1a109e5cf861b95fa", url = "https://github.com/astral-sh/uv/releases/download/0.10.0/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
 version = "0.31.0"
@@ -451,7 +445,6 @@ backend = "aqua:google/yamlfmt"
 [[tools.yazi]]
 version = "26.1.22"
 backend = "aqua:sxyazi/yazi"
-"platforms.linux-x64" = { checksum = "sha256:b977351968206c0b78d2ef5bf21351685cc191b58a4c7e1c98c37db5d0a381f8", url = "https://github.com/sxyazi/yazi/releases/download/v26.1.22/yazi-x86_64-unknown-linux-musl.zip"}
 
 [[tools.yq]]
 version = "4.52.2"
