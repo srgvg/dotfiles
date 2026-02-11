@@ -36,7 +36,7 @@ notify_debug "current players, active first: ${PLAYERS}"
 
 if [ "${MY_WM}" = "sway" ]
 then
-	selected_player="$(set -x; echo "$PLAYERS" |  (wofi --dmenu -p "Select audio player: " -l 20||:) | awk '{print $1}')"
+	selected_player="$(echo "$PLAYERS" |  (wofi --dmenu -p "Select audio player: " -l 20||:) | awk '{print $1}')"
 else
 	selected_player="$(echo "$PLAYERS" |  (rofi -dmenu -p "Select audio player: " -l 20 || wofi --dmenu -p "Select audio player: " -l 20||:) | awk '{print $1}')"
 fi

@@ -62,22 +62,41 @@ case ${1:-} in
         ;;
     now_playing)
         output=""
-        player=""
-        player0=$(cat $HOME/.playerctl_active)
-        if [ -n "$player0" ]; then
-            stat=""
-            player="$(echo -n $player0 | tr '[:upper:]' '[:lower:]')"
-            pplayer="-p $player"
-            state="$(playerctl $pplayer status 2>&1 || :)"
+        statusfile="$HOME/.playerctl_active"
+        player="$(head -n 1 "$statusfile" 2>/dev/null || :)"
 
-            if [ "${state}" = "Playing" ]; then
+        # Find a currently playing player (replicates wrapper logic)
+        playing=""
+        players="$(/usr/bin/playerctl --list-all 2>/dev/null || :)"
+        if [ -n "$players" ] && [ "$players" != "No players found" ]; then
+            for p in $players; do
+                if [ "$(/usr/bin/playerctl --player "$p" status 2>/dev/null || :)" = "Playing" ]; then
+                    playing="$p"
+                    break
+                fi
+            done
+        fi
+
+        # Auto-switch: active player dead or different player is playing
+        if [ -z "$player" ] || ! /usr/bin/playerctl --player "$player" status &>/dev/null; then
+            player="$playing"
+            echo "$player" > "$statusfile"
+        elif [ -n "$playing" ] && [ "$player" != "$playing" ]; then
+            player="$playing"
+            echo "$player" > "$statusfile"
+        fi
+
+        if [ -n "$player" ]; then
+            state="$(/usr/bin/playerctl --player "$player" status 2>/dev/null || :)"
+
+            if [ "$state" = "Playing" ]; then
                 stat="▶  "
-                if [ "${player}" = "vlc" ]; then
-                    title="$(playerctl $pplayer metadata vlc:nowplaying 2>/dev/null || :)"
-                    artist="$(playerctl $pplayer metadata xesam:title 2>/dev/null || :)"
+                if [ "$player" = "vlc" ]; then
+                    title="$(/usr/bin/playerctl --player "$player" metadata vlc:nowplaying 2>/dev/null || :)"
+                    artist="$(/usr/bin/playerctl --player "$player" metadata xesam:title 2>/dev/null || :)"
                 else
-                    artist="$(playerctl $pplayer metadata xesam:artist 2>/dev/null || :)"
-                    title="$(playerctl $pplayer metadata xesam:title 2>/dev/null || :)"
+                    artist="$(/usr/bin/playerctl --player "$player" metadata xesam:artist 2>/dev/null || :)"
+                    title="$(/usr/bin/playerctl --player "$player" metadata xesam:title 2>/dev/null || :)"
                 fi
                 if [ -n "$artist" ]; then
                     if [ -n "$title" ]; then
@@ -92,12 +111,12 @@ case ${1:-} in
                     fi
                 fi
                 output="${player} ${stat}${artist}${title}"
-            elif [ "${state}" = "Paused" ]; then
-                stat="▌▌ "
-                output="${player} ${stat}"
-            elif [ "${state}" = "Stopped" ]; then
-                stat="◼ "
-                output="${player} ${stat}"
+            elif [ "$state" = "Paused" ]; then
+                output="${player} ▌▌ "
+            elif [ "$state" = "Stopped" ]; then
+                output="${player} ◼ "
+            else
+                output="${player} ◼ "
             fi
         else
             output="◼ "

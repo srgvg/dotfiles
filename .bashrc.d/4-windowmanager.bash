@@ -1,9 +1,3 @@
-# window manager specifics
-# NOTE: Interactive shell guard added to prevent wmctrl execution
-# in non-interactive shells (scripts, automation). This improves
-# performance and prevents unnecessary process spawning.
-[[ $- != *i* ]] && return
-
 wm="$(wmctrl -m 2>/dev/null || : | grep Name: || : | cut -d: -f2)"
 if [[ "${wm}" =~ "wlroots" ]]; then
     export MY_WM="sway"
@@ -18,7 +12,7 @@ if [[ "${wm}" =~ "wlroots" ]]; then
     export TERMINAL="alacritty"
     export MOZ_ENABLE_WAYLAND=1
     export WLR_DRM_NO_MODIFIERS=1
-    systemctl --user import-environment XDG_SESSION_TYPE XDG_CURRENT_DESKTOP
+    [[ $- == *i* ]] && systemctl --user import-environment XDG_SESSION_TYPE XDG_CURRENT_DESKTOP
 elif [[ "${wm}" =~ "i3" ]]; then
     export MY_WM="i3"
     unset XDG_CURRENT_DESKTOP
