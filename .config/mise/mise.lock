@@ -7,9 +7,9 @@ version = "3.3.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.20"
+version = "2.33.22"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:2a97ffbea262146586fc40b395637bc8df12427a7986083b881bd09c7c2c2137", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.20.zip"}
+"platforms.linux-x64" = { checksum = "blake3:d588dbb93845d8981e97c9d4516141ecc3affa429b97dbd24dfac140a05f68e4", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.22.zip"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -79,9 +79,9 @@ backend = "aqua:homeport/dyff"
 "platforms.linux-x64" = { checksum = "sha256:1d9394a561c3dbd1c9b3bc147dcb0ade27de5d245db8ac7e93a0ba13fa25948e", url = "https://github.com/homeport/dyff/releases/download/v1.10.4/dyff_1.10.4_linux_amd64.tar.gz"}
 
 [[tools.eksctl]]
-version = "0.222.0"
+version = "0.223.0"
 backend = "aqua:eksctl-io/eksctl"
-"platforms.linux-x64" = { checksum = "sha256:e7d9e9586c0bfef6fd386be8fcd314234be687d39ff6dcf801ebe938cb13ff7e", url = "https://github.com/eksctl-io/eksctl/releases/download/v0.222.0/eksctl_Linux_amd64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:62af926996b017aa4ee2907aa9bc1400a4d4d892b997b4bdfa21223b47c8a9a1", url = "https://github.com/eksctl-io/eksctl/releases/download/v0.223.0/eksctl_Linux_amd64.tar.gz"}
 
 [[tools.fd]]
 version = "10.3.0"
@@ -134,23 +134,24 @@ version = "0.0.9"
 backend = "github:jedi4ever/addt"
 
 [[tools."github:vicanso/zedis"]]
-version = "0.2.3"
+version = "0.2.4"
 backend = "github:vicanso/zedis"
-"platforms.linux-x64" = { checksum = "sha256:769e6b694659d7ccea54b1f10e21fafbcb19c26e639a0b42adb7df6d7f2726da", url = "https://github.com/vicanso/zedis/releases/download/v0.2.3/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/352162483"}
+"platforms.linux-x64" = { checksum = "sha256:0b779f6bee427f59f0589bc446ba48166e529408327b9b2e2da680bdbfe14369", url = "https://github.com/vicanso/zedis/releases/download/v0.2.4/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/356246267"}
 
 [[tools."github:x-motemen/ghq"]]
-version = "1.8.1"
+version = "1.9.3"
 backend = "github:x-motemen/ghq"
-"platforms.linux-x64" = { checksum = "sha256:61ef8582d3dfe3e8d6ce9c16d7293c704ed881c59b5a12ddcf6ed579ecb6bfaf", url = "https://github.com/x-motemen/ghq/releases/download/v1.8.1/ghq_linux_amd64.zip", url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/349040551"}
+"platforms.linux-x64" = { checksum = "sha256:59ed10b09c911b1bf1382172d966d67eb7dac731c4af114f8ad34df2f15f5e43", url = "https://github.com/x-motemen/ghq/releases/download/v1.9.3/ghq_linux_amd64.zip", url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/355777418"}
 
 [[tools."github:zitadel/zitadel"]]
-version = "4.10.1"
+version = "4.11.0"
 backend = "github:zitadel/zitadel"
+"platforms.linux-x64" = { checksum = "sha256:b0e65c23e72b3118b4fb77894b5104e2f28d8f5400315134670a43e6b3117a04", url = "https://github.com/zitadel/zitadel/releases/download/v4.11.0/zitadel-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/356666058"}
 
 [[tools.gitlab-cli]]
-version = "1.83.0"
+version = "1.85.2"
 backend = "gitlab:gitlab-org/cli"
-"platforms.linux-x64" = { checksum = "sha256:623d878678d3b3fd73ddd8b9e87609417022b039d463155cc9dbed6874e53207", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.83.0/downloads/glab_1.83.0_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E83%2E0/glab_1%2E83%2E0_linux_amd64%2Etar%2Egz"}
+"platforms.linux-x64" = { checksum = "sha256:e457a439594cdb6a0bacd9050ccba9c367d6480445ee34224fd9a20bb7827d33", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.85.2/downloads/glab_1.85.2_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E85%2E2/glab_1%2E85%2E2_linux_amd64%2Etar%2Egz"}
 
 [[tools.go]]
 version = "1.26.0"
@@ -374,7 +375,7 @@ version = "15.1.0"
 backend = "aqua:BurntSushi/ripgrep"
 
 [[tools.rust]]
-version = "1.93.0"
+version = "1.93.1"
 backend = "core:rust"
 
 [[tools.satty]]
@@ -411,14 +412,14 @@ version = "1.5.0"
 backend = "aqua:yorukot/superfile"
 
 [[tools.talhelper]]
-version = "3.1.4"
+version = "3.1.5"
 backend = "aqua:budimanjojo/talhelper"
-"platforms.linux-x64" = { checksum = "sha256:3cf5935edb1eeb8253f6c02e5ca26a810ea054554ed13e587687553389a19a8b", url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.4/talhelper_linux_amd64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:47b50406d69521f8b059f9b49f8fdcaab720dd776b93e1b7efd8791591e192bd", url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.5/talhelper_linux_amd64.tar.gz"}
 
 [[tools.talosctl]]
-version = "1.12.3"
+version = "1.12.4"
 backend = "aqua:siderolabs/talos"
-"platforms.linux-x64" = { checksum = "sha256:1b761b351964dcf764d3ec1a02ccd366428be22895a68dc641b6b4fa301589ed", url = "https://github.com/siderolabs/talos/releases/download/v1.12.3/talosctl-linux-amd64"}
+"platforms.linux-x64" = { checksum = "sha256:6b85f633721e02d31c8a28a633c9cd8ebfb7e41677ff29e94236a082d4cd6cd9", url = "https://github.com/siderolabs/talos/releases/download/v1.12.4/talosctl-linux-amd64"}
 
 [[tools.updatecli]]
 version = "0.113.0"
@@ -460,5 +461,6 @@ version = "26.1.22"
 backend = "aqua:sxyazi/yazi"
 
 [[tools.yq]]
-version = "4.52.2"
+version = "4.52.4"
 backend = "aqua:mikefarah/yq"
+"platforms.linux-x64" = { checksum = "sha256:0c4d965ea944b64b8fddaf7f27779ee3034e5693263786506ccd1c120f184e8c", url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64"}
