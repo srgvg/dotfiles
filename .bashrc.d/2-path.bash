@@ -1,6 +1,6 @@
 PATH="$HOME/bin"
 
-pathmunge $HOME/.nvm/bin after
+pathmunge $HOME/.local/lib/npm/bin after
 pathmunge $HOME/bins after
 pathmunge $HOME/bin2 after
 pathmunge /usr/local/bin after

@@ -7,9 +7,9 @@ version = "3.3.0"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.33.22"
+version = "2.33.24"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-x64" = { checksum = "blake3:d588dbb93845d8981e97c9d4516141ecc3affa429b97dbd24dfac140a05f68e4", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.22.zip"}
+"platforms.linux-x64" = { checksum = "blake3:d280df477be0e2215b40023ea777e33758894bf8bdcd9e68f23538e7801e11f6", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.24.zip"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -33,8 +33,9 @@ backend = "core:bun"
 "platforms.linux-x64" = { checksum = "blake3:b1ef93f3692471e33b5b5ee7052299328b07bd0be8e6d24479978bd33beb9f26"}
 
 [[tools.cilium-cli]]
-version = "0.19.0"
+version = "0.19.1"
 backend = "aqua:cilium/cilium-cli"
+"platforms.linux-x64" = { checksum = "sha256:57dd16923c6f3bbc7acfa87238fd034dff8139344a28d4650a20c9f91333540c", url = "https://github.com/cilium/cilium-cli/releases/download/v0.19.1/cilium-linux-amd64.tar.gz"}
 
 [[tools.cilium-hubble]]
 version = "1.18.6"
@@ -46,8 +47,9 @@ version = "1.4.7"
 backend = "github:civo/cli"
 
 [[tools.clusterctl]]
-version = "1.12.2"
+version = "1.12.3"
 backend = "aqua:kubernetes-sigs/cluster-api"
+"platforms.linux-x64" = { checksum = "sha256:9b75287b15656a62ece65c8ad7491412cebfd30c78e085a9d61396a50df17349", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-linux-amd64"}
 
 [[tools.cmctl]]
 version = "2.4.0"
@@ -97,8 +99,9 @@ version = "2.7.5"
 backend = "aqua:fluxcd/flux2"
 
 [[tools.flux9s]]
-version = "0.7.2"
+version = "0.7.3"
 backend = "github:dgunzy/flux9s"
+"platforms.linux-x64" = { checksum = "sha256:fe1b8963ecc534ee03cc85e90930eb28414480aeb0259febe96e94cc81a2b603", url = "https://github.com/dgunzy/flux9s/releases/download/v0.7.3/flux9s-linux-x86_64-gnu.tar.gz", url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/357364857"}
 
 [[tools.forward-email]]
 version = "v0.2.0-alpha.2"
@@ -139,9 +142,9 @@ backend = "github:vicanso/zedis"
 "platforms.linux-x64" = { checksum = "sha256:0b779f6bee427f59f0589bc446ba48166e529408327b9b2e2da680bdbfe14369", url = "https://github.com/vicanso/zedis/releases/download/v0.2.4/zedis-linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/356246267"}
 
 [[tools."github:x-motemen/ghq"]]
-version = "1.9.3"
+version = "1.9.4"
 backend = "github:x-motemen/ghq"
-"platforms.linux-x64" = { checksum = "sha256:59ed10b09c911b1bf1382172d966d67eb7dac731c4af114f8ad34df2f15f5e43", url = "https://github.com/x-motemen/ghq/releases/download/v1.9.3/ghq_linux_amd64.zip", url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/355777418"}
+"platforms.linux-x64" = { checksum = "sha256:33752b7c4fea9751c6d3fa092ea6fb33c3671cde641f20dd7f8328a3a9e240b3", url = "https://github.com/x-motemen/ghq/releases/download/v1.9.4/ghq_linux_amd64.zip", url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/357187911"}
 
 [[tools."github:zitadel/zitadel"]]
 version = "4.11.0"
@@ -149,9 +152,9 @@ backend = "github:zitadel/zitadel"
 "platforms.linux-x64" = { checksum = "sha256:b0e65c23e72b3118b4fb77894b5104e2f28d8f5400315134670a43e6b3117a04", url = "https://github.com/zitadel/zitadel/releases/download/v4.11.0/zitadel-linux-amd64.tar.gz", url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/356666058"}
 
 [[tools.gitlab-cli]]
-version = "1.85.2"
+version = "1.85.3"
 backend = "gitlab:gitlab-org/cli"
-"platforms.linux-x64" = { checksum = "sha256:e457a439594cdb6a0bacd9050ccba9c367d6480445ee34224fd9a20bb7827d33", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.85.2/downloads/glab_1.85.2_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E85%2E2/glab_1%2E85%2E2_linux_amd64%2Etar%2Egz"}
+"platforms.linux-x64" = { checksum = "sha256:01c18d30bd1264b2bff07518478f6bfb9bb5636d764bd58556de5efebb3faf78", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.85.3/downloads/glab_1.85.3_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E85%2E3/glab_1%2E85%2E3_linux_amd64%2Etar%2Egz"}
 
 [[tools.go]]
 version = "1.26.0"
@@ -250,8 +253,9 @@ version = "1.20.0"
 backend = "aqua:zegl/kube-score"
 
 [[tools.kubebuilder]]
-version = "4.11.1"
+version = "4.12.0"
 backend = "aqua:kubernetes-sigs/kubebuilder"
+"platforms.linux-x64" = { checksum = "sha256:41b99ee5e53a19384f176f74d2ea85ef7ef460074b7ae5b50a70858d240de64b", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.12.0/kubebuilder_linux_amd64"}
 
 [[tools.kubecolor]]
 version = "0.5.3"
@@ -346,9 +350,9 @@ version = "5.22.7"
 backend = "aqua:FairwindsOps/pluto"
 
 [[tools.pnpm]]
-version = "10.29.3"
+version = "10.30.0"
 backend = "aqua:pnpm/pnpm"
-"platforms.linux-x64" = { checksum = "sha256:2fc98db127c611be0c110af11b5b72759f7d736893dddc81df73b7b59b30f15a", url = "https://github.com/pnpm/pnpm/releases/download/v10.29.3/pnpm-linux-x64"}
+"platforms.linux-x64" = { checksum = "sha256:78d83aa009dc7e8d18faf5ea87e8cafed9601245f23757f00c3582284f54f793", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.0/pnpm-linux-x64"}
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -426,14 +430,14 @@ version = "0.113.0"
 backend = "aqua:updatecli/updatecli"
 
 [[tools.usage]]
-version = "2.16.2"
+version = "2.17.0"
 backend = "aqua:jdx/usage"
-"platforms.linux-x64" = { checksum = "sha256:517020bfde6d29a9c7b1fd9096ea62a3394e4763f1c4cb880522c58205aa20c6", url = "https://github.com/jdx/usage/releases/download/v2.16.2/usage-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:3df10eb333b335b3a26775838208d3efca47700fc7f323023280019d3ccff772", url = "https://github.com/jdx/usage/releases/download/v2.17.0/usage-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.uv]]
-version = "0.10.2"
+version = "0.10.4"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-x64" = { checksum = "sha256:c162182ba7dd692794362d76dd183990d6e51553217954106da19bdb6ced211b", url = "https://github.com/astral-sh/uv/releases/download/0.10.2/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:18adf097cea30a165ba086c1e72659fec3c5aca056a560e7c39e0164ac871196", url = "https://github.com/astral-sh/uv/releases/download/0.10.4/uv-x86_64-unknown-linux-musl.tar.gz"}
 
 [[tools.vcluster]]
 version = "0.31.0"
