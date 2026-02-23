@@ -43,20 +43,7 @@ return {
     ---@diagnostic disable: missing-fields
     config = {
       -- clangd = { capabilities = { offsetEncoding = "utf-8" } },
-      yamlls = {
-        settings = {
-          yaml = {
-            schemaStore = {
-              enable = true,
-              url = "https://www.schemastore.org/api/json/catalog.json",
-            },
-            schemas = {},
-            validate = true,
-            completion = true,
-            hover = true,
-          },
-        },
-      },
+      -- yamlls: configured globally in nvim-shared/common.lua via yaml-schema-router
     },
     -- customize how language servers are attached
     handlers = {

@@ -42,6 +42,23 @@ vim.keymap.set("n", "<C-s>", "<cmd>w<CR>", { desc = "Save file" })
 vim.keymap.set("n", "<S-s>", ":g/\\s$/norm $diw<CR>", { desc = "Strip trailing whitespace" })
 -- Note: <S-x> for BufferKill is distribution-specific, not included here
 
+-- yaml-schema-router: LSP proxy for automatic YAML schema detection
+vim.lsp.config.yamlls = {
+  cmd = { "yaml-schema-router" },
+  settings = {
+    yaml = {
+      schemaStore = {
+        enable = true,
+        url = "https://www.schemastore.org/api/json/catalog.json",
+      },
+      schemas = {},
+      validate = true,
+      completion = true,
+      hover = true,
+    },
+  },
+}
+
 -- Colorscheme (distribution-aware)
 -- Note: LunarVim sets lvim.colorscheme in config.lua (after this file loads)
 -- Note: NvChad sets theme in chadrc.lua via base46
