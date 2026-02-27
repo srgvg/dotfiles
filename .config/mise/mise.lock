@@ -345,9 +345,19 @@ version = "0.7.0"
 backend = "aqua:yannh/kubeconform"
 
 [[tools.kubectl]]
-version = "1.35.1"
+version = "1.35.2"
 backend = "aqua:kubernetes/kubernetes/kubectl"
-"platforms.linux-x64" = { checksum = "sha256:36e2f4ac66259232341dd7866952d64a958846470f6a9a6a813b9117bd965207", url = "https://dl.k8s.io/v1.35.1/bin/linux/amd64/kubectl"}
+"platforms.linux-arm64" = { checksum = "sha256:cd859449f54ad2cb05b491c490c13bb836cdd0886ae013c0aed3dd67ff747467", url = "https://dl.k8s.io/v1.35.2/bin/linux/arm64/kubectl"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:cd859449f54ad2cb05b491c490c13bb836cdd0886ae013c0aed3dd67ff747467", url = "https://dl.k8s.io/v1.35.2/bin/linux/arm64/kubectl"}
+"platforms.linux-x64" = { checksum = "sha256:924eb50779153f20cb668117d141440b95df2f325a64452d78dff9469145e277", url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:924eb50779153f20cb668117d141440b95df2f325a64452d78dff9469145e277", url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"}
+"platforms.linux-x64-musl" = { checksum = "sha256:924eb50779153f20cb668117d141440b95df2f325a64452d78dff9469145e277", url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:924eb50779153f20cb668117d141440b95df2f325a64452d78dff9469145e277", url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"}
+"platforms.macos-arm64" = { checksum = "sha256:b0b59cdd7ba20ca20b85214943100e578dd50ddd85242fcddf277a87c2249706", url = "https://dl.k8s.io/v1.35.2/bin/darwin/arm64/kubectl"}
+"platforms.macos-x64" = { checksum = "sha256:163955964d4ed9e66656eab45c0114f5c1110d1b430ace432b20ddc430023df5", url = "https://dl.k8s.io/v1.35.2/bin/darwin/amd64/kubectl"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:163955964d4ed9e66656eab45c0114f5c1110d1b430ace432b20ddc430023df5", url = "https://dl.k8s.io/v1.35.2/bin/darwin/amd64/kubectl"}
+"platforms.windows-x64" = { checksum = "sha256:a6d02010aae330a3031afe7843747d5a18db59c9f0bca415e45fb24bbdccdd2c", url = "https://dl.k8s.io/v1.35.2/bin/windows/amd64/kubectl.exe"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:a6d02010aae330a3031afe7843747d5a18db59c9f0bca415e45fb24bbdccdd2c", url = "https://dl.k8s.io/v1.35.2/bin/windows/amd64/kubectl.exe"}
 
 [[tools.kubent]]
 version = "0.7.1"

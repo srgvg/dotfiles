@@ -502,6 +502,38 @@ get_shell_init_cache() {
 }
 
 ##########################################################################################################
+
+get_ai() {
+
+    title "ai tools"
+
+    log "claude"
+    if hash claude >/dev/null 2>&1; then
+        claude update
+    else
+        echo "# claude not installed. install with:"
+        echo "  curl -fsSL https://claude.ai/install.sh | sh"
+    fi
+
+    log "codex"
+    if hash codex >/dev/null 2>&1; then
+        npm update -g @openai/codex
+    else
+        echo "# codex not installed. install with:"
+        echo "  npm install -g @openai/codex"
+    fi
+
+    log "opencode"
+    if hash opencode >/dev/null 2>&1; then
+        opencode upgrade
+    else
+        echo "# opencode not installed. install with:"
+        echo "  curl -fsSL https://opencode.ai/install | bash"
+    fi
+
+}
+
+##########################################################################################################
 #
 ##########################################################################################################
 
@@ -515,6 +547,7 @@ update_all() {
     run_component "misc" get_misc
     run_component "downloads" get_downloads
     run_component "github" get_github
+    run_component "ai" get_ai
     run_component "bash_completions" get_bash_completions
     run_component "shell_init" get_shell_init_cache
 
@@ -617,6 +650,10 @@ for command in ${commands}; do
             init
             run_component "shell_init" get_shell_init_cache
             ;;
+        ai)
+            init
+            run_component "ai" get_ai
+            ;;
         *)
             cat <<EOF
 
@@ -625,6 +662,7 @@ Unknown command \`${command}\`
 possible options are:
     all (*default)
     quick
+    ai
     completions
     downloads
     flatpak
