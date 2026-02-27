@@ -84,6 +84,7 @@ alias li3='launch-screen i3jobs'
 alias l='ls -lh'
 alias ls='ls --color=auto'
 alias locate="locate --existing --ignore-case"
+# m
 # o
 alias o='xdg-open'
 # p

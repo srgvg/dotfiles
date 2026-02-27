@@ -166,6 +166,13 @@ function manswitch() {
     man $1 | less -p "^ +$2"
 }
 
+function md() {
+    local cols width
+    cols=$(tput cols)
+    width=$((cols > 2 ? cols - 2 : cols))
+    glow --pager --style=dark --width="$width" "$@"
+}
+
 function mv() {
     # https://gist.github.com/premek/6e70446cfc913d3c929d7cdbfe896fef
     # Usage: mv oldfilename
