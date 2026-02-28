@@ -12,12 +12,17 @@ backend = "aqua:argoproj/argo-cd"
 "platforms.windows-x64" = { checksum = "sha256:0a81da734715facc87a2857589ec0b2add94f0eb81ad3777adece78a53b2c34b", url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.2/argocd-windows-amd64.exe"}
 
 [[tools.awscli]]
-version = "2.33.31"
+version = "2.34.0"
 backend = "aqua:aws/aws-cli"
-"platforms.linux-arm64" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.33.31.zip"}
-"platforms.linux-x64" = { checksum = "blake3:38636132645e67954217edd397ee1875c2c06d243a6f9691c04cce2b244c43c9", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.33.31.zip"}
-"platforms.macos-arm64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.33.31.pkg"}
-"platforms.macos-x64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.33.31.pkg"}
+"platforms.linux-arm64" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.0.zip"}
+"platforms.linux-arm64-musl" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.0.zip"}
+"platforms.linux-x64" = { checksum = "blake3:9eee262999feabd788cc681463f79d3a986e55fe6bf5e0f04f2a2770c8a8bd36", url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.0.zip"}
+"platforms.linux-x64-baseline" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.0.zip"}
+"platforms.linux-x64-musl" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.0.zip"}
+"platforms.linux-x64-musl-baseline" = { url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.0.zip"}
+"platforms.macos-arm64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.0.pkg"}
+"platforms.macos-x64" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.0.pkg"}
+"platforms.macos-x64-baseline" = { url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.0.pkg"}
 
 [[tools.azure-cli]]
 version = "2.83.0"
@@ -71,7 +76,11 @@ backend = "github:civo/cli"
 [[tools.clusterctl]]
 version = "1.12.3"
 backend = "aqua:kubernetes-sigs/cluster-api"
+"platforms.linux-arm64" = { checksum = "sha256:974bdf47fc58864df3d87766f4bdc72164171655c54b759e73596efc98f5e3e1", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-linux-arm64"}
 "platforms.linux-x64" = { checksum = "sha256:9b75287b15656a62ece65c8ad7491412cebfd30c78e085a9d61396a50df17349", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:f3fbe3414ea3153191c537220ccd5ce3636529ae224b0f0db224c2860ed5e6e5", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:24864a79e97d0ddf19cf05f1165c65e393f3616acfaeb2836a1ad5cee599c92b", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:df7275d420028a689b15d9ea4a58eb5375017812a9275143b96f162c3ddc0583", url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.12.3/clusterctl-windows-amd64.exe"}
 
 [[tools.cmctl]]
 version = "2.4.0"
@@ -80,7 +89,11 @@ backend = "aqua:cert-manager/cmctl"
 [[tools.cosign]]
 version = "3.0.5"
 backend = "aqua:sigstore/cosign"
+"platforms.linux-arm64" = { checksum = "sha256:d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab", url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-arm64"}
 "platforms.linux-x64" = { checksum = "sha256:db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2", url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:4888c898e2901521a6bd4cf4f0383c9465588a6a46ecd2465ad34faf13f09eb7", url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f", url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714", url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-windows-amd64.exe"}
 
 [[tools.difftastic]]
 version = "0.67.0"
@@ -116,22 +129,34 @@ version = "10.3.0"
 backend = "aqua:sharkdp/fd"
 
 [[tools.flux-operator]]
-version = "0.42.1"
+version = "0.43.0"
 backend = "github:controlplaneio-fluxcd/flux-operator"
-"platforms.linux-arm64" = { checksum = "sha256:430b6852b1e538643d8e44b7dc74067cd3ccfe261918db766e5d5d6d332ba897", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.42.1/flux-operator-mcp_0.42.1_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/361559723"}
-"platforms.linux-x64" = { checksum = "sha256:cef195320689421ccee84c84b1895bf1aaa378762c76f62dff2968011018c72a", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.42.1/flux-operator-mcp_0.42.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/361559726"}
-"platforms.macos-arm64" = { checksum = "sha256:7d8f9334cadd369b2d7443b1f09b55885c044c54d811f50b2575f3fc633f2524", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.42.1/flux-operator-mcp_0.42.1_darwin_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/361559724"}
-"platforms.macos-x64" = { checksum = "sha256:54c06e628707b4d56394dafa4b6e914f59f323e7e73646cf13ed7fd2e9371823", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.42.1/flux-operator-mcp_0.42.1_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/361559728"}
-"platforms.windows-x64" = { checksum = "sha256:675b4aff5ef33966e452e9cdc2dc30f0a2b19166d959e950430dc6b02180757b", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.42.1/flux-operator-mcp_0.42.1_windows_amd64.zip", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/361559746"}
+"platforms.linux-arm64" = { checksum = "sha256:e1c7469b27145788d5753253464cf8f516942d4d10eab28fd45ca9e1060e2613", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499469"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:e1c7469b27145788d5753253464cf8f516942d4d10eab28fd45ca9e1060e2613", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499469"}
+"platforms.linux-x64" = { checksum = "sha256:edb3e3f40478f8f905815fb88495216872f4cb3262fe48ea5a13e500d577de25", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499472"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:edb3e3f40478f8f905815fb88495216872f4cb3262fe48ea5a13e500d577de25", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499472"}
+"platforms.linux-x64-musl" = { checksum = "sha256:edb3e3f40478f8f905815fb88495216872f4cb3262fe48ea5a13e500d577de25", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499472"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:edb3e3f40478f8f905815fb88495216872f4cb3262fe48ea5a13e500d577de25", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499472"}
+"platforms.macos-arm64" = { checksum = "sha256:6756a53849bb3dd2eaa2119d315b2ecc1ac9553ba4eb863cd5146287b74ae6d3", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_darwin_arm64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499474"}
+"platforms.macos-x64" = { checksum = "sha256:467b04b1c62453c8c3d47d6e2a2d9791ae2c03c71b2374fd7bdb3a0f250a7cbc", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499473"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:467b04b1c62453c8c3d47d6e2a2d9791ae2c03c71b2374fd7bdb3a0f250a7cbc", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499473"}
+"platforms.windows-x64" = { checksum = "sha256:b09e931da6bbaf0393c6d6fd50f3ab3531926f5599c29bfe2cb4e78cc78c0d8a", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_windows_amd64.zip", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499487"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:b09e931da6bbaf0393c6d6fd50f3ab3531926f5599c29bfe2cb4e78cc78c0d8a", url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.43.0/flux-operator-mcp_0.43.0_windows_amd64.zip", url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/363499487"}
 
 [[tools.flux2]]
-version = "2.8.0"
+version = "2.8.1"
 backend = "aqua:fluxcd/flux2"
-"platforms.linux-arm64" = { checksum = "sha256:6f995b5ae1c55cbb82212b98ee72c94048c3fe72226abe9ef020e6d4127a92b2", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.0/flux_2.8.0_linux_arm64.tar.gz"}
-"platforms.linux-x64" = { checksum = "sha256:5339d6a6f85be36238480308458c86fc9a839821a80c7a55f1baf12151b47fd6", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.0/flux_2.8.0_linux_amd64.tar.gz"}
-"platforms.macos-arm64" = { checksum = "sha256:60ffdb837b20c43de848029846634c7b2289753eb341e62b7dd5f155265225e8", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.0/flux_2.8.0_darwin_arm64.tar.gz"}
-"platforms.macos-x64" = { checksum = "sha256:2a015ed91c748262f47f2c385cec726b81d42a8a3ae38b9b4715d2d55efdfecf", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.0/flux_2.8.0_darwin_amd64.tar.gz"}
-"platforms.windows-x64" = { checksum = "sha256:2fcaa7f204d489926a43d557f1134a53097f0fbf8b8aa59f9702272a926dded0", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.0/flux_2.8.0_windows_amd64.zip"}
+"platforms.linux-arm64" = { checksum = "sha256:0cf9f567939c38e9735f1dad525c2118d1e0892abdb6ff0a03134551f61f0804", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_arm64.tar.gz"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:0cf9f567939c38e9735f1dad525c2118d1e0892abdb6ff0a03134551f61f0804", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:15d96c2246e129903c7bdaeb9a5cd3074c774763523601526e1c31f7b1513f08", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_amd64.tar.gz"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:15d96c2246e129903c7bdaeb9a5cd3074c774763523601526e1c31f7b1513f08", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_amd64.tar.gz"}
+"platforms.linux-x64-musl" = { checksum = "sha256:15d96c2246e129903c7bdaeb9a5cd3074c774763523601526e1c31f7b1513f08", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_amd64.tar.gz"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:15d96c2246e129903c7bdaeb9a5cd3074c774763523601526e1c31f7b1513f08", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_linux_amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:8dd67b9151c77115e4486cf8c0533a9fce8b147803dab66b6f07fa201380e9af", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_darwin_arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:06cd154c50520bfc5cd948199cfdaf8ac3668c85d03424815237cf48bd686ccd", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_darwin_amd64.tar.gz"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:06cd154c50520bfc5cd948199cfdaf8ac3668c85d03424815237cf48bd686ccd", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_darwin_amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:657bd35929c81599618d193edc47255373cf7c11ec54f107e33297603a311a70", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_windows_amd64.zip"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:657bd35929c81599618d193edc47255373cf7c11ec54f107e33297603a311a70", url = "https://github.com/fluxcd/flux2/releases/download/v2.8.1/flux_2.8.1_windows_amd64.zip"}
 
 [[tools.flux9s]]
 version = "0.7.5"
@@ -214,7 +239,11 @@ backend = "github:zitadel/zitadel"
 [[tools.gitlab-cli]]
 version = "1.86.0"
 backend = "gitlab:gitlab-org/cli"
+"platforms.linux-arm64" = { checksum = "sha256:541193d06e22844386e63f20c797618a903f1c5e851a2cfb11c0193cbc21f8a9", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.86.0/downloads/glab_1.86.0_linux_arm64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E86%2E0/glab_1%2E86%2E0_linux_arm64%2Etar%2Egz"}
 "platforms.linux-x64" = { checksum = "sha256:ea2ab46b4eace60407edbea90c5bdb0c5b42400e8d047a20c6f6f0d3ec6fc281", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.86.0/downloads/glab_1.86.0_linux_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E86%2E0/glab_1%2E86%2E0_linux_amd64%2Etar%2Egz"}
+"platforms.macos-arm64" = { checksum = "sha256:46594a78e41bdbaf8dcb51b40fc2f76f6b41b4df87c4dfeb65d8fe2a675fb8a3", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.86.0/downloads/glab_1.86.0_darwin_arm64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E86%2E0/glab_1%2E86%2E0_darwin_arm64%2Etar%2Egz"}
+"platforms.macos-x64" = { checksum = "sha256:8d873db547123673cdc82efa46195761ea1c7fee8c2cba9bd4f8a8e18495b1dd", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.86.0/downloads/glab_1.86.0_darwin_amd64.tar.gz", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E86%2E0/glab_1%2E86%2E0_darwin_amd64%2Etar%2Egz"}
+"platforms.windows-x64" = { checksum = "sha256:a0446f3d9f996ce1d326994a2198030cf77f4f019ba89f92160951cd12242f73", url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.86.0/downloads/glab_1.86.0_windows_amd64.zip", url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E86%2E0/glab_1%2E86%2E0_windows_amd64%2Ezip"}
 
 [[tools.go]]
 version = "1.26.0"
@@ -292,7 +321,11 @@ backend = "aqua:PaulJuliusMartinez/jless"
 [[tools.jnv]]
 version = "0.6.2"
 backend = "aqua:ynqa/jnv"
+"platforms.linux-arm64" = { checksum = "sha256:58e4937f1f81240e6b2fd80306c3b2187becfe8160b6781173bb49b41fa1aee0", url = "https://github.com/ynqa/jnv/releases/download/v0.6.2/jnv-aarch64-unknown-linux-gnu.tar.xz"}
 "platforms.linux-x64" = { checksum = "sha256:fb9a79a450d854949aca2f4144c562ab39c9a6769faf3155d20292089a757a25", url = "https://github.com/ynqa/jnv/releases/download/v0.6.2/jnv-x86_64-unknown-linux-musl.tar.xz"}
+"platforms.macos-arm64" = { checksum = "sha256:17c1cea1f28d21c00f2f2362aa0eb40f783072bc62a8b88eb1e340a7098a2b7c", url = "https://github.com/ynqa/jnv/releases/download/v0.6.2/jnv-aarch64-apple-darwin.tar.xz"}
+"platforms.macos-x64" = { checksum = "sha256:5eb2f01d50462c97986537e29249e0bf6c588dcfb519169087b350a22d81d5dd", url = "https://github.com/ynqa/jnv/releases/download/v0.6.2/jnv-x86_64-apple-darwin.tar.xz"}
+"platforms.windows-x64" = { checksum = "sha256:5cb9616599e3fffad6385ac6b6e47bf5cfcfedc0773b6588b6199d667c20084a", url = "https://github.com/ynqa/jnv/releases/download/v0.6.2/jnv-x86_64-pc-windows-msvc.zip"}
 
 [[tools.jqp]]
 version = "0.8.0"
@@ -332,9 +365,17 @@ version = "1.20.0"
 backend = "aqua:zegl/kube-score"
 
 [[tools.kubebuilder]]
-version = "4.12.0"
+version = "4.13.0"
 backend = "aqua:kubernetes-sigs/kubebuilder"
-"platforms.linux-x64" = { checksum = "sha256:41b99ee5e53a19384f176f74d2ea85ef7ef460074b7ae5b50a70858d240de64b", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.12.0/kubebuilder_linux_amd64"}
+"platforms.linux-arm64" = { checksum = "sha256:ef720de120277319af8f298f321bc9a5a2e34f1be6d6aa4f29e42102744db834", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_arm64"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:ef720de120277319af8f298f321bc9a5a2e34f1be6d6aa4f29e42102744db834", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_arm64"}
+"platforms.linux-x64" = { checksum = "sha256:df6e73cbf99b4f8216ad6e665985f1527e740306e8d1ebda0bfff3733d511066", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_amd64"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:df6e73cbf99b4f8216ad6e665985f1527e740306e8d1ebda0bfff3733d511066", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_amd64"}
+"platforms.linux-x64-musl" = { checksum = "sha256:df6e73cbf99b4f8216ad6e665985f1527e740306e8d1ebda0bfff3733d511066", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_amd64"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:df6e73cbf99b4f8216ad6e665985f1527e740306e8d1ebda0bfff3733d511066", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_linux_amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:73e6aaa6cc140cb184443861e94ccee8e0c0a76b08db361677a481586b645c9c", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_darwin_arm64"}
+"platforms.macos-x64" = { checksum = "sha256:278e83ecbd3758a0e8b18c97e3af24503b444187fa9c648a0e75a943bce0d226", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_darwin_amd64"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:278e83ecbd3758a0e8b18c97e3af24503b444187fa9c648a0e75a943bce0d226", url = "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.13.0/kubebuilder_darwin_amd64"}
 
 [[tools.kubecolor]]
 version = "0.5.3"
@@ -467,10 +508,16 @@ backend = "aqua:FairwindsOps/pluto"
 version = "10.30.3"
 backend = "aqua:pnpm/pnpm"
 "platforms.linux-arm64" = { checksum = "sha256:9488f48d6967bfa8f5ebc5c077aae297d2fe25287697b4c8edf991ff945d8af7", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-arm64"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:9488f48d6967bfa8f5ebc5c077aae297d2fe25287697b4c8edf991ff945d8af7", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-arm64"}
 "platforms.linux-x64" = { checksum = "sha256:5dc971e801610471b5cd6729ba289531be6695bd50d5e833fe22b18896b13a06", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-x64"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:5dc971e801610471b5cd6729ba289531be6695bd50d5e833fe22b18896b13a06", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-x64"}
+"platforms.linux-x64-musl" = { checksum = "sha256:5dc971e801610471b5cd6729ba289531be6695bd50d5e833fe22b18896b13a06", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-x64"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:5dc971e801610471b5cd6729ba289531be6695bd50d5e833fe22b18896b13a06", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-linux-x64"}
 "platforms.macos-arm64" = { checksum = "sha256:ccfb6e54fe29d13715e2fe418ef0374cde5a7f68b95f5ed5da5f564886af9d17", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-macos-arm64"}
 "platforms.macos-x64" = { checksum = "sha256:d9be0fd3989c09f5abf7e52f10d8d0294f757af61bbbd59727d607c85205a788", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-macos-x64"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:d9be0fd3989c09f5abf7e52f10d8d0294f757af61bbbd59727d607c85205a788", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-macos-x64"}
 "platforms.windows-x64" = { checksum = "sha256:de8337a864056472542b951ab23ad54149cc63127bb2faf3175b7902b764f188", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-win-x64.exe"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:de8337a864056472542b951ab23ad54149cc63127bb2faf3175b7902b764f188", url = "https://github.com/pnpm/pnpm/releases/download/v10.30.3/pnpm-win-x64.exe"}
 
 [[tools.popeye]]
 version = "0.22.1"
@@ -578,18 +625,28 @@ backend = "aqua:jdx/usage"
 "platforms.windows-x64" = { checksum = "sha256:b095821eb3299e8a7a639557d49b5cd52dbf0c03cc4316c961ff70973906823d", url = "https://github.com/jdx/usage/releases/download/v2.18.1/usage-x86_64-pc-windows-msvc.zip"}
 
 [[tools.uv]]
-version = "0.10.6"
+version = "0.10.7"
 backend = "aqua:astral-sh/uv"
-"platforms.linux-arm64" = { checksum = "sha256:7de7aa836fd54ff930fa5e63bc04da35e2fbd72889d6258e153479c44d08b863", url = "https://github.com/astral-sh/uv/releases/download/0.10.6/uv-aarch64-unknown-linux-musl.tar.gz"}
-"platforms.linux-x64" = { checksum = "sha256:01d6ce770da88ce6445acb0a8764c8b1634c9f69c728dca68b19fc7a893f72b9", url = "https://github.com/astral-sh/uv/releases/download/0.10.6/uv-x86_64-unknown-linux-musl.tar.gz"}
-"platforms.macos-arm64" = { checksum = "sha256:3993249d8f51deaf34cfce037e57e294e82267ff1f9dc45b7983a17afaf065b4", url = "https://github.com/astral-sh/uv/releases/download/0.10.6/uv-aarch64-apple-darwin.tar.gz"}
-"platforms.macos-x64" = { checksum = "sha256:d7647571fb17a5107d4d23cc190418039c157fd7361ddb59bc6f8127a49e3eac", url = "https://github.com/astral-sh/uv/releases/download/0.10.6/uv-x86_64-apple-darwin.tar.gz"}
-"platforms.windows-x64" = { checksum = "sha256:b27eb789f281e398a82197477de727fc8faf08605152115686da2c3cba0d25f7", url = "https://github.com/astral-sh/uv/releases/download/0.10.6/uv-x86_64-pc-windows-msvc.zip"}
+"platforms.linux-arm64" = { checksum = "sha256:115291f9943531a3b63db3a2eabda8b74b8da4831551679382cb309c9debd9f7", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-arm64-musl" = { checksum = "sha256:115291f9943531a3b63db3a2eabda8b74b8da4831551679382cb309c9debd9f7", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:992529add6024e67135b1c80617abd2eca7be2cf0b99b3911f923de815bd8dc1", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64-baseline" = { checksum = "sha256:992529add6024e67135b1c80617abd2eca7be2cf0b99b3911f923de815bd8dc1", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64-musl" = { checksum = "sha256:992529add6024e67135b1c80617abd2eca7be2cf0b99b3911f923de815bd8dc1", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64-musl-baseline" = { checksum = "sha256:992529add6024e67135b1c80617abd2eca7be2cf0b99b3911f923de815bd8dc1", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:1eb4dcc5e0fc8669fa0b33cf1151b64ba3b8c26b60dceff4f7a686129e2af22b", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-aarch64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:4fed9d4f4608fb3850db714ee37244436f850a2b6e485bc510795679c2d08866", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-apple-darwin.tar.gz"}
+"platforms.macos-x64-baseline" = { checksum = "sha256:4fed9d4f4608fb3850db714ee37244436f850a2b6e485bc510795679c2d08866", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:8881afb877996a1373a12e816395122a8d39a3ac06cd066272acdb49510cf0fe", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-pc-windows-msvc.zip"}
+"platforms.windows-x64-baseline" = { checksum = "sha256:8881afb877996a1373a12e816395122a8d39a3ac06cd066272acdb49510cf0fe", url = "https://github.com/astral-sh/uv/releases/download/0.10.7/uv-x86_64-pc-windows-msvc.zip"}
 
 [[tools.vcluster]]
 version = "0.32.0"
 backend = "aqua:loft-sh/vcluster"
+"platforms.linux-arm64" = { checksum = "sha256:313b9fbe60263986cc9f93c628a2d2d87a65fe3c9cb58afb7bac028bd8e9d167", url = "https://github.com/loft-sh/vcluster/releases/download/v0.32.0/vcluster-linux-arm64"}
 "platforms.linux-x64" = { checksum = "sha256:c34d32b3b37bfd4a176dacc964094cddec7d30f0dc5126fcc9edaa13e0b85711", url = "https://github.com/loft-sh/vcluster/releases/download/v0.32.0/vcluster-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:83cd8114423b9fe9fbe05f7e98fa89e6d9c19debec3210bc2943bf92bd3e87d5", url = "https://github.com/loft-sh/vcluster/releases/download/v0.32.0/vcluster-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:e8548c0bc15ee5e46910b955d83ebb63c3920308cea3e79f07ffabfa31cea8eb", url = "https://github.com/loft-sh/vcluster/releases/download/v0.32.0/vcluster-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:01082a349eb1bcdf40b3ba0133112df0f9791d2ad756f7a1f1f43781ac9b449e", url = "https://github.com/loft-sh/vcluster/releases/download/v0.32.0/vcluster-windows-amd64.exe"}
 
 [[tools.velero]]
 version = "1.17.2"
