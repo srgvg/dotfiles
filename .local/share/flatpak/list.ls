@@ -16,7 +16,7 @@ io.kinvolk.Headlamp	0.40.0	flathub	system
 org.chromium.Chromium	144.0.7559.132	flathub	system
 org.ferdium.Ferdium	7.1.1	flathub	system
 org.gnome.NetworkDisplays	0.99.0	flathub	system
-org.signal.Signal	7.88.0	flathub	system
+org.signal.Signal	8.0.0	flathub	system
 org.sonusmix.Sonusmix		sonusmix.org	system
 org.telegram.desktop	6.5.1	flathub	system
 rest.insomnia.Insomnia	12.3.1	flathub	system
