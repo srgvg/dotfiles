@@ -65,26 +65,8 @@ case ${1:-} in
         statusfile="$HOME/.playerctl_active"
         player="$(head -n 1 "$statusfile" 2>/dev/null || :)"
 
-        # Find a currently playing player (replicates wrapper logic)
-        playing=""
-        players="$(/usr/bin/playerctl --list-all 2>/dev/null || :)"
-        if [ -n "$players" ] && [ "$players" != "No players found" ]; then
-            for p in $players; do
-                if [ "$(/usr/bin/playerctl --player "$p" status 2>/dev/null || :)" = "Playing" ]; then
-                    playing="$p"
-                    break
-                fi
-            done
-        fi
-
-        # Auto-switch: active player dead or different player is playing
-        if [ -z "$player" ] || ! /usr/bin/playerctl --player "$player" status &>/dev/null; then
-            player="$playing"
-            echo "$player" > "$statusfile"
-        elif [ -n "$playing" ] && [ "$player" != "$playing" ]; then
-            player="$playing"
-            echo "$player" > "$statusfile"
-        fi
+        # Player selection is handled by ~/bin/playerctl wrapper.
+        # This script only reads the current state.
 
         if [ -n "$player" ]; then
             state="$(/usr/bin/playerctl --player "$player" status 2>/dev/null || :)"
