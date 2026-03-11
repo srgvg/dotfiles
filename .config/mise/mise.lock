@@ -1013,7 +1013,7 @@ version = "1.1.0"
 backend = "github:khairul169/garage-webui"
 
 [[tools.gcloud]]
-version = "559.0.0"
+version = "560.0.0"
 backend = "asdf:gcloud"
 
 [[tools.git-who]]
@@ -1021,28 +1021,53 @@ version = "1.3"
 backend = "github:sinclairtarget/git-who"
 
 [[tools.github-cli]]
-version = "2.87.3"
+version = "2.88.0"
 backend = "aqua:cli/cli"
 
 [tools.github-cli."platforms.linux-arm64"]
-checksum = "sha256:5f5d89563bf26751e2173b37e594065504e85b6b781c1f1832d24bf2c2b4554f"
-url = "https://github.com/cli/cli/releases/download/v2.87.3/gh_2.87.3_linux_arm64.tar.gz"
+checksum = "sha256:d9bffed5c9bb65fca9d6097eaa3ebd6edb7438c8bfd641f8595a39c7dc69042f"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_arm64.tar.gz"
+
+[tools.github-cli."platforms.linux-arm64-musl"]
+checksum = "sha256:d9bffed5c9bb65fca9d6097eaa3ebd6edb7438c8bfd641f8595a39c7dc69042f"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_arm64.tar.gz"
 
 [tools.github-cli."platforms.linux-x64"]
-checksum = "sha256:c6e5537631fca45f277ef405ce8751d139b491e9402cc20891a003525a8773b2"
-url = "https://github.com/cli/cli/releases/download/v2.87.3/gh_2.87.3_linux_amd64.tar.gz"
+checksum = "sha256:4d268420ad31846a807e3012ac4b6547df662777e7776fa7f4c55ce062e15b15"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_amd64.tar.gz"
+provenance = "github-attestations"
+
+[tools.github-cli."platforms.linux-x64-baseline"]
+checksum = "sha256:4d268420ad31846a807e3012ac4b6547df662777e7776fa7f4c55ce062e15b15"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_amd64.tar.gz"
+
+[tools.github-cli."platforms.linux-x64-musl"]
+checksum = "sha256:4d268420ad31846a807e3012ac4b6547df662777e7776fa7f4c55ce062e15b15"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_amd64.tar.gz"
+
+[tools.github-cli."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:4d268420ad31846a807e3012ac4b6547df662777e7776fa7f4c55ce062e15b15"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_linux_amd64.tar.gz"
 
 [tools.github-cli."platforms.macos-arm64"]
-checksum = "sha256:dedfc6f569e9dbc5b92d47dce44acadbdf5b6b7a861510db0c748dfac55002f6"
-url = "https://github.com/cli/cli/releases/download/v2.87.3/gh_2.87.3_macOS_arm64.zip"
+checksum = "sha256:0ea4edb4b1be0ffa2b4c53bcce81691dd58647bb03bfb5b9fdb01ee5b2afc581"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_macOS_arm64.zip"
 
 [tools.github-cli."platforms.macos-x64"]
-checksum = "sha256:7b8d5495fe9689494b1c69559c0d28209bc057bb028008e903ec4b3e19bd8c75"
-url = "https://github.com/cli/cli/releases/download/v2.87.3/gh_2.87.3_macOS_amd64.zip"
+checksum = "sha256:49d309a6b2152807fb0a70d6db02d14a2d9264b01f52c852938aadb331f4cf70"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_macOS_amd64.zip"
+
+[tools.github-cli."platforms.macos-x64-baseline"]
+checksum = "sha256:49d309a6b2152807fb0a70d6db02d14a2d9264b01f52c852938aadb331f4cf70"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_macOS_amd64.zip"
 
 [tools.github-cli."platforms.windows-x64"]
-checksum = "sha256:c590bcb488f80a85c8febd5cde27edd68fdd481bd004aaf9adc50dcf1b21c09c"
-url = "https://github.com/cli/cli/releases/download/v2.87.3/gh_2.87.3_windows_amd64.zip"
+checksum = "sha256:0cbf0abde47cd873edbf937e30665d665c07145ff14199f81358d0188affae57"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_windows_amd64.zip"
+
+[tools.github-cli."platforms.windows-x64-baseline"]
+checksum = "sha256:0cbf0abde47cd873edbf937e30665d665c07145ff14199f81358d0188affae57"
+url = "https://github.com/cli/cli/releases/download/v2.88.0/gh_2.88.0_windows_amd64.zip"
 
 [[tools."github:gruntwork-io/git-xargs"]]
 version = "0.1.16"
@@ -1612,10 +1637,6 @@ url = "https://github.com/kubernetes-sigs/krew/releases/download/v0.5.0/krew-dar
 checksum = "sha256:1fbbb665b61d8a42246818eca47b160f1eab20fe9a3673974d1f28a73bcaddf7"
 url = "https://github.com/kubernetes-sigs/krew/releases/download/v0.5.0/krew-windows_amd64.tar.gz"
 
-[[tools.krew]]
-version = "0.4.5"
-backend = "aqua:kubernetes-sigs/krew"
-
 [[tools.kube-capacity]]
 version = "0.8.0"
 backend = "aqua:robscott/kube-capacity"
@@ -2039,111 +2060,70 @@ checksum = "sha256:37d35ce8a165766502fb13799071d4cefa84d39fb455c75c471b47b9b5d12
 url = "https://github.com/apple/pkl/releases/download/0.31.0/pkl-windows-amd64.exe"
 
 [[tools.pluto]]
-version = "5.23.0"
+version = "5.23.5"
 backend = "aqua:FairwindsOps/pluto"
 
 [tools.pluto."platforms.linux-arm64"]
-checksum = "sha256:d7e073ed8d6bf6d39e9a1e1a77492a143ca68fe64cf6254fa3fb83dd958c8862"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_arm64.tar.gz"
+checksum = "sha256:45296a9a82f4df001878726aad429bbe512d47453e9581301c94e174cac0c061"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.linux-arm64-musl"]
-checksum = "sha256:d7e073ed8d6bf6d39e9a1e1a77492a143ca68fe64cf6254fa3fb83dd958c8862"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_arm64.tar.gz"
+checksum = "sha256:45296a9a82f4df001878726aad429bbe512d47453e9581301c94e174cac0c061"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.linux-x64"]
-checksum = "sha256:9d275b359e2f0b84fe10f541b19ed7648413b9b02cafbd3d248f2a56322a1490"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_amd64.tar.gz"
-provenance = "cosign"
+checksum = "sha256:c173c87cd7f4fc7ca5c5fb120e10b3e99c204906fb36d188afeaa7c7b70caefa"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_amd64.tar.gz"
 
 [tools.pluto."platforms.linux-x64-baseline"]
-checksum = "sha256:9d275b359e2f0b84fe10f541b19ed7648413b9b02cafbd3d248f2a56322a1490"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_amd64.tar.gz"
+checksum = "sha256:c173c87cd7f4fc7ca5c5fb120e10b3e99c204906fb36d188afeaa7c7b70caefa"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.linux-x64-musl"]
-checksum = "sha256:9d275b359e2f0b84fe10f541b19ed7648413b9b02cafbd3d248f2a56322a1490"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_amd64.tar.gz"
+checksum = "sha256:c173c87cd7f4fc7ca5c5fb120e10b3e99c204906fb36d188afeaa7c7b70caefa"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:9d275b359e2f0b84fe10f541b19ed7648413b9b02cafbd3d248f2a56322a1490"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_linux_amd64.tar.gz"
+checksum = "sha256:c173c87cd7f4fc7ca5c5fb120e10b3e99c204906fb36d188afeaa7c7b70caefa"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_linux_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.macos-arm64"]
-checksum = "sha256:39673854df4c702800ba6f42fb63aaf9c7a5a075f5fd101980306fcd671ba694"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_darwin_arm64.tar.gz"
+checksum = "sha256:1bcaffe4216f640d1731eb59068c83bbe099c44f5ce3d3dc4cefc19ebd930d71"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_darwin_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.macos-x64"]
-checksum = "sha256:ef2865ef36887358863d0f6f90a13187f28884049a79a2a9d64a03fe2f169e78"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_darwin_amd64.tar.gz"
+checksum = "sha256:c819e6799ce2a1190d524d8fd9b4ee3517c51191c69c903130c70458dedf14ee"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_darwin_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.macos-x64-baseline"]
-checksum = "sha256:ef2865ef36887358863d0f6f90a13187f28884049a79a2a9d64a03fe2f169e78"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_darwin_amd64.tar.gz"
+checksum = "sha256:c819e6799ce2a1190d524d8fd9b4ee3517c51191c69c903130c70458dedf14ee"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_darwin_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.windows-x64"]
-checksum = "sha256:e5d045c7931cd1713b64ce94911dd2432926f51aeba0ee41e47879c1e9b6a064"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_windows_amd64.tar.gz"
+checksum = "sha256:a929e2b0a7be96d2fff2ed7fe1ef91423509075ca9df8c3128530ff491e42421"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_windows_amd64.tar.gz"
 provenance = "cosign"
 
 [tools.pluto."platforms.windows-x64-baseline"]
-checksum = "sha256:e5d045c7931cd1713b64ce94911dd2432926f51aeba0ee41e47879c1e9b6a064"
-url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.0/pluto_5.23.0_windows_amd64.tar.gz"
+checksum = "sha256:a929e2b0a7be96d2fff2ed7fe1ef91423509075ca9df8c3128530ff491e42421"
+url = "https://github.com/FairwindsOps/pluto/releases/download/v5.23.5/pluto_5.23.5_windows_amd64.tar.gz"
 provenance = "cosign"
 
 [[tools.pnpm]]
-version = "10.32.0"
+version = "10.32.1"
 backend = "aqua:pnpm/pnpm"
 
-[tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:5b41332f7f145def331d2fddd76be5fa56d3ef056a0cbaa2bb92ff253792dcea"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-arm64"
-
-[tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:5b41332f7f145def331d2fddd76be5fa56d3ef056a0cbaa2bb92ff253792dcea"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-arm64"
-
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:0417d19eb256e8b9971c281a825c3ab3b3e2b07b46ff78e977f149335bdb4955"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-x64"
-
-[tools.pnpm."platforms.linux-x64-baseline"]
-checksum = "sha256:0417d19eb256e8b9971c281a825c3ab3b3e2b07b46ff78e977f149335bdb4955"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-x64"
-
-[tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:0417d19eb256e8b9971c281a825c3ab3b3e2b07b46ff78e977f149335bdb4955"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-x64"
-
-[tools.pnpm."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:0417d19eb256e8b9971c281a825c3ab3b3e2b07b46ff78e977f149335bdb4955"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-linux-x64"
-
-[tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:462028721824f747fb44b423f824bcd65be0d786bcb51a16d1c42d8ac13467a8"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-macos-arm64"
-
-[tools.pnpm."platforms.macos-x64"]
-checksum = "sha256:6692b31f67308c36f69eb7e9fa26c6304055859ab70500eac8454b774fa11618"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-macos-x64"
-
-[tools.pnpm."platforms.macos-x64-baseline"]
-checksum = "sha256:6692b31f67308c36f69eb7e9fa26c6304055859ab70500eac8454b774fa11618"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-macos-x64"
-
-[tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:8bdb2c94278f92eb9dc8272d5e1211be4489273917bc212c657241e6aca79dcc"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-win-x64.exe"
-
-[tools.pnpm."platforms.windows-x64-baseline"]
-checksum = "sha256:8bdb2c94278f92eb9dc8272d5e1211be4489273917bc212c657241e6aca79dcc"
-url = "https://github.com/pnpm/pnpm/releases/download/v10.32.0/pnpm-win-x64.exe"
+checksum = "sha256:c5607a86bfb948297e96b393a53c90107766fe56329e62967b1f239d861d4363"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.32.1/pnpm-linux-x64"
 
 [[tools.popeye]]
 version = "0.22.1"
