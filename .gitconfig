@@ -488,4 +488,14 @@
 	path = ~/.gitconfig.d/gpgsigning
 
 
+[includeIf "hasconfig:remote.*.url:**://bitbucketcommercial.flir.com:7999/**"]
+
+	path = ~/.gitconfig.d/teledyne
+
+
+[includeIf "hasconfig:remote.*.url:git@bitbucketcommercial.flir.com:7999/*/**"]
+
+	path = ~/.gitconfig.d/teledyne
+
+
 ## END

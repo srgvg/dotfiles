@@ -1,0 +1,5 @@
+[core]
+	sshCommand = ssh -i ~/.ssh/ssh-id-teledyne-ed25519.key -o IdentitiesOnly=yes -v
+
+[credential "https://bitbucketcommercial.flir.com"]
+	helper = libsecret
