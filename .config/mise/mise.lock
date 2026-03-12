@@ -9,8 +9,27 @@ version = "3.3.3"
 backend = "aqua:argoproj/argo-cd"
 
 [[tools.awscli]]
-version = "2.34.6"
+version = "2.34.7"
 backend = "aqua:aws/aws-cli"
+
+[tools.awscli."platforms.linux-arm64"]
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.7.zip"
+
+[tools.awscli."platforms.linux-arm64-musl"]
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.7.zip"
+
+[tools.awscli."platforms.linux-x64"]
+checksum = "blake3:2e445e7e1b1487ce6ac1962c3dee337b19425db707f6cff9c3d367f254b924c2"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.7.zip"
+
+[tools.awscli."platforms.linux-x64-musl"]
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.7.zip"
+
+[tools.awscli."platforms.macos-arm64"]
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.7.pkg"
+
+[tools.awscli."platforms.macos-x64"]
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.7.pkg"
 
 [[tools.azure-cli]]
 version = "2.84.0"
@@ -89,8 +108,45 @@ version = "0.43.0"
 backend = "github:controlplaneio-fluxcd/flux-operator"
 
 [[tools.flux2]]
-version = "2.8.1"
+version = "2.8.2"
 backend = "aqua:fluxcd/flux2"
+
+[tools.flux2."platforms.linux-arm64"]
+checksum = "sha256:5bbee7ebd84d2976500396de763802e328581801ad4d2609403fa8a793ddfa64"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_linux_arm64.tar.gz"
+provenance = "slsa"
+
+[tools.flux2."platforms.linux-arm64-musl"]
+checksum = "sha256:5bbee7ebd84d2976500396de763802e328581801ad4d2609403fa8a793ddfa64"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_linux_arm64.tar.gz"
+provenance = "slsa"
+
+[tools.flux2."platforms.linux-x64"]
+checksum = "sha256:711a0ac3d1ea15e957c2775af11ddc48a505b6adaa8fa5db5a65355ee6f49cde"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_linux_amd64.tar.gz"
+
+[tools.flux2."platforms.linux-x64".provenance.slsa]
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/provenance.intoto.jsonl"
+
+[tools.flux2."platforms.linux-x64-musl"]
+checksum = "sha256:711a0ac3d1ea15e957c2775af11ddc48a505b6adaa8fa5db5a65355ee6f49cde"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_linux_amd64.tar.gz"
+provenance = "slsa"
+
+[tools.flux2."platforms.macos-arm64"]
+checksum = "sha256:96d9132ce9ff70fc26b3678b455eb89bd1e40778ea0a7b99de9b124db392ac4d"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_darwin_arm64.tar.gz"
+provenance = "slsa"
+
+[tools.flux2."platforms.macos-x64"]
+checksum = "sha256:04282f387a4e4809d25ec59526c2a5da7bc1c36216b34e93ee511b2ff5a4144e"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_darwin_amd64.tar.gz"
+provenance = "slsa"
+
+[tools.flux2."platforms.windows-x64"]
+checksum = "sha256:3a9303323dfa0d9f9cd2222edf21e10d0429bb058b0189cc1362f6391384bac8"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.2/flux_2.8.2_windows_amd64.zip"
+provenance = "slsa"
 
 [[tools.flux9s]]
 version = "0.7.7"
@@ -173,8 +229,36 @@ version = "1.61.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
-version = "4.1.1"
+version = "4.1.3"
 backend = "aqua:helm/helm"
+
+[tools.helm."platforms.linux-arm64"]
+checksum = "sha256:5db45e027cc8de4677ec869e5d803fc7631b0bab1c1eb62ac603a62d22359a43"
+url = "https://get.helm.sh/helm-v4.1.3-linux-arm64.tar.gz"
+
+[tools.helm."platforms.linux-arm64-musl"]
+checksum = "sha256:5db45e027cc8de4677ec869e5d803fc7631b0bab1c1eb62ac603a62d22359a43"
+url = "https://get.helm.sh/helm-v4.1.3-linux-arm64.tar.gz"
+
+[tools.helm."platforms.linux-x64"]
+checksum = "sha256:02ce9722d541238f81459938b84cf47df2fdf1187493b4bfb2346754d82a4700"
+url = "https://get.helm.sh/helm-v4.1.3-linux-amd64.tar.gz"
+
+[tools.helm."platforms.linux-x64-musl"]
+checksum = "sha256:02ce9722d541238f81459938b84cf47df2fdf1187493b4bfb2346754d82a4700"
+url = "https://get.helm.sh/helm-v4.1.3-linux-amd64.tar.gz"
+
+[tools.helm."platforms.macos-arm64"]
+checksum = "sha256:21c02fe2f7e27d08e24a6bf93103f9d2b25aab6f13f91814b2cfabc99b108a5e"
+url = "https://get.helm.sh/helm-v4.1.3-darwin-arm64.tar.gz"
+
+[tools.helm."platforms.macos-x64"]
+checksum = "sha256:742132e11cc08a81c97f70180cd714ae8376f8c896247a7b14ae1f51838b5a0b"
+url = "https://get.helm.sh/helm-v4.1.3-darwin-amd64.tar.gz"
+
+[tools.helm."platforms.windows-x64"]
+checksum = "sha256:fb8dc9b5c2f74456443a6a1bb431fe109d744151423133d921ec8a43b63cab90"
+url = "https://get.helm.sh/helm-v4.1.3-windows-amd64.tar.gz"
 
 [[tools.hubble]]
 version = "1.18.6"
@@ -264,7 +348,7 @@ version = "0.7.1"
 backend = "asdf:kubent"
 
 [[tools.kubeseal]]
-version = "0.36.0"
+version = "0.36.1"
 backend = "asdf:kubeseal"
 
 [[tools.kubesec]]
@@ -312,7 +396,7 @@ version = "3.11.13"
 backend = "aqua:FairwindsOps/nova"
 
 [[tools.npm]]
-version = "11.11.0"
+version = "11.11.1"
 backend = "npm:npm"
 
 [[tools.nsc]]
@@ -320,8 +404,36 @@ version = "2.12.0"
 backend = "github:nats-io/nsc"
 
 [[tools.oras]]
-version = "1.3.0"
+version = "1.3.1"
 backend = "aqua:oras-project/oras"
+
+[tools.oras."platforms.linux-arm64"]
+checksum = "sha256:79946ad57d732836f9242f903f476b6fa484c451d659f121bce54d931ab2a044"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_linux_arm64.tar.gz"
+
+[tools.oras."platforms.linux-arm64-musl"]
+checksum = "sha256:79946ad57d732836f9242f903f476b6fa484c451d659f121bce54d931ab2a044"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_linux_arm64.tar.gz"
+
+[tools.oras."platforms.linux-x64"]
+checksum = "sha256:d52c4af76ce6a3ceb8579e51fb751a43ac051cca67f965f973a0b0e897a2bb86"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_linux_amd64.tar.gz"
+
+[tools.oras."platforms.linux-x64-musl"]
+checksum = "sha256:d52c4af76ce6a3ceb8579e51fb751a43ac051cca67f965f973a0b0e897a2bb86"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_linux_amd64.tar.gz"
+
+[tools.oras."platforms.macos-arm64"]
+checksum = "sha256:d545a238f4c8be6dfae6c3d0ff5b09720c5588641d4a5180fb87c38a64500cc4"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_darwin_arm64.tar.gz"
+
+[tools.oras."platforms.macos-x64"]
+checksum = "sha256:22b7d8947d32280283c2e1a2fabc59d3b3c3b3056ec070dabdfe016fda532e52"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_darwin_amd64.tar.gz"
+
+[tools.oras."platforms.windows-x64"]
+checksum = "sha256:8cf69e46f966e592ad36261c05b8f59c02125743b7261c03f6badc3919b40cb0"
+url = "https://github.com/oras-project/oras/releases/download/v1.3.1/oras_1.3.1_windows_amd64.zip"
 
 [[tools.osv-scanner]]
 version = "2.3.3"
@@ -372,8 +484,36 @@ version = "0.20.1"
 backend = "github:gabm/Satty"
 
 [[tools.scaleway-cli]]
-version = "2.52.0"
+version = "2.53.0"
 backend = "aqua:scaleway/scaleway-cli"
+
+[tools.scaleway-cli."platforms.linux-arm64"]
+checksum = "sha256:a08264489cc3fafbdbb5fc45d861c38d84e5802ede26a3bf9595bec9f566306f"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_linux_arm64"
+
+[tools.scaleway-cli."platforms.linux-arm64-musl"]
+checksum = "sha256:a08264489cc3fafbdbb5fc45d861c38d84e5802ede26a3bf9595bec9f566306f"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_linux_arm64"
+
+[tools.scaleway-cli."platforms.linux-x64"]
+checksum = "sha256:245047d8ebe7987f67e145c6c64848e2de84328255f192f6febacf8e0292623f"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.linux-x64-musl"]
+checksum = "sha256:245047d8ebe7987f67e145c6c64848e2de84328255f192f6febacf8e0292623f"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.macos-arm64"]
+checksum = "sha256:5f39e704535b4a78f93313e67bbd3ef9197d3b36faaeffd92767f92472acc244"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_darwin_arm64"
+
+[tools.scaleway-cli."platforms.macos-x64"]
+checksum = "sha256:75310200f2abe9ac30263e100b923a26c04e96d3182ed6f9ad94e9d525051dff"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_darwin_amd64"
+
+[tools.scaleway-cli."platforms.windows-x64"]
+checksum = "sha256:cb03d91702d598cd4226c0552ed5eb72d80b93a85e69aba7fab02ea42c955e5e"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.53.0/scaleway-cli_2.53.0_windows_amd64.exe"
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
@@ -400,8 +540,36 @@ version = "1.5.0"
 backend = "aqua:yorukot/superfile"
 
 [[tools.talhelper]]
-version = "3.1.5"
+version = "3.1.6"
 backend = "aqua:budimanjojo/talhelper"
+
+[tools.talhelper."platforms.linux-arm64"]
+checksum = "sha256:4be992e07a4d6df11ca916572574993333da8a224e7e685b4ea28454d329759d"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_linux_arm64.tar.gz"
+
+[tools.talhelper."platforms.linux-arm64-musl"]
+checksum = "sha256:4be992e07a4d6df11ca916572574993333da8a224e7e685b4ea28454d329759d"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_linux_arm64.tar.gz"
+
+[tools.talhelper."platforms.linux-x64"]
+checksum = "sha256:ed07f585f245d6ab6d3df1438548109b48e68c6bf744be86fe69c0eba72770d2"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_linux_amd64.tar.gz"
+
+[tools.talhelper."platforms.linux-x64-musl"]
+checksum = "sha256:ed07f585f245d6ab6d3df1438548109b48e68c6bf744be86fe69c0eba72770d2"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_linux_amd64.tar.gz"
+
+[tools.talhelper."platforms.macos-arm64"]
+checksum = "sha256:fa75223a32ff60b691696b2bd5edc8b03f7bcf37a1a39095d1b69198638de7c3"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_darwin_arm64.tar.gz"
+
+[tools.talhelper."platforms.macos-x64"]
+checksum = "sha256:6a90081d9c1190523d411f134766b2555af4ebf4b8ef8588c6730a42e681fab1"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_darwin_amd64.tar.gz"
+
+[tools.talhelper."platforms.windows-x64"]
+checksum = "sha256:c80b275484d40af9d80301eb6a88786d0335dc5355d1107f89483fdc63b3163d"
+url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.6/talhelper_windows_amd64.tar.gz"
 
 [[tools.talosctl]]
 version = "1.12.5"
