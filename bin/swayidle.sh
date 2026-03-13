@@ -81,6 +81,12 @@ function resume_displays(){
 			sleep 1
 		fi
 	done
+	# Force modeset cycle after suspend resume to work around nvidia-drm bug
+	# where DPMS on succeeds at IPC level but GPU display engine doesn't drive output
+	(sleep 3 && for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
+		echo "== forcing modeset cycle on ${display}" | ts
+		swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable
+	done) &
 }
 #
 #############################################################################

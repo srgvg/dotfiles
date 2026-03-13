@@ -10,6 +10,7 @@ com.slack.Slack	4.46.99	flathub	system
 com.spotify.Client	1.2.74.477.g3be53afe	flathub	system
 eu.scarpetta.PDFMixTool	1.2.1	flathub	system
 io.dbeaver.DBeaverCommunity	25.3.4	flathub	system
+io.github.congard.qnvsm	1.6	flathub	system
 io.github.dyegoaurelio.simple-wireplumber-gui	0.2.2	flathub	system
 io.github.ungoogled_software.ungoogled_chromium	144.0.7559.132-1	flathub	system
 io.kinvolk.Headlamp	0.40.0	flathub	system

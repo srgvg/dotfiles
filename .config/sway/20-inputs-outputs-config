@@ -1,6 +1,6 @@
-set $primary DP-3
+set $primary DP-5
 #set $secondary DP-2
-set $tv HDMI-A-1
+set $tv DP-6
 
 # https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
 # swaymsg -t get_inputs -r | jq -r '.[].identifier' | grep -i keyboard
@@ -26,8 +26,9 @@ input "1386:965:Wacom_Intuos_BT_S_Pen" {
 
 output $primary {
     enable
-    mode 5120x1440
-    position 1920 0
+    mode 7680x2160
+    position 0 0
+    scale 1.5
     dpms on
 }
 #output $secondary {
