@@ -28,6 +28,7 @@ function define_adds() {
 .bashrc
 .bashrc.d/
 .blerc
+
 .config/alacritty/		:!.config/alacritty/themes
 .config/asdf-plugin-list
 .config/atuin/
@@ -128,6 +129,13 @@ Wallpapers
 .azure
 .azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry.txt .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json :!.azure.d/*/az_survey.json
 .cert/
+
+.claude/CLAUDE.md
+.claude/settings.json
+.claude/ccstatusline.sh
+.claude/hooks/nah_guard.py
+.claude/hooks/nah_guard.md
+
 .config/git/
 .config/mopidy/mopidy.conf
 .config/doctl/ :!.config/doctl/cache/
@@ -138,6 +146,7 @@ Wallpapers
 .config/gotify/
 .config/hcloud/
 .config/mopidy/
+.config/nah/config.yaml
 .config/nats/
 .config/remmina/
 .config/scw/
