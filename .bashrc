@@ -40,3 +40,6 @@ fi
 # This prevents duplicate sourcing and improves startup performance
 
 . "$HOME/.atuin/bin/env"
+
+# opencode
+export PATH=/home/serge/.opencode/bin:$PATH
