@@ -724,8 +724,63 @@ version = "0.2.0"
 backend = "github:traiproject/yaml-schema-router"
 
 [[tools."github:vicanso/zedis"]]
-version = "0.2.6"
+version = "0.2.7"
 backend = "github:vicanso/zedis"
+
+[tools."github:vicanso/zedis"."platforms.linux-arm64"]
+checksum = "sha256:9e0dea974dcc29f9cdfe7e84fb44c5ffb3f1a446f6ce7e171dbb8882f1864925"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181455"
+
+[tools."github:vicanso/zedis"."platforms.linux-arm64-musl"]
+checksum = "sha256:9e0dea974dcc29f9cdfe7e84fb44c5ffb3f1a446f6ce7e171dbb8882f1864925"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181455"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64"]
+checksum = "sha256:eac9652029b6956223b51a11856c559e22eb3194e45de20c823afa5ad52ea7e8"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181459"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-baseline"]
+checksum = "sha256:eac9652029b6956223b51a11856c559e22eb3194e45de20c823afa5ad52ea7e8"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181459"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-musl"]
+checksum = "sha256:eac9652029b6956223b51a11856c559e22eb3194e45de20c823afa5ad52ea7e8"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181459"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:eac9652029b6956223b51a11856c559e22eb3194e45de20c823afa5ad52ea7e8"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181459"
+
+[tools."github:vicanso/zedis"."platforms.macos-arm64"]
+checksum = "sha256:164f2c910d6ac840ba425de2e45263fe23079385b47e9b01faedd954a11007d3"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-aarch64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181458"
+
+[tools."github:vicanso/zedis"."platforms.macos-x64"]
+checksum = "sha256:4e74e26025131562dcb6b717dc69d9c82f2e54fca6b59502b1dcd7aec610a4e1"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-x86_64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181463"
+
+[tools."github:vicanso/zedis"."platforms.macos-x64-baseline"]
+checksum = "sha256:4e74e26025131562dcb6b717dc69d9c82f2e54fca6b59502b1dcd7aec610a4e1"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-x86_64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374181463"
+
+[tools."github:vicanso/zedis"."platforms.windows-x64"]
+checksum = "sha256:ab8cb40b5ebc90d722a308f9b1bb0266f83dcc01df56ab8caee0c159b43d1798"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374182958"
+
+[tools."github:vicanso/zedis"."platforms.windows-x64-baseline"]
+checksum = "sha256:ab8cb40b5ebc90d722a308f9b1bb0266f83dcc01df56ab8caee0c159b43d1798"
+url = "https://github.com/vicanso/zedis/releases/download/v0.2.7/zedis-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/374182958"
 
 [[tools."github:x-motemen/ghq"]]
 version = "1.9.4"
@@ -1007,8 +1062,63 @@ version = "0.6.3"
 backend = "aqua:pulumi/kubespy"
 
 [[tools.kubewall]]
-version = "0.0.16"
+version = "0.0.17"
 backend = "github:kubewall/kubewall"
+
+[tools.kubewall."platforms.linux-arm64"]
+checksum = "sha256:1e384676a91ac296f50f88f8980df74972b3235128d9547633e5e995ade76bc3"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_arm64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273683"
+
+[tools.kubewall."platforms.linux-arm64-musl"]
+checksum = "sha256:1e384676a91ac296f50f88f8980df74972b3235128d9547633e5e995ade76bc3"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_arm64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273683"
+
+[tools.kubewall."platforms.linux-x64"]
+checksum = "sha256:008ee43d7d79c7f41bc9116c61c08c4776e9f2fe446b30859a906b311609cd8b"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_amd64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273684"
+
+[tools.kubewall."platforms.linux-x64-baseline"]
+checksum = "sha256:008ee43d7d79c7f41bc9116c61c08c4776e9f2fe446b30859a906b311609cd8b"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_amd64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273684"
+
+[tools.kubewall."platforms.linux-x64-musl"]
+checksum = "sha256:008ee43d7d79c7f41bc9116c61c08c4776e9f2fe446b30859a906b311609cd8b"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_amd64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273684"
+
+[tools.kubewall."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:008ee43d7d79c7f41bc9116c61c08c4776e9f2fe446b30859a906b311609cd8b"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_0.0.17_linux_amd64.pkg.tar.zst"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273684"
+
+[tools.kubewall."platforms.macos-arm64"]
+checksum = "sha256:9a0514a214828bc764cf90cdc0c7d2179a4696176d9e997248a0105095386b61"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273635"
+
+[tools.kubewall."platforms.macos-x64"]
+checksum = "sha256:9a0514a214828bc764cf90cdc0c7d2179a4696176d9e997248a0105095386b61"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273635"
+
+[tools.kubewall."platforms.macos-x64-baseline"]
+checksum = "sha256:9a0514a214828bc764cf90cdc0c7d2179a4696176d9e997248a0105095386b61"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273635"
+
+[tools.kubewall."platforms.windows-x64"]
+checksum = "sha256:dabf000b5e2d683a918d4136c12f76001c80ff504986114b9da68a327d1dcca5"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273634"
+
+[tools.kubewall."platforms.windows-x64-baseline"]
+checksum = "sha256:dabf000b5e2d683a918d4136c12f76001c80ff504986114b9da68a327d1dcca5"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.17/kubewall_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/374273634"
 
 [[tools.kubie]]
 version = "0.26.1"
