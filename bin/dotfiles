@@ -182,7 +182,7 @@ function dotsadd() {
     echo "adding [dot] entries"
     for entry in ${dotadds}; do
         IFS=$OIFS
-        if ! vcsh run dot git add --force ${entry}; then
+        if ! vcsh run dot git add --force --sparse ${entry}; then
             err=$?
             echo
             title "ERROR ADDING ${entry}"
