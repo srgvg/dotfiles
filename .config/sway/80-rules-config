@@ -34,8 +34,9 @@ for_window [class="System-config-printer.py" instance="system-config-printer"] f
 for_window [app_id="nm-openconnect-auth-dialog"] floating_enable
 
 for_window [app_id="alacritty-floating"] floating enable
-for_window [app_id="alacritty-floating"] opacity 0.9
-for_window [app_id="alacritty-tiled"] opacity 0.9
+# this multiplies with alacritty setting
+#for_window [app_id="alacritty-floating"] opacity 0.9
+#for_window [app_id="alacritty-tiled"] opacity 0.9
 for_window [app_id=org.gnome.Calculator ] floating enable
 
 for_window [title="Extension: " app_id="firefox" shell="xdg_shell"] floating enable

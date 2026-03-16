@@ -152,7 +152,7 @@ function execute() {
 
     ###############################################################################
     if [ "$(hostname)" = "goldorak" ]; then
-        crontab -l >$HOME/etc/crontab
+        crontab -l >$HOME/etc/config/crontab
     fi
 }
 

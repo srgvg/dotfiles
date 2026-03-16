@@ -359,14 +359,23 @@ get_mise() {
         # comes in $HOME/.local/bin/mise $HOME/bin2/mise
     fi
 
+    # Load pinned version
+    source "$HOME/etc/config/versions"
+
     pushd $HOME
     # https://github.com/mise-plugins/mise-gcloud/issues/2
     export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
     mise settings lockfile=true
-    mise self-update --yes --no-plugins --verbose
+    local current_version="v$(mise --version | awk '{print $1}')"
+    if [ "${current_version}" != "${MISE_VERSION}" ]; then
+        log "mise self-update: ${current_version} -> ${MISE_VERSION}"
+        mise self-update --yes --no-plugins --verbose --version "${MISE_VERSION#v}"
+    else
+        log "mise already at pinned version ${MISE_VERSION}"
+    fi
     mise plugins update --verbose
     mise outdated --verbose
-    mise cache prune --verbose
+    #mise cache prune --verbose
     mise upgrade --yes --jobs 8
     mise reshim
     mise doctor --verbose
