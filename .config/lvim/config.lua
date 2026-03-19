@@ -15,7 +15,7 @@ lvim.colorscheme = ok and "tokyonight" or "lunar"
 lvim.log.level = "info"
 lvim.format_on_save = {
     enabled = true,
-    pattern = { "*.lua", "*.go", "*.py", "*.sh", "*.yaml", "*.yml" },
+    pattern = { "*.lua", "*.go", "*.py", "*.sh" },
     timeout = 1000,
 }
 
