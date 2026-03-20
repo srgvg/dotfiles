@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# browser-picker — open a URL in a user-selected browser/profile via wofi
+# Config: ~/.config/browser-picker/browsers.conf (Label | command %u)
+set -o nounset -o pipefail
+
+CONFIG="${HOME}/.config/browser-picker/browsers.conf"
+declare -a LABELS=() COMMANDS=()
+
+parse_config() {
+    [[ -f "$CONFIG" ]] || return 1
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ "$line" =~ ^([^|]+)\|(.+)$ ]] || continue
+        local label="${BASH_REMATCH[1]}" cmd="${BASH_REMATCH[2]}"
+        label="${label#"${label%%[![:space:]]*}"}"; label="${label%"${label##*[![:space:]]}"}"
+        cmd="${cmd#"${cmd%%[![:space:]]*}"}";       cmd="${cmd%"${cmd##*[![:space:]]}"}"
+        LABELS+=("$label"); COMMANDS+=("$cmd")
+    done < "$CONFIG"
+    [[ ${#LABELS[@]} -gt 0 ]]
+}
+
+pick_browser() {
+    local url="$1"
+    # URL shown as last item; wraps naturally for long URLs
+    local url_item="── ${url} ──"
+    local total_lines=$(( ${#LABELS[@]} + 1 ))
+
+    printf '%s\n' "${LABELS[@]}" "$url_item" \
+        | wofi --dmenu \
+            --prompt "Open with:" \
+            --lines "$total_lines" \
+            --width 650 \
+            --cache-file=/dev/null \
+            --hide-scroll \
+        || return 1   # Escape pressed → non-zero exit
+}
+
+main() {
+    local url="${1:-}"
+
+    if ! parse_config; then
+        "${HOME}/bin/firefox.real" --new-tab -P serge ${url:+"$url"} & disown
+        exit 0
+    fi
+
+    if ! command -v wofi >/dev/null 2>&1; then
+        local cmd="${COMMANDS[0]//%u/$url}"
+        eval "$cmd" & disown
+        exit 0
+    fi
+
+    local selected
+    selected="$(pick_browser "$url")" || exit 0  # Escape = exit cleanly
+    [[ -z "$selected" ]] && exit 0
+    # If user selected the URL info line, do nothing
+    [[ "$selected" == "── "* ]] && exit 0
+
+    local url_q; url_q="$(printf '%q' "$url")"
+    for i in "${!LABELS[@]}"; do
+        [[ "${LABELS[$i]}" == "$selected" ]] || continue
+        local cmd="${COMMANDS[$i]//%u/$url_q}"
+        eval "$cmd" & disown
+        exit 0
+    done
+}
+
+main "${1:-}"

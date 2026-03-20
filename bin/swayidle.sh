@@ -132,6 +132,9 @@ function resume() {
 function idlecommand() {
 	command=${1}
 
+	# Log event marker to VRAM snapshot log for correlation with VRAM data
+	echo "$(date '+%Y-%m-%d %H:%M:%S') | EVENT | ${command}" >> "$HOME/logs/nvidia-vram-snapshots.log"
+
 	if [ "${command}" = "timeout" ]
 	then
 		pause_displays
