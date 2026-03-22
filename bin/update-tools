@@ -430,15 +430,16 @@ get_bash_completions() {
 
 ##########################################################################################################
 
-get_pipx() {
+get_uv_tools() {
 
-    title update pipx
-    log install new packages from pipx list
-    comm -13 <(pipx list --short | sed s/\ .*//) <(<~/etc/packages/pipx.list sed s/\ .*//) | xargs --no-run-if-empty -n1 pipx install
-    log upgrade all
-    pipx upgrade-all
-    log save new pipx.list
-    pipx list --short >$TMPPATH/pipx.list && mv $TMPPATH/pipx.list $HOME/etc/packages/pipx.list
+    title "uv tools"
+    log "install new packages from uv-tools list"
+    comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}') <(<~/etc/packages/uv-tools.list grep -v '^-' | awk '{print $1}') |
+        xargs --no-run-if-empty -n1 uv tool install
+    log "upgrade all"
+    uv tool upgrade --all
+    log "save new uv-tools.list"
+    uv tool list >$TMPPATH/uv-tools.list && mv $TMPPATH/uv-tools.list $HOME/etc/packages/uv-tools.list
 
 }
 
@@ -550,7 +551,7 @@ get_ai() {
 update_all() {
 
     run_component "mise" get_mise
-    run_component "pipx" get_pipx
+    run_component "uv_tools" get_uv_tools
     run_component "krew" get_krew
     run_component "helm" get_helm
     run_component "flatpak" get_flatpak
@@ -615,7 +616,7 @@ for command in ${commands}; do
             get_krew &
             get_misc &
             get_mise &
-            get_pipx &
+            get_uv_tools &
             get_bash_completions &
             wait
             post
@@ -624,9 +625,9 @@ for command in ${commands}; do
             init
             run_component "mise" get_mise
             ;;
-        pipx)
+        uv-tools | uv_tools)
             init
-            run_component "pipx" get_pipx
+            run_component "uv_tools" get_uv_tools
             ;;
         krew)
             init
@@ -681,7 +682,7 @@ possible options are:
     krew
     misc
     mise
-    pipx
+    uv-tools
     shell-init
 
 EOF
