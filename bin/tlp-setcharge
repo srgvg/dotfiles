@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+export DEBUG=${DEBUG:-0}
+
+SYSFS_BASE="/sys/class/power_supply"
+TLP_BATTERY_CONF="/etc/tlp.d/10-battery.conf"
+
+function detect_batteries() {
+	local batteries=()
+	local dir
+	for dir in "${SYSFS_BASE}"/BAT* "${SYSFS_BASE}"/CMB*; do
+		if [ -f "${dir}/charge_control_start_threshold" ]; then
+			batteries+=("$(basename "$dir")")
+		fi
+	done
+	if [ ${#batteries[@]} -eq 0 ]; then
+		errexit "No batteries with charge threshold support found"
+	fi
+	echo "${batteries[@]}"
+}
+
+function show_battery() {
+	local bat="$1"
+	local start stop
+	start=$(cat "${SYSFS_BASE}/${bat}/charge_control_start_threshold" 2>/dev/null) || start="unknown"
+	stop=$(cat "${SYSFS_BASE}/${bat}/charge_control_end_threshold" 2>/dev/null) || stop="unknown"
+	echo -e "${echo_bold_white}Battery charge thresholds (${bat})${echo_normal}"
+	echo -e "  start: ${echo_white}${start}%${echo_normal}   (charging begins below this level)"
+	echo -e "  stop:  ${echo_white}${stop}%${echo_normal}   (charging stops above this level)"
+}
+
+function show_all() {
+	local batteries
+	read -ra batteries <<< "$(detect_batteries)"
+	local first=true
+	for bat in "${batteries[@]}"; do
+		${first} || echo ""
+		first=false
+		show_battery "$bat"
+	done
+}
+
+function usage() {
+	cat <<-'EOF'
+	Usage: tlp-setcharge [<start> <stop> | <profile>] [-s|--save] [BAT]
+
+	Set battery charge thresholds. Changes are temporary (runtime only,
+	reset on reboot) unless --save is used.
+
+	  <start>  Charge level (1-100) below which charging BEGINS when AC is
+	           connected. The battery must drop below this level before the
+	           charger kicks in. Lower = less frequent charging cycles.
+
+	  <stop>   Charge level (1-100) above which charging STOPS. The battery
+	           will never be charged beyond this level. Lower = less wear on
+	           the battery, but less capacity available for portable use.
+
+	  [BAT]   Optional battery name (e.g. BAT0, BAT1, CMB0).
+	           If omitted, sets thresholds on all detected batteries.
+
+	Options:
+	  -s, --save   Make the change permanent in /etc/tlp.d/10-battery.conf
+
+	Profiles:
+	  desk     45/50    Mostly on AC, occasional battery use (best longevity)
+	  travel   96/100   Unreliable charging, need full capacity
+
+	Examples:
+	  tlp-setcharge desk              Temporary desk profile
+	  tlp-setcharge travel --save     Permanent travel profile
+	  tlp-setcharge 75 80 -s BAT0    Permanent custom thresholds on BAT0
+	EOF
+}
+
+function resolve_profile() {
+	local profile="$1"
+	case "$profile" in
+		desk)   echo "45 50" ;;
+		travel) echo "96 100" ;;
+		*)      return 1 ;;
+	esac
+}
+
+function save_config() {
+	local bat="$1"
+	local start="$2"
+	local stop="$3"
+	local start_key="START_CHARGE_THRESH_${bat}"
+	local stop_key="STOP_CHARGE_THRESH_${bat}"
+
+	# Update or add start threshold
+	if grep -q "^${start_key}=" "$TLP_BATTERY_CONF" 2>/dev/null; then
+		sudo sed -i "s/^${start_key}=.*/${start_key}=${start}/" "$TLP_BATTERY_CONF"
+	elif grep -q "^#${start_key}=" "$TLP_BATTERY_CONF" 2>/dev/null; then
+		sudo sed -i "s/^#${start_key}=.*/${start_key}=${start}/" "$TLP_BATTERY_CONF"
+	else
+		echo "${start_key}=${start}" | sudo tee -a "$TLP_BATTERY_CONF" >/dev/null
+	fi
+
+	# Update or add stop threshold
+	if grep -q "^${stop_key}=" "$TLP_BATTERY_CONF" 2>/dev/null; then
+		sudo sed -i "s/^${stop_key}=.*/${stop_key}=${stop}/" "$TLP_BATTERY_CONF"
+	elif grep -q "^#${stop_key}=" "$TLP_BATTERY_CONF" 2>/dev/null; then
+		sudo sed -i "s/^#${stop_key}=.*/${stop_key}=${stop}/" "$TLP_BATTERY_CONF"
+	else
+		echo "${stop_key}=${stop}" | sudo tee -a "$TLP_BATTERY_CONF" >/dev/null
+	fi
+}
+
+# Parse --save / -s from arguments
+save=false
+args=()
+for arg in "$@"; do
+	case "$arg" in
+		-s|--save) save=true ;;
+		*)         args+=("$arg") ;;
+	esac
+done
+set -- "${args[@]+"${args[@]}"}"
+
+if [ $# -eq 0 ]; then
+	show_all
+	echo ""
+	usage
+	exit 0
+fi
+
+# Resolve profile or numeric args
+if [ $# -eq 1 ] || { [ $# -eq 2 ] && [[ "$2" =~ ^(BAT|CMB) ]]; }; then
+	profile_values=$(resolve_profile "$1") || {
+		notify_error "Unknown profile or missing stop threshold: '$1'"
+		usage
+		exit 1
+	}
+	read -r start stop <<< "$profile_values"
+	shift
+elif [ $# -ge 2 ]; then
+	start="$1"
+	stop="$2"
+	shift 2
+else
+	notify_error "Expected 2 arguments (start stop), a profile name, or no arguments"
+	usage
+	exit 1
+fi
+
+# Remaining arg is optional battery name
+target_bat="${1:-}"
+
+# Validate numeric
+if ! [[ "$start" =~ ^[0-9]+$ ]] || ! [[ "$stop" =~ ^[0-9]+$ ]]; then
+	errexit "Both thresholds must be numbers, got: start='${start}' stop='${stop}'"
+fi
+
+# Validate range
+if [ "$start" -lt 1 ] || [ "$start" -gt 100 ]; then
+	errexit "Start threshold must be 1-100, got: ${start}"
+fi
+if [ "$stop" -lt 1 ] || [ "$stop" -gt 100 ]; then
+	errexit "Stop threshold must be 1-100, got: ${stop}"
+fi
+
+# Validate order
+if [ "$start" -ge "$stop" ]; then
+	errexit "Start (${start}) must be less than stop (${stop})"
+fi
+
+# Determine target batteries
+all_batteries=()
+read -ra all_batteries <<< "$(detect_batteries)"
+
+if [ -n "$target_bat" ]; then
+	found=false
+	for bat in "${all_batteries[@]}"; do
+		if [ "$bat" = "$target_bat" ]; then
+			found=true
+			break
+		fi
+	done
+	if ! ${found}; then
+		errexit "Battery '${target_bat}' not found. Available: ${all_batteries[*]}"
+	fi
+	target_batteries=("$target_bat")
+else
+	target_batteries=("${all_batteries[@]}")
+fi
+
+# Apply
+show_all
+echo ""
+
+if ${save}; then
+	mode="permanent"
+else
+	mode="temporary, resets on reboot"
+fi
+
+for bat in "${target_batteries[@]}"; do
+	notify "Setting ${bat} thresholds: start=${start}% stop=${stop}% (${mode})"
+	sudo tlp setcharge "$start" "$stop" "$bat"
+	if ${save}; then
+		save_config "$bat" "$start" "$stop"
+		notify "Saved ${bat} thresholds to ${TLP_BATTERY_CONF}"
+	fi
+done
+
+echo ""
+show_all

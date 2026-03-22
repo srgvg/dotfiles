@@ -100,36 +100,36 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.4/argocd-windo
 provenance = "slsa"
 
 [[tools.awscli]]
-version = "2.34.13"
+version = "2.34.14"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.13.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.14.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.13.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.14.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:23e3021d87c174b4a47bc6c54315c1d968e2e5e8d7a29d07da7036413383d874"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.13.zip"
+checksum = "blake3:fa8dd6d85f60bd5365ca84ef9455953fcf4c039b310aae04eefb02f7b57e9ac0"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.14.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.13.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.14.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.13.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.14.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.13.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.14.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.13.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.14.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.13.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.14.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.13.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.14.pkg"
 
 [[tools.azure-cli]]
 version = "2.84.0"
@@ -908,63 +908,63 @@ checksum = "sha256:b2816e506390a89941c63c9187d58a3cc10e9a55f2ef0685f9ea0eccaf7c9
 url = "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-pc-windows-msvc.zip"
 
 [[tools.flux-operator]]
-version = "0.45.0"
+version = "0.45.1"
 backend = "github:controlplaneio-fluxcd/flux-operator"
 
 [tools.flux-operator."platforms.linux-arm64"]
-checksum = "sha256:49101c955cd6aed2a9141a4cd5d38181ea586bdbb6ab99f604d8fa44f32093a8"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046749"
+checksum = "sha256:19bd02fc47e5723674a4552f7013083e0a132746bcdf8b6c8ec94e94fea66bac"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953215"
 
 [tools.flux-operator."platforms.linux-arm64-musl"]
-checksum = "sha256:49101c955cd6aed2a9141a4cd5d38181ea586bdbb6ab99f604d8fa44f32093a8"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046749"
+checksum = "sha256:19bd02fc47e5723674a4552f7013083e0a132746bcdf8b6c8ec94e94fea66bac"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953215"
 
 [tools.flux-operator."platforms.linux-x64"]
-checksum = "sha256:928c881a13af3860605ef6590cafcd97d236f0eaeea3d0efabfead458048b43a"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046750"
+checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
 
 [tools.flux-operator."platforms.linux-x64-baseline"]
-checksum = "sha256:928c881a13af3860605ef6590cafcd97d236f0eaeea3d0efabfead458048b43a"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046750"
+checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
 
 [tools.flux-operator."platforms.linux-x64-musl"]
-checksum = "sha256:928c881a13af3860605ef6590cafcd97d236f0eaeea3d0efabfead458048b43a"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046750"
+checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
 
 [tools.flux-operator."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:928c881a13af3860605ef6590cafcd97d236f0eaeea3d0efabfead458048b43a"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046750"
+checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
 
 [tools.flux-operator."platforms.macos-arm64"]
-checksum = "sha256:0f2612c295616897bdd809b4e24c4ec2454751ab92817767ac782f6986890f0e"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046752"
+checksum = "sha256:e21247a17b07f89bcaa703aef3d556d11edeeb0d8088003ba703bf4f0c70f134"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953220"
 
 [tools.flux-operator."platforms.macos-x64"]
-checksum = "sha256:9117641910d9eec6ef7d720ef539f765cfd89950645aeb02490ce8f879eed59c"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046753"
+checksum = "sha256:2289ea588c777a80880898b4c7bca86905bfd5e3bfda7541de9bf8a6e4b3089b"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953217"
 
 [tools.flux-operator."platforms.macos-x64-baseline"]
-checksum = "sha256:9117641910d9eec6ef7d720ef539f765cfd89950645aeb02490ce8f879eed59c"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046753"
+checksum = "sha256:2289ea588c777a80880898b4c7bca86905bfd5e3bfda7541de9bf8a6e4b3089b"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953217"
 
 [tools.flux-operator."platforms.windows-x64"]
-checksum = "sha256:193701e8e7f377550269ecdf3fc28cff0e46fc9adc43eb414d1efbf27410ee98"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_windows_amd64.zip"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046771"
+checksum = "sha256:e43f09c611f477cde538be3923c588959a35c6c2baf0cd1eb3cd118ca15a62e3"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_windows_amd64.zip"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953225"
 
 [tools.flux-operator."platforms.windows-x64-baseline"]
-checksum = "sha256:193701e8e7f377550269ecdf3fc28cff0e46fc9adc43eb414d1efbf27410ee98"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.0/flux-operator-mcp_0.45.0_windows_amd64.zip"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/375046771"
+checksum = "sha256:e43f09c611f477cde538be3923c588959a35c6c2baf0cd1eb3cd118ca15a62e3"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_windows_amd64.zip"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953225"
 
 [[tools.flux2]]
 version = "2.8.3"
@@ -1077,8 +1077,63 @@ version = "2.88.1"
 backend = "aqua:cli/cli"
 
 [[tools."github:MiniCodeMonkey/chief"]]
-version = "0.7.0"
+version = "0.8.0"
 backend = "github:MiniCodeMonkey/chief"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-arm64"]
+checksum = "sha256:b0ea988385a3186e6c44cf96a35d3605899fc536551e173a74a36f5c36198e2c"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192540"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-arm64-musl"]
+checksum = "sha256:b0ea988385a3186e6c44cf96a35d3605899fc536551e173a74a36f5c36198e2c"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192540"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-x64"]
+checksum = "sha256:cf0b4b5b4cbd3b27de065bd32489938f46f40ad16ff08b8e354274986255f3dc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192534"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-x64-baseline"]
+checksum = "sha256:cf0b4b5b4cbd3b27de065bd32489938f46f40ad16ff08b8e354274986255f3dc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192534"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-x64-musl"]
+checksum = "sha256:cf0b4b5b4cbd3b27de065bd32489938f46f40ad16ff08b8e354274986255f3dc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192534"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:cf0b4b5b4cbd3b27de065bd32489938f46f40ad16ff08b8e354274986255f3dc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192534"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.macos-arm64"]
+checksum = "sha256:10629eeff66ee1c69f742d23c7be7d42ce7a1eea505d847e4b10a4f0dc4a6c76"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192538"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.macos-x64"]
+checksum = "sha256:5cee1ec06fc63c508e48029b3d4709f341d22633f58e4d93825a82a95c7484fc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192533"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.macos-x64-baseline"]
+checksum = "sha256:5cee1ec06fc63c508e48029b3d4709f341d22633f58e4d93825a82a95c7484fc"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192533"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.windows-x64"]
+checksum = "sha256:a8cae6e4ccf1e0461e172ca94a889d22b6881d4e1caf59a3e037539b598dd9b8"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192535"
+
+[tools."github:MiniCodeMonkey/chief"."platforms.windows-x64-baseline"]
+checksum = "sha256:a8cae6e4ccf1e0461e172ca94a889d22b6881d4e1caf59a3e037539b598dd9b8"
+url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.8.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192535"
 
 [[tools."github:dgunzy/flux9s"]]
 version = "0.8.0"
@@ -1132,6 +1187,36 @@ url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710705"
 [[tools."github:fioletoven/b4n"]]
 version = "0.4.4"
 backend = "github:fioletoven/b4n"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64"]
+checksum = "sha256:7800f884c5292708c0024377889a7a3e24afdf8522c45f2758481161266a2c3b"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373884950"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-baseline"]
+checksum = "sha256:7800f884c5292708c0024377889a7a3e24afdf8522c45f2758481161266a2c3b"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373884950"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-musl"]
+checksum = "sha256:7800f884c5292708c0024377889a7a3e24afdf8522c45f2758481161266a2c3b"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373884950"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:7800f884c5292708c0024377889a7a3e24afdf8522c45f2758481161266a2c3b"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373884950"
+
+[tools."github:fioletoven/b4n"."platforms.windows-x64"]
+checksum = "sha256:9282a952d792fc1438d44cd1484852b0010dcf062d9f1cf51ce6cf3219bf30ca"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373886212"
+
+[tools."github:fioletoven/b4n"."platforms.windows-x64-baseline"]
+checksum = "sha256:9282a952d792fc1438d44cd1484852b0010dcf062d9f1cf51ce6cf3219bf30ca"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.4/b4n-0.4.4-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/373886212"
 
 [[tools."github:gruntwork-io/git-xargs"]]
 version = "0.1.16"
@@ -1207,6 +1292,61 @@ url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/376815962"
 [[tools."github:vmware-tanzu/tanzu-cli"]]
 version = "1.5.4"
 backend = "github:vmware-tanzu/tanzu-cli"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-arm64"]
+checksum = "sha256:dedc840903dc80920d54e259f9d3704ee325031d1185247aed16ab8fca21b435"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-arm64-unstable.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318632"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-arm64-musl"]
+checksum = "sha256:dedc840903dc80920d54e259f9d3704ee325031d1185247aed16ab8fca21b435"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-arm64-unstable.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318632"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-x64"]
+checksum = "sha256:cb8057f8dd0299d634d4298f3ee6474b62865bb795c04b7b830ce12c9f86e4d0"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318623"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-x64-baseline"]
+checksum = "sha256:cb8057f8dd0299d634d4298f3ee6474b62865bb795c04b7b830ce12c9f86e4d0"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318623"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-x64-musl"]
+checksum = "sha256:cb8057f8dd0299d634d4298f3ee6474b62865bb795c04b7b830ce12c9f86e4d0"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318623"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:cb8057f8dd0299d634d4298f3ee6474b62865bb795c04b7b830ce12c9f86e4d0"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318623"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.macos-arm64"]
+checksum = "sha256:b685b840f58a981edfac3b0c0b7d4d09987de9aad5236b308d424e287bf8f5e7"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318616"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.macos-x64"]
+checksum = "sha256:ff4378465f9489cdbd21d5cb3fd74d25cfabeb1a746cb1d203f0aa289c22d99a"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318602"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.macos-x64-baseline"]
+checksum = "sha256:ff4378465f9489cdbd21d5cb3fd74d25cfabeb1a746cb1d203f0aa289c22d99a"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318602"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.windows-x64"]
+checksum = "sha256:a4220947a81e47738fc885edb174f17f678f2fd348e7ae46334f69c27e3f7683"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-windows-amd64.zip"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318637"
+
+[tools."github:vmware-tanzu/tanzu-cli"."platforms.windows-x64-baseline"]
+checksum = "sha256:a4220947a81e47738fc885edb174f17f678f2fd348e7ae46334f69c27e3f7683"
+url = "https://github.com/vmware-tanzu/tanzu-cli/releases/download/v1.5.4/tanzu-cli-windows-amd64.zip"
+url_api = "https://api.github.com/repos/vmware-tanzu/tanzu-cli/releases/assets/366318637"
 
 [[tools."github:x-motemen/ghq"]]
 version = "1.9.4"
@@ -1327,16 +1467,60 @@ url = "https://dl.google.com/go/go1.26.1.windows-amd64.zip"
 version = "0.21.3"
 backend = "aqua:google/go-containerregistry"
 
+[[tools."go:github.com/apricote/hcloud-upload-image"]]
+version = "1.3.0"
+backend = "go:github.com/apricote/hcloud-upload-image"
+
+[[tools."go:github.com/fatih/gomodifytags"]]
+version = "1.17.0"
+backend = "go:github.com/fatih/gomodifytags"
+
+[[tools."go:github.com/go-delve/delve/cmd/dlv"]]
+version = "1.26.1"
+backend = "go:github.com/go-delve/delve/cmd/dlv"
+
+[[tools."go:github.com/google/gops"]]
+version = "0.3.29"
+backend = "go:github.com/google/gops"
+
+[[tools."go:github.com/josharian/impl"]]
+version = "1.5.0"
+backend = "go:github.com/josharian/impl"
+
+[[tools."go:github.com/kisielk/errcheck"]]
+version = "1.10.0"
+backend = "go:github.com/kisielk/errcheck"
+
+[[tools."go:github.com/mgechev/revive"]]
+version = "1.15.0"
+backend = "go:github.com/mgechev/revive"
+
 [[tools."go:github.com/nats-io/nkeys/nk"]]
 version = "0.4.15"
 backend = "go:github.com/nats-io/nkeys/nk"
+
+[[tools."go:golang.org/x/tools/cmd/goimports"]]
+version = "0.43.0"
+backend = "go:golang.org/x/tools/cmd/goimports"
+
+[[tools."go:golang.org/x/tools/cmd/gonew"]]
+version = "0.43.0"
+backend = "go:golang.org/x/tools/cmd/gonew"
+
+[[tools."go:golang.org/x/tools/gopls"]]
+version = "0.21.1"
+backend = "go:golang.org/x/tools/gopls"
+
+[[tools."go:honnef.co/go/tools/cmd/staticcheck"]]
+version = "0.7.0"
+backend = "go:honnef.co/go/tools/cmd/staticcheck"
 
 [[tools.grpcurl]]
 version = "1.9.3"
 backend = "aqua:fullstorydev/grpcurl"
 
 [[tools.hcloud]]
-version = "1.61.0"
+version = "1.62.0"
 backend = "asdf:hcloud"
 
 [[tools.helm]]

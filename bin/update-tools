@@ -375,8 +375,9 @@ get_mise() {
     fi
     mise plugins update --verbose
     mise outdated --verbose
-    #mise cache prune --verbose
+    mise cache prune --verbose
     mise upgrade --yes --jobs 8
+    mise prune --yes
     mise reshim
     mise doctor --verbose
     popd
