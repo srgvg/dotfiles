@@ -28,6 +28,12 @@ GROWTH_THRESHOLD=100  # MiB delta per reading to count as growth
 GROWTH_ALERT_COUNT=3  # consecutive readings before alerting
 GROWTH_ALERTED=0      # only alert once per leak episode
 
+# Automated modeset cycle: flush leaked Vulkan textures during swaylock
+# wlroots 0.19.2 GC doesn't run during swaylock, causing ~115 MiB/min leak
+SWAY_VRAM_MODESET_THRESHOLD="${NVIDIA_VRAM_MODESET_THRESHOLD:-3000}"  # MiB
+MODESET_COOLDOWN=300  # seconds between modeset cycles
+LAST_MODESET_TIME=0
+
 get_pmon_output() {
     # Parse nvidia-smi pmon output with PIDs
     # Output format: name[pid]=NNNm name[pid]=NNNm ...
@@ -89,6 +95,85 @@ check_growth_rate() {
     fi
 
     PREV_SWAY_VRAM="$current_sway_vram"
+}
+
+find_swaysock() {
+    # Find the sway IPC socket for the current user
+    local uid
+    uid=$(id -u)
+    ls -t "/run/user/${uid}/sway-ipc."*.sock 2>/dev/null | head -1
+}
+
+perform_modeset_cycle() {
+    # Flush leaked Vulkan textures by cycling display outputs
+    local sock
+    sock=$(find_swaysock)
+    if [ -z "$sock" ]; then
+        notify_error "modeset cycle: no SWAYSOCK found"
+        return 1
+    fi
+
+    local ts
+    ts=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "${ts} | EVENT | modeset_cycle (sway VRAM=${1:-?}M)" >>"${SNAPSHOT_LOG}"
+
+    notify_desktop_always normal "VRAM Remediation" \
+        "Modeset cycle: flushing leaked textures (sway=${1:-?}M)"
+
+    local output_names
+    output_names=$(SWAYSOCK="$sock" swaymsg -t get_outputs 2>/dev/null |
+        python3 -c "import json,sys; [print(o['name']) for o in json.load(sys.stdin) if o.get('active')]" 2>/dev/null)
+
+    if [ -z "$output_names" ]; then
+        notify_error "modeset cycle: no active outputs found"
+        return 1
+    fi
+
+    for output in $output_names; do
+        notify "modeset cycle: disable/enable ${output}"
+        SWAYSOCK="$sock" swaymsg output "${output}" disable 2>/dev/null && \
+            sleep 1 && \
+            SWAYSOCK="$sock" swaymsg output "${output}" enable 2>/dev/null
+    done
+
+    LAST_MODESET_TIME=$(date +%s)
+
+    # Verify VRAM dropped
+    sleep 2
+    local new_used
+    new_used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | tr -d ' ')
+    local new_ts
+    new_ts=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "${new_ts} | EVENT | modeset_cycle_done (VRAM now=${new_used:-?}M)" >>"${SNAPSHOT_LOG}"
+    notify "modeset cycle complete (VRAM now=${new_used:-?}M)"
+}
+
+check_modeset_needed() {
+    local current_sway_vram="$1"
+
+    if [ -z "$current_sway_vram" ]; then
+        return
+    fi
+
+    if [ "$current_sway_vram" -le "$SWAY_VRAM_MODESET_THRESHOLD" ]; then
+        return
+    fi
+
+    # Only during swaylock (the leak only happens when swaylock suppresses rendering)
+    if ! pgrep -x swaylock > /dev/null 2>&1; then
+        return
+    fi
+
+    # Cooldown check
+    local now
+    now=$(date +%s)
+    local elapsed=$((now - LAST_MODESET_TIME))
+    if [ "$elapsed" -lt "$MODESET_COOLDOWN" ]; then
+        return
+    fi
+
+    notify "sway VRAM ${current_sway_vram}M > threshold ${SWAY_VRAM_MODESET_THRESHOLD}M during swaylock — triggering modeset cycle"
+    perform_modeset_cycle "$current_sway_vram"
 }
 
 write_snapshot() {
@@ -162,9 +247,10 @@ while true; do
     # Write snapshot to file (with full PID-annotated list)
     write_snapshot "${used}" "${total}" "${pct}"
 
-    # Check sway VRAM growth rate
+    # Check sway VRAM growth rate and automated remediation
     sway_vram=$(extract_sway_vram "$all_procs")
     check_growth_rate "${sway_vram:-}"
+    check_modeset_needed "${sway_vram:-}"
 
     if [ "${pct}" -ge "${CRIT_PCT}" ]; then
         notify_desktop_always critical "GPU VRAM Critical" \
