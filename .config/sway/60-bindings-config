@@ -252,6 +252,7 @@ bindsym --no-repeat Pause			exec $lockscreen
 bindsym --no-repeat $mod+l			exec $lockscreen
 bindsym --no-repeat $mod+Pause			exec $suspend
 bindsym --no-repeat $mod+Control+l		exec $suspend
+bindsym --no-repeat $mod+Control+Alt+l	exec wlogout
 bindsym --no-repeat $mod+Control+Alt+Pause	exec wlogout
 
 # start some tools
@@ -261,6 +262,7 @@ bindsym --no-repeat $mod+c				exec gnome-calculator
 bindsym --no-repeat $mod+Control+c		exec $dfzf_term dfzf-clipboard
 bindsym --no-repeat $mod+Control+d	    exec nautilus --new-window
 bindsym --no-repeat $mod+d		exec nemo
+bindsym --no-repeat $mod+Shift+l	exec launch-desktop-jobs
 
 # start browsers
 bindsym --no-repeat $mod+o			exec firefox

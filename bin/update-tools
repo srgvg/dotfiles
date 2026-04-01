@@ -433,11 +433,37 @@ get_bash_completions() {
 get_uv_tools() {
 
     title "uv tools"
+
+    local with_conf="$HOME/etc/packages/uv-tools-with.conf"
+
+    # Helper: return the --with flags for a package, if any
+    uv_tool_with_flags() {
+        local pkg="$1"
+        grep -E "^${pkg}\b" "$with_conf" 2>/dev/null | sed "s/^${pkg}//" | xargs
+    }
+
     log "install new packages from uv-tools list"
-    comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}') <(<~/etc/packages/uv-tools.list grep -v '^-' | awk '{print $1}') |
-        xargs --no-run-if-empty -n1 uv tool install
+    comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}') \
+             <(<~/etc/packages/uv-tools.list grep -v '^-' | awk '{print $1}') |
+        while read -r pkg; do
+            local flags
+            flags="$(uv_tool_with_flags "$pkg")"
+            # shellcheck disable=SC2086
+            uv tool install "$pkg" $flags
+        done
+
     log "upgrade all"
     uv tool upgrade --all
+
+    log "re-apply --with extras (ensure drift recovery)"
+    if [ -f "$with_conf" ]; then
+        grep -v '^\s*#' "$with_conf" | grep -v '^\s*$' |
+        while read -r pkg flags; do
+            # shellcheck disable=SC2086
+            uv tool install "$pkg" $flags --force
+        done
+    fi
+
     log "save new uv-tools.list"
     uv tool list >$TMPPATH/uv-tools.list && mv $TMPPATH/uv-tools.list $HOME/etc/packages/uv-tools.list
 

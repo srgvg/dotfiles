@@ -130,10 +130,39 @@ perform_modeset_cycle() {
     fi
 
     for output in $output_names; do
-        notify "modeset cycle: disable/enable ${output}"
-        SWAYSOCK="$sock" swaymsg output "${output}" disable 2>/dev/null && \
-            sleep 1 && \
-            SWAYSOCK="$sock" swaymsg output "${output}" enable 2>/dev/null
+        # Capture current config before disabling so we can restore it after
+        local cfg
+        cfg=$(SWAYSOCK="$sock" swaymsg -t get_outputs 2>/dev/null |
+            python3 -c "
+import json, sys
+name = sys.argv[1]
+data = json.load(sys.stdin)
+for o in data:
+    if o['name'] == name and o.get('active'):
+        m = o.get('current_mode', {})
+        w, h = m.get('width', 0), m.get('height', 0)
+        hz = m.get('refresh', 60000) / 1000
+        scale = o.get('scale', 1.0)
+        rect = o.get('rect', {})
+        x, y = rect.get('x', 0), rect.get('y', 0)
+        print(f'{w}x{h}@{hz:.3f}Hz {scale} {x} {y}')
+        break
+" "$output" 2>/dev/null)
+
+        notify "modeset cycle: disable/enable ${output} (cfg=${cfg:-unknown})"
+        SWAYSOCK="$sock" swaymsg output "${output}" disable 2>/dev/null
+        sleep 1
+        SWAYSOCK="$sock" swaymsg output "${output}" enable 2>/dev/null
+
+        # Re-apply output configuration to restore mode/scale/position
+        if [ -n "$cfg" ]; then
+            local mode scale px py
+            read -r mode scale px py <<< "$cfg"
+            sleep 0.5
+            SWAYSOCK="$sock" swaymsg output "${output}" \
+                mode "${mode}" pos "${px}" "${py}" scale "${scale}" 2>/dev/null
+            notify "modeset cycle: restored ${output} mode=${mode} scale=${scale} pos=${px},${py}"
+        fi
     done
 
     LAST_MODESET_TIME=$(date +%s)

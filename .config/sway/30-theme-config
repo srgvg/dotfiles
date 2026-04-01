@@ -40,11 +40,12 @@ smart_borders on
 #
 
 set $dark               #000000
-set $light              #FFFFFF
+set $light              #BBBBBB
 set $lessdark           #333333
-set $grey 		#545454
+set $grey 		        #545454
 set $lesslight          #BBBBBB
 set $red                #FF0000
+set $redlow             #D10000
 set $ignored            #000000
 
 # custom overrides
@@ -120,4 +121,4 @@ client.unfocused		$lesslight	$lessdark	$lesslight	$lesslight	$lessdark
 #
 #     client.urgent
 #         A view with an urgency hint. Note: Native Wayland windows do not support urgency. Urgency only works for Xwayland windows.
-client.urgent			$red		$red		$light		$light		$red
+client.urgent			$red		$redlow		$light		$light		$red
