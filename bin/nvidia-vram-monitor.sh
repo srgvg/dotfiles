@@ -28,11 +28,14 @@ GROWTH_THRESHOLD=100  # MiB delta per reading to count as growth
 GROWTH_ALERT_COUNT=3  # consecutive readings before alerting
 GROWTH_ALERTED=0      # only alert once per leak episode
 
-# Automated modeset cycle: flush leaked Vulkan textures during swaylock
-# wlroots 0.19.2 GC doesn't run during swaylock, causing ~115 MiB/min leak
-SWAY_VRAM_MODESET_THRESHOLD="${NVIDIA_VRAM_MODESET_THRESHOLD:-3000}"  # MiB
-MODESET_COOLDOWN=300  # seconds between modeset cycles
-LAST_MODESET_TIME=0
+# During-lock VRAM protection via SIGSTOP
+# When sway VRAM exceeds threshold during swaylock, SIGSTOP non-essential GPU clients.
+# This halts new wl_buffer commits, stopping texture leak accumulation.
+# SIGCONT is sent by swayidle.sh unlock handler, which then runs resume_displays()
+# to free the accumulated textures via modeset cycle (safe when VRAM < 92%).
+# Note: SIGSTOP does NOT free existing leaked textures — it prevents further accumulation.
+SWAY_VRAM_STOP_THRESHOLD="${NVIDIA_VRAM_STOP_THRESHOLD:-2000}"  # MiB
+VRAM_STOPPED_PIDS_FILE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/swayidle/vram-stopped-pids"
 
 get_pmon_output() {
     # Parse nvidia-smi pmon output with PIDs
@@ -104,105 +107,73 @@ find_swaysock() {
     ls -t "/run/user/${uid}/sway-ipc."*.sock 2>/dev/null | head -1
 }
 
-perform_modeset_cycle() {
-    # Flush leaked Vulkan textures by cycling display outputs
-    local sock
-    sock=$(find_swaysock)
-    if [ -z "$sock" ]; then
-        notify_error "modeset cycle: no SWAYSOCK found"
-        return 1
-    fi
 
-    local ts
-    ts=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "${ts} | EVENT | modeset_cycle (sway VRAM=${1:-?}M)" >>"${SNAPSHOT_LOG}"
-
-    notify_desktop_always normal "VRAM Remediation" \
-        "Modeset cycle: flushing leaked textures (sway=${1:-?}M)"
-
-    local output_names
-    output_names=$(SWAYSOCK="$sock" swaymsg -t get_outputs 2>/dev/null |
-        python3 -c "import json,sys; [print(o['name']) for o in json.load(sys.stdin) if o.get('active')]" 2>/dev/null)
-
-    if [ -z "$output_names" ]; then
-        notify_error "modeset cycle: no active outputs found"
-        return 1
-    fi
-
-    for output in $output_names; do
-        # Capture current config before disabling so we can restore it after
-        local cfg
-        cfg=$(SWAYSOCK="$sock" swaymsg -t get_outputs 2>/dev/null |
-            python3 -c "
-import json, sys
-name = sys.argv[1]
-data = json.load(sys.stdin)
-for o in data:
-    if o['name'] == name and o.get('active'):
-        m = o.get('current_mode', {})
-        w, h = m.get('width', 0), m.get('height', 0)
-        hz = m.get('refresh', 60000) / 1000
-        scale = o.get('scale', 1.0)
-        rect = o.get('rect', {})
-        x, y = rect.get('x', 0), rect.get('y', 0)
-        print(f'{w}x{h}@{hz:.3f}Hz {scale} {x} {y}')
-        break
-" "$output" 2>/dev/null)
-
-        notify "modeset cycle: disable/enable ${output} (cfg=${cfg:-unknown})"
-        SWAYSOCK="$sock" swaymsg output "${output}" disable 2>/dev/null
-        sleep 1
-        SWAYSOCK="$sock" swaymsg output "${output}" enable 2>/dev/null
-
-        # Re-apply output configuration to restore mode/scale/position
-        if [ -n "$cfg" ]; then
-            local mode scale px py
-            read -r mode scale px py <<< "$cfg"
-            sleep 0.5
-            SWAYSOCK="$sock" swaymsg output "${output}" \
-                mode "${mode}" pos "${px}" "${py}" scale "${scale}" 2>/dev/null
-            notify "modeset cycle: restored ${output} mode=${mode} scale=${scale} pos=${px},${py}"
-        fi
-    done
-
-    LAST_MODESET_TIME=$(date +%s)
-
-    # Verify VRAM dropped
-    sleep 2
-    local new_used
-    new_used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | tr -d ' ')
-    local new_ts
-    new_ts=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "${new_ts} | EVENT | modeset_cycle_done (VRAM now=${new_used:-?}M)" >>"${SNAPSHOT_LOG}"
-    notify "modeset cycle complete (VRAM now=${new_used:-?}M)"
-}
-
-check_modeset_needed() {
+check_vram_during_lock() {
     local current_sway_vram="$1"
 
-    if [ -z "$current_sway_vram" ]; then
+    if [ -z "$current_sway_vram" ] || [ "$current_sway_vram" -le "$SWAY_VRAM_STOP_THRESHOLD" ]; then
         return
     fi
 
-    if [ "$current_sway_vram" -le "$SWAY_VRAM_MODESET_THRESHOLD" ]; then
-        return
-    fi
-
-    # Only during swaylock (the leak only happens when swaylock suppresses rendering)
+    # Only act during swaylock
     if ! pgrep -x swaylock > /dev/null 2>&1; then
         return
     fi
 
-    # Cooldown check
-    local now
-    now=$(date +%s)
-    local elapsed=$((now - LAST_MODESET_TIME))
-    if [ "$elapsed" -lt "$MODESET_COOLDOWN" ]; then
+    # Only act once per lock session (state file present = already handled)
+    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
         return
     fi
 
-    notify "sway VRAM ${current_sway_vram}M > threshold ${SWAY_VRAM_MODESET_THRESHOLD}M during swaylock — triggering modeset cycle"
-    perform_modeset_cycle "$current_sway_vram"
+    # Find Wayland-connected processes that are likely surface submitters.
+    # Two sources:
+    #   1. nvidia-smi pmon: direct GPU users (alacritty, browsers using dmabuf)
+    #   2. ss wayland socket: ALL Wayland clients including flatpak apps (Signal, Slack,
+    #      Spotify, Mattermost — Electron apps that submit GPU-backed wl_buffers but
+    #      don't appear in pmon because they go through bwrap)
+    # Exclude: sway, swaylock, Xwayland, alacritty (user work), and infrastructure procs
+    local pids_to_stop
+    pids_to_stop=$(
+    {
+        # Source 1: direct GPU users from pmon
+        nvidia-smi pmon -c 1 -s m 2>/dev/null |
+            awk '/^[^#]/ && $4 ~ /^[0-9]+$/ && $4 > 0 { print $2 }'
+        # Source 2: Wayland socket connections
+        ss -xp 2>/dev/null | grep wayland | grep -oP 'pid=\K\d+'
+    } | sort -u |
+        while IFS= read -r pid; do
+            _comm=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
+            case "$_comm" in
+                sway|swaylock|Xwayland|alacritty|nvidia-smi|nvidia-vram-m*) ;;
+                bash|sh|tee|wl-paste|swayidle|waybar|mako|lxpolkit|wlr-randr) ;;
+                atuin|gdm-wayland-ses|systemd|claude|less|git|delta|kubie) ;;
+                "") ;;  # process already gone
+                *) echo "$pid" ;;
+            esac
+        done)
+
+    if [ -z "$pids_to_stop" ]; then
+        notify_desktop_always normal "VRAM Warning" \
+            "sway=${current_sway_vram}M during lock — no stoppable GPU clients found"
+        # Write empty file so we don't spam this check
+        touch "$VRAM_STOPPED_PIDS_FILE"
+        return
+    fi
+
+    notify_desktop_always normal "VRAM Protection" \
+        "Pausing GPU clients to halt leak (sway=${current_sway_vram}M). Will resume on unlock."
+    notify "SIGSTOP GPU clients: $(echo "$pids_to_stop" | tr '\n' ' ')"
+
+    # Write PIDs before stopping so unlock handler can always find them
+    mkdir -p "$(dirname "$VRAM_STOPPED_PIDS_FILE")"
+    echo "$pids_to_stop" > "$VRAM_STOPPED_PIDS_FILE"
+    # shellcheck disable=SC2086
+    kill -STOP $pids_to_stop 2>/dev/null ||:
+
+    local ts
+    ts=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "${ts} | EVENT | vram_clients_stopped (sway VRAM=${current_sway_vram}M, pids=$(echo "$pids_to_stop" | tr '\n' ','))" \
+        >>"${SNAPSHOT_LOG}"
 }
 
 write_snapshot() {
@@ -276,10 +247,10 @@ while true; do
     # Write snapshot to file (with full PID-annotated list)
     write_snapshot "${used}" "${total}" "${pct}"
 
-    # Check sway VRAM growth rate and automated remediation
+    # Check sway VRAM growth rate and during-lock protection
     sway_vram=$(extract_sway_vram "$all_procs")
     check_growth_rate "${sway_vram:-}"
-    check_modeset_needed "${sway_vram:-}"
+    check_vram_during_lock "${sway_vram:-}"
 
     if [ "${pct}" -ge "${CRIT_PCT}" ]; then
         notify_desktop_always critical "GPU VRAM Critical" \

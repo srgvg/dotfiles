@@ -1,6 +1,6 @@
 set $primary DP-5
 #set $secondary DP-2
-set $tv DP-6
+set $tv DP-7
 
 # https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
 # swaymsg -t get_inputs -r | jq -r '.[].identifier' | grep -i keyboard
@@ -42,7 +42,7 @@ output $primary {
 output $tv {
     enable
     #dpms on
-    pos 0 0 res 1920x1080
+    pos 0 1700 res 1920x1080
 }
 
 seat seat0 keyboard_grouping smart

@@ -102,39 +102,39 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.6/argocd-windo
 provenance = "slsa"
 
 [[tools.awscli]]
-version = "2.34.23"
+version = "2.34.25"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:742f7fb2901b80e2afc4baaa475e12e1d22c106b7ad5b6cb9a052cd49a4b3002"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+checksum = "blake3:15e619a60e541e9ff198a00d61b3651f411f52386b6e055b1d153fc795dd181e"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
 
 [[tools.azure-cli]]
-version = "2.84.0"
+version = "2.85.0"
 backend = "asdf:azure-cli"
 
 [[tools.bat]]
@@ -575,62 +575,62 @@ url = "https://github.com/cert-manager/cmctl/releases/download/v2.4.1/cmctl_wind
 provenance = "cosign"
 
 [[tools.cosign]]
-version = "3.0.5"
+version = "3.0.6"
 backend = "aqua:sigstore/cosign"
 
 [tools.cosign."platforms.linux-arm64"]
-checksum = "sha256:d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-arm64"
+checksum = "sha256:bedac92e8c3729864e13d4a17048007cfafa79d5deca993a43a90ffe018ef2b8"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-arm64"
 provenance = "cosign"
 
 [tools.cosign."platforms.linux-arm64-musl"]
-checksum = "sha256:d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-arm64"
+checksum = "sha256:bedac92e8c3729864e13d4a17048007cfafa79d5deca993a43a90ffe018ef2b8"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-arm64"
 provenance = "cosign"
 
 [tools.cosign."platforms.linux-x64"]
-checksum = "sha256:db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-amd64"
+checksum = "sha256:c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.linux-x64-baseline"]
-checksum = "sha256:db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-amd64"
+checksum = "sha256:c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.linux-x64-musl"]
-checksum = "sha256:db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-amd64"
+checksum = "sha256:c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-linux-amd64"
+checksum = "sha256:c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.macos-arm64"]
-checksum = "sha256:4888c898e2901521a6bd4cf4f0383c9465588a6a46ecd2465ad34faf13f09eb7"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-darwin-arm64"
+checksum = "sha256:5fadd012ae6381a6a29ff86a7d39aa873878852f1073fc90b15995961ecfb084"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-darwin-arm64"
 provenance = "cosign"
 
 [tools.cosign."platforms.macos-x64"]
-checksum = "sha256:e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-darwin-amd64"
+checksum = "sha256:4c3e7af8372d3ca3296e62fa56f23fcbb5721cc6ac1827900d398f110d7cd280"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-darwin-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.macos-x64-baseline"]
-checksum = "sha256:e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-darwin-amd64"
+checksum = "sha256:4c3e7af8372d3ca3296e62fa56f23fcbb5721cc6ac1827900d398f110d7cd280"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-darwin-amd64"
 provenance = "cosign"
 
 [tools.cosign."platforms.windows-x64"]
-checksum = "sha256:44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-windows-amd64.exe"
+checksum = "sha256:9b85a88ebff2d9dd30ff4984a6f61f2cedc232dd87d81fa7f2ff3c0ed96c241c"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-windows-amd64.exe"
 provenance = "cosign"
 
 [tools.cosign."platforms.windows-x64-baseline"]
-checksum = "sha256:44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714"
-url = "https://github.com/sigstore/cosign/releases/download/v3.0.5/cosign-windows-amd64.exe"
+checksum = "sha256:9b85a88ebff2d9dd30ff4984a6f61f2cedc232dd87d81fa7f2ff3c0ed96c241c"
+url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-windows-amd64.exe"
 provenance = "cosign"
 
 [[tools.difftastic]]
@@ -1008,53 +1008,53 @@ provenance = "slsa"
 provenance = "slsa"
 
 [[tools.flux9s]]
-version = "0.8.0"
+version = "0.8.1"
 backend = "github:dgunzy/flux9s"
 
 [tools.flux9s."platforms.linux-x64"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools.flux9s."platforms.linux-x64-baseline"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools.flux9s."platforms.linux-x64-musl"]
-checksum = "sha256:bbe3ac9cfab5eb6f18d262908a97bd28f6f6dac50ab45b8b4e53acb95bf26222"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-musl.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710709"
+checksum = "sha256:6bb406df54df10ec957d617fb819af9acc4ddf82d51ef18fa0732c06b7dbcefc"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-musl.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121840"
 
 [tools.flux9s."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools.flux9s."platforms.macos-arm64"]
-checksum = "sha256:95ef7277a70f61bc8affec5c19e73bf8e2552255a61b1eee32d0c91d3513406a"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-aarch64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710708"
+checksum = "sha256:feb84e389388b2b7e23f6066c877c3e22bb936e177b3c4d645d594bd415d58c3"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121839"
 
 [tools.flux9s."platforms.macos-x64"]
-checksum = "sha256:00c9201b2f4e53b8d681e252ca970a3020bd87a281dba5c80b583bca7e3fc18e"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710707"
+checksum = "sha256:bc73714ec8546fbad96fe2512c84566a8f0e2295afc1b824261ca69ab16eca11"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121836"
 
 [tools.flux9s."platforms.macos-x64-baseline"]
-checksum = "sha256:00c9201b2f4e53b8d681e252ca970a3020bd87a281dba5c80b583bca7e3fc18e"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710707"
+checksum = "sha256:bc73714ec8546fbad96fe2512c84566a8f0e2295afc1b824261ca69ab16eca11"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121836"
 
 [tools.flux9s."platforms.windows-x64"]
-checksum = "sha256:086fd97a52fd45e749ecbd49cf63b4384cbd699259aa348fdd741a2bc06b8520"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710705"
+checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025ce9"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
 [tools.flux9s."platforms.windows-x64-baseline"]
-checksum = "sha256:086fd97a52fd45e749ecbd49cf63b4384cbd699259aa348fdd741a2bc06b8520"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710705"
+checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025ce9"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
 [[tools.forward-email]]
 version = "v0.2.0-alpha.2"
@@ -1083,7 +1083,7 @@ url = "https://github.com/khairul169/garage-webui/releases/download/1.1.0/garage
 url_api = "https://api.github.com/repos/khairul169/garage-webui/releases/assets/288404787"
 
 [[tools.gcloud]]
-version = "563.0.0"
+version = "564.0.0"
 backend = "asdf:gcloud"
 
 [[tools.git-who]]
@@ -1204,53 +1204,53 @@ url = "https://github.com/MiniCodeMonkey/chief/releases/download/v0.8.0/chief_0.
 url_api = "https://api.github.com/repos/MiniCodeMonkey/chief/releases/assets/378192535"
 
 [[tools."github:dgunzy/flux9s"]]
-version = "0.8.0"
+version = "0.8.1"
 backend = "github:dgunzy/flux9s"
 
 [tools."github:dgunzy/flux9s"."platforms.linux-x64"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools."github:dgunzy/flux9s"."platforms.linux-x64-baseline"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools."github:dgunzy/flux9s"."platforms.linux-x64-musl"]
-checksum = "sha256:bbe3ac9cfab5eb6f18d262908a97bd28f6f6dac50ab45b8b4e53acb95bf26222"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-musl.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710709"
+checksum = "sha256:6bb406df54df10ec957d617fb819af9acc4ddf82d51ef18fa0732c06b7dbcefc"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-musl.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121840"
 
 [tools."github:dgunzy/flux9s"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:231c2d1fa1a59ff73515606668727c555f7707b0eed270f963f4fd27a519b3d4"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-linux-x86_64-gnu.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710706"
+checksum = "sha256:b332b0603ffb254407ef8532d57a3b2f7f49d6bf4339027db20d36dd674d5e8d"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-linux-x86_64-gnu.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121837"
 
 [tools."github:dgunzy/flux9s"."platforms.macos-arm64"]
-checksum = "sha256:95ef7277a70f61bc8affec5c19e73bf8e2552255a61b1eee32d0c91d3513406a"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-aarch64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710708"
+checksum = "sha256:feb84e389388b2b7e23f6066c877c3e22bb936e177b3c4d645d594bd415d58c3"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121839"
 
 [tools."github:dgunzy/flux9s"."platforms.macos-x64"]
-checksum = "sha256:00c9201b2f4e53b8d681e252ca970a3020bd87a281dba5c80b583bca7e3fc18e"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710707"
+checksum = "sha256:bc73714ec8546fbad96fe2512c84566a8f0e2295afc1b824261ca69ab16eca11"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121836"
 
 [tools."github:dgunzy/flux9s"."platforms.macos-x64-baseline"]
-checksum = "sha256:00c9201b2f4e53b8d681e252ca970a3020bd87a281dba5c80b583bca7e3fc18e"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-macos-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710707"
+checksum = "sha256:bc73714ec8546fbad96fe2512c84566a8f0e2295afc1b824261ca69ab16eca11"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-macos-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121836"
 
 [tools."github:dgunzy/flux9s"."platforms.windows-x64"]
-checksum = "sha256:086fd97a52fd45e749ecbd49cf63b4384cbd699259aa348fdd741a2bc06b8520"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710705"
+checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025ce9"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
 [tools."github:dgunzy/flux9s"."platforms.windows-x64-baseline"]
-checksum = "sha256:086fd97a52fd45e749ecbd49cf63b4384cbd699259aa348fdd741a2bc06b8520"
-url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.0/flux9s-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/376710705"
+checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025ce9"
+url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
 [[tools."github:fioletoven/b4n"]]
 version = "0.4.5"
@@ -1606,12 +1606,52 @@ checksum = "sha256:9b68112c913f45b7aebbf13c036721264bbba7e03a642f8f7490c561eebd1
 url = "https://dl.google.com/go/go1.26.1.windows-amd64.zip"
 
 [[tools.go-containerregistry]]
-version = "0.21.3"
+version = "0.21.4"
 backend = "aqua:google/go-containerregistry"
 
+[tools.go-containerregistry."platforms.linux-arm64"]
+checksum = "sha256:25d02ffc162cf3f62d08ad56a50fa3fccc7dd83561ee438f8a12d3d154d7dca4"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-arm64-musl"]
+checksum = "sha256:25d02ffc162cf3f62d08ad56a50fa3fccc7dd83561ee438f8a12d3d154d7dca4"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_arm64.tar.gz"
+
 [tools.go-containerregistry."platforms.linux-x64"]
-checksum = "sha256:46dbf12d943efa5673ab654186c5d7c1503580544de0df9325537083436fe5d0"
-url = "https://github.com/google/go-containerregistry/releases/download/v0.21.3/go-containerregistry_Linux_x86_64.tar.gz"
+checksum = "sha256:3b6032bcf412e14cf3baf964a4065f2966af906ec947ab22478df5f74705c892"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-baseline"]
+checksum = "sha256:3b6032bcf412e14cf3baf964a4065f2966af906ec947ab22478df5f74705c892"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl"]
+checksum = "sha256:3b6032bcf412e14cf3baf964a4065f2966af906ec947ab22478df5f74705c892"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:3b6032bcf412e14cf3baf964a4065f2966af906ec947ab22478df5f74705c892"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-arm64"]
+checksum = "sha256:08bc213b88e29405c150754ebbd77e73a317c192ed1605e8a71feb123b994112"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Darwin_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64"]
+checksum = "sha256:58595e897a8a9bd6171fbc487a36eac9d6a1c278d69d58fc0d59db9ea92aedde"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64-baseline"]
+checksum = "sha256:58595e897a8a9bd6171fbc487a36eac9d6a1c278d69d58fc0d59db9ea92aedde"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64"]
+checksum = "sha256:1151ea629de023a9b01d04dcba425280f3cbe771bd2a01760aa39f850a6a594c"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Windows_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64-baseline"]
+checksum = "sha256:1151ea629de023a9b01d04dcba425280f3cbe771bd2a01760aa39f850a6a594c"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Windows_x86_64.tar.gz"
 
 [[tools."go:github.com/apricote/hcloud-upload-image"]]
 version = "1.3.0"
@@ -1771,52 +1811,52 @@ url = "https://github.com/cilium/hubble/releases/download/v1.18.6/hubble-windows
 url_api = "https://api.github.com/repos/cilium/hubble/releases/assets/351253537"
 
 [[tools.hugo]]
-version = "0.159.2"
+version = "0.160.0"
 backend = "aqua:gohugoio/hugo"
 
 [tools.hugo."platforms.linux-arm64"]
-checksum = "sha256:1908cd7aa6d2323db4bc10fcbd8e169ab20b1fb2ba1297c037e03136a85f1b2c"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-arm64.tar.gz"
+checksum = "sha256:9730889acfdfe3e5faed899e3621339d7364353ffe03837e4076789436e0a02a"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-arm64.tar.gz"
 
 [tools.hugo."platforms.linux-arm64-musl"]
-checksum = "sha256:1908cd7aa6d2323db4bc10fcbd8e169ab20b1fb2ba1297c037e03136a85f1b2c"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-arm64.tar.gz"
+checksum = "sha256:9730889acfdfe3e5faed899e3621339d7364353ffe03837e4076789436e0a02a"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-arm64.tar.gz"
 
 [tools.hugo."platforms.linux-x64"]
-checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+checksum = "sha256:2c49f8f153b159ac81ee76ddeb126e913fadf8d5376a9ddc479e8772766dbde3"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-amd64.tar.gz"
 
 [tools.hugo."platforms.linux-x64-baseline"]
-checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+checksum = "sha256:2c49f8f153b159ac81ee76ddeb126e913fadf8d5376a9ddc479e8772766dbde3"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-amd64.tar.gz"
 
 [tools.hugo."platforms.linux-x64-musl"]
-checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+checksum = "sha256:2c49f8f153b159ac81ee76ddeb126e913fadf8d5376a9ddc479e8772766dbde3"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-amd64.tar.gz"
 
 [tools.hugo."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+checksum = "sha256:2c49f8f153b159ac81ee76ddeb126e913fadf8d5376a9ddc479e8772766dbde3"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-amd64.tar.gz"
 
 [tools.hugo."platforms.macos-arm64"]
-checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+checksum = "sha256:a9184a01a421a18247b65dd6e1a0fa5911726adf181145c79673a0e6601945c6"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_darwin-universal.pkg"
 
 [tools.hugo."platforms.macos-x64"]
-checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+checksum = "sha256:a9184a01a421a18247b65dd6e1a0fa5911726adf181145c79673a0e6601945c6"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_darwin-universal.pkg"
 
 [tools.hugo."platforms.macos-x64-baseline"]
-checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+checksum = "sha256:a9184a01a421a18247b65dd6e1a0fa5911726adf181145c79673a0e6601945c6"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_darwin-universal.pkg"
 
 [tools.hugo."platforms.windows-x64"]
-checksum = "sha256:270a4ed3b5557a9edf595e1115624f168b1a69cb81f2f59fccb0ab1026c2cdba"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_windows-amd64.zip"
+checksum = "sha256:19b2e41882e2b266387bf3be8d791264cbd7b2349eeaff6bfb322e855e412e43"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_windows-amd64.zip"
 
 [tools.hugo."platforms.windows-x64-baseline"]
-checksum = "sha256:270a4ed3b5557a9edf595e1115624f168b1a69cb81f2f59fccb0ab1026c2cdba"
-url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_windows-amd64.zip"
+checksum = "sha256:19b2e41882e2b266387bf3be8d791264cbd7b2349eeaff6bfb322e855e412e43"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_windows-amd64.zip"
 
 [[tools.hurl]]
 version = "7.1.0"
@@ -3291,41 +3331,41 @@ checksum = "sha256:3f076f1312449b49b616c51965870b24955be5e7dfe636a57ecd4bef36c1a
 url = "https://github.com/version-fox/vfox/releases/download/v1.0.8/vfox_1.0.8_windows_x86_64.zip"
 
 [[tools."vfox:mise-plugins/vfox-neovim"]]
-version = "0.12.0"
+version = "0.12.1"
 backend = "vfox:mise-plugins/vfox-neovim"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-arm64"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-arm64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-arm64-musl"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-arm64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64-baseline"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64-musl"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64-musl-baseline"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.macos-arm64"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-macos-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-macos-arm64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.macos-x64"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-macos-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-macos-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.macos-x64-baseline"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-macos-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-macos-x86_64.tar.gz"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.windows-x64"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-win64.zip"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-win64.zip"
 
 [tools."vfox:mise-plugins/vfox-neovim"."platforms.windows-x64-baseline"]
-url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-win64.zip"
+url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-win64.zip"
 
 [[tools.yamlfmt]]
 version = "0.21.0"

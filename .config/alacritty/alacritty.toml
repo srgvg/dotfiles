@@ -53,6 +53,7 @@ style = "Beam"
 thickness = 0
 unfocused_hollow = true
 vi_mode_style = "Beam"
+blink_interval = 0  # disable blink — each blink = new wl_buffer commit → wlroots VRAM leak during lock
 
 [env]
 TERM = "xterm-256color"

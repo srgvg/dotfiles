@@ -23,6 +23,7 @@ SWAYIDLE_STATE_DIR="${XDG_RUNTIME_DIR:-/run/user/$UID}/swayidle"
 mkdir -p "$SWAYIDLE_STATE_DIR"
 LOCK_DEBOUNCE_FILE="$SWAYIDLE_STATE_DIR/lock-debounce"
 SLEEP_STATE_FILE="$SWAYIDLE_STATE_DIR/sleep-state"
+VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 
@@ -117,6 +118,45 @@ function lock() {
 	date +%s > "$LOCK_DEBOUNCE_FILE"
 
 	echo "=== lock"
+
+	# Clear any stale SIGSTOP state from a previous session that didn't unlock cleanly.
+	# SIGCONT first in case processes survived the session restart (e.g. after sway crash).
+	if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
+		echo "== SIGCONTing and clearing stale SIGSTOP'd processes"
+		# shellcheck disable=SC2046
+		kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+		rm -f "$VRAM_STOPPED_PIDS_FILE"
+	fi
+
+	# Pre-lock VRAM cleanup: cycle outputs to free leaked Vulkan textures BEFORE swaylock
+	# starts suppressing frame presentation (which is when wlroots GC runs).
+	# Must run here — modeset cycles during swaylock are harmful (add 1-2 GiB per cycle).
+	# Skip if VRAM is critically high (> 85%): at near-capacity the re-enable step will fail
+	# (no VRAM for scanout framebuffers), leaving the display disabled when swaylock launches.
+	# GC can't run without active rendering anyway, so the cycle is a no-op at best.
+	local pre_vram
+	pre_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
+	    | awk '/sway/ && $4 ~ /^[0-9]+$/ { print $4; exit }') || pre_vram=""
+	local vram_total
+	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+	local vram_crit=$(( vram_total * 85 / 100 ))
+	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
+		echo "== pre-lock: sway VRAM=${pre_vram}M > ${vram_crit}M critical, skipping modeset cycle"
+	else
+		echo "== pre-lock modeset cycle (free leaked Vulkan textures)"
+		for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null ||:); do
+			echo "== pre-lock: disable/enable ${display}" | ts
+			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
+		done
+		sleep 1
+	fi
+
+	# Ensure display is on before launching swaylock — the modeset cycle could have
+	# left it disabled if the re-enable step failed (e.g. VRAM just barely under threshold).
+	echo "== pre-lock: ensuring displays on before swaylock"
+	swaymsg 'output * dpms on' ||:
+	sleep 0.5
+
 	pause_notifications
 	pause_mouse
 	echo "= swaylock.sh"
@@ -151,8 +191,34 @@ function idlecommand() {
 		echo "= unlock"
 		# Clear sleep state on unlock
 		echo "awake" > "$SLEEP_STATE_FILE"
+
+		# Resume any GPU clients that were SIGSTOP'd by nvidia-vram-monitor during the lock session
+		if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
+			echo "== resuming SIGSTOP'd GPU clients"
+			# shellcheck disable=SC2046
+			kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+			rm -f "$VRAM_STOPPED_PIDS_FILE"
+		fi
+
 		resume_mouse
 		resume_notifications
+		# Always turn DPMS back on — display may be off from idle timeout.
+		# This must be unconditional: the VRAM query can return empty (slow/miss),
+		# which would otherwise leave the screen permanently black.
+		echo "== unlock: ensuring displays on"
+		swaymsg 'output * dpms on' ||:
+
+		# Run modeset cycle to free leaked Vulkan textures if VRAM is elevated.
+		# Fail-open: if the query returns empty, treat as needing cycle (safer than skipping).
+		local sway_vram
+		sway_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
+		    | awk '/sway/ && $4 ~ /^[0-9]+$/ { print $4; exit }') || sway_vram=""
+		if [ -z "$sway_vram" ] || [ "$sway_vram" -gt 1200 ]; then
+			echo "== unlock: sway VRAM=${sway_vram:-?}M, running modeset cycle"
+			resume_displays
+		else
+			echo "== unlock: sway VRAM=${sway_vram}M <= 1200M, skipping modeset cycle"
+		fi
 	elif [ "${command}" = "sleep" ]
 	then
 		# Prevent double-sleep from rapid PrepareForSleep signal bounces
