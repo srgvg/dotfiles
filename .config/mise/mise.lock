@@ -102,36 +102,98 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.6/argocd-windo
 provenance = "slsa"
 
 [[tools.awscli]]
+<<<<<<< HEAD
 version = "2.34.25"
+||||||| parent of 6a7d7ceb (update from fregolo)
+version = "2.34.20"
+=======
+version = "2.34.23"
+>>>>>>> 6a7d7ceb (update from fregolo)
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.20.zip"
+=======
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.linux-arm64-musl"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.20.zip"
+=======
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.linux-x64"]
+<<<<<<< HEAD
 checksum = "blake3:15e619a60e541e9ff198a00d61b3651f411f52386b6e055b1d153fc795dd181e"
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+checksum = "blake3:0bb86523140c51335331d11433a47e37aa2a09bd773d18960a6e2f01c1688163"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.20.zip"
+=======
+checksum = "blake3:742f7fb2901b80e2afc4baaa475e12e1d22c106b7ad5b6cb9a052cd49a4b3002"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.linux-x64-baseline"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.20.zip"
+=======
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.linux-x64-musl"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.20.zip"
+=======
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.20.zip"
+=======
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.macos-arm64"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.20.pkg"
+=======
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.macos-x64"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.20.pkg"
+=======
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.awscli."platforms.macos-x64-baseline"]
+<<<<<<< HEAD
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
+||||||| parent of 6a7d7ceb (update from fregolo)
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.20.pkg"
+=======
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [[tools.azure-cli]]
 version = "2.85.0"
@@ -1493,10 +1555,121 @@ url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/357187911"
 version = "4.13.1"
 backend = "github:zitadel/zitadel"
 
+<<<<<<< HEAD
+||||||| parent of 6a7d7ceb (update from fregolo)
+[tools."github:zitadel/zitadel"."platforms.linux-arm64"]
+checksum = "sha256:c6fcd625540e478f329af27696cbea8756e8750c9fe1a59c0d9eaa2a214bc220"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567688"
+
+[tools."github:zitadel/zitadel"."platforms.linux-arm64-musl"]
+checksum = "sha256:c6fcd625540e478f329af27696cbea8756e8750c9fe1a59c0d9eaa2a214bc220"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567688"
+
+=======
+[tools."github:zitadel/zitadel"."platforms.linux-arm64"]
+checksum = "sha256:81c3feeae3fadb01f4836fb279a895ac871019cfae61c1f668d369749a094458"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109869"
+
+[tools."github:zitadel/zitadel"."platforms.linux-arm64-musl"]
+checksum = "sha256:81c3feeae3fadb01f4836fb279a895ac871019cfae61c1f668d369749a094458"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109869"
+
+>>>>>>> 6a7d7ceb (update from fregolo)
 [tools."github:zitadel/zitadel"."platforms.linux-x64"]
 checksum = "sha256:fe1f5231e5dcbdca63ae77adab0d2241daafeb9712e7d6cded3713e9ef50f1cb"
 url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-amd64.tar.gz"
 url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109862"
+<<<<<<< HEAD
+||||||| parent of 6a7d7ceb (update from fregolo)
+checksum = "sha256:790292551aef9f9b82addfda92f9f6b6b6d110a1dd78e64be3da16c6b942a15e"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567693"
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-baseline"]
+checksum = "sha256:790292551aef9f9b82addfda92f9f6b6b6d110a1dd78e64be3da16c6b942a15e"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567693"
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-musl"]
+checksum = "sha256:790292551aef9f9b82addfda92f9f6b6b6d110a1dd78e64be3da16c6b942a15e"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567693"
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:790292551aef9f9b82addfda92f9f6b6b6d110a1dd78e64be3da16c6b942a15e"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567693"
+
+[tools."github:zitadel/zitadel"."platforms.macos-arm64"]
+checksum = "sha256:d9047b50feb2ae9ccc7a013312295cfd398a85bfa8e1d03643019e61eaa2ae59"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567684"
+
+[tools."github:zitadel/zitadel"."platforms.macos-x64"]
+checksum = "sha256:bfd299675743ee41c816c7fde025e0894e6690fbbf808eb2fe72e6e73f4a45d4"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567712"
+
+[tools."github:zitadel/zitadel"."platforms.macos-x64-baseline"]
+checksum = "sha256:bfd299675743ee41c816c7fde025e0894e6690fbbf808eb2fe72e6e73f4a45d4"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567712"
+
+[tools."github:zitadel/zitadel"."platforms.windows-x64"]
+checksum = "sha256:959d36f17ac3af3ae2e536d1848b4551ea5326521dbc15ae42a9c890b5465098"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-windows-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567699"
+
+[tools."github:zitadel/zitadel"."platforms.windows-x64-baseline"]
+checksum = "sha256:959d36f17ac3af3ae2e536d1848b4551ea5326521dbc15ae42a9c890b5465098"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.0/zitadel-windows-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/379567699"
+=======
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-baseline"]
+checksum = "sha256:fe1f5231e5dcbdca63ae77adab0d2241daafeb9712e7d6cded3713e9ef50f1cb"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109862"
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-musl"]
+checksum = "sha256:fe1f5231e5dcbdca63ae77adab0d2241daafeb9712e7d6cded3713e9ef50f1cb"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109862"
+
+[tools."github:zitadel/zitadel"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:fe1f5231e5dcbdca63ae77adab0d2241daafeb9712e7d6cded3713e9ef50f1cb"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109862"
+
+[tools."github:zitadel/zitadel"."platforms.macos-arm64"]
+checksum = "sha256:d85297eb266ad2186b44510e9d9cb8b31e559e0c535d462cf2bc444eb5f71131"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109858"
+
+[tools."github:zitadel/zitadel"."platforms.macos-x64"]
+checksum = "sha256:97893e0e00fc9a0b7abeac874e43caa1f6a49ce632faabe18a0c484967c8657a"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109889"
+
+[tools."github:zitadel/zitadel"."platforms.macos-x64-baseline"]
+checksum = "sha256:97893e0e00fc9a0b7abeac874e43caa1f6a49ce632faabe18a0c484967c8657a"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109889"
+
+[tools."github:zitadel/zitadel"."platforms.windows-x64"]
+checksum = "sha256:e34cda0ad526ea3c456ff05fb7346ca90a8ccdd649934b080e7e81ada86b3a57"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-windows-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109880"
+
+[tools."github:zitadel/zitadel"."platforms.windows-x64-baseline"]
+checksum = "sha256:e34cda0ad526ea3c456ff05fb7346ca90a8ccdd649934b080e7e81ada86b3a57"
+url = "https://github.com/zitadel/zitadel/releases/download/v4.13.1/zitadel-windows-amd64.tar.gz"
+url_api = "https://api.github.com/repos/zitadel/zitadel/releases/assets/386109880"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [[tools.gitlab-cli]]
 version = "1.91.0"
@@ -1811,18 +1984,35 @@ url = "https://github.com/cilium/hubble/releases/download/v1.18.6/hubble-windows
 url_api = "https://api.github.com/repos/cilium/hubble/releases/assets/351253537"
 
 [[tools.hugo]]
+<<<<<<< HEAD
 version = "0.160.0"
+||||||| parent of 6a7d7ceb (update from fregolo)
+version = "0.159.1"
+=======
+version = "0.159.2"
+>>>>>>> 6a7d7ceb (update from fregolo)
 backend = "aqua:gohugoio/hugo"
 
 [tools.hugo."platforms.linux-arm64"]
+<<<<<<< HEAD
 checksum = "sha256:9730889acfdfe3e5faed899e3621339d7364353ffe03837e4076789436e0a02a"
 url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-arm64.tar.gz"
 
 [tools.hugo."platforms.linux-arm64-musl"]
 checksum = "sha256:9730889acfdfe3e5faed899e3621339d7364353ffe03837e4076789436e0a02a"
 url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-arm64.tar.gz"
+||||||| parent of 6a7d7ceb (update from fregolo)
+=======
+checksum = "sha256:1908cd7aa6d2323db4bc10fcbd8e169ab20b1fb2ba1297c037e03136a85f1b2c"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-arm64.tar.gz"
+
+[tools.hugo."platforms.linux-arm64-musl"]
+checksum = "sha256:1908cd7aa6d2323db4bc10fcbd8e169ab20b1fb2ba1297c037e03136a85f1b2c"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-arm64.tar.gz"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [tools.hugo."platforms.linux-x64"]
+<<<<<<< HEAD
 checksum = "sha256:2c49f8f153b159ac81ee76ddeb126e913fadf8d5376a9ddc479e8772766dbde3"
 url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_linux-amd64.tar.gz"
 
@@ -1857,6 +2047,45 @@ url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_
 [tools.hugo."platforms.windows-x64-baseline"]
 checksum = "sha256:19b2e41882e2b266387bf3be8d791264cbd7b2349eeaff6bfb322e855e412e43"
 url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_windows-amd64.zip"
+||||||| parent of 6a7d7ceb (update from fregolo)
+checksum = "sha256:297e18fa21e4796d80a3270c1234873f5a979cb9a329a0c93d9888a1b39f106c"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.1/hugo_0.159.1_linux-amd64.tar.gz"
+=======
+checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+
+[tools.hugo."platforms.linux-x64-baseline"]
+checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+
+[tools.hugo."platforms.linux-x64-musl"]
+checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+
+[tools.hugo."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:0495595d6939425add8fd992f2c20bfa6bfe1181895d821b09f9a06995b60ca8"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_linux-amd64.tar.gz"
+
+[tools.hugo."platforms.macos-arm64"]
+checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+
+[tools.hugo."platforms.macos-x64"]
+checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+
+[tools.hugo."platforms.macos-x64-baseline"]
+checksum = "sha256:64b279b8566eec56c27b4d4a69c36d5a6dfcd9aff96f91388a29bac73f09f437"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_darwin-universal.pkg"
+
+[tools.hugo."platforms.windows-x64"]
+checksum = "sha256:270a4ed3b5557a9edf595e1115624f168b1a69cb81f2f59fccb0ab1026c2cdba"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_windows-amd64.zip"
+
+[tools.hugo."platforms.windows-x64-baseline"]
+checksum = "sha256:270a4ed3b5557a9edf595e1115624f168b1a69cb81f2f59fccb0ab1026c2cdba"
+url = "https://github.com/gohugoio/hugo/releases/download/v0.159.2/hugo_0.159.2_windows-amd64.zip"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [[tools.hurl]]
 version = "7.1.0"
@@ -2169,9 +2398,56 @@ url = "https://github.com/controlplaneio/kubesec/releases/download/v2.14.2/kubes
 version = "53.2.0"
 backend = "aqua:kubeshark/kubeshark"
 
+<<<<<<< HEAD
 [tools.kubeshark."platforms.linux-x64"]
 checksum = "sha256:498cbe32fe07f1b51d9e9c62d3e8c06c751bca2a0bcf4c8ae2a149e219578f9b"
 url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_amd64"
+||||||| parent of 6a7d7ceb (update from fregolo)
+=======
+[tools.kubeshark."platforms.linux-arm64"]
+checksum = "sha256:14ead8c433d0038a79ef85059ad91139e71556c2e23621c1c7a2423eaed6d297"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_arm64"
+
+[tools.kubeshark."platforms.linux-arm64-musl"]
+checksum = "sha256:14ead8c433d0038a79ef85059ad91139e71556c2e23621c1c7a2423eaed6d297"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_arm64"
+
+[tools.kubeshark."platforms.linux-x64"]
+checksum = "sha256:498cbe32fe07f1b51d9e9c62d3e8c06c751bca2a0bcf4c8ae2a149e219578f9b"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-baseline"]
+checksum = "sha256:498cbe32fe07f1b51d9e9c62d3e8c06c751bca2a0bcf4c8ae2a149e219578f9b"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-musl"]
+checksum = "sha256:498cbe32fe07f1b51d9e9c62d3e8c06c751bca2a0bcf4c8ae2a149e219578f9b"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:498cbe32fe07f1b51d9e9c62d3e8c06c751bca2a0bcf4c8ae2a149e219578f9b"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.macos-arm64"]
+checksum = "sha256:7d4e1d8b43229b9c44308b97972a2774ce58930954348a64937a139c2a0f093a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_darwin_arm64"
+
+[tools.kubeshark."platforms.macos-x64"]
+checksum = "sha256:d01f713836532c3588cf08bd49c98021c0a8f1efc9061cafa52d60cac9d0dfc2"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_darwin_amd64"
+
+[tools.kubeshark."platforms.macos-x64-baseline"]
+checksum = "sha256:d01f713836532c3588cf08bd49c98021c0a8f1efc9061cafa52d60cac9d0dfc2"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark_darwin_amd64"
+
+[tools.kubeshark."platforms.windows-x64"]
+checksum = "sha256:d569c5e81190001ff07925e1eaaaac0e7a8ecda73f3bfb1dca6536038d300dac"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark.exe"
+
+[tools.kubeshark."platforms.windows-x64-baseline"]
+checksum = "sha256:d569c5e81190001ff07925e1eaaaac0e7a8ecda73f3bfb1dca6536038d300dac"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.0/kubeshark.exe"
+>>>>>>> 6a7d7ceb (update from fregolo)
 
 [[tools.kubespy]]
 version = "0.6.3"
