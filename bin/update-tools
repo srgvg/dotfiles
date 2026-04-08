@@ -434,38 +434,82 @@ get_uv_tools() {
 
     title "uv tools"
 
-    local with_conf="$HOME/etc/packages/uv-tools-with.conf"
+    local tools_list="$HOME/etc/packages/uv-tools.list"
 
-    # Helper: return the --with flags for a package, if any
-    uv_tool_with_flags() {
+    # Read a tool's uv-receipt.toml and return its install specifier.
+    # Git-sourced tools return "pkg @ git+<url>@<ref>", others return "pkg".
+    # Receipt format: git = "https://...?rev=<url-encoded-ref>"
+    uv_tool_spec() {
         local pkg="$1"
-        grep -E "^${pkg}\b" "$with_conf" 2>/dev/null | sed "s/^${pkg}//" | xargs
+        local receipt="$HOME/.local/share/uv/tools/$pkg/uv-receipt.toml"
+        local git_raw
+        git_raw=$(grep -oP 'git = "\K[^"]+' "$receipt" 2>/dev/null)
+        if [ -n "$git_raw" ]; then
+            local git_base="${git_raw%%\?*}"
+            if [[ "$git_raw" == *"?rev="* ]]; then
+                local git_rev="${git_raw#*\?rev=}"
+                # URL-decode (e.g. %2F → /)
+                git_rev=$(printf '%b' "${git_rev//%/\\x}")
+                echo "$pkg @ git+${git_base}@${git_rev}"
+            else
+                echo "$pkg @ git+${git_base}"
+            fi
+        else
+            echo "$pkg"
+        fi
     }
 
-    log "install new packages from uv-tools list"
-    comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}') \
-             <(<~/etc/packages/uv-tools.list grep -v '^-' | awk '{print $1}') |
+    # Parse a uv-tools.list line into spec and flags.
+    # Input:  "nah @ git+https://...@branch --with pyyaml"
+    # Output: spec="nah @ git+https://...@branch" flags="--with pyyaml"
+    # Sets variables in the caller's scope.
+    uv_tool_parse_list_line() {
+        local line="$1"
+        if [[ "$line" == *" --with "* ]]; then
+            spec="$(echo "${line%% --with *}" | xargs)"
+            flags="--with ${line#* --with }"
+        else
+            spec="$(echo "$line" | xargs)"
+            flags=""
+        fi
+    }
+
+    log "restore missing packages from uv-tools list"
+    comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}' | sort) \
+             <(grep -v '^\s*#' "$tools_list" | grep -v '^\s*$' | sed 's/\s*@.*//' | sed 's/\s*--with .*//' | sort) |
         while read -r pkg; do
-            local flags
-            flags="$(uv_tool_with_flags "$pkg")"
+            local spec flags
+            uv_tool_parse_list_line "$(grep -E "^${pkg}(\s|$)" "$tools_list" | head -1)"
             # shellcheck disable=SC2086
-            uv tool install "$pkg" $flags
+            uv tool install "$spec" $flags
         done
 
     log "upgrade all"
     uv tool upgrade --all
 
-    log "re-apply --with extras (ensure drift recovery)"
-    if [ -f "$with_conf" ]; then
-        grep -v '^\s*#' "$with_conf" | grep -v '^\s*$' |
-        while read -r pkg flags; do
-            # shellcheck disable=SC2086
-            uv tool install "$pkg" $flags --force
+    log "export uv-tools.list"
+    # Auto-detect git sources from receipts; --with extras from uv tool list.
+    # Format: one package per line, optional "@ git+<url>@<ref>" and "--with <dep>".
+    {
+        uv tool list --show-with | grep -v '^-' | while read -r line; do
+            local pkg with_flags
+            pkg=$(echo "$line" | awk '{print $1}')
+            # Extract [with: dep1, dep2] → --with dep1 --with dep2
+            with_flags=""
+            if [[ "$line" == *"[with: "* ]]; then
+                local with_raw="${line#*\[with: }"
+                with_raw="${with_raw%\]}"
+                with_flags=$(echo "$with_raw" | tr ',' '\n' | xargs -n1 printf ' --with %s' | xargs)
+            fi
+            local spec
+            spec="$(uv_tool_spec "$pkg")"
+            if [ -n "$with_flags" ]; then
+                echo "$spec $with_flags"
+            else
+                echo "$spec"
+            fi
         done
-    fi
-
-    log "save new uv-tools.list"
-    uv tool list >$TMPPATH/uv-tools.list && mv $TMPPATH/uv-tools.list $HOME/etc/packages/uv-tools.list
+    } >"$TMPPATH/uv-tools.list" && mv "$TMPPATH/uv-tools.list" "$tools_list"
 
 }
 

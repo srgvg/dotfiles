@@ -102,74 +102,39 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.6/argocd-windo
 provenance = "slsa"
 
 [[tools.awscli]]
-version = "2.34.25"
+version = "2.34.26"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.26.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.25.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.26.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:15e619a60e541e9ff198a00d61b3651f411f52386b6e055b1d153fc795dd181e"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+checksum = "blake3:329e554a858c05c83fd15da48c9712e32719b81f761efe77a013e48608d1d086"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.26.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.26.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.26.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.25.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.26.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.26.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.26.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.25.pkg"
-
-[[tools.awscli]]
-version = "2.34.23"
-backend = "aqua:aws/aws-cli"
-
-[tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
-
-[tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.23.zip"
-
-[tools.awscli."platforms.linux-x64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
-
-[tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
-
-[tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
-
-[tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.23.zip"
-
-[tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
-
-[tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
-
-[tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.23.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.26.pkg"
 
 [[tools.azure-cli]]
 version = "2.85.0"
-backend = "asdf:azure-cli"
-
-[[tools.azure-cli]]
-version = "2.84.0"
 backend = "asdf:azure-cli"
 
 [[tools.bat]]
@@ -668,43 +633,6 @@ checksum = "sha256:9b85a88ebff2d9dd30ff4984a6f61f2cedc232dd87d81fa7f2ff3c0ed96c2
 url = "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-windows-amd64.exe"
 provenance = "cosign"
 
-[[tools.cosign]]
-version = "3.0.5"
-backend = "aqua:sigstore/cosign"
-
-[tools.cosign."platforms.linux-arm64"]
-provenance = "cosign"
-
-[tools.cosign."platforms.linux-arm64-musl"]
-provenance = "cosign"
-
-[tools.cosign."platforms.linux-x64"]
-provenance = "cosign"
-
-[tools.cosign."platforms.linux-x64-baseline"]
-provenance = "cosign"
-
-[tools.cosign."platforms.linux-x64-musl"]
-provenance = "cosign"
-
-[tools.cosign."platforms.linux-x64-musl-baseline"]
-provenance = "cosign"
-
-[tools.cosign."platforms.macos-arm64"]
-provenance = "cosign"
-
-[tools.cosign."platforms.macos-x64"]
-provenance = "cosign"
-
-[tools.cosign."platforms.macos-x64-baseline"]
-provenance = "cosign"
-
-[tools.cosign."platforms.windows-x64"]
-provenance = "cosign"
-
-[tools.cosign."platforms.windows-x64-baseline"]
-provenance = "cosign"
-
 [[tools.difftastic]]
 version = "0.68.0"
 backend = "aqua:Wilfred/difftastic"
@@ -982,101 +910,123 @@ checksum = "sha256:b2816e506390a89941c63c9187d58a3cc10e9a55f2ef0685f9ea0eccaf7c9
 url = "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-pc-windows-msvc.zip"
 
 [[tools.flux-operator]]
-version = "0.45.1"
+version = "0.46.0"
 backend = "github:controlplaneio-fluxcd/flux-operator"
 
 [tools.flux-operator."platforms.linux-arm64"]
-checksum = "sha256:19bd02fc47e5723674a4552f7013083e0a132746bcdf8b6c8ec94e94fea66bac"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953215"
+checksum = "sha256:9635dc3d77a4485e388b557802c26eb9ba2515f4ef3802832fd0b08835c0ddd7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005448"
 
 [tools.flux-operator."platforms.linux-arm64-musl"]
-checksum = "sha256:19bd02fc47e5723674a4552f7013083e0a132746bcdf8b6c8ec94e94fea66bac"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953215"
+checksum = "sha256:9635dc3d77a4485e388b557802c26eb9ba2515f4ef3802832fd0b08835c0ddd7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005448"
 
 [tools.flux-operator."platforms.linux-x64"]
-checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
+checksum = "sha256:ab7b0cad8edfe2e105b3b7573a97c1e07ecce0a0f506e9fe602bdae8363da2e7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005449"
 
 [tools.flux-operator."platforms.linux-x64-baseline"]
-checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
+checksum = "sha256:ab7b0cad8edfe2e105b3b7573a97c1e07ecce0a0f506e9fe602bdae8363da2e7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005449"
 
 [tools.flux-operator."platforms.linux-x64-musl"]
-checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
+checksum = "sha256:ab7b0cad8edfe2e105b3b7573a97c1e07ecce0a0f506e9fe602bdae8363da2e7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005449"
 
 [tools.flux-operator."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:89e477a14c5360dc290d1a45aba36575720ac494961ce7e2fce3d9b73a28d633"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953214"
+checksum = "sha256:ab7b0cad8edfe2e105b3b7573a97c1e07ecce0a0f506e9fe602bdae8363da2e7"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005449"
 
 [tools.flux-operator."platforms.macos-arm64"]
-checksum = "sha256:e21247a17b07f89bcaa703aef3d556d11edeeb0d8088003ba703bf4f0c70f134"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953220"
+checksum = "sha256:8d84c59239f4b1e95976713c8a8560e32a0144acf0b9bf70e0093bf46c4829cc"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005450"
 
 [tools.flux-operator."platforms.macos-x64"]
-checksum = "sha256:2289ea588c777a80880898b4c7bca86905bfd5e3bfda7541de9bf8a6e4b3089b"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953217"
+checksum = "sha256:52e90aaf4038c70aff8d5e18705dab000be5359d653e40f0ec5b1836b5836d93"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005455"
 
 [tools.flux-operator."platforms.macos-x64-baseline"]
-checksum = "sha256:2289ea588c777a80880898b4c7bca86905bfd5e3bfda7541de9bf8a6e4b3089b"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953217"
+checksum = "sha256:52e90aaf4038c70aff8d5e18705dab000be5359d653e40f0ec5b1836b5836d93"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005455"
 
 [tools.flux-operator."platforms.windows-x64"]
-checksum = "sha256:e43f09c611f477cde538be3923c588959a35c6c2baf0cd1eb3cd118ca15a62e3"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_windows_amd64.zip"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953225"
+checksum = "sha256:5f31c940dcf16706497d284968e868b783969744287906a3f6b5f000d1a8bc50"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005477"
 
 [tools.flux-operator."platforms.windows-x64-baseline"]
-checksum = "sha256:e43f09c611f477cde538be3923c588959a35c6c2baf0cd1eb3cd118ca15a62e3"
-url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.45.1/flux-operator-mcp_0.45.1_windows_amd64.zip"
-url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/377953225"
+checksum = "sha256:5f31c940dcf16706497d284968e868b783969744287906a3f6b5f000d1a8bc50"
+url = "https://github.com/controlplaneio-fluxcd/flux-operator/releases/download/v0.46.0/flux-operator-mcp_0.46.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/controlplaneio-fluxcd/flux-operator/releases/assets/391005477"
 
 [[tools.flux2]]
-version = "2.8.3"
+version = "2.8.5"
 backend = "aqua:fluxcd/flux2"
 
 [tools.flux2."platforms.linux-arm64"]
+checksum = "sha256:24fd29c68294f09eebf0c673f898f5e4798030ccda17f46821ff161a11c8aa5a"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_arm64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.linux-arm64-musl"]
+checksum = "sha256:24fd29c68294f09eebf0c673f898f5e4798030ccda17f46821ff161a11c8aa5a"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_arm64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.linux-x64"]
-checksum = "sha256:e8b3f87ae73f37656af087cec1bd82ce9034860c2a5d427042d2ee9135fcc8bc"
-url = "https://github.com/fluxcd/flux2/releases/download/v2.8.3/flux_2.8.3_linux_amd64.tar.gz"
-provenance = "slsa"
+checksum = "sha256:63c178ba938a5443265b2ce02691c005acf4ef6188d4dbb9b9d87333558948c4"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_amd64.tar.gz"
+
+[tools.flux2."platforms.linux-x64".provenance.slsa]
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/provenance.intoto.jsonl"
 
 [tools.flux2."platforms.linux-x64-baseline"]
+checksum = "sha256:63c178ba938a5443265b2ce02691c005acf4ef6188d4dbb9b9d87333558948c4"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_amd64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.linux-x64-musl"]
+checksum = "sha256:63c178ba938a5443265b2ce02691c005acf4ef6188d4dbb9b9d87333558948c4"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_amd64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:63c178ba938a5443265b2ce02691c005acf4ef6188d4dbb9b9d87333558948c4"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_linux_amd64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.macos-arm64"]
+checksum = "sha256:de5f796c7e836bc07a8bdf227c0ccde74e3938270603d527ddf17e62d0275d44"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_darwin_arm64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.macos-x64"]
+checksum = "sha256:6182cb9d6f28d17022f51a0bf2b1dff7a41d3fbd1d3505c242a84ee0fb7808f0"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_darwin_amd64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.macos-x64-baseline"]
+checksum = "sha256:6182cb9d6f28d17022f51a0bf2b1dff7a41d3fbd1d3505c242a84ee0fb7808f0"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_darwin_amd64.tar.gz"
 provenance = "slsa"
 
 [tools.flux2."platforms.windows-x64"]
+checksum = "sha256:c047cef654c9c6439d324ceb947ccaff1b96928f604a9f19ce498b892212f900"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_windows_amd64.zip"
 provenance = "slsa"
 
 [tools.flux2."platforms.windows-x64-baseline"]
+checksum = "sha256:c047cef654c9c6439d324ceb947ccaff1b96928f604a9f19ce498b892212f900"
+url = "https://github.com/fluxcd/flux2/releases/download/v2.8.5/flux_2.8.5_windows_amd64.zip"
 provenance = "slsa"
 
 [[tools.flux9s]]
@@ -1128,10 +1078,6 @@ checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025
 url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
 url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
-[[tools.flux9s]]
-version = "0.8.0"
-backend = "github:dgunzy/flux9s"
-
 [[tools.forward-email]]
 version = "v0.2.0-alpha.2"
 backend = "github:ginsys/forward-email"
@@ -1160,10 +1106,6 @@ url_api = "https://api.github.com/repos/khairul169/garage-webui/releases/assets/
 
 [[tools.gcloud]]
 version = "564.0.0"
-backend = "asdf:gcloud"
-
-[[tools.gcloud]]
-version = "563.0.0"
 backend = "asdf:gcloud"
 
 [[tools.git-who]]
@@ -1332,43 +1274,39 @@ checksum = "sha256:bb89670bde902595a58d26b478250b3dd239f03781a569368d3f42cee6025
 url = "https://github.com/dgunzy/flux9s/releases/download/v0.8.1/flux9s-windows-x86_64.zip"
 url_api = "https://api.github.com/repos/dgunzy/flux9s/releases/assets/388121838"
 
-[[tools."github:dgunzy/flux9s"]]
-version = "0.8.0"
-backend = "github:dgunzy/flux9s"
-
 [[tools."github:fioletoven/b4n"]]
-version = "0.4.5"
+version = "0.4.6"
 backend = "github:fioletoven/b4n"
 
 [tools."github:fioletoven/b4n"."platforms.linux-x64"]
-checksum = "sha256:b8a3bff9a2cd0de6cc8da5d0e5aa19dcba645a1fc6bf982fea325d42713d9081"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-linux.tar.gz"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380698030"
+checksum = "sha256:b31ce5d133fc0cc03e448946bc64829fd295d939f449038b21b6c973e8039df0"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391338205"
 
 [tools."github:fioletoven/b4n"."platforms.linux-x64-baseline"]
-checksum = "sha256:b8a3bff9a2cd0de6cc8da5d0e5aa19dcba645a1fc6bf982fea325d42713d9081"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-linux.tar.gz"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380698030"
+checksum = "sha256:b31ce5d133fc0cc03e448946bc64829fd295d939f449038b21b6c973e8039df0"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391338205"
 
 [tools."github:fioletoven/b4n"."platforms.linux-x64-musl"]
-checksum = "sha256:b8a3bff9a2cd0de6cc8da5d0e5aa19dcba645a1fc6bf982fea325d42713d9081"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-linux.tar.gz"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380698030"
+checksum = "sha256:b31ce5d133fc0cc03e448946bc64829fd295d939f449038b21b6c973e8039df0"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391338205"
 
 [tools."github:fioletoven/b4n"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:b8a3bff9a2cd0de6cc8da5d0e5aa19dcba645a1fc6bf982fea325d42713d9081"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-linux.tar.gz"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380698030"
+checksum = "sha256:b31ce5d133fc0cc03e448946bc64829fd295d939f449038b21b6c973e8039df0"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391338205"
 
 [tools."github:fioletoven/b4n"."platforms.windows-x64"]
-checksum = "sha256:55c3d30569f06180b61aa0817a674ef2e7d9687dcf8e0508bed0c196cbd2bfd6"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-windows.zip"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380699404"
+checksum = "sha256:e6bf49e444e82035daf4d211f6d99d621dc68e250ae1519474a804b826d279f1"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391340474"
 
 [tools."github:fioletoven/b4n"."platforms.windows-x64-baseline"]
-checksum = "sha256:55c3d30569f06180b61aa0817a674ef2e7d9687dcf8e0508bed0c196cbd2bfd6"
-url = "https://github.com/fioletoven/b4n/releases/download/v0.4.5/b4n-0.4.5-x86_64-windows.zip"
-url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/380699404"
+checksum = "sha256:e6bf49e444e82035daf4d211f6d99d621dc68e250ae1519474a804b826d279f1"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.6/b4n-0.4.6-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/391340474"
 
 [[tools."github:gruntwork-io/git-xargs"]]
 version = "0.1.16"
@@ -1642,52 +1580,52 @@ url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.91.0/downloads/glab_1.91.
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E91%2E0/glab_1%2E91%2E0_windows_amd64%2Ezip"
 
 [[tools.go]]
-version = "1.26.1"
+version = "1.26.2"
 backend = "core:go"
 
 [tools.go."platforms.linux-arm64"]
-checksum = "sha256:a290581cfe4fe28ddd737dde3095f3dbeb7f2e4065cab4eae44dfc53b760c2f7"
-url = "https://dl.google.com/go/go1.26.1.linux-arm64.tar.gz"
+checksum = "sha256:c958a1fe1b361391db163a485e21f5f228142d6f8b584f6bef89b26f66dc5b23"
+url = "https://dl.google.com/go/go1.26.2.linux-arm64.tar.gz"
 
 [tools.go."platforms.linux-arm64-musl"]
-checksum = "sha256:a290581cfe4fe28ddd737dde3095f3dbeb7f2e4065cab4eae44dfc53b760c2f7"
-url = "https://dl.google.com/go/go1.26.1.linux-arm64.tar.gz"
+checksum = "sha256:c958a1fe1b361391db163a485e21f5f228142d6f8b584f6bef89b26f66dc5b23"
+url = "https://dl.google.com/go/go1.26.2.linux-arm64.tar.gz"
 
 [tools.go."platforms.linux-x64"]
-checksum = "sha256:031f088e5d955bab8657ede27ad4e3bc5b7c1ba281f05f245bcc304f327c987a"
-url = "https://dl.google.com/go/go1.26.1.linux-amd64.tar.gz"
+checksum = "sha256:990e6b4bbba816dc3ee129eaeaf4b42f17c2800b88a2166c265ac1a200262282"
+url = "https://dl.google.com/go/go1.26.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-baseline"]
-checksum = "sha256:031f088e5d955bab8657ede27ad4e3bc5b7c1ba281f05f245bcc304f327c987a"
-url = "https://dl.google.com/go/go1.26.1.linux-amd64.tar.gz"
+checksum = "sha256:990e6b4bbba816dc3ee129eaeaf4b42f17c2800b88a2166c265ac1a200262282"
+url = "https://dl.google.com/go/go1.26.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-musl"]
-checksum = "sha256:031f088e5d955bab8657ede27ad4e3bc5b7c1ba281f05f245bcc304f327c987a"
-url = "https://dl.google.com/go/go1.26.1.linux-amd64.tar.gz"
+checksum = "sha256:990e6b4bbba816dc3ee129eaeaf4b42f17c2800b88a2166c265ac1a200262282"
+url = "https://dl.google.com/go/go1.26.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:031f088e5d955bab8657ede27ad4e3bc5b7c1ba281f05f245bcc304f327c987a"
-url = "https://dl.google.com/go/go1.26.1.linux-amd64.tar.gz"
+checksum = "sha256:990e6b4bbba816dc3ee129eaeaf4b42f17c2800b88a2166c265ac1a200262282"
+url = "https://dl.google.com/go/go1.26.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.macos-arm64"]
-checksum = "sha256:353df43a7811ce284c8938b5f3c7df40b7bfb6f56cb165b150bc40b5e2dd541f"
-url = "https://dl.google.com/go/go1.26.1.darwin-arm64.tar.gz"
+checksum = "sha256:32af1522bf3e3ff3975864780a429cc0b41d190ec7bf90faa661d6d64566e7af"
+url = "https://dl.google.com/go/go1.26.2.darwin-arm64.tar.gz"
 
 [tools.go."platforms.macos-x64"]
-checksum = "sha256:65773dab2f8cc4cd23d93ba6d0a805de150ca0b78378879292be0b903b8cdd08"
-url = "https://dl.google.com/go/go1.26.1.darwin-amd64.tar.gz"
+checksum = "sha256:bc3f1500d9968c36d705442d90ba91addf9271665033748b82532682e90a7966"
+url = "https://dl.google.com/go/go1.26.2.darwin-amd64.tar.gz"
 
 [tools.go."platforms.macos-x64-baseline"]
-checksum = "sha256:65773dab2f8cc4cd23d93ba6d0a805de150ca0b78378879292be0b903b8cdd08"
-url = "https://dl.google.com/go/go1.26.1.darwin-amd64.tar.gz"
+checksum = "sha256:bc3f1500d9968c36d705442d90ba91addf9271665033748b82532682e90a7966"
+url = "https://dl.google.com/go/go1.26.2.darwin-amd64.tar.gz"
 
 [tools.go."platforms.windows-x64"]
-checksum = "sha256:9b68112c913f45b7aebbf13c036721264bbba7e03a642f8f7490c561eebd1ecc"
-url = "https://dl.google.com/go/go1.26.1.windows-amd64.zip"
+checksum = "sha256:98eb3570bade15cb826b0909338df6cc6d2cf590bc39c471142002db3832b708"
+url = "https://dl.google.com/go/go1.26.2.windows-amd64.zip"
 
 [tools.go."platforms.windows-x64-baseline"]
-checksum = "sha256:9b68112c913f45b7aebbf13c036721264bbba7e03a642f8f7490c561eebd1ecc"
-url = "https://dl.google.com/go/go1.26.1.windows-amd64.zip"
+checksum = "sha256:98eb3570bade15cb826b0909338df6cc6d2cf590bc39c471142002db3832b708"
+url = "https://dl.google.com/go/go1.26.2.windows-amd64.zip"
 
 [[tools.go-containerregistry]]
 version = "0.21.4"
@@ -1736,10 +1674,6 @@ url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/
 [tools.go-containerregistry."platforms.windows-x64-baseline"]
 checksum = "sha256:1151ea629de023a9b01d04dcba425280f3cbe771bd2a01760aa39f850a6a594c"
 url = "https://github.com/google/go-containerregistry/releases/download/v0.21.4/go-containerregistry_Windows_x86_64.tar.gz"
-
-[[tools.go-containerregistry]]
-version = "0.21.3"
-backend = "aqua:google/go-containerregistry"
 
 [[tools."go:github.com/apricote/hcloud-upload-image"]]
 version = "1.3.0"
@@ -1798,7 +1732,7 @@ checksum = "sha256:a926b62a85787ccf73ef8736b3ae554f1242e39d92bb8767a79d6dd23b11d
 url = "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz"
 
 [[tools.hcloud]]
-version = "1.62.0"
+version = "1.62.2"
 backend = "asdf:hcloud"
 
 [[tools.helm]]
@@ -1945,10 +1879,6 @@ url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_
 [tools.hugo."platforms.windows-x64-baseline"]
 checksum = "sha256:19b2e41882e2b266387bf3be8d791264cbd7b2349eeaff6bfb322e855e412e43"
 url = "https://github.com/gohugoio/hugo/releases/download/v0.160.0/hugo_0.160.0_windows-amd64.zip"
-
-[[tools.hugo]]
-version = "0.159.2"
-backend = "aqua:gohugoio/hugo"
 
 [[tools.hurl]]
 version = "7.1.0"
@@ -3270,53 +3200,53 @@ checksum = "sha256:9aba23a5d549695cfb5f034849e143205ccf972e5b5d42c24acd32e084d7a
 url = "https://github.com/jdx/usage/releases/download/v3.2.0/usage-x86_64-pc-windows-msvc.zip"
 
 [[tools.uv]]
-version = "0.11.3"
+version = "0.11.4"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:8ecec82cb9a744d5fabff6d16d7777218a7730f699d2aa0d2f751c17858e2efa"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:a02ec7667d7bb1d33cdb7e1de22f7e4242967e3df7e350bac6212515e3bce8ac"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-aarch64-unknown-linux-musl.tar.gz"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:8ecec82cb9a744d5fabff6d16d7777218a7730f699d2aa0d2f751c17858e2efa"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:a02ec7667d7bb1d33cdb7e1de22f7e4242967e3df7e350bac6212515e3bce8ac"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-aarch64-unknown-linux-musl.tar.gz"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:8b40cf16b849634b81a530a3d0a0bcae5f24996ef9ae782976fd69b6266d3b8e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:36ce1c5d8997db9b6a24d0f41646d5509b6d1d8b9448c7325f8248a6ea5d4b00"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-baseline"]
-checksum = "sha256:8b40cf16b849634b81a530a3d0a0bcae5f24996ef9ae782976fd69b6266d3b8e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:36ce1c5d8997db9b6a24d0f41646d5509b6d1d8b9448c7325f8248a6ea5d4b00"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:8b40cf16b849634b81a530a3d0a0bcae5f24996ef9ae782976fd69b6266d3b8e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:36ce1c5d8997db9b6a24d0f41646d5509b6d1d8b9448c7325f8248a6ea5d4b00"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.uv."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:8b40cf16b849634b81a530a3d0a0bcae5f24996ef9ae782976fd69b6266d3b8e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:36ce1c5d8997db9b6a24d0f41646d5509b6d1d8b9448c7325f8248a6ea5d4b00"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:2bc3d0c7bf2bd08325b1e170abac6f7e5b3346e1d4eab3370d17cefec934996f"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:9b9cb6c6f58c3246dbf3351ed4e97c500bc3266f5f237d2fd620b66e1c31dc56"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-aarch64-apple-darwin.tar.gz"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:c326edaf3fd492f53d1c58777f3459c0d87bf9dae8d89e80aec4b0da6622dcf3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-apple-darwin.tar.gz"
 
 [tools.uv."platforms.macos-x64-baseline"]
-checksum = "sha256:b0e05e0b43a000fdc2132ee3f3400ba5dee427bc2337d3ec4eb8cf4f3d5722af"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:c326edaf3fd492f53d1c58777f3459c0d87bf9dae8d89e80aec4b0da6622dcf3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-apple-darwin.tar.gz"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:26d84455a40b0272b2ab4785cad298ff2c89cd0765b482e9f85b5a1bd880a863"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-pc-windows-msvc.zip"
 
 [tools.uv."platforms.windows-x64-baseline"]
-checksum = "sha256:ae681c0aaec7cc96af184648cb88d73f8393ed60fa5880abdd6bdb910f9b227c"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.3/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:26d84455a40b0272b2ab4785cad298ff2c89cd0765b482e9f85b5a1bd880a863"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.4/uv-x86_64-pc-windows-msvc.zip"
 
 [[tools.vcluster]]
 version = "0.33.1"
