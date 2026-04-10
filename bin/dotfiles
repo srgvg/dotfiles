@@ -143,7 +143,7 @@ Wallpapers
 .config/doctl/ :!.config/doctl/cache/
 .config/forwardemail/
 .config/gandi/
-.config/gcloud/ :!.config/gcloud/*.db :!.config/gcloud/cache/ :!.config/gcloud/logs/ :!.config/gcloud/surface_data/ :!.config/gcloud/.last*
+.config/gcloud/ :!.config/gcloud/*.db :!.config/gcloud/cache/ :!.config/gcloud/logs/ :!.config/gcloud/surface_data/ :!.config/gcloud/.last* :!.config/gcloud/legacy_credentials/ :!.config/gcloud/configurations/config_default
 .config/goshlink/
 .config/gotify/
 .config/hcloud/
@@ -155,7 +155,7 @@ Wallpapers
 .docker/ :!.docker/buildx/
 .gitignore.d/sdot
 .gnupg/ :!.gnupg/random_seed
-.kube/ :!.kube/cache/ :!.kube/config :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history
+.kube/ :!.kube/cache/ :!.kube/config :!.kube/http-cache/ :!.kube/kubie.yaml :!.kube/.switch_tmp/ :!.kube/.switch_history :!.kube/gke_gcloud_auth_plugin_cache
 .local/share/nats/
 .local/share/remmina/
 .s3cfg

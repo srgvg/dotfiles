@@ -24,13 +24,13 @@ normalize_to_array='
   ] | flatten
 '
 
-talosctl get kubespanpeerstatuses --nodes "$NODES_CSV" -o json 2>/dev/null |
+{ talosctl get kubespanpeerstatuses --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
     jq -cs "$normalize_to_array" >"$tmp_peer" || echo '[]' >"$tmp_peer"
 
-talosctl get kubespanendpoints --nodes "$NODES_CSV" -o json 2>/dev/null |
+{ talosctl get kubespanendpoints --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
     jq -cs "$normalize_to_array" >"$tmp_ep" || echo '[]' >"$tmp_ep"
 
-talosctl get kubespanpeerspecs --nodes "$NODES_CSV" -o json 2>/dev/null |
+{ talosctl get kubespanpeerspecs --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
     jq -cs "$normalize_to_array" >"$tmp_spec" || echo '[]' >"$tmp_spec"
 
 now_epoch="$(date +%s)"
