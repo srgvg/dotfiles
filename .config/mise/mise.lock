@@ -615,43 +615,63 @@ version = "1.5.4"
 backend = "github:vmware-tanzu/tanzu-cli"
 
 [[tools."github:x-motemen/ghq"]]
-version = "1.10.0"
+version = "1.10.1"
 backend = "github:x-motemen/ghq"
 
 [tools."github:x-motemen/ghq"."platforms.linux-arm64"]
-checksum = "sha256:0e4742e24b11c2e23fdc8513e2d277cca52ac2a81fd4566680cd1d6192ea75ea"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_linux_arm64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247543"
+checksum = "sha256:7ed154f62751e91c8a2d415280caeeba3d114050d01e39f3d0f4aa1be15f3954"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_arm64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135805"
 
 [tools."github:x-motemen/ghq"."platforms.linux-arm64-musl"]
-checksum = "sha256:0e4742e24b11c2e23fdc8513e2d277cca52ac2a81fd4566680cd1d6192ea75ea"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_linux_arm64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247543"
+checksum = "sha256:7ed154f62751e91c8a2d415280caeeba3d114050d01e39f3d0f4aa1be15f3954"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_arm64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135805"
 
 [tools."github:x-motemen/ghq"."platforms.linux-x64"]
-checksum = "sha256:079a329c80ef028aeba6957a99b896656537b51dedd083cebb47d7b620d891a6"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_linux_amd64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247556"
+checksum = "sha256:32e380aa8ac76fdd58758cc06174d9ee5db7270bd0cbcc18138b5d36def91b6b"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135802"
+
+[tools."github:x-motemen/ghq"."platforms.linux-x64-baseline"]
+checksum = "sha256:32e380aa8ac76fdd58758cc06174d9ee5db7270bd0cbcc18138b5d36def91b6b"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135802"
 
 [tools."github:x-motemen/ghq"."platforms.linux-x64-musl"]
-checksum = "sha256:079a329c80ef028aeba6957a99b896656537b51dedd083cebb47d7b620d891a6"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_linux_amd64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247556"
+checksum = "sha256:32e380aa8ac76fdd58758cc06174d9ee5db7270bd0cbcc18138b5d36def91b6b"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135802"
+
+[tools."github:x-motemen/ghq"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:32e380aa8ac76fdd58758cc06174d9ee5db7270bd0cbcc18138b5d36def91b6b"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_linux_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135802"
 
 [tools."github:x-motemen/ghq"."platforms.macos-arm64"]
-checksum = "sha256:94e973afdbb58e3f2560aaca689767f379c3badd934a68d611673f89d7bfc19e"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_darwin_arm64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247545"
+checksum = "sha256:5e3100de0c5a248eebe6ab176ad94d6e12386af70a58c535368a4301861b1398"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_darwin_arm64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135804"
 
 [tools."github:x-motemen/ghq"."platforms.macos-x64"]
-checksum = "sha256:3f602eebcbdbdf99333ff17b7cf9ba7b2c72bfd0e29ddb9151b5cfb3969335a9"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_darwin_amd64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247550"
+checksum = "sha256:491e88380b817eee3ab5a3aa09dbe8491b9495a0ffc5223b60e7f4679a97a8eb"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_darwin_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135808"
+
+[tools."github:x-motemen/ghq"."platforms.macos-x64-baseline"]
+checksum = "sha256:491e88380b817eee3ab5a3aa09dbe8491b9495a0ffc5223b60e7f4679a97a8eb"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_darwin_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135808"
 
 [tools."github:x-motemen/ghq"."platforms.windows-x64"]
-checksum = "sha256:04428613f5f3901e923d6ee87fe963b3f1e4e467661c9740bebb18af4d08fae9"
-url = "https://github.com/x-motemen/ghq/releases/download/v1.10.0/ghq_windows_amd64.zip"
-url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/392247560"
+checksum = "sha256:a526da44d5f67250598fa95e5654815e9f672b2c05d1d98c28bce0e60d3cfa6c"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_windows_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135809"
+
+[tools."github:x-motemen/ghq"."platforms.windows-x64-baseline"]
+checksum = "sha256:a526da44d5f67250598fa95e5654815e9f672b2c05d1d98c28bce0e60d3cfa6c"
+url = "https://github.com/x-motemen/ghq/releases/download/v1.10.1/ghq_windows_amd64.zip"
+url_api = "https://api.github.com/repos/x-motemen/ghq/releases/assets/394135809"
 
 [[tools."github:zitadel/zitadel"]]
 version = "4.13.1"
@@ -729,8 +749,52 @@ checksum = "sha256:98eb3570bade15cb826b0909338df6cc6d2cf590bc39c471142002db3832b
 url = "https://dl.google.com/go/go1.26.2.windows-amd64.zip"
 
 [[tools.go-containerregistry]]
-version = "0.21.4"
+version = "0.21.5"
 backend = "aqua:google/go-containerregistry"
+
+[tools.go-containerregistry."platforms.linux-arm64"]
+checksum = "sha256:3a47c6da5a0ba1ca7a93def41036d8f262a2160799e5d4ca25dba3cfa47dab41"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-arm64-musl"]
+checksum = "sha256:3a47c6da5a0ba1ca7a93def41036d8f262a2160799e5d4ca25dba3cfa47dab41"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64"]
+checksum = "sha256:9f823ae5ee25803161110f957b5fd4538f714d40cdf25dacb4914fefafd246bf"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-baseline"]
+checksum = "sha256:9f823ae5ee25803161110f957b5fd4538f714d40cdf25dacb4914fefafd246bf"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl"]
+checksum = "sha256:9f823ae5ee25803161110f957b5fd4538f714d40cdf25dacb4914fefafd246bf"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:9f823ae5ee25803161110f957b5fd4538f714d40cdf25dacb4914fefafd246bf"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-arm64"]
+checksum = "sha256:a41938cdbd8becc59e90f4bb491a557d52dce5681f9812c961854cab706f5f59"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Darwin_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64"]
+checksum = "sha256:d5ad8d97d7c5407f761b4fd37801044473f58b79a033f6a64e84ce6d010c1b2c"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64-baseline"]
+checksum = "sha256:d5ad8d97d7c5407f761b4fd37801044473f58b79a033f6a64e84ce6d010c1b2c"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64"]
+checksum = "sha256:f2576640521c6962bab26e37a4b87f168fcd13bebbf9c5355c8ae33417c7ca5a"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Windows_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64-baseline"]
+checksum = "sha256:f2576640521c6962bab26e37a4b87f168fcd13bebbf9c5355c8ae33417c7ca5a"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.5/go-containerregistry_Windows_x86_64.tar.gz"
 
 [[tools."go:github.com/apricote/hcloud-upload-image"]]
 version = "1.3.0"
