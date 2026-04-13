@@ -78,15 +78,25 @@ url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.29.zip"
 url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.29.zip"
 
 [tools.awscli."platforms.linux-x64"]
+checksum = "blake3:282e69b2df07ded4bad652a5bb9f85952dfa2f6de7e0b285ad1bdc007122b481"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+
+[tools.awscli."platforms.linux-x64-baseline"]
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+
+[tools.awscli."platforms.linux-x64-musl-baseline"]
 url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
 
 [tools.awscli."platforms.macos-arm64"]
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
 
 [tools.awscli."platforms.macos-x64"]
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
+
+[tools.awscli."platforms.macos-x64-baseline"]
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
 
 [[tools.azure-cli]]
@@ -599,8 +609,53 @@ version = "0.0.9"
 backend = "github:jedi4ever/addt"
 
 [[tools."github:k-krew/hanoi-cli"]]
-version = "1.0.0"
+version = "1.0.1"
 backend = "github:k-krew/hanoi-cli"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-arm64"]
+checksum = "sha256:90146238448d1bf977d9f0cbf66b60c667e2faa6efbdeca755cff661b0acb212"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998702"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-arm64-musl"]
+checksum = "sha256:90146238448d1bf977d9f0cbf66b60c667e2faa6efbdeca755cff661b0acb212"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998702"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-x64"]
+checksum = "sha256:530188d3c5334dd34b65bd1e13488ec61ec0db5ed542f9b266e3191ab0dd0e23"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998699"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-x64-baseline"]
+checksum = "sha256:530188d3c5334dd34b65bd1e13488ec61ec0db5ed542f9b266e3191ab0dd0e23"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998699"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-x64-musl"]
+checksum = "sha256:530188d3c5334dd34b65bd1e13488ec61ec0db5ed542f9b266e3191ab0dd0e23"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998699"
+
+[tools."github:k-krew/hanoi-cli"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:530188d3c5334dd34b65bd1e13488ec61ec0db5ed542f9b266e3191ab0dd0e23"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998699"
+
+[tools."github:k-krew/hanoi-cli"."platforms.macos-arm64"]
+checksum = "sha256:4d15efc8597f28c94b10f28b3b437e969fa088ba8cc054e10f68b7beebf6b449"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998701"
+
+[tools."github:k-krew/hanoi-cli"."platforms.macos-x64"]
+checksum = "sha256:de3ebd96a49ba1370462ecd9d277b2541d3cba83dc1758fec5fe472d6ec4eb2e"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998700"
+
+[tools."github:k-krew/hanoi-cli"."platforms.macos-x64-baseline"]
+checksum = "sha256:de3ebd96a49ba1370462ecd9d277b2541d3cba83dc1758fec5fe472d6ec4eb2e"
+url = "https://github.com/k-krew/hanoi-cli/releases/download/v1.0.1/hanoi-cli_1.0.1_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/k-krew/hanoi-cli/releases/assets/394998700"
 
 [[tools."github:traiproject/yaml-schema-router"]]
 version = "0.2.0"
@@ -751,7 +806,17 @@ checksum = "sha256:b95eba8934bb202d868c92c8b1b0806beccb456edaf096f02e2ac99e98a66
 url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_linux_amd64.tar.gz"
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_linux_amd64%2Etar%2Egz"
 
+[tools.gitlab-cli."platforms.linux-x64-baseline"]
+checksum = "sha256:b95eba8934bb202d868c92c8b1b0806beccb456edaf096f02e2ac99e98a66b52"
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_linux_amd64%2Etar%2Egz"
+
 [tools.gitlab-cli."platforms.linux-x64-musl"]
+checksum = "sha256:b95eba8934bb202d868c92c8b1b0806beccb456edaf096f02e2ac99e98a66b52"
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_linux_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_linux_amd64%2Etar%2Egz"
+
+[tools.gitlab-cli."platforms.linux-x64-musl-baseline"]
 checksum = "sha256:b95eba8934bb202d868c92c8b1b0806beccb456edaf096f02e2ac99e98a66b52"
 url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_linux_amd64.tar.gz"
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_linux_amd64%2Etar%2Egz"
@@ -766,7 +831,17 @@ checksum = "sha256:96bbc89ec9435e35f78eb4d492ad43648419f7a851304bcd0f1a7d34aba53
 url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_darwin_amd64.tar.gz"
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_darwin_amd64%2Etar%2Egz"
 
+[tools.gitlab-cli."platforms.macos-x64-baseline"]
+checksum = "sha256:96bbc89ec9435e35f78eb4d492ad43648419f7a851304bcd0f1a7d34aba538cb"
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_darwin_amd64.tar.gz"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_darwin_amd64%2Etar%2Egz"
+
 [tools.gitlab-cli."platforms.windows-x64"]
+checksum = "sha256:24012ce4a456d6d5603096e15ea5ed51952d499afeafaaa6d58819ae89aa9cd8"
+url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_windows_amd64.zip"
+url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_windows_amd64%2Ezip"
+
+[tools.gitlab-cli."platforms.windows-x64-baseline"]
 checksum = "sha256:24012ce4a456d6d5603096e15ea5ed51952d499afeafaaa6d58819ae89aa9cd8"
 url = "https://gitlab.com/gitlab-org/cli/-/releases/v1.92.1/downloads/glab_1.92.1_windows_amd64.zip"
 url_api = "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/1%2E92%2E1/glab_1%2E92%2E1_windows_amd64%2Ezip"
