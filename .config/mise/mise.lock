@@ -607,8 +607,63 @@ version = "0.2.0"
 backend = "github:traiproject/yaml-schema-router"
 
 [[tools."github:vicanso/zedis"]]
-version = "0.3.2"
+version = "0.3.3"
 backend = "github:vicanso/zedis"
+
+[tools."github:vicanso/zedis"."platforms.linux-arm64"]
+checksum = "sha256:8e8794bf3d5c4f850a1787862341e6a2cb72e51f796ecf1e4719b4448abbd64c"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394399250"
+
+[tools."github:vicanso/zedis"."platforms.linux-arm64-musl"]
+checksum = "sha256:8e8794bf3d5c4f850a1787862341e6a2cb72e51f796ecf1e4719b4448abbd64c"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394399250"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64"]
+checksum = "sha256:f48d5069d543bae0a696cec134ed95da2dec62e7551e05f3ed35b1e73a274780"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398901"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-baseline"]
+checksum = "sha256:f48d5069d543bae0a696cec134ed95da2dec62e7551e05f3ed35b1e73a274780"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398901"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-musl"]
+checksum = "sha256:f48d5069d543bae0a696cec134ed95da2dec62e7551e05f3ed35b1e73a274780"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398901"
+
+[tools."github:vicanso/zedis"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:f48d5069d543bae0a696cec134ed95da2dec62e7551e05f3ed35b1e73a274780"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398901"
+
+[tools."github:vicanso/zedis"."platforms.macos-arm64"]
+checksum = "sha256:57994932e282d63b20da5b645331427cde9037f81c0bb10ab129382ed5382558"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-aarch64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394399251"
+
+[tools."github:vicanso/zedis"."platforms.macos-x64"]
+checksum = "sha256:4831e69a8bff71c5747c2555ae4c658641a70feff2de28fad313eb2cb12895d1"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-x86_64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398903"
+
+[tools."github:vicanso/zedis"."platforms.macos-x64-baseline"]
+checksum = "sha256:4831e69a8bff71c5747c2555ae4c658641a70feff2de28fad313eb2cb12895d1"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-x86_64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394398903"
+
+[tools."github:vicanso/zedis"."platforms.windows-x64"]
+checksum = "sha256:68a2b2d293bb04a9ba347ec5175c92455ae15c415b4d760c42e0529585ed548d"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-windows-x86_64.msi.zip"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394400617"
+
+[tools."github:vicanso/zedis"."platforms.windows-x64-baseline"]
+checksum = "sha256:68a2b2d293bb04a9ba347ec5175c92455ae15c415b4d760c42e0529585ed548d"
+url = "https://github.com/vicanso/zedis/releases/download/v0.3.3/zedis-windows-x86_64.msi.zip"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/394400617"
 
 [[tools."github:vmware-tanzu/tanzu-cli"]]
 version = "1.5.4"
@@ -984,8 +1039,53 @@ version = "4.13.1"
 backend = "aqua:kubernetes-sigs/kubebuilder"
 
 [[tools.kubecolor]]
-version = "0.5.3"
+version = "0.6.0"
 backend = "aqua:kubecolor/kubecolor"
+
+[tools.kubecolor."platforms.linux-arm64"]
+checksum = "sha256:aa56015817bdfe8a8944169e5b18108235fb5bca671f89fa52613b4379bf1f66"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_arm64.tar.gz"
+
+[tools.kubecolor."platforms.linux-arm64-musl"]
+checksum = "sha256:aa56015817bdfe8a8944169e5b18108235fb5bca671f89fa52613b4379bf1f66"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_arm64.tar.gz"
+
+[tools.kubecolor."platforms.linux-x64"]
+checksum = "sha256:ded167eb2d94145cc46e4ccb52db24e85a865858353014514a85cb59c649d2fe"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_amd64.tar.gz"
+provenance = "github-attestations"
+
+[tools.kubecolor."platforms.linux-x64-baseline"]
+checksum = "sha256:ded167eb2d94145cc46e4ccb52db24e85a865858353014514a85cb59c649d2fe"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_amd64.tar.gz"
+
+[tools.kubecolor."platforms.linux-x64-musl"]
+checksum = "sha256:ded167eb2d94145cc46e4ccb52db24e85a865858353014514a85cb59c649d2fe"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_amd64.tar.gz"
+
+[tools.kubecolor."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:ded167eb2d94145cc46e4ccb52db24e85a865858353014514a85cb59c649d2fe"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_linux_amd64.tar.gz"
+
+[tools.kubecolor."platforms.macos-arm64"]
+checksum = "sha256:22f08853f8925613f1792dd5acaaf0661284bb647d69ff50ad9552027b0d456a"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_darwin_arm64.tar.gz"
+
+[tools.kubecolor."platforms.macos-x64"]
+checksum = "sha256:8edea5adc6bdb121ec907014790ca780c97aac3766e0c27327227ccc0748c7e4"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_darwin_amd64.tar.gz"
+
+[tools.kubecolor."platforms.macos-x64-baseline"]
+checksum = "sha256:8edea5adc6bdb121ec907014790ca780c97aac3766e0c27327227ccc0748c7e4"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_darwin_amd64.tar.gz"
+
+[tools.kubecolor."platforms.windows-x64"]
+checksum = "sha256:00828c48ddd123a5cade6da6c13d3a6e5499ed9ba49645aa59ec9b0ac6fe6150"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_windows_amd64.zip"
+
+[tools.kubecolor."platforms.windows-x64-baseline"]
+checksum = "sha256:00828c48ddd123a5cade6da6c13d3a6e5499ed9ba49645aa59ec9b0ac6fe6150"
+url = "https://github.com/kubecolor/kubecolor/releases/download/v0.6.0/kubecolor_0.6.0_windows_amd64.zip"
 
 [[tools.kubeconform]]
 version = "0.7.0"
@@ -1277,42 +1377,62 @@ provenance = "cosign"
 provenance = "cosign"
 
 [[tools.updatecli]]
-version = "0.116.0"
+version = "0.116.1"
 backend = "aqua:updatecli/updatecli"
 
 [tools.updatecli."platforms.linux-arm64"]
-checksum = "sha256:8aa40b4718c37aaf824f167533048e58a45a7ff0d432eec0f0d295a8d210f429"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Linux_arm64.tar.gz"
+checksum = "sha256:e4cf673a170f0a2cb96d9ab48b81906ceaa86f810e29ba1f33ce14c79426e1d4"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.linux-arm64-musl"]
-checksum = "sha256:8aa40b4718c37aaf824f167533048e58a45a7ff0d432eec0f0d295a8d210f429"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Linux_arm64.tar.gz"
+checksum = "sha256:e4cf673a170f0a2cb96d9ab48b81906ceaa86f810e29ba1f33ce14c79426e1d4"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.linux-x64"]
-checksum = "sha256:73b877df9d8c706dbbd3d279c6994050c281d4169de86c0a3f0af80a757b5acd"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Linux_x86_64.tar.gz"
+checksum = "sha256:8773fa14b80cf6c1d00f2ab96642e2ecdb7e26ceb45b42ff70798dad519d9959"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_x86_64.tar.gz"
+provenance = "cosign"
+
+[tools.updatecli."platforms.linux-x64-baseline"]
+checksum = "sha256:8773fa14b80cf6c1d00f2ab96642e2ecdb7e26ceb45b42ff70798dad519d9959"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.linux-x64-musl"]
-checksum = "sha256:73b877df9d8c706dbbd3d279c6994050c281d4169de86c0a3f0af80a757b5acd"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Linux_x86_64.tar.gz"
+checksum = "sha256:8773fa14b80cf6c1d00f2ab96642e2ecdb7e26ceb45b42ff70798dad519d9959"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_x86_64.tar.gz"
+provenance = "cosign"
+
+[tools.updatecli."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:8773fa14b80cf6c1d00f2ab96642e2ecdb7e26ceb45b42ff70798dad519d9959"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Linux_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.macos-arm64"]
-checksum = "sha256:e74f70b483ef61777a44d51226a243c9ee468921963f69d8f95ce660c60081b5"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Darwin_arm64.tar.gz"
+checksum = "sha256:b1a9ea89a082d5246e0198ae5b7182a3bd235447fe7aaf60b23fe9220996614d"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Darwin_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.macos-x64"]
-checksum = "sha256:8f499be14d8bf624643cfe9af593beddf73468b8dfd6f089031cf5a01f2ad451"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Darwin_x86_64.tar.gz"
+checksum = "sha256:55e41093c929c6605e58f1799faa08431202a0234c1f8f17fd19ff38a7ea1896"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Darwin_x86_64.tar.gz"
+provenance = "cosign"
+
+[tools.updatecli."platforms.macos-x64-baseline"]
+checksum = "sha256:55e41093c929c6605e58f1799faa08431202a0234c1f8f17fd19ff38a7ea1896"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Darwin_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.updatecli."platforms.windows-x64"]
-checksum = "sha256:4e7d48af926ea81777b54b4e7abb1e44533b48ff5af2517c7ecf87ef81eaf4a2"
-url = "https://github.com/updatecli/updatecli/releases/download/v0.116.0/updatecli_Windows_x86_64.zip"
+checksum = "sha256:41188e0dec610e2d79383f37cf99a3d3b02cff51ce62e218e60c15742367278e"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Windows_x86_64.zip"
+provenance = "cosign"
+
+[tools.updatecli."platforms.windows-x64-baseline"]
+checksum = "sha256:41188e0dec610e2d79383f37cf99a3d3b02cff51ce62e218e60c15742367278e"
+url = "https://github.com/updatecli/updatecli/releases/download/v0.116.1/updatecli_Windows_x86_64.zip"
 provenance = "cosign"
 
 [[tools.usage]]
