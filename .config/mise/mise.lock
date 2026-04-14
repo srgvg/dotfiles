@@ -68,36 +68,36 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.3.6/argocd-windo
 provenance = "slsa"
 
 [[tools.awscli]]
-version = "2.34.29"
+version = "2.34.30"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.29.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.30.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.29.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.30.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:282e69b2df07ded4bad652a5bb9f85952dfa2f6de7e0b285ad1bdc007122b481"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+checksum = "blake3:530d0c0e53190ccfa09051942dc5dd5e2971b5d2d4c02825e046530f728bb6d4"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.30.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.30.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.30.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.29.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.30.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.30.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.30.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.29.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.30.pkg"
 
 [[tools.azure-cli]]
 version = "2.85.0"
@@ -597,8 +597,38 @@ version = "0.8.1"
 backend = "github:dgunzy/flux9s"
 
 [[tools."github:fioletoven/b4n"]]
-version = "0.4.6"
+version = "0.4.7"
 backend = "github:fioletoven/b4n"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64"]
+checksum = "sha256:ae8177deb556d2580b0de218c96f17f39ac3ba2c0023ba4a7c14357726026b98"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395939882"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-baseline"]
+checksum = "sha256:ae8177deb556d2580b0de218c96f17f39ac3ba2c0023ba4a7c14357726026b98"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395939882"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-musl"]
+checksum = "sha256:ae8177deb556d2580b0de218c96f17f39ac3ba2c0023ba4a7c14357726026b98"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395939882"
+
+[tools."github:fioletoven/b4n"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:ae8177deb556d2580b0de218c96f17f39ac3ba2c0023ba4a7c14357726026b98"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-linux.tar.gz"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395939882"
+
+[tools."github:fioletoven/b4n"."platforms.windows-x64"]
+checksum = "sha256:f000e53766e663b6f3d6cde123bc6715541bc1ebbec2f5912b400f7ed3ee9f75"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395940647"
+
+[tools."github:fioletoven/b4n"."platforms.windows-x64-baseline"]
+checksum = "sha256:f000e53766e663b6f3d6cde123bc6715541bc1ebbec2f5912b400f7ed3ee9f75"
+url = "https://github.com/fioletoven/b4n/releases/download/v0.4.7/b4n-0.4.7-x86_64-windows.zip"
+url_api = "https://api.github.com/repos/fioletoven/b4n/releases/assets/395940647"
 
 [[tools."github:gruntwork-io/git-xargs"]]
 version = "0.1.16"
@@ -1204,8 +1234,52 @@ version = "2.14.2"
 backend = "aqua:controlplaneio/kubesec"
 
 [[tools.kubeshark]]
-version = "53.2.0"
+version = "53.2.2"
 backend = "aqua:kubeshark/kubeshark"
+
+[tools.kubeshark."platforms.linux-arm64"]
+checksum = "sha256:adaf1f954d7bcf123fe237464fca13e2238daaf4d77ba1e092055ac3fa9f4d00"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_arm64"
+
+[tools.kubeshark."platforms.linux-arm64-musl"]
+checksum = "sha256:adaf1f954d7bcf123fe237464fca13e2238daaf4d77ba1e092055ac3fa9f4d00"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_arm64"
+
+[tools.kubeshark."platforms.linux-x64"]
+checksum = "sha256:ece24817dfe464e6d31131f99e1d8594cf61d9f9cd08352626ba1132a6ac9d3a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-baseline"]
+checksum = "sha256:ece24817dfe464e6d31131f99e1d8594cf61d9f9cd08352626ba1132a6ac9d3a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-musl"]
+checksum = "sha256:ece24817dfe464e6d31131f99e1d8594cf61d9f9cd08352626ba1132a6ac9d3a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:ece24817dfe464e6d31131f99e1d8594cf61d9f9cd08352626ba1132a6ac9d3a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_linux_amd64"
+
+[tools.kubeshark."platforms.macos-arm64"]
+checksum = "sha256:4977541b004cf8b975b81bad1756c06ce5ad3952947466c0e3b795ad27a4cece"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_darwin_arm64"
+
+[tools.kubeshark."platforms.macos-x64"]
+checksum = "sha256:938bc37e36fd2138624af5b58ccfcda6f6516c24537010f83c943546f0fc2e2a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_darwin_amd64"
+
+[tools.kubeshark."platforms.macos-x64-baseline"]
+checksum = "sha256:938bc37e36fd2138624af5b58ccfcda6f6516c24537010f83c943546f0fc2e2a"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark_darwin_amd64"
+
+[tools.kubeshark."platforms.windows-x64"]
+checksum = "sha256:ca1b415cf49174b31f77b9c2410a51133c452776d617b9ab98b7078711b749f7"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark.exe"
+
+[tools.kubeshark."platforms.windows-x64-baseline"]
+checksum = "sha256:ca1b415cf49174b31f77b9c2410a51133c452776d617b9ab98b7078711b749f7"
+url = "https://github.com/kubeshark/kubeshark/releases/download/v53.2.2/kubeshark.exe"
 
 [[tools.kubespy]]
 version = "0.6.3"
@@ -1329,8 +1403,66 @@ version = "0.10.3"
 backend = "aqua:FairwindsOps/rbac-lookup"
 
 [[tools.regbot]]
-version = "0.11.2"
-backend = "ubi:regclient/regclient"
+version = "0.11.3"
+backend = "github:regclient/regclient"
+
+[tools.regbot."platforms.linux-arm64"]
+checksum = "sha256:05696319af49c3d90586930aebc6599d4b17cd6b554eb032e8ac0f93802177a7"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-arm64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445735"
+
+[tools.regbot."platforms.linux-arm64-musl"]
+checksum = "sha256:05696319af49c3d90586930aebc6599d4b17cd6b554eb032e8ac0f93802177a7"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-arm64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445735"
+
+[tools.regbot."platforms.linux-x64"]
+checksum = "sha256:72d1d16ebf0a7d47adcb47691be9d494577b2ca46418784871ddd3fb6095af07"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445734"
+
+[tools.regbot."platforms.linux-x64-baseline"]
+checksum = "sha256:72d1d16ebf0a7d47adcb47691be9d494577b2ca46418784871ddd3fb6095af07"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445734"
+
+[tools.regbot."platforms.linux-x64-musl"]
+checksum = "sha256:72d1d16ebf0a7d47adcb47691be9d494577b2ca46418784871ddd3fb6095af07"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445734"
+
+[tools.regbot."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:72d1d16ebf0a7d47adcb47691be9d494577b2ca46418784871ddd3fb6095af07"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-linux-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445734"
+
+[tools.regbot."platforms.linux-x64-regclient"]
+checksum = "blake3:50e2cd4a0e3230a1055a7b996a386b2813bbf58665321648e23043247901d780"
+
+[tools.regbot."platforms.macos-arm64"]
+checksum = "sha256:304221b5edf194b1d7ec052509a878c4bb5386ab211136cc7c9506d9179c24e4"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-darwin-arm64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445739"
+
+[tools.regbot."platforms.macos-x64"]
+checksum = "sha256:5cb0efeced3482d48b9260c69f1aa15af4dd58b08968cd15ca7cd9a792efe317"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-darwin-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445742"
+
+[tools.regbot."platforms.macos-x64-baseline"]
+checksum = "sha256:5cb0efeced3482d48b9260c69f1aa15af4dd58b08968cd15ca7cd9a792efe317"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-darwin-amd64"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445742"
+
+[tools.regbot."platforms.windows-x64"]
+checksum = "sha256:5b10ae30247dd1d48239ae65054680b53b5ebd5e8f2e68a377e5490a8651de00"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-windows-amd64.exe"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445740"
+
+[tools.regbot."platforms.windows-x64-baseline"]
+checksum = "sha256:5b10ae30247dd1d48239ae65054680b53b5ebd5e8f2e68a377e5490a8651de00"
+url = "https://github.com/regclient/regclient/releases/download/v0.11.3/regbot-windows-amd64.exe"
+url_api = "https://api.github.com/repos/regclient/regclient/releases/assets/395445740"
 
 [[tools.regctl]]
 version = "0.11.2"
