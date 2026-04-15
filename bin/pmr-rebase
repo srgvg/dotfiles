@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -Eeuo pipefail
+
+log() { printf '%s\n' "$*" >&2; }
+die() {
+    log "ERROR: $*"
+    exit 1
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+require_clean_repo() {
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "Not inside a git repository"
+
+    git update-index -q --refresh
+
+    if ! git diff --quiet --ignore-submodules --; then
+        die "Working tree has unstaged changes"
+    fi
+    if ! git diff --cached --quiet --ignore-submodules --; then
+        die "Index has staged changes"
+    fi
+}
+
+detect_forge() {
+    local origin_url
+    origin_url="$(git remote get-url origin 2>/dev/null)" || die "Remote 'origin' not found"
+
+    case "$origin_url" in
+        *github.com*)
+            echo "github"
+            return
+            ;;
+        *gitlab.com*)
+            echo "gitlab"
+            return
+            ;;
+    esac
+
+    if command -v gh >/dev/null 2>&1 && gh repo view >/dev/null 2>&1; then
+        echo "github"
+        return
+    fi
+    if command -v glab >/dev/null 2>&1 && glab repo view >/dev/null 2>&1; then
+        echo "gitlab"
+        return
+    fi
+
+    die "Could not determine forge from origin URL: $origin_url"
+}
+
+refresh_origin_head() {
+    log "Fetching origin and refreshing remote HEAD..."
+    git fetch --prune origin
+    git remote set-head origin -a >/dev/null 2>&1 || true
+}
+
+default_base_ref() {
+    local head_ref
+    head_ref="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)"
+    [[ -n "$head_ref" ]] || die "origin/HEAD is not set. Run: git remote set-head origin -a"
+    echo "$head_ref"
+}
+
+list_branches() {
+    local forge="$1"
+
+    case "$forge" in
+        github)
+            require_cmd gh
+            gh pr list --state open --json headRefName --jq '.[].headRefName'
+            ;;
+        gitlab)
+            require_cmd glab
+            require_cmd jq
+            { glab mr list --output json 2>/dev/null || glab mr list -F json; } |
+                jq -r '.[].source_branch'
+            ;;
+        *)
+            die "Unsupported forge: $forge"
+            ;;
+    esac
+}
+
+abort_any_in_progress_rebase() {
+    local git_dir
+    git_dir="$(git rev-parse --git-dir 2>/dev/null || true)"
+    [[ -n "$git_dir" ]] || return 0
+
+    if [[ -d "$git_dir/rebase-merge" || -d "$git_dir/rebase-apply" ]]; then
+        git rebase --abort >/dev/null 2>&1 || true
+    fi
+}
+
+fetch_remote_branch() {
+    local branch="$1"
+    git fetch origin "+refs/heads/$branch:refs/remotes/origin/$branch" 2>/dev/null || true
+}
+
+ensure_local_matches_remote_branch() {
+    local branch="$1"
+
+    if ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+        log "Skipping: origin/$branch does not exist"
+        return 1
+    fi
+
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        if ! git checkout -q "$branch"; then
+            log "Checkout failed for $branch"
+            return 1
+        fi
+        # Explicit, deterministic "pull latest remote branch state".
+        git reset --hard "refs/remotes/origin/$branch" >/dev/null
+        log "Synced local branch to origin/$branch"
+    else
+        git checkout -q -B "$branch" "refs/remotes/origin/$branch" >/dev/null
+        log "Created local branch from origin/$branch"
+    fi
+
+    return 0
+}
+
+main() {
+    require_cmd git
+    require_clean_repo
+
+    local original_branch=""
+    local forge=""
+    local base_ref=""
+    local base_branch=""
+
+    original_branch="$(git branch --show-current)"
+    [[ -n "$original_branch" ]] || die "Detached HEAD is not supported"
+
+    trap '
+    abort_any_in_progress_rebase
+    if [[ -n "${original_branch:-}" ]]; then
+      git checkout -q "$original_branch" 2>/dev/null \
+        || log "WARNING: could not restore original branch: $original_branch"
+    fi
+  ' EXIT
+
+    log
+    git remote get-url origin >/dev/null 2>&1 || die "Remote 'origin' not found"
+
+    refresh_origin_head
+
+    forge="$(detect_forge)"
+    base_ref="$(default_base_ref)"
+    base_branch="${base_ref#origin/}"
+
+    log "Detected forge : $forge"
+    log "Rebase target  : $base_ref"
+    log "Original branch: $original_branch"
+    log
+    log "==============="
+
+    local rebased=0 pushed=0 skipped=0 conflicts=0 push_failed=0 checkout_failed=0 nochange=0
+    local -a conflict_branches=() push_failed_branches=() skipped_branches=() checkout_failed_branches=() nochange_branches=()
+
+    local branch before_sha after_sha
+    while IFS= read -r branch; do
+        [[ -n "$branch" ]] || continue
+
+        log "--- Branch: $branch ---"
+
+        if [[ "$branch" == "$base_branch" ]]; then
+            log "Skipping default branch"
+            log "==============="
+            ((skipped += 1))
+            skipped_branches+=("$branch (default branch)")
+            continue
+        fi
+
+        abort_any_in_progress_rebase
+        fetch_remote_branch "$branch"
+
+        if ! ensure_local_matches_remote_branch "$branch"; then
+            log "==============="
+            ((checkout_failed += 1))
+            checkout_failed_branches+=("$branch")
+            continue
+        fi
+
+        before_sha="$(git rev-parse HEAD)"
+
+        if git merge-base --is-ancestor "$base_ref" HEAD; then
+            log "Already based on $base_ref; nothing to rebase"
+            log "Skipping push"
+            log "==============="
+            ((nochange += 1))
+            nochange_branches+=("$branch (already up to date)")
+            continue
+        fi
+
+        if git rebase --no-autostash "$base_ref"; then
+            ((rebased += 1))
+        else
+            log "Rebase conflict on $branch"
+            log "Aborting rebase and continuing with next branch"
+            abort_any_in_progress_rebase
+            log "==============="
+            ((conflicts += 1))
+            conflict_branches+=("$branch")
+            continue
+        fi
+
+        after_sha="$(git rev-parse HEAD)"
+
+        if [[ "$after_sha" == "$before_sha" ]]; then
+            log "No branch change after rebase"
+            log "Skipping push"
+            log "==============="
+            ((nochange += 1))
+            nochange_branches+=("$branch (no change after rebase)")
+            continue
+        fi
+
+        fetch_remote_branch "$branch"
+
+        if git push --force-with-lease origin "HEAD:$branch"; then
+            log "Pushed successfully with --force-with-lease"
+            ((pushed += 1))
+        else
+            log "Push failed for $branch"
+            log "Likely remote branch changed during processing; leaving branch rebased locally"
+            log "==============="
+            ((push_failed += 1))
+            push_failed_branches+=("$branch")
+            continue
+        fi
+
+        log "==============="
+        log
+    done < <(list_branches "$forge" | sort -u)
+
+    if [[ "$(git branch --show-current)" != "$original_branch" ]]; then
+        log
+        log "Restoring branch: $original_branch"
+        git checkout -q "$original_branch"
+    fi
+
+    log "Done."
+    log "Rebased       : $rebased"
+    log "Pushed        : $pushed"
+    log "No change     : $nochange"
+    log "Conflicts     : $conflicts"
+    log "Push failures : $push_failed"
+    log "Checkout fail : $checkout_failed"
+    log "Skipped       : $skipped"
+
+    if ((nochange > 0)); then
+        log
+        log "Branches with no effective change:"
+        printf '  - %s\n' "${nochange_branches[@]}" >&2
+    fi
+
+    if ((conflicts > 0)); then
+        log
+        log "Branches with rebase conflicts:"
+        printf '  - %s\n' "${conflict_branches[@]}" >&2
+    fi
+
+    if ((push_failed > 0)); then
+        log
+        log "Branches with push failures:"
+        printf '  - %s\n' "${push_failed_branches[@]}" >&2
+    fi
+
+    if ((checkout_failed > 0)); then
+        log
+        log "Branches with checkout/setup failures:"
+        printf '  - %s\n' "${checkout_failed_branches[@]}" >&2
+    fi
+
+    if ((skipped > 0)); then
+        log
+        log "Skipped branches:"
+        printf '  - %s\n' "${skipped_branches[@]}" >&2
+    fi
+
+    ((conflicts == 0 && push_failed == 0 && checkout_failed == 0))
+}
+
+main "$@"

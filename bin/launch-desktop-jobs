@@ -27,7 +27,7 @@ else
         solaar --window hide  --battery-icons symbolic --debug
 		syncthing serve --no-browser --log-file=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
 		runflatpak.sh signal
-		runflatpak.sh mattermost
+		runflatpak.sh mattermost --use-gl=swiftshader
 		runflatpak.sh com.slack.Slack
 		runflatpak.sh com.rtosta.zapzap
 		runflatpak.sh nextcloud
