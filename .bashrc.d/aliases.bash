@@ -63,14 +63,36 @@ alias kb="kustomize build"
 alias kbf="kustomize-build-flux"
 alias kbfad="kustomize-build-flux-apply-dry"
 if command -v /home/serge/.local/share/mise/shims/kubecolor >/dev/null 2>&1; then
+    # Route both `k` and `kubectl` through kubecolor for colorized output.
     alias k="kubecolor"
-    complete -o default -F __start_kubectl k
     alias kubectl="kubecolor"
+
+    # Why eager-source instead of using complete-alias / lazy load:
+    # completions-system.bash defers sourcing /etc/bash_completion until the
+    # first TAB on a command that has NO completion spec (it hooks `complete -D`).
+    # Since we register `complete -F __start_kubectl` for k/kubecolor/kubectl
+    # below, that deferred loader is bypassed for those names, so neither
+    # __start_kubectl nor _completion_loader would ever get defined on their own.
+    # Source the kubectl completion file now so __start_kubectl exists at startup.
+    if [ -r ~/.local/share/bash-completion/completions/kubectl ]; then
+        . ~/.local/share/bash-completion/completions/kubectl
+    fi
+
+    # Wire all three names directly to kubectl's completion function.
+    # Note: alias expansion does NOT happen during completion lookup, so
+    # `kubectl` needs its own `complete` line even though it's aliased to
+    # kubecolor — bash dispatches on the typed word, not the alias target.
+    complete -o default -F __start_kubectl k
     complete -o default -F __start_kubectl kubecolor
+    complete -o default -F __start_kubectl kubectl
 else
+    # Fallback when kubecolor isn't installed: plain kubectl, with
+    # complete-alias to forward `k <TAB>` to whatever completion kubectl has
+    # registered. This works in the fallback path because nothing else clobbers
+    # the deferred loader for `kubectl` itself.
     alias k="kubectl"
+    complete -F _complete_alias k
 fi
-complete -F _complete_alias k
 alias kneat="kubectl-neat"
 alias kc='kubie ctx'
 alias kga="kubectl-get_all --namespace \$(kubie info ns)"
