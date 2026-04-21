@@ -67,6 +67,12 @@ _codex() {
             codex,mcp-server)
                 cmd="codex__mcp__server"
                 ;;
+            codex,plugin)
+                cmd="codex__plugin"
+                ;;
+            codex,responses)
+                cmd="codex__responses"
+                ;;
             codex,responses-api-proxy)
                 cmd="codex__responses__api__proxy"
                 ;;
@@ -151,6 +157,9 @@ _codex() {
             codex__debug,help)
                 cmd="codex__debug__help"
                 ;;
+            codex__debug,models)
+                cmd="codex__debug__models"
+                ;;
             codex__debug,prompt-input)
                 cmd="codex__debug__prompt__input"
                 ;;
@@ -174,6 +183,9 @@ _codex() {
                 ;;
             codex__debug__help,help)
                 cmd="codex__debug__help__help"
+                ;;
+            codex__debug__help,models)
+                cmd="codex__debug__help__models"
                 ;;
             codex__debug__help,prompt-input)
                 cmd="codex__debug__help__prompt__input"
@@ -280,6 +292,12 @@ _codex() {
             codex__help,mcp-server)
                 cmd="codex__help__mcp__server"
                 ;;
+            codex__help,plugin)
+                cmd="codex__help__plugin"
+                ;;
+            codex__help,responses)
+                cmd="codex__help__responses"
+                ;;
             codex__help,responses-api-proxy)
                 cmd="codex__help__responses__api__proxy"
                 ;;
@@ -325,6 +343,9 @@ _codex() {
             codex__help__debug,clear-memories)
                 cmd="codex__help__debug__clear__memories"
                 ;;
+            codex__help__debug,models)
+                cmd="codex__help__debug__models"
+                ;;
             codex__help__debug,prompt-input)
                 cmd="codex__help__debug__prompt__input"
                 ;;
@@ -369,6 +390,18 @@ _codex() {
                 ;;
             codex__help__mcp,remove)
                 cmd="codex__help__mcp__remove"
+                ;;
+            codex__help__plugin,marketplace)
+                cmd="codex__help__plugin__marketplace"
+                ;;
+            codex__help__plugin__marketplace,add)
+                cmd="codex__help__plugin__marketplace__add"
+                ;;
+            codex__help__plugin__marketplace,remove)
+                cmd="codex__help__plugin__marketplace__remove"
+                ;;
+            codex__help__plugin__marketplace,upgrade)
+                cmd="codex__help__plugin__marketplace__upgrade"
                 ;;
             codex__help__sandbox,linux)
                 cmd="codex__help__sandbox__linux"
@@ -433,6 +466,51 @@ _codex() {
             codex__mcp__help,remove)
                 cmd="codex__mcp__help__remove"
                 ;;
+            codex__plugin,help)
+                cmd="codex__plugin__help"
+                ;;
+            codex__plugin,marketplace)
+                cmd="codex__plugin__marketplace"
+                ;;
+            codex__plugin__help,help)
+                cmd="codex__plugin__help__help"
+                ;;
+            codex__plugin__help,marketplace)
+                cmd="codex__plugin__help__marketplace"
+                ;;
+            codex__plugin__help__marketplace,add)
+                cmd="codex__plugin__help__marketplace__add"
+                ;;
+            codex__plugin__help__marketplace,remove)
+                cmd="codex__plugin__help__marketplace__remove"
+                ;;
+            codex__plugin__help__marketplace,upgrade)
+                cmd="codex__plugin__help__marketplace__upgrade"
+                ;;
+            codex__plugin__marketplace,add)
+                cmd="codex__plugin__marketplace__add"
+                ;;
+            codex__plugin__marketplace,help)
+                cmd="codex__plugin__marketplace__help"
+                ;;
+            codex__plugin__marketplace,remove)
+                cmd="codex__plugin__marketplace__remove"
+                ;;
+            codex__plugin__marketplace,upgrade)
+                cmd="codex__plugin__marketplace__upgrade"
+                ;;
+            codex__plugin__marketplace__help,add)
+                cmd="codex__plugin__marketplace__help__add"
+                ;;
+            codex__plugin__marketplace__help,help)
+                cmd="codex__plugin__marketplace__help__help"
+                ;;
+            codex__plugin__marketplace__help,remove)
+                cmd="codex__plugin__marketplace__help__remove"
+                ;;
+            codex__plugin__marketplace__help,upgrade)
+                cmd="codex__plugin__marketplace__help__upgrade"
+                ;;
             codex__sandbox,help)
                 cmd="codex__sandbox__help"
                 ;;
@@ -470,7 +548,7 @@ _codex() {
 
     case "${cmd}" in
         codex)
-            opts="-c -i -m -p -s -a -C -h -V --config --enable --disable --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --ask-for-approval --full-auto --dangerously-bypass-approvals-and-sandbox --cd --search --add-dir --no-alt-screen --help --version [PROMPT] exec e review login logout mcp mcp-server app-server completion sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="-c -i -m -p -s -a -C -h -V --config --enable --disable --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --ask-for-approval --full-auto --dangerously-bypass-approvals-and-sandbox --cd --search --add-dir --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server completion sandbox debug execpolicy apply a resume fork cloud responses-api-proxy responses stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -567,7 +645,7 @@ _codex() {
             return 0
             ;;
         codex__app__server)
-            opts="-c -h --listen --analytics-default-enabled --ws-auth --ws-token-file --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="-c -h --listen --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -582,6 +660,10 @@ _codex() {
                     return 0
                     ;;
                 --ws-token-file)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --ws-token-sha256)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1187,7 +1269,7 @@ _codex() {
             return 0
             ;;
         codex__debug)
-            opts="-c -h --config --enable --disable --help app-server prompt-input clear-memories help"
+            opts="-c -h --config --enable --disable --help models app-server prompt-input clear-memories help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1349,7 +1431,7 @@ _codex() {
             return 0
             ;;
         codex__debug__help)
-            opts="app-server prompt-input clear-memories help"
+            opts="models app-server prompt-input clear-memories help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1418,6 +1500,20 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__debug__help__models)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__debug__help__prompt__input)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
@@ -1425,6 +1521,36 @@ _codex() {
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__debug__models)
+            opts="-c -h --bundled --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1471,7 +1597,7 @@ _codex() {
             return 0
             ;;
         codex__exec)
-            opts="-i -m -s -p -C -o -c -h -V --image --model --oss --local-provider --sandbox --profile --full-auto --dangerously-bypass-approvals-and-sandbox --cd --skip-git-repo-check --add-dir --ephemeral --output-schema --color --json --output-last-message --config --enable --disable --help --version [PROMPT] resume review help"
+            opts="-i -m -s -p -C -o -c -h -V --image --model --oss --local-provider --sandbox --profile --full-auto --dangerously-bypass-approvals-and-sandbox --cd --skip-git-repo-check --add-dir --ephemeral --ignore-user-config --ignore-rules --output-schema --color --json --output-last-message --config --enable --disable --help --version [PROMPT] resume review help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1658,7 +1784,7 @@ _codex() {
             return 0
             ;;
         codex__exec__resume)
-            opts="-i -m -o -c -h --last --all --image --model --full-auto --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --json --output-last-message --config --enable --disable --help [SESSION_ID] [PROMPT]"
+            opts="-i -m -o -c -h --last --all --image --model --full-auto --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --json --output-last-message --config --enable --disable --help [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1712,7 +1838,7 @@ _codex() {
             return 0
             ;;
         codex__exec__review)
-            opts="-m -o -c -h --uncommitted --base --commit --title --model --full-auto --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --json --output-last-message --config --enable --disable --help [PROMPT]"
+            opts="-m -o -c -h --uncommitted --base --commit --title --model --full-auto --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --json --output-last-message --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2167,7 +2293,7 @@ _codex() {
             return 0
             ;;
         codex__help)
-            opts="exec review login logout mcp mcp-server app-server completion sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="exec review login logout mcp plugin mcp-server app-server completion sandbox debug execpolicy apply resume fork cloud responses-api-proxy responses stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2349,7 +2475,7 @@ _codex() {
             return 0
             ;;
         codex__help__debug)
-            opts="app-server prompt-input clear-memories"
+            opts="models app-server prompt-input clear-memories"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2391,6 +2517,20 @@ _codex() {
             return 0
             ;;
         codex__help__debug__clear__memories)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__debug__models)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2729,6 +2869,90 @@ _codex() {
         codex__help__mcp__remove)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin)
+            opts="marketplace"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__marketplace)
+            opts="add upgrade remove"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__marketplace__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__marketplace__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__marketplace__upgrade)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__responses)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3364,6 +3588,348 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__plugin)
+            opts="-c -h --config --enable --disable --help marketplace help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help)
+            opts="marketplace help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__marketplace)
+            opts="add upgrade remove"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__marketplace__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__marketplace__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__marketplace__upgrade)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace)
+            opts="-c -h --config --enable --disable --help add upgrade remove help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__add)
+            opts="-c -h --ref --sparse --config --enable --disable --help <SOURCE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --ref)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --sparse)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__help)
+            opts="add upgrade remove help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__help__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__help__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__help__upgrade)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__remove)
+            opts="-c -h --config --enable --disable --help <MARKETPLACE_NAME>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__upgrade)
+            opts="-c -h --config --enable --disable --help [MARKETPLACE_NAME]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__responses)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__responses__api__proxy)
             opts="-c -h --port --server-info --http-shutdown --upstream-url --dump-dir --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -3680,12 +4246,16 @@ _codex() {
             return 0
             ;;
         codex__sandbox__macos)
-            opts="-c -h --full-auto --log-denials --config --enable --disable --help [COMMAND]..."
+            opts="-c -h --full-auto --allow-unix-socket --log-denials --config --enable --disable --help [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --allow-unix-socket)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --config)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
