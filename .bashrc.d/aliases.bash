@@ -13,6 +13,7 @@ alias bi="bash-it"
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'
 alias bwl='export BW_SESSION='
 # c
+alias claude="claude --enable-auto-mode"
 if [ "${MY_WM}" = "sway" ]; then
     alias copy='wl-copy'
 else
