@@ -379,6 +379,7 @@ get_mise() {
     mise upgrade --yes --jobs 8
     mise prune --yes
     mise reshim
+    mise lock --yes
     mise doctor --verbose
     popd
 
@@ -476,7 +477,7 @@ get_uv_tools() {
 
     log "restore missing packages from uv-tools list"
     comm -13 <(uv tool list | grep -v '^-' | awk '{print $1}' | sort) \
-             <(grep -v '^\s*#' "$tools_list" | grep -v '^\s*$' | sed 's/\s*@.*//' | sed 's/\s*--with .*//' | sort) |
+        <(grep -v '^\s*#' "$tools_list" | grep -v '^\s*$' | sed 's/\s*@.*//' | sed 's/\s*--with .*//' | sort) |
         while read -r pkg; do
             local spec flags
             uv_tool_parse_list_line "$(grep -E "^${pkg}(\s|$)" "$tools_list" | head -1)"

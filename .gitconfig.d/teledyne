@@ -1,5 +1,10 @@
 [core]
-	sshCommand = ssh -i ~/.ssh/ssh-id-teledyne-ed25519.key -o IdentitiesOnly=yes -v
+    sshCommand = ssh -i ~/.ssh/ssh-id-teledyne-ed25519.key -o IdentitiesOnly=yes
+[user]
+
+	name = Serge van Ginderachter
+    email = SergeNicolasJ.VanGinderachter@Teledyne.com
+	signingkey = /home/serge/.ssh/ssh-id-teledyne-ed25519.key
 
 [credential "https://bitbucketcommercial.flir.com"]
 	helper = libsecret
