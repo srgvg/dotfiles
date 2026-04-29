@@ -224,6 +224,16 @@ fi
 
 notify "Starting VRAM monitor (interval=${INTERVAL}s, warn=${WARN_PCT}%, crit=${CRIT_PCT}%)"
 
+# Warn if known GPU-leak apps still have active GPU processes — their Flatpak
+# devices=!dri or --disable-gpu overrides may be ineffective or not yet applied.
+_leak_check=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
+    | awk '$6 ~ /^(ap|signal-desktop|slack)$/ && $4~/^[0-9]+$/ && $4>50 {print $6"["$2"]="$4"M"}' \
+    | tr '\n' ' ')
+if [ -n "$_leak_check" ]; then
+    notify_desktop_always normal "VRAM Leak Risk" \
+        "GPU processes present that should be blocked: ${_leak_check} — restart affected apps"
+fi
+
 while true; do
     read -r total used free < <(
         nvidia-smi --query-gpu=memory.total,memory.used,memory.free \

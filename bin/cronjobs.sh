@@ -136,8 +136,22 @@ function execute() {
     ###############################################################################
     elif [ "${command}" = "picwide" ]; then
 
+        # Job 1 — strict tier: true ultrawide images for the 7680x2160 (32:9) display.
+        # min_width=2560 (default): 2.5K+ ensures clean scaling to 7680px wide (3x upscale max).
+        # min_ratio=2.0 (default): 21:9 and wider only — avoids images that stretch badly on a 32:9 screen.
+        # Output: ~/Wallpapers/ultrawide
         $HOME/bin/picwide --verbose --update
-        PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide3 PICWIDE_MIN_WIDTH="3600" PICWIDE_MIN_RATIO="3" $HOME/bin/picwide --verbose --update
+
+        # Job 2 — loose tier: same ratio floor but lower resolution floor.
+        # min_width=1920: adds HD-wide images (1920×960 etc.) — 4x upscale on this screen, soft but
+        #   acceptable for a background at normal viewing distance from a 57" display.
+        # min_ratio=2.0 (default): kept identical to job 1 — dropping it further would add 16:9 images
+        #   that stretch too aggressively on a 32:9 display with fill mode.
+        # Output: ~/Wallpapers/ultrawide-wide
+        PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide2 PICWIDE_MIN_WIDTH="1920" $HOME/bin/picwide --verbose --update
+
+        PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide3 PICWIDE_MIN_WIDTH="1920" PICWIDE_MIN_RATIO="3" $HOME/bin/picwide --verbose --update
+        PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide35 PICWIDE_MIN_WIDTH="3840" PICWIDE_MIN_RATIO="3.5" $HOME/bin/picwide --verbose --update
 
     ###############################################################################
     elif [ "${command}" = "default" ]; then

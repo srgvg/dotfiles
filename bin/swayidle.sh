@@ -27,6 +27,12 @@ VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 
+# Auto-detect SWAYSOCK if not set (needed when called from SSH/TTY rescue context)
+if [ -z "${SWAYSOCK:-}" ]; then
+    SWAYSOCK=$(ls -t "/run/user/$(id -u)/sway-ipc."*.sock 2>/dev/null | head -1 || true)
+    export SWAYSOCK
+fi
+
 echo "==== swayidle called as '$0 $*' (SWAYSOCK=$SWAYSOCK)" | ts
 #
 #############################################################################
@@ -35,6 +41,13 @@ echo "==== swayidle called as '$0 $*' (SWAYSOCK=$SWAYSOCK)" | ts
 # NOTE: Don't use "type:pointer" as it disables composite keyboard/pointer devices (e.g., Keychron)
 # List pointer devices with: swaymsg -t get_inputs | jq -r '.[] | select(.type == "pointer") | "\(.identifier) - \(.name)"'
 MOUSE_DEVICE="1133:16507:Logitech_MX_Vertical"
+
+# Primary output config — used by low-res display recovery fallback.
+# WARNING: do NOT use 'swaymsg reload' in recovery paths — reloading during a
+# non-standard output mode causes sway/wlroots to lose all DRM outputs (confirmed 2026-04-29).
+OUTPUT_PRIMARY="DP-5"
+OUTPUT_MODE="7680x2160"
+OUTPUT_SCALE="1.5"
 
 function pause_notifications() {
 	echo "== pause notifications"
@@ -65,6 +78,20 @@ function pause_displays() {
 	echo swaymsg 'output * dpms off' ||:
 	swaymsg 'output * dpms off' ||:
 }
+function lowres_modeset_recovery() {
+	# Recover display when VRAM is too high for normal modeset (NVKMS GEM alloc fails at
+	# ~200 MiB needed for 7680x2160 scanout framebuffers). 1280x720 needs only ~10 MiB,
+	# which succeeds even with fragmented VRAM. After dpms on at low-res, wlroots GC runs
+	# and frees leaked DMA-BUF textures, then we restore the configured mode.
+	# Caller must ensure swaylock is NOT running (GC only fires when background surfaces render).
+	local display="$1"
+	echo "== low-res recovery on ${display}: 1280x720 -> ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" | ts
+	swaymsg "output ${display} mode 1280x720" ||:
+	sleep 1
+	swaymsg "output ${display} dpms on" ||:
+	sleep 10
+	swaymsg "output ${display} mode ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" ||:
+}
 function resume_displays(){
 	echo "== resume displays"
 	# Use wildcard first - don't rely on wlr-randr when display is off
@@ -83,10 +110,21 @@ function resume_displays(){
 		fi
 	done
 	# Force modeset cycle after suspend resume to work around nvidia-drm bug
-	# where DPMS on succeeds at IPC level but GPU display engine doesn't drive output
+	# where DPMS on succeeds at IPC level but GPU display engine doesn't drive output.
+	# At >80% VRAM the normal disable/enable cycle fails (NVKMS GEM alloc error for
+	# ~200 MiB 7680x2160 scanout framebuffers) — use low-res recovery path instead.
 	(sleep 3 && for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
-		echo "== forcing modeset cycle on ${display}" | ts
-		swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable
+		local _vram _total _crit
+		_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null | awk '/sway/ && $4~/^[0-9]+$/{print $4;exit}') || _vram=""
+		_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+		_crit=$(( _total * 80 / 100 ))
+		if [ -n "$_vram" ] && [ "$_vram" -gt "$_crit" ]; then
+			echo "== modeset: sway VRAM=${_vram}M > ${_crit}M — using low-res recovery" | ts
+			lowres_modeset_recovery "${display}"
+		else
+			echo "== forcing modeset cycle on ${display}" | ts
+			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable
+		fi
 	done) &
 }
 #
