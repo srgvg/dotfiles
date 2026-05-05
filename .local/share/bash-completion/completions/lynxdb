@@ -1,0 +1,4403 @@
+# bash completion for lynxdb                               -*- shell-script -*-
+
+__lynxdb_debug()
+{
+    if [[ -n ${BASH_COMP_DEBUG_FILE:-} ]]; then
+        echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
+    fi
+}
+
+# Homebrew on Macs have version 1.3 of bash-completion which doesn't include
+# _init_completion. This is a very minimal version of that function.
+__lynxdb_init_completion()
+{
+    COMPREPLY=()
+    _get_comp_words_by_ref "$@" cur prev words cword
+}
+
+__lynxdb_index_of_word()
+{
+    local w word=$1
+    shift
+    index=0
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+        index=$((index+1))
+    done
+    index=-1
+}
+
+__lynxdb_contains_word()
+{
+    local w word=$1; shift
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+    done
+    return 1
+}
+
+__lynxdb_handle_go_custom_completion()
+{
+    __lynxdb_debug "${FUNCNAME[0]}: cur is ${cur}, words[*] is ${words[*]}, #words[@] is ${#words[@]}"
+
+    local shellCompDirectiveError=1
+    local shellCompDirectiveNoSpace=2
+    local shellCompDirectiveNoFileComp=4
+    local shellCompDirectiveFilterFileExt=8
+    local shellCompDirectiveFilterDirs=16
+
+    local out requestComp lastParam lastChar comp directive args
+
+    # Prepare the command to request completions for the program.
+    # Calling ${words[0]} instead of directly lynxdb allows handling aliases
+    args=("${words[@]:1}")
+    # Disable ActiveHelp which is not supported for bash completion v1
+    requestComp="LYNXDB_ACTIVE_HELP=0 ${words[0]} __completeNoDesc ${args[*]}"
+
+    lastParam=${words[$((${#words[@]}-1))]}
+    lastChar=${lastParam:$((${#lastParam}-1)):1}
+    __lynxdb_debug "${FUNCNAME[0]}: lastParam ${lastParam}, lastChar ${lastChar}"
+
+    if [ -z "${cur}" ] && [ "${lastChar}" != "=" ]; then
+        # If the last parameter is complete (there is a space following it)
+        # We add an extra empty parameter so we can indicate this to the go method.
+        __lynxdb_debug "${FUNCNAME[0]}: Adding extra empty parameter"
+        requestComp="${requestComp} \"\""
+    fi
+
+    __lynxdb_debug "${FUNCNAME[0]}: calling ${requestComp}"
+    # Use eval to handle any environment variables and such
+    out=$(eval "${requestComp}" 2>/dev/null)
+
+    # Extract the directive integer at the very end of the output following a colon (:)
+    directive=${out##*:}
+    # Remove the directive
+    out=${out%:*}
+    if [ "${directive}" = "${out}" ]; then
+        # There is not directive specified
+        directive=0
+    fi
+    __lynxdb_debug "${FUNCNAME[0]}: the completion directive is: ${directive}"
+    __lynxdb_debug "${FUNCNAME[0]}: the completions are: ${out}"
+
+    if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
+        # Error code.  No completion.
+        __lynxdb_debug "${FUNCNAME[0]}: received error from custom completion go code"
+        return
+    else
+        if [ $((directive & shellCompDirectiveNoSpace)) -ne 0 ]; then
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                __lynxdb_debug "${FUNCNAME[0]}: activating no space"
+                compopt -o nospace
+            fi
+        fi
+        if [ $((directive & shellCompDirectiveNoFileComp)) -ne 0 ]; then
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                __lynxdb_debug "${FUNCNAME[0]}: activating no file completion"
+                compopt +o default
+            fi
+        fi
+    fi
+
+    if [ $((directive & shellCompDirectiveFilterFileExt)) -ne 0 ]; then
+        # File extension filtering
+        local fullFilter filter filteringCmd
+        # Do not use quotes around the $out variable or else newline
+        # characters will be kept.
+        for filter in ${out}; do
+            fullFilter+="$filter|"
+        done
+
+        filteringCmd="_filedir $fullFilter"
+        __lynxdb_debug "File filtering command: $filteringCmd"
+        $filteringCmd
+    elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
+        # File completion for directories only
+        local subdir
+        # Use printf to strip any trailing newline
+        subdir=$(printf "%s" "${out}")
+        if [ -n "$subdir" ]; then
+            __lynxdb_debug "Listing directories in $subdir"
+            __lynxdb_handle_subdirs_in_dir_flag "$subdir"
+        else
+            __lynxdb_debug "Listing directories in ."
+            _filedir -d
+        fi
+    else
+        while IFS='' read -r comp; do
+            COMPREPLY+=("$comp")
+        done < <(compgen -W "${out}" -- "$cur")
+    fi
+}
+
+__lynxdb_handle_reply()
+{
+    __lynxdb_debug "${FUNCNAME[0]}"
+    local comp
+    case $cur in
+        -*)
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                compopt -o nospace
+            fi
+            local allflags
+            if [ ${#must_have_one_flag[@]} -ne 0 ]; then
+                allflags=("${must_have_one_flag[@]}")
+            else
+                allflags=("${flags[*]} ${two_word_flags[*]}")
+            fi
+            while IFS='' read -r comp; do
+                COMPREPLY+=("$comp")
+            done < <(compgen -W "${allflags[*]}" -- "$cur")
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                [[ "${COMPREPLY[0]}" == *= ]] || compopt +o nospace
+            fi
+
+            # complete after --flag=abc
+            if [[ $cur == *=* ]]; then
+                if [[ $(type -t compopt) = "builtin" ]]; then
+                    compopt +o nospace
+                fi
+
+                local index flag
+                flag="${cur%=*}"
+                __lynxdb_index_of_word "${flag}" "${flags_with_completion[@]}"
+                COMPREPLY=()
+                if [[ ${index} -ge 0 ]]; then
+                    PREFIX=""
+                    cur="${cur#*=}"
+                    ${flags_completion[${index}]}
+                    if [ -n "${ZSH_VERSION:-}" ]; then
+                        # zsh completion needs --flag= prefix
+                        eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
+                    fi
+                fi
+            fi
+
+            if [[ -z "${flag_parsing_disabled}" ]]; then
+                # If flag parsing is enabled, we have completed the flags and can return.
+                # If flag parsing is disabled, we may not know all (or any) of the flags, so we fallthrough
+                # to possibly call handle_go_custom_completion.
+                return 0;
+            fi
+            ;;
+    esac
+
+    # check if we are handling a flag with special work handling
+    local index
+    __lynxdb_index_of_word "${prev}" "${flags_with_completion[@]}"
+    if [[ ${index} -ge 0 ]]; then
+        ${flags_completion[${index}]}
+        return
+    fi
+
+    # we are parsing a flag and don't have a special handler, no completion
+    if [[ ${cur} != "${words[cword]}" ]]; then
+        return
+    fi
+
+    local completions
+    completions=("${commands[@]}")
+    if [[ ${#must_have_one_noun[@]} -ne 0 ]]; then
+        completions+=("${must_have_one_noun[@]}")
+    elif [[ -n "${has_completion_function}" ]]; then
+        # if a go completion function is provided, defer to that function
+        __lynxdb_handle_go_custom_completion
+    fi
+    if [[ ${#must_have_one_flag[@]} -ne 0 ]]; then
+        completions+=("${must_have_one_flag[@]}")
+    fi
+    while IFS='' read -r comp; do
+        COMPREPLY+=("$comp")
+    done < <(compgen -W "${completions[*]}" -- "$cur")
+
+    if [[ ${#COMPREPLY[@]} -eq 0 && ${#noun_aliases[@]} -gt 0 && ${#must_have_one_noun[@]} -ne 0 ]]; then
+        while IFS='' read -r comp; do
+            COMPREPLY+=("$comp")
+        done < <(compgen -W "${noun_aliases[*]}" -- "$cur")
+    fi
+
+    if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
+        if declare -F __lynxdb_custom_func >/dev/null; then
+            # try command name qualified custom func
+            __lynxdb_custom_func
+        else
+            # otherwise fall back to unqualified for compatibility
+            declare -F __custom_func >/dev/null && __custom_func
+        fi
+    fi
+
+    # available in bash-completion >= 2, not always present on macOS
+    if declare -F __ltrim_colon_completions >/dev/null; then
+        __ltrim_colon_completions "$cur"
+    fi
+
+    # If there is only 1 completion and it is a flag with an = it will be completed
+    # but we don't want a space after the =
+    if [[ "${#COMPREPLY[@]}" -eq "1" ]] && [[ $(type -t compopt) = "builtin" ]] && [[ "${COMPREPLY[0]}" == --*= ]]; then
+       compopt -o nospace
+    fi
+}
+
+# The arguments should be in the form "ext1|ext2|extn"
+__lynxdb_handle_filename_extension_flag()
+{
+    local ext="$1"
+    _filedir "@(${ext})"
+}
+
+__lynxdb_handle_subdirs_in_dir_flag()
+{
+    local dir="$1"
+    pushd "${dir}" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1 || return
+}
+
+__lynxdb_handle_flag()
+{
+    __lynxdb_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    # if a command required a flag, and we found it, unset must_have_one_flag()
+    local flagname=${words[c]}
+    local flagvalue=""
+    # if the word contained an =
+    if [[ ${words[c]} == *"="* ]]; then
+        flagvalue=${flagname#*=} # take in as flagvalue after the =
+        flagname=${flagname%=*} # strip everything after the =
+        flagname="${flagname}=" # but put the = back
+    fi
+    __lynxdb_debug "${FUNCNAME[0]}: looking for ${flagname}"
+    if __lynxdb_contains_word "${flagname}" "${must_have_one_flag[@]}"; then
+        must_have_one_flag=()
+    fi
+
+    # if you set a flag which only applies to this command, don't show subcommands
+    if __lynxdb_contains_word "${flagname}" "${local_nonpersistent_flags[@]}"; then
+      commands=()
+    fi
+
+    # keep flag value with flagname as flaghash
+    # flaghash variable is an associative array which is only supported in bash > 3.
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        if [ -n "${flagvalue}" ] ; then
+            flaghash[${flagname}]=${flagvalue}
+        elif [ -n "${words[ $((c+1)) ]}" ] ; then
+            flaghash[${flagname}]=${words[ $((c+1)) ]}
+        else
+            flaghash[${flagname}]="true" # pad "true" for bool flag
+        fi
+    fi
+
+    # skip the argument to a two word flag
+    if [[ ${words[c]} != *"="* ]] && __lynxdb_contains_word "${words[c]}" "${two_word_flags[@]}"; then
+        __lynxdb_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+        c=$((c+1))
+        # if we are looking for a flags value, don't show commands
+        if [[ $c -eq $cword ]]; then
+            commands=()
+        fi
+    fi
+
+    c=$((c+1))
+
+}
+
+__lynxdb_handle_noun()
+{
+    __lynxdb_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    if __lynxdb_contains_word "${words[c]}" "${must_have_one_noun[@]}"; then
+        must_have_one_noun=()
+    elif __lynxdb_contains_word "${words[c]}" "${noun_aliases[@]}"; then
+        must_have_one_noun=()
+    fi
+
+    nouns+=("${words[c]}")
+    c=$((c+1))
+}
+
+__lynxdb_handle_command()
+{
+    __lynxdb_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    local next_command
+    if [[ -n ${last_command} ]]; then
+        next_command="_${last_command}_${words[c]//:/__}"
+    else
+        if [[ $c -eq 0 ]]; then
+            next_command="_lynxdb_root_command"
+        else
+            next_command="_${words[c]//:/__}"
+        fi
+    fi
+    c=$((c+1))
+    __lynxdb_debug "${FUNCNAME[0]}: looking for ${next_command}"
+    declare -F "$next_command" >/dev/null && $next_command
+}
+
+__lynxdb_handle_word()
+{
+    if [[ $c -ge $cword ]]; then
+        __lynxdb_handle_reply
+        return
+    fi
+    __lynxdb_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    if [[ "${words[c]}" == -* ]]; then
+        __lynxdb_handle_flag
+    elif __lynxdb_contains_word "${words[c]}" "${commands[@]}"; then
+        __lynxdb_handle_command
+    elif [[ $c -eq 0 ]]; then
+        __lynxdb_handle_command
+    elif __lynxdb_contains_word "${words[c]}" "${command_aliases[@]}"; then
+        # aliashash variable is an associative array which is only supported in bash > 3.
+        if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+            words[c]=${aliashash[${words[c]}]}
+            __lynxdb_handle_command
+        else
+            __lynxdb_handle_noun
+        fi
+    else
+        __lynxdb_handle_noun
+    fi
+    __lynxdb_handle_word
+}
+
+_lynxdb_admin_format-upgrade()
+{
+    last_command="lynxdb_admin_format-upgrade"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--confirm")
+    local_nonpersistent_flags+=("--confirm")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir=")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--data-dir=")
+    must_have_one_flag+=("--to=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_admin()
+{
+    last_command="lynxdb_admin"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("format-upgrade")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth_create()
+{
+    last_command="lynxdb_auth_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("--description")
+    local_nonpersistent_flags+=("--description")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--expires=")
+    two_word_flags+=("--expires")
+    local_nonpersistent_flags+=("--expires")
+    local_nonpersistent_flags+=("--expires=")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--scope=")
+    two_word_flags+=("--scope")
+    local_nonpersistent_flags+=("--scope")
+    local_nonpersistent_flags+=("--scope=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth_list()
+{
+    last_command="lynxdb_auth_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth_revoke()
+{
+    last_command="lynxdb_auth_revoke"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--yes")
+    flags+=("-y")
+    local_nonpersistent_flags+=("--yes")
+    local_nonpersistent_flags+=("-y")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth_rotate-root()
+{
+    last_command="lynxdb_auth_rotate-root"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--yes")
+    flags+=("-y")
+    local_nonpersistent_flags+=("--yes")
+    local_nonpersistent_flags+=("-y")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth_status()
+{
+    last_command="lynxdb_auth_status"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_auth()
+{
+    last_command="lynxdb_auth"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("create-key")
+        aliashash["create-key"]="create"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("list-keys")
+        aliashash["list-keys"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("revoke")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("revoke-key")
+        aliashash["revoke-key"]="revoke"
+    fi
+    commands+=("rotate-root")
+    commands+=("status")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_bench()
+{
+    last_command="lynxdb_bench"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--events=")
+    two_word_flags+=("--events")
+    local_nonpersistent_flags+=("--events")
+    local_nonpersistent_flags+=("--events=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_cache_clear()
+{
+    last_command="lynxdb_cache_clear"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_cache_stats()
+{
+    last_command="lynxdb_cache_stats"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_cache()
+{
+    last_command="lynxdb_cache"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("clear")
+    commands+=("stats")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_completion()
+{
+    last_command="lynxdb_completion"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--help")
+    flags+=("-h")
+    local_nonpersistent_flags+=("--help")
+    local_nonpersistent_flags+=("-h")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    must_have_one_noun+=("bash")
+    must_have_one_noun+=("fish")
+    must_have_one_noun+=("powershell")
+    must_have_one_noun+=("zsh")
+    noun_aliases=()
+}
+
+_lynxdb_config_add-profile()
+{
+    last_command="lynxdb_config_add-profile"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    local_nonpersistent_flags+=("--token")
+    local_nonpersistent_flags+=("--token=")
+    flags+=("--url=")
+    two_word_flags+=("--url")
+    local_nonpersistent_flags+=("--url")
+    local_nonpersistent_flags+=("--url=")
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--url=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_edit()
+{
+    last_command="lynxdb_config_edit"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_get()
+{
+    last_command="lynxdb_config_get"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_config_init()
+{
+    last_command="lynxdb_config_init"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--system")
+    local_nonpersistent_flags+=("--system")
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_list-profiles()
+{
+    last_command="lynxdb_config_list-profiles"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_path()
+{
+    last_command="lynxdb_config_path"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_reload()
+{
+    last_command="lynxdb_config_reload"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_remove-profile()
+{
+    last_command="lynxdb_config_remove-profile"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_reset()
+{
+    last_command="lynxdb_config_reset"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config_set()
+{
+    last_command="lynxdb_config_set"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_config_validate()
+{
+    last_command="lynxdb_config_validate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_config()
+{
+    last_command="lynxdb_config"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add-profile")
+    commands+=("edit")
+    commands+=("get")
+    commands+=("init")
+    commands+=("list-profiles")
+    commands+=("path")
+    commands+=("reload")
+    commands+=("remove-profile")
+    commands+=("reset")
+    commands+=("set")
+    commands+=("validate")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_count()
+{
+    last_command="lynxdb_count"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_demo()
+{
+    last_command="lynxdb_demo"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    local_nonpersistent_flags+=("--addr")
+    local_nonpersistent_flags+=("--addr=")
+    flags+=("--rate=")
+    two_word_flags+=("--rate")
+    local_nonpersistent_flags+=("--rate")
+    local_nonpersistent_flags+=("--rate=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_diff()
+{
+    last_command="lynxdb_diff"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--period=")
+    two_word_flags+=("--period")
+    local_nonpersistent_flags+=("--period")
+    local_nonpersistent_flags+=("--period=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_doctor_shippers()
+{
+    last_command="lynxdb_doctor_shippers"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_doctor()
+{
+    last_command="lynxdb_doctor"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("shippers")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_examples()
+{
+    last_command="lynxdb_examples"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_explain()
+{
+    last_command="lynxdb_explain"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--analyze")
+    local_nonpersistent_flags+=("--analyze")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_explain-error()
+{
+    last_command="lynxdb_explain-error"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_fields()
+{
+    last_command="lynxdb_fields"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--prefix=")
+    two_word_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix=")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--source=")
+    two_word_flags+=("--source")
+    local_nonpersistent_flags+=("--source")
+    local_nonpersistent_flags+=("--source=")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--values")
+    local_nonpersistent_flags+=("--values")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_grammar()
+{
+    last_command="lynxdb_grammar"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_health()
+{
+    last_command="lynxdb_health"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_help()
+{
+    last_command="lynxdb_help"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_import()
+{
+    last_command="lynxdb_import"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--batch-size=")
+    two_word_flags+=("--batch-size")
+    local_nonpersistent_flags+=("--batch-size")
+    local_nonpersistent_flags+=("--batch-size=")
+    flags+=("--delimiter=")
+    two_word_flags+=("--delimiter")
+    local_nonpersistent_flags+=("--delimiter")
+    local_nonpersistent_flags+=("--delimiter=")
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    local_nonpersistent_flags+=("--format")
+    local_nonpersistent_flags+=("--format=")
+    flags+=("--index=")
+    two_word_flags+=("--index")
+    local_nonpersistent_flags+=("--index")
+    local_nonpersistent_flags+=("--index=")
+    flags+=("--source=")
+    two_word_flags+=("--source")
+    local_nonpersistent_flags+=("--source")
+    local_nonpersistent_flags+=("--source=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_indexes()
+{
+    last_command="lynxdb_indexes"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_ingest()
+{
+    last_command="lynxdb_ingest"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--batch-size=")
+    two_word_flags+=("--batch-size")
+    local_nonpersistent_flags+=("--batch-size")
+    local_nonpersistent_flags+=("--batch-size=")
+    flags+=("--index=")
+    two_word_flags+=("--index")
+    local_nonpersistent_flags+=("--index")
+    local_nonpersistent_flags+=("--index=")
+    flags+=("--source=")
+    two_word_flags+=("--source")
+    local_nonpersistent_flags+=("--source")
+    local_nonpersistent_flags+=("--source=")
+    flags+=("--sourcetype=")
+    two_word_flags+=("--sourcetype")
+    local_nonpersistent_flags+=("--sourcetype")
+    local_nonpersistent_flags+=("--sourcetype=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_init()
+{
+    last_command="lynxdb_init"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir=")
+    flags+=("--no-interactive")
+    local_nonpersistent_flags+=("--no-interactive")
+    flags+=("--retention=")
+    two_word_flags+=("--retention")
+    local_nonpersistent_flags+=("--retention")
+    local_nonpersistent_flags+=("--retention=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_install()
+{
+    last_command="lynxdb_install"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir=")
+    flags+=("--group=")
+    two_word_flags+=("--group")
+    local_nonpersistent_flags+=("--group")
+    local_nonpersistent_flags+=("--group=")
+    flags+=("--prefix=")
+    two_word_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix")
+    local_nonpersistent_flags+=("--prefix=")
+    flags+=("--skip-capabilities")
+    local_nonpersistent_flags+=("--skip-capabilities")
+    flags+=("--skip-config")
+    local_nonpersistent_flags+=("--skip-config")
+    flags+=("--skip-self-test")
+    local_nonpersistent_flags+=("--skip-self-test")
+    flags+=("--skip-service")
+    local_nonpersistent_flags+=("--skip-service")
+    flags+=("--skip-ulimits")
+    local_nonpersistent_flags+=("--skip-ulimits")
+    flags+=("--user=")
+    two_word_flags+=("--user")
+    local_nonpersistent_flags+=("--user")
+    local_nonpersistent_flags+=("--user=")
+    flags+=("--yes")
+    local_nonpersistent_flags+=("--yes")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_jobs()
+{
+    last_command="lynxdb_jobs"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cancel")
+    local_nonpersistent_flags+=("--cancel")
+    flags+=("--status=")
+    two_word_flags+=("--status")
+    local_nonpersistent_flags+=("--status")
+    local_nonpersistent_flags+=("--status=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_last()
+{
+    last_command="lynxdb_last"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_login()
+{
+    last_command="lynxdb_login"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    local_nonpersistent_flags+=("--token")
+    local_nonpersistent_flags+=("--token=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_logout()
+{
+    last_command="lynxdb_logout"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_mv_backfill()
+{
+    last_command="lynxdb_mv_backfill"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_mv_create()
+{
+    last_command="lynxdb_mv_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--retention=")
+    two_word_flags+=("--retention")
+    local_nonpersistent_flags+=("--retention")
+    local_nonpersistent_flags+=("--retention=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_mv_drop()
+{
+    last_command="lynxdb_mv_drop"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--force")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_mv_list()
+{
+    last_command="lynxdb_mv_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_mv_pause()
+{
+    last_command="lynxdb_mv_pause"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_mv_resume()
+{
+    last_command="lynxdb_mv_resume"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_mv_status()
+{
+    last_command="lynxdb_mv_status"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_mv()
+{
+    last_command="lynxdb_mv"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("backfill")
+    commands+=("create")
+    commands+=("drop")
+    commands+=("list")
+    commands+=("pause")
+    commands+=("resume")
+    commands+=("status")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_open()
+{
+    last_command="lynxdb_open"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_query()
+{
+    last_command="lynxdb_query"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--analyze")
+    local_nonpersistent_flags+=("--analyze")
+    flags+=("--copy")
+    local_nonpersistent_flags+=("--copy")
+    flags+=("--explain")
+    local_nonpersistent_flags+=("--explain")
+    flags+=("--fail-on-empty")
+    local_nonpersistent_flags+=("--fail-on-empty")
+    flags+=("--file=")
+    two_word_flags+=("--file")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--file")
+    local_nonpersistent_flags+=("--file=")
+    local_nonpersistent_flags+=("-f")
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--max-memory=")
+    two_word_flags+=("--max-memory")
+    local_nonpersistent_flags+=("--max-memory")
+    local_nonpersistent_flags+=("--max-memory=")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output")
+    local_nonpersistent_flags+=("--output=")
+    local_nonpersistent_flags+=("-o")
+    flags+=("--param=")
+    two_word_flags+=("--param")
+    two_word_flags+=("-D")
+    local_nonpersistent_flags+=("--param")
+    local_nonpersistent_flags+=("--param=")
+    local_nonpersistent_flags+=("-D")
+    flags+=("--raw")
+    local_nonpersistent_flags+=("--raw")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--source=")
+    two_word_flags+=("--source")
+    local_nonpersistent_flags+=("--source")
+    local_nonpersistent_flags+=("--source=")
+    flags+=("--sourcetype=")
+    two_word_flags+=("--sourcetype")
+    local_nonpersistent_flags+=("--sourcetype")
+    local_nonpersistent_flags+=("--sourcetype=")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout")
+    local_nonpersistent_flags+=("--timeout=")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_run()
+{
+    last_command="lynxdb_run"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--param=")
+    two_word_flags+=("--param")
+    two_word_flags+=("-D")
+    local_nonpersistent_flags+=("--param")
+    local_nonpersistent_flags+=("--param=")
+    local_nonpersistent_flags+=("-D")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_sample()
+{
+    last_command="lynxdb_sample"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_save()
+{
+    last_command="lynxdb_save"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_saved_create()
+{
+    last_command="lynxdb_saved_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_saved_delete()
+{
+    last_command="lynxdb_saved_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_saved_run()
+{
+    last_command="lynxdb_saved_run"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--param=")
+    two_word_flags+=("--param")
+    two_word_flags+=("-D")
+    local_nonpersistent_flags+=("--param")
+    local_nonpersistent_flags+=("--param=")
+    local_nonpersistent_flags+=("-D")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    has_completion_function=1
+    noun_aliases=()
+}
+
+_lynxdb_saved()
+{
+    last_command="lynxdb_saved"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    commands+=("delete")
+    commands+=("run")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_server()
+{
+    last_command="lynxdb_server"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--addr=")
+    two_word_flags+=("--addr")
+    local_nonpersistent_flags+=("--addr")
+    local_nonpersistent_flags+=("--addr=")
+    flags+=("--auth")
+    local_nonpersistent_flags+=("--auth")
+    flags+=("--cache-max-mb=")
+    two_word_flags+=("--cache-max-mb")
+    local_nonpersistent_flags+=("--cache-max-mb")
+    local_nonpersistent_flags+=("--cache-max-mb=")
+    flags+=("--cluster.enabled")
+    local_nonpersistent_flags+=("--cluster.enabled")
+    flags+=("--cluster.grpc-port=")
+    two_word_flags+=("--cluster.grpc-port")
+    local_nonpersistent_flags+=("--cluster.grpc-port")
+    local_nonpersistent_flags+=("--cluster.grpc-port=")
+    flags+=("--cluster.node-id=")
+    two_word_flags+=("--cluster.node-id")
+    local_nonpersistent_flags+=("--cluster.node-id")
+    local_nonpersistent_flags+=("--cluster.node-id=")
+    flags+=("--cluster.roles=")
+    two_word_flags+=("--cluster.roles")
+    local_nonpersistent_flags+=("--cluster.roles")
+    local_nonpersistent_flags+=("--cluster.roles=")
+    flags+=("--cluster.seeds=")
+    two_word_flags+=("--cluster.seeds")
+    local_nonpersistent_flags+=("--cluster.seeds")
+    local_nonpersistent_flags+=("--cluster.seeds=")
+    flags+=("--compaction-interval=")
+    two_word_flags+=("--compaction-interval")
+    local_nonpersistent_flags+=("--compaction-interval")
+    local_nonpersistent_flags+=("--compaction-interval=")
+    flags+=("--data-dir=")
+    two_word_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir")
+    local_nonpersistent_flags+=("--data-dir=")
+    flags+=("--ingest-es-enabled")
+    local_nonpersistent_flags+=("--ingest-es-enabled")
+    flags+=("--ingest-es-version=")
+    two_word_flags+=("--ingest-es-version")
+    local_nonpersistent_flags+=("--ingest-es-version")
+    local_nonpersistent_flags+=("--ingest-es-version=")
+    flags+=("--ingest-max-compressed-body-bytes=")
+    two_word_flags+=("--ingest-max-compressed-body-bytes")
+    local_nonpersistent_flags+=("--ingest-max-compressed-body-bytes")
+    local_nonpersistent_flags+=("--ingest-max-compressed-body-bytes=")
+    flags+=("--ingest-max-decompressed-body-bytes=")
+    two_word_flags+=("--ingest-max-decompressed-body-bytes")
+    local_nonpersistent_flags+=("--ingest-max-decompressed-body-bytes")
+    local_nonpersistent_flags+=("--ingest-max-decompressed-body-bytes=")
+    flags+=("--ingest-staging-enabled")
+    local_nonpersistent_flags+=("--ingest-staging-enabled")
+    flags+=("--ingest-staging-max-age=")
+    two_word_flags+=("--ingest-staging-max-age")
+    local_nonpersistent_flags+=("--ingest-staging-max-age")
+    local_nonpersistent_flags+=("--ingest-staging-max-age=")
+    flags+=("--ingest-staging-max-bytes=")
+    two_word_flags+=("--ingest-staging-max-bytes")
+    local_nonpersistent_flags+=("--ingest-staging-max-bytes")
+    local_nonpersistent_flags+=("--ingest-staging-max-bytes=")
+    flags+=("--log-level=")
+    two_word_flags+=("--log-level")
+    local_nonpersistent_flags+=("--log-level")
+    local_nonpersistent_flags+=("--log-level=")
+    flags+=("--max-query-pool=")
+    two_word_flags+=("--max-query-pool")
+    local_nonpersistent_flags+=("--max-query-pool")
+    local_nonpersistent_flags+=("--max-query-pool=")
+    flags+=("--no-ui")
+    local_nonpersistent_flags+=("--no-ui")
+    flags+=("--otlp-grpc-listen=")
+    two_word_flags+=("--otlp-grpc-listen")
+    local_nonpersistent_flags+=("--otlp-grpc-listen")
+    local_nonpersistent_flags+=("--otlp-grpc-listen=")
+    flags+=("--otlp-grpc-max-recv-bytes=")
+    two_word_flags+=("--otlp-grpc-max-recv-bytes")
+    local_nonpersistent_flags+=("--otlp-grpc-max-recv-bytes")
+    local_nonpersistent_flags+=("--otlp-grpc-max-recv-bytes=")
+    flags+=("--otlp-http-listen=")
+    two_word_flags+=("--otlp-http-listen")
+    local_nonpersistent_flags+=("--otlp-http-listen")
+    local_nonpersistent_flags+=("--otlp-http-listen=")
+    flags+=("--profile-runtime")
+    local_nonpersistent_flags+=("--profile-runtime")
+    flags+=("--s3-bucket=")
+    two_word_flags+=("--s3-bucket")
+    local_nonpersistent_flags+=("--s3-bucket")
+    local_nonpersistent_flags+=("--s3-bucket=")
+    flags+=("--s3-prefix=")
+    two_word_flags+=("--s3-prefix")
+    local_nonpersistent_flags+=("--s3-prefix")
+    local_nonpersistent_flags+=("--s3-prefix=")
+    flags+=("--s3-region=")
+    two_word_flags+=("--s3-region")
+    local_nonpersistent_flags+=("--s3-region")
+    local_nonpersistent_flags+=("--s3-region=")
+    flags+=("--spill-dir=")
+    two_word_flags+=("--spill-dir")
+    local_nonpersistent_flags+=("--spill-dir")
+    local_nonpersistent_flags+=("--spill-dir=")
+    flags+=("--syslog=")
+    two_word_flags+=("--syslog")
+    local_nonpersistent_flags+=("--syslog")
+    local_nonpersistent_flags+=("--syslog=")
+    flags+=("--syslog-index=")
+    two_word_flags+=("--syslog-index")
+    local_nonpersistent_flags+=("--syslog-index")
+    local_nonpersistent_flags+=("--syslog-index=")
+    flags+=("--syslog-parser=")
+    two_word_flags+=("--syslog-parser")
+    local_nonpersistent_flags+=("--syslog-parser")
+    local_nonpersistent_flags+=("--syslog-parser=")
+    flags+=("--syslog-tcp=")
+    two_word_flags+=("--syslog-tcp")
+    local_nonpersistent_flags+=("--syslog-tcp")
+    local_nonpersistent_flags+=("--syslog-tcp=")
+    flags+=("--syslog-tls")
+    local_nonpersistent_flags+=("--syslog-tls")
+    flags+=("--syslog-udp=")
+    two_word_flags+=("--syslog-udp")
+    local_nonpersistent_flags+=("--syslog-udp")
+    local_nonpersistent_flags+=("--syslog-udp=")
+    flags+=("--tiering-interval=")
+    two_word_flags+=("--tiering-interval")
+    local_nonpersistent_flags+=("--tiering-interval")
+    local_nonpersistent_flags+=("--tiering-interval=")
+    flags+=("--tls")
+    local_nonpersistent_flags+=("--tls")
+    flags+=("--tls-cert=")
+    two_word_flags+=("--tls-cert")
+    local_nonpersistent_flags+=("--tls-cert")
+    local_nonpersistent_flags+=("--tls-cert=")
+    flags+=("--tls-key=")
+    two_word_flags+=("--tls-key")
+    local_nonpersistent_flags+=("--tls-key")
+    local_nonpersistent_flags+=("--tls-key=")
+    flags+=("--ui")
+    local_nonpersistent_flags+=("--ui")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_share()
+{
+    last_command="lynxdb_share"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--to=")
+    two_word_flags+=("--to")
+    local_nonpersistent_flags+=("--to")
+    local_nonpersistent_flags+=("--to=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_shell()
+{
+    last_command="lynxdb_shell"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--file=")
+    two_word_flags+=("--file")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--file")
+    local_nonpersistent_flags+=("--file=")
+    local_nonpersistent_flags+=("-f")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_shippers_config()
+{
+    last_command="lynxdb_shippers_config"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--remote=")
+    two_word_flags+=("--remote")
+    local_nonpersistent_flags+=("--remote")
+    local_nonpersistent_flags+=("--remote=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_shippers_test()
+{
+    last_command="lynxdb_shippers_test"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--remote=")
+    two_word_flags+=("--remote")
+    local_nonpersistent_flags+=("--remote")
+    local_nonpersistent_flags+=("--remote=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_shippers()
+{
+    last_command="lynxdb_shippers"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("config")
+    commands+=("test")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_status()
+{
+    last_command="lynxdb_status"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_tail()
+{
+    last_command="lynxdb_tail"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--count=")
+    two_word_flags+=("--count")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--count")
+    local_nonpersistent_flags+=("--count=")
+    local_nonpersistent_flags+=("-n")
+    flags+=("--from=")
+    two_word_flags+=("--from")
+    local_nonpersistent_flags+=("--from")
+    local_nonpersistent_flags+=("--from=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_top()
+{
+    last_command="lynxdb_top"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--interval=")
+    two_word_flags+=("--interval")
+    local_nonpersistent_flags+=("--interval")
+    local_nonpersistent_flags+=("--interval=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_ui()
+{
+    last_command="lynxdb_ui"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_uninstall()
+{
+    last_command="lynxdb_uninstall"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--purge")
+    local_nonpersistent_flags+=("--purge")
+    flags+=("--yes")
+    local_nonpersistent_flags+=("--yes")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_upgrade()
+{
+    last_command="lynxdb_upgrade"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--check")
+    local_nonpersistent_flags+=("--check")
+    flags+=("--force")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--version=")
+    two_word_flags+=("--version")
+    local_nonpersistent_flags+=("--version")
+    local_nonpersistent_flags+=("--version=")
+    flags+=("--yes")
+    local_nonpersistent_flags+=("--yes")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_version()
+{
+    last_command="lynxdb_version"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--json")
+    local_nonpersistent_flags+=("--json")
+    flags+=("--short")
+    local_nonpersistent_flags+=("--short")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_watch()
+{
+    last_command="lynxdb_watch"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--diff")
+    local_nonpersistent_flags+=("--diff")
+    flags+=("--interval=")
+    two_word_flags+=("--interval")
+    local_nonpersistent_flags+=("--interval")
+    local_nonpersistent_flags+=("--interval=")
+    flags+=("--since=")
+    two_word_flags+=("--since")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--since")
+    local_nonpersistent_flags+=("--since=")
+    local_nonpersistent_flags+=("-s")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_root_command()
+{
+    last_command="lynxdb"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("admin")
+    commands+=("auth")
+    commands+=("bench")
+    commands+=("cache")
+    commands+=("completion")
+    commands+=("config")
+    commands+=("count")
+    commands+=("demo")
+    commands+=("diff")
+    commands+=("doctor")
+    commands+=("examples")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("cookbook")
+        aliashash["cookbook"]="examples"
+    fi
+    commands+=("explain")
+    commands+=("explain-error")
+    commands+=("fields")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("f")
+        aliashash["f"]="fields"
+    fi
+    commands+=("grammar")
+    commands+=("health")
+    commands+=("help")
+    commands+=("import")
+    commands+=("indexes")
+    commands+=("ingest")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("i")
+        aliashash["i"]="ingest"
+    fi
+    commands+=("init")
+    commands+=("install")
+    commands+=("jobs")
+    commands+=("last")
+    commands+=("login")
+    commands+=("logout")
+    commands+=("mv")
+    commands+=("open")
+    commands+=("query")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("q")
+        aliashash["q"]="query"
+    fi
+    commands+=("run")
+    commands+=("sample")
+    commands+=("save")
+    commands+=("saved")
+    commands+=("server")
+    commands+=("share")
+    commands+=("shell")
+    commands+=("shippers")
+    commands+=("status")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("st")
+        aliashash["st"]="status"
+    fi
+    commands+=("tail")
+    if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
+        command_aliases+=("t")
+        aliashash["t"]="tail"
+    fi
+    commands+=("top")
+    commands+=("ui")
+    commands+=("uninstall")
+    commands+=("upgrade")
+    commands+=("version")
+    commands+=("watch")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+__start_lynxdb()
+{
+    local cur prev words cword split
+    declare -A flaghash 2>/dev/null || :
+    declare -A aliashash 2>/dev/null || :
+    if declare -F _init_completion >/dev/null 2>&1; then
+        _init_completion -s || return
+    else
+        __lynxdb_init_completion -n "=" || return
+    fi
+
+    local c=0
+    local flag_parsing_disabled=
+    local flags=()
+    local two_word_flags=()
+    local local_nonpersistent_flags=()
+    local flags_with_completion=()
+    local flags_completion=()
+    local commands=("lynxdb")
+    local command_aliases=()
+    local must_have_one_flag=()
+    local must_have_one_noun=()
+    local has_completion_function=""
+    local last_command=""
+    local nouns=()
+    local noun_aliases=()
+
+    __lynxdb_handle_word
+}
+
+if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -o default -F __start_lynxdb lynxdb
+else
+    complete -o default -o nospace -F __start_lynxdb lynxdb
+fi
+
+# ex: ts=4 sw=4 et filetype=sh

@@ -44,6 +44,7 @@ completion_bash_commands=(
     kubescape
     kubeshark
     kustomize
+    lynxdb
     mise
     nsc
     pluto

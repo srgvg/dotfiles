@@ -366,7 +366,7 @@ get_mise() {
     # https://github.com/mise-plugins/mise-gcloud/issues/2
     export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
     mise settings lockfile=true
-    local current_version="v$(mise --version | awk '{print $1}')"
+    local current_version="v$(mise version | awk '{print $1}')"
     if [ "${current_version}" != "${MISE_VERSION}" ]; then
         log "mise self-update: ${current_version} -> ${MISE_VERSION}"
         mise self-update --yes --no-plugins --verbose "${MISE_VERSION#v}"
