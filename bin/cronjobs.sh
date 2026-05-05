@@ -26,7 +26,7 @@ function log() {
     command=${1:-default}
     logfile="${LOGDIR}/$(hostname)-${command}-$(date +%y%m%d%H).log"
     mkdir -p "$(dirname "${logfile}")"
-    tee "${logfile}"
+    tee --append "${logfile}"
     # delete file if empty
     test -s "${logfile}" || rm "${logfile}"
 }

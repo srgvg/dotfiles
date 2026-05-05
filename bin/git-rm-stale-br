@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# shellcheck disable=SC1090
+source "$HOME/bin/common.bash"
+
+###############################################################################
+
+DO_IT=false
+FAILED=0
+
+usage() {
+	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-d|--do-it]"
+	echo
+	echo "  Lists local branches already merged or rebased into the repo's default branch."
+	echo "  -d, --do-it    Delete the stale branches"
+}
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		-d|--do-it) DO_IT=true; shift ;;
+		-h|--help)  usage; exit 0 ;;
+		*) echo -e "${echo_red}Unknown option: $1${echo_normal}" >&2; usage >&2; exit 1 ;;
+	esac
+done
+
+if ! git rev-parse --git-dir &>/dev/null; then
+	echo -e "${echo_red}Not a git repository.${echo_normal}" >&2
+	exit 1
+fi
+
+# Detect remote from current branch, fall back to origin
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo "origin")
+
+# Fetch from remote (non-fatal)
+echo -e "${echo_lightgray}Fetching from ${REMOTE}...${echo_normal}"
+if git fetch "$REMOTE" 2>/dev/null; then
+	# Ensure remote HEAD is resolved so symbolic-ref works
+	git remote set-head "$REMOTE" --auto &>/dev/null || true
+else
+	echo -e "  ${echo_yellow}Could not reach ${REMOTE} — proceeding without fetch.${echo_normal}"
+fi
+
+# Detect default branch via remote's HEAD
+DEFAULT_BRANCH=$(git symbolic-ref "refs/remotes/${REMOTE}/HEAD" 2>/dev/null \
+	| sed "s|refs/remotes/${REMOTE}/||") || true
+if [[ -z "${DEFAULT_BRANCH:-}" ]]; then
+	for b in main master; do
+		if git show-ref --verify --quiet "refs/remotes/${REMOTE}/${b}"; then
+			DEFAULT_BRANCH=$b
+			break
+		fi
+	done
+fi
+if [[ -z "${DEFAULT_BRANCH:-}" ]]; then
+	echo -e "${echo_red}Cannot determine default branch of ${REMOTE}.${echo_normal}" >&2
+	exit 1
+fi
+
+BASE_REF="${REMOTE}/${DEFAULT_BRANCH}"
+echo -e "  ${echo_bold_white}Base:${echo_normal} ${BASE_REF}"
+
+# Fast-forward local default branch to match remote
+if git show-ref --verify --quiet "refs/heads/${DEFAULT_BRANCH}"; then
+	local_sha=$(git rev-parse "${DEFAULT_BRANCH}")
+	remote_sha=$(git rev-parse "${BASE_REF}")
+	if [[ "$local_sha" == "$remote_sha" ]]; then
+		echo -e "  ${echo_green}${DEFAULT_BRANCH} is up to date.${echo_normal}"
+	elif git merge-base --is-ancestor "$local_sha" "$remote_sha" 2>/dev/null; then
+		# Can fast-forward — do it without checking out
+		if [[ "$CURRENT_BRANCH" == "$DEFAULT_BRANCH" ]]; then
+			git merge --ff-only "$BASE_REF" &>/dev/null \
+				&& echo -e "  ${echo_green}Fast-forwarded ${DEFAULT_BRANCH}.${echo_normal}" \
+				|| echo -e "  ${echo_yellow}Could not fast-forward ${DEFAULT_BRANCH}.${echo_normal}"
+		else
+			git fetch "$REMOTE" "${DEFAULT_BRANCH}:${DEFAULT_BRANCH}" &>/dev/null \
+				&& echo -e "  ${echo_green}Fast-forwarded ${DEFAULT_BRANCH}.${echo_normal}" \
+				|| echo -e "  ${echo_yellow}Could not fast-forward ${DEFAULT_BRANCH}.${echo_normal}"
+		fi
+	else
+		echo -e "  ${echo_yellow}${DEFAULT_BRANCH} has diverged from ${BASE_REF} — not touching it.${echo_normal}"
+	fi
+fi
+echo
+
+# Collect stale branches — skip the default branch itself
+declare -a MERGED=()
+declare -a REBASED=()
+
+while IFS= read -r branch; do
+	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
+
+	if git merge-base --is-ancestor "$branch" "$BASE_REF" 2>/dev/null; then
+		MERGED+=("$branch")
+	else
+		cherry_out=$(git cherry "$BASE_REF" "$branch" 2>/dev/null) || continue
+		if ! echo "$cherry_out" | grep -q '^+'; then
+			REBASED+=("$branch")
+		fi
+	fi
+done < <(git branch --format='%(refname:short)')
+
+TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
+
+if [[ $TOTAL -eq 0 ]]; then
+	echo -e "${echo_green}No stale branches found.${echo_normal}"
+	exit 0
+fi
+
+# Column width for alignment
+MAX_WIDTH=0
+for branch in "${MERGED[@]}" "${REBASED[@]}"; do
+	(( ${#branch} > MAX_WIDTH )) && MAX_WIDTH=${#branch}
+done
+
+# Colors are embedded in the format string (not as %s args) so printf renders them
+print_branch() {
+	local branch=$1
+	local label=$2   # plain text: "merged " or "rebased"
+	local color=$3   # color escape sequence
+	local info
+	info=$(git log -1 --format='%h "%s" (%cr)' "$branch" 2>/dev/null || echo "")
+	printf "  ${color}%-${MAX_WIDTH}s  %s${echo_normal}  ${echo_lightgray}%s${echo_normal}\n" \
+		"$branch" "$label" "$info"
+}
+
+delete_branch() {
+	local branch=$1
+	local flag=$2   # -d or -D
+	if [[ "$branch" == "$CURRENT_BRANCH" ]]; then
+		echo -e "    ${echo_yellow}(skipping — currently checked out)${echo_normal}"
+	else
+		local err
+		if ! err=$(git branch "$flag" "$branch" 2>&1); then
+			echo -e "    ${echo_red}(failed: ${err})${echo_normal}" >&2
+			(( FAILED++ )) || true
+		fi
+	fi
+}
+
+if $DO_IT; then
+	echo -e "${echo_bold_white}Deleting ${TOTAL} stale branch(es):${echo_normal}"
+	for branch in "${MERGED[@]}"; do
+		print_branch "$branch" "merged " "$echo_green"
+		delete_branch "$branch" -d
+	done
+	for branch in "${REBASED[@]}"; do
+		print_branch "$branch" "rebased" "$echo_yellow"
+		delete_branch "$branch" -D
+	done
+else
+	echo -e "${echo_bold_white}Stale branches (${TOTAL}):${echo_normal}"
+	for branch in "${MERGED[@]}"; do
+		print_branch "$branch" "merged " "$echo_green"
+	done
+	for branch in "${REBASED[@]}"; do
+		print_branch "$branch" "rebased" "$echo_yellow"
+	done
+	echo
+	echo -e "${echo_lightgray}Run with ${echo_bold_white}-d${echo_lightgray} / ${echo_bold_white}--do-it${echo_lightgray} to delete them.${echo_normal}"
+fi
+
+if (( FAILED > 0 )); then
+	echo -e "${echo_red}${FAILED} branch(es) could not be deleted.${echo_normal}" >&2
+	exit 1
+fi
