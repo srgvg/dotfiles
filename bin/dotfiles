@@ -15,6 +15,9 @@ source "$HOME/bin/common.bash"
 
 ###############################################################################
 
+# Split on newlines so the dotadds/sdotadds strings iterate one entry per line.
+# Inside each loop iteration IFS is restored to OIFS so that tab-separated
+# ":!exclusion" suffixes word-split into separate git pathspec arguments.
 OIFS=$IFS
 NIFS=$'\n'
 IFS=$NIFS
@@ -111,7 +114,6 @@ function define_adds() {
 .swaybg
 .tigrc
 .XCompose
-bin/
 Applications
 Backgrounds
 bin/  :!*/__pycache__/*
@@ -169,10 +171,6 @@ $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path 
 }
 
 ###############################################################################
-
-function err() {
-    echo -e ${echo_bold_red}"\n*** ${*}\n"${echo_white}
-}
 
 function dotsadd() {
     define_adds
@@ -242,9 +240,64 @@ function info() {
 }
 
 function err() {
-    echo -e ${echo_bold_red}
-    title ${echo_bold_red} ERROR - "$@"
-    echo -e ${echo_normal}
+    echo -e "${echo_bold_red}"
+    title "ERROR - $*"
+    echo -e "${echo_normal}"
+}
+
+function resolve_conflicts() {
+    local repo file choice remaining
+    local _ifs=$IFS
+
+    for repo in dot sdot; do
+        IFS=$OIFS
+        local conflicts
+        conflicts=$(vcsh run "$repo" git diff --name-only --diff-filter=U 2>/dev/null) || true
+        [[ -z "$conflicts" ]] && continue
+
+        sub "Conflicts in [$repo]"
+
+        while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            echo ""
+            title "Conflict: $file"
+            grep -n -C2 '<<<<<<\|=======\|>>>>>>>' "$HOME/$file" 2>/dev/null || true
+            echo ""
+
+            choice=""
+            while [[ ! "${choice,,}" =~ ^[oteq]$ ]]; do
+                IFS=$OIFS read -r -p "  [o]urs (local) / [t]heirs (remote) / [e]dit / [q]uit: " choice
+            done
+
+            IFS=$OIFS
+            case "${choice,,}" in
+                o) vcsh run "$repo" git checkout --ours -- "$file"
+                   vcsh run "$repo" git add "$file"
+                   log "Kept local: $file" ;;
+                t) vcsh run "$repo" git checkout --theirs -- "$file"
+                   vcsh run "$repo" git add "$file"
+                   log "Kept remote: $file" ;;
+                e) "${EDITOR:-vi}" "$HOME/$file"
+                   vcsh run "$repo" git add "$file"
+                   log "Manually edited: $file" ;;
+                q) err "Left [$repo] in conflicted state"
+                   IFS=$_ifs
+                   return 1 ;;
+            esac
+        done <<< "$conflicts"
+
+        remaining=$(vcsh run "$repo" git diff --name-only --diff-filter=U 2>/dev/null) || true
+        if [[ -n "$remaining" ]]; then
+            err "Unresolved conflicts remain in [$repo]"
+            IFS=$_ifs
+            return 1
+        fi
+
+        vcsh run "$repo" git commit --no-edit
+        log "Merge commit completed for [$repo]"
+    done
+
+    IFS=$_ifs
 }
 
 ###############################################################################
@@ -252,7 +305,9 @@ function err() {
 cd $HOME
 action="${1:-}"
 shift
+IFS=$OIFS
 comment="$*"
+IFS=$NIFS
 
 if [ -z "${action:-}" ] || {
     [ "${action}" != "up" ] &&
@@ -288,10 +343,10 @@ if [ "${action}" = "pull" ] || [ "${action}" = "all" ]; then
     title Pull
     vcsh foreach pull
     info
-    if [ $(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e dot: -e sdot: | wc -l) -gt 0 ]; then
-        err Merge conflicts detected
+    if [ "$(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e '^dot:$' -e '^sdot:$' | wc -l)" -gt 0 ]; then
+        err "Merge conflicts detected"
         vcsh foreach diff --name-only --diff-filter=U --relative
-        exit 1
+        resolve_conflicts || exit 1
     fi
 fi
 

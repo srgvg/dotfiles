@@ -148,7 +148,7 @@ function kns() {
 }
 
 function kustomize-build-flux-apply-dry() {
-    kustomize-flux-build ${1:-./} | kubectl apply --server-side --dry-run=server -f-
+    kustomize-build-flux ${1:-./} | kubectl apply --server-side --dry-run=server -f-
 }
 
 function mkcd() {
