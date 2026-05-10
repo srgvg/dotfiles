@@ -3094,6 +3094,10 @@ _lynxdb_query()
     local_nonpersistent_flags+=("--param")
     local_nonpersistent_flags+=("--param=")
     local_nonpersistent_flags+=("-D")
+    flags+=("--queries-file=")
+    two_word_flags+=("--queries-file")
+    local_nonpersistent_flags+=("--queries-file")
+    local_nonpersistent_flags+=("--queries-file=")
     flags+=("--raw")
     local_nonpersistent_flags+=("--raw")
     flags+=("--since=")
@@ -3373,6 +3377,54 @@ _lynxdb_saved_delete()
     noun_aliases=()
 }
 
+_lynxdb_saved_import()
+{
+    last_command="lynxdb_saved_import"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--dry-run")
+    local_nonpersistent_flags+=("--dry-run")
+    flags+=("--manifest=")
+    two_word_flags+=("--manifest")
+    local_nonpersistent_flags+=("--manifest")
+    local_nonpersistent_flags+=("--manifest=")
+    flags+=("--update-existing")
+    local_nonpersistent_flags+=("--update-existing")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _lynxdb_saved_run()
 {
     last_command="lynxdb_saved_run"
@@ -3443,6 +3495,7 @@ _lynxdb_saved()
     commands=()
     commands+=("create")
     commands+=("delete")
+    commands+=("import")
     commands+=("run")
 
     flags=()
@@ -3891,6 +3944,93 @@ _lynxdb_shippers()
     noun_aliases=()
 }
 
+_lynxdb_sigma_compat-check()
+{
+    last_command="lynxdb_sigma_compat-check"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--json")
+    local_nonpersistent_flags+=("--json")
+    flags+=("--rsigma-version=")
+    two_word_flags+=("--rsigma-version")
+    local_nonpersistent_flags+=("--rsigma-version")
+    local_nonpersistent_flags+=("--rsigma-version=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_lynxdb_sigma()
+{
+    last_command="lynxdb_sigma"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("compat-check")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--debug")
+    flags+=("--format=")
+    two_word_flags+=("--format")
+    two_word_flags+=("-F")
+    flags+=("--no-color")
+    flags+=("--no-stats")
+    flags+=("--profile=")
+    two_word_flags+=("--profile")
+    two_word_flags+=("-p")
+    flags+=("--quiet")
+    flags+=("-q")
+    flags+=("--server=")
+    two_word_flags+=("--server")
+    flags+=("--tls-skip-verify")
+    flags+=("--token=")
+    two_word_flags+=("--token")
+    flags+=("--verbose")
+    flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _lynxdb_status()
 {
     last_command="lynxdb_status"
@@ -4123,6 +4263,12 @@ _lynxdb_upgrade()
     flags_with_completion=()
     flags_completion=()
 
+    flags+=("--allow-prerelease")
+    local_nonpersistent_flags+=("--allow-prerelease")
+    flags+=("--channel=")
+    two_word_flags+=("--channel")
+    local_nonpersistent_flags+=("--channel")
+    local_nonpersistent_flags+=("--channel=")
     flags+=("--check")
     local_nonpersistent_flags+=("--check")
     flags+=("--force")
@@ -4315,6 +4461,7 @@ _lynxdb_root_command()
     commands+=("share")
     commands+=("shell")
     commands+=("shippers")
+    commands+=("sigma")
     commands+=("status")
     if [[ -z "${BASH_VERSION:-}" || "${BASH_VERSINFO[0]:-}" -gt 3 ]]; then
         command_aliases+=("st")

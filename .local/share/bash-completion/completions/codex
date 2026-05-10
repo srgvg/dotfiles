@@ -70,6 +70,9 @@ _codex() {
             codex,plugin)
                 cmd="codex__plugin"
                 ;;
+            codex,remote-control)
+                cmd="codex__remote__control"
+                ;;
             codex,responses-api-proxy)
                 cmd="codex__responses__api__proxy"
                 ;;
@@ -306,6 +309,9 @@ _codex() {
                 ;;
             codex__help,plugin)
                 cmd="codex__help__plugin"
+                ;;
+            codex__help,remote-control)
+                cmd="codex__help__remote__control"
                 ;;
             codex__help,responses-api-proxy)
                 cmd="codex__help__responses__api__proxy"
@@ -566,7 +572,7 @@ _codex() {
 
     case "${cmd}" in
         codex)
-            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server completion update sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1812,13 +1818,25 @@ _codex() {
             return 0
             ;;
         codex__exec__server)
-            opts="-c -h --listen --config --enable --disable --help"
+            opts="-c -h --listen --remote --executor-id --name --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 --listen)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --remote)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --executor-id)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --name)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -2411,7 +2429,7 @@ _codex() {
             return 0
             ;;
         codex__help)
-            opts="exec review login logout mcp plugin mcp-server app-server completion update sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="exec review login logout mcp plugin mcp-server app-server remote-control completion update sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3096,6 +3114,20 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__help__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__help__responses__api__proxy)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -3223,7 +3255,7 @@ _codex() {
             return 0
             ;;
         codex__login)
-            opts="-c -h --with-api-key --with-agent-identity --api-key --device-auth --experimental_issuer --experimental_client-id --config --enable --disable --help status help"
+            opts="-c -h --with-api-key --with-access-token --api-key --device-auth --experimental_issuer --experimental_client-id --config --enable --disable --help status help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4019,6 +4051,36 @@ _codex() {
         codex__plugin__marketplace__upgrade)
             opts="-c -h --config --enable --disable --help [MARKETPLACE_NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
