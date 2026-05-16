@@ -36,10 +36,9 @@ fi
 # shell session output, or for the bash approach, use 7> file.log instead ofbashrc
 
 # NOTE: Atuin and bash-preexec sourcing removed from here (was redundant)
-# They are now loaded only once via ~/.bashrc.d/atuin.bash
+# They are now loaded only once via ~/.bashrc.d/5-atuin.bash
+# opencode PATH entry is in ~/.bashrc.d/z8_path.bash
 # This prevents duplicate sourcing and improves startup performance
-
-. "$HOME/.atuin/bin/env"
 
 # opencode
 export PATH=/home/serge/.opencode/bin:$PATH

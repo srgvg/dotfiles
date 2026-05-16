@@ -376,6 +376,7 @@ get_mise() {
     mise plugins update --verbose
     mise outdated --verbose
     mise cache prune --verbose
+    mise install --yes
     mise upgrade --yes --jobs 8
     mise prune --yes
     mise reshim

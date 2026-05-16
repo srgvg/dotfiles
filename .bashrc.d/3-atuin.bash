@@ -1,4 +1,4 @@
-pathmunge $HOME/.atuin/bin/ before
+pathmunge $HOME/.atuin/bin before
 source "$HOME/.atuin/bin/env"
 
 # bash-preexec is required by atuin

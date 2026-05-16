@@ -2371,8 +2371,6 @@ _civo_firewall_rule_create()
     flags+=("-y")
 
     must_have_one_flag=()
-    must_have_one_flag+=("--startport=")
-    must_have_one_flag+=("-s")
     must_have_one_noun=()
     noun_aliases=()
 }
