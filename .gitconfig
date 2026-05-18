@@ -492,13 +492,14 @@
 
 	path = ~/.gitconfig.d/teledyne
 
-[includeIf "gitdir:~/src/flirits/"]
-
-	path = ~/.gitconfig.d/teledyne
-
 [includeIf "hasconfig:remote.*.url:git@bitbucketcommercial.flir.com:7999/*/**"]
 
 	path = ~/.gitconfig.d/teledyne
+
+#[includeIf "gitdir:~/src/teledyne-flir/"]
+#
+#	path = ~/.gitconfig.d/teledyne
+
 
 
 ## END

@@ -8,7 +8,6 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
@@ -19,7 +18,6 @@ LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
 p1="${1:-}"
 p2="${2:-}"
 
-
 ## Functions
 
 checktarget() {
@@ -27,20 +25,17 @@ checktarget() {
     local _target
     _target=${1:-}
     notify_debug "Verifying target '${_target}'"
-    if [ ! -r "${_target}" ] || [ ! -f "${_target}" ]
-    then
-        if [ -r "$HOME/${_target}" ]
-        then
-                target="$HOME/${_target}"
-        elif [ -r "${BACKGROUND_PICTURES}/${_target}" ]
-        then
-                target="${BACKGROUND_PICTURES}/${_target}"
+    if [ ! -r "${_target}" ] || [ ! -f "${_target}" ]; then
+        if [ -r "$HOME/${_target}" ]; then
+            target="$HOME/${_target}"
+        elif [ -r "${BACKGROUND_PICTURES}/${_target}" ]; then
+            target="${BACKGROUND_PICTURES}/${_target}"
         else
             deeptarget=$(find ${BACKGROUND_PICTURES} -maxdepth 3 \
-                -name $(basename ${_target}) -type d 2>/dev/null \
-                | grep ${_target} 2>/dev/null || : | sort | head -n 1 )
-            if [ -r "${deeptarget}" ]
-                then target="${deeptarget}"
+                -name $(basename ${_target}) -type d 2>/dev/null |
+                grep ${_target} 2>/dev/null | sort | head -n 1)
+            if [ -r "${deeptarget}" ]; then
+                target="${deeptarget}"
             else
                 notify_error "setbg: cannot find target ${_target}"
             fi
@@ -53,11 +48,10 @@ checktarget() {
 }
 
 pickpic() {
-   ## pick a picture
+    ## pick a picture
     # get picture according to target
     # target is set to a file/dir we can read
-    if [ -d "${target}" ]
-    then # if directory, the pick a random picture
+    if [ -d "${target}" ]; then # if directory, the pick a random picture
         pictures="${target}"
         # disable shell expansion for the iregex
         set -o noglob
@@ -65,8 +59,8 @@ pickpic() {
         set +o pipefail
         # Pick random picture
         background="$(find -L ${pictures} \
-                -type f \
-                \( -iregex '.*.jpg' -o -iregex '.*.png' \) | sort -R | head -n 1)"
+            -type f \
+            \( -iregex '.*.jpg' -o -iregex '.*.png' \) | sort -R | head -n 1)"
         # reenable options
         set +o noglob
 
@@ -78,9 +72,9 @@ pickpic() {
 }
 
 displaybg() {
-    oldpid="$( pgrep swaybg ||:  | xargs -n 1)"
+    oldpid="$(pgrep swaybg || : | xargs -n 1)"
     swaybg --color '#000000' --mode fill --output '*' --image "${background}" &
-    [ -n "${oldpid}" ] && kill ${oldpid} ||:
+    [ -n "${oldpid}" ] && kill ${oldpid} || :
     notify_debug "Set the background"
 }
 
@@ -100,8 +94,7 @@ trap_loop() {
 
 loop() {
     notify_debug "Starting setsbg in loop mode"
-    while true
-    do
+    while true; do
         echo -n "$(date +%H:%M) "
         setbg ${target}
         # press ctrl-c to change wallpaper, or twice to exit
@@ -118,12 +111,10 @@ loopnext() {
 showpath() {
     # show which picture is used
     notify_debug "Show which picture is used"
-    files="$(ps a | grep swaybg.* | grep -- --image | grep -v grep\ | sed 's/.*--image.*\s//' | xargs -n1)"
-    for file in $files
-    do
-        if [ -r "$file" ]
-        then
-                echo "${file}"
+    files="$(ps a | grep swaybg.* | grep -- --image | grep -v grep\  | sed 's/.*--image.*\s//' | xargs -n1)"
+    for file in $files; do
+        if [ -r "$file" ]; then
+            echo "${file}"
         fi
     done
 }
@@ -136,8 +127,7 @@ notifypath() {
 }
 
 showbg() {
-    if ! ifinteractive
-    then
+    if ! ifinteractive; then
         swayimg --scale=optimal --fullscreen $(showpath) &
     fi
     notifypath
@@ -152,47 +142,47 @@ lock() {
 }
 
 defaultbg() {
-    $HOME/bin/loop                          # stop current loop
-    target="${SETBG_DEFAULT_BACKGROUND}"    # set default target
-    setbg ${target}                         # pick and set a background
+    $HOME/bin/loop                       # stop current loop
+    target="${SETBG_DEFAULT_BACKGROUND}" # set default target
+    setbg ${target}                      # pick and set a background
 }
 
 main() {
     local action
 
-    if [ -z "$p1" ]             ## ZERO PARAMETERS
-    then                        # default action
-        p1="${SETBG_DEFAULT_BACKGROUND}"                    # show which background
+    if [ -z "$p1" ]; then ## ZERO PARAMETERS
+        # default action
+        p1="${SETBG_DEFAULT_BACKGROUND}" # show which background
     fi
 
-    if [ -z "$p2" ]         ## ONE PARAMETER
-    then                        #   action without argument, or
-        case ${p1} in           #   just a target
-            'redisplay'|'keep') # just redisplay bg, adjusts new screen sizes
+    if [ -z "$p2" ]; then ## ONE PARAMETER
+        #   action without argument, or
+        case ${p1} in             #   just a target
+            'redisplay' | 'keep') # just redisplay bg, adjusts new screen sizes
                 loopnext || defaultbg
                 ;;
-            'lock'|'loop')      # these need a parameter
+            'lock' | 'loop') # these need a parameter
                 notify_error "setbg: The action '${p1}' needs a parameter"
                 ;;
             'next')
                 loopnext
                 ;;
-            'def*')             # default
+            'def*') # default
                 defaultbg
                 ;;
             'show')
                 showbg
                 ;;
-            *)                  # must be a target
+            *) # must be a target
                 target="${p1}"
                 setbg "${target}"
                 ;;
         esac
-    else                        ## TWO PARAMERS
-        action="${p1}"          #   action with
-        target="${p2}"          #   parameter
+    else               ## TWO PARAMERS
+        action="${p1}" #   action with
+        target="${p2}" #   parameter
         case ${action} in
-            'lock')             # generate a lock screen with given target
+            'lock') # generate a lock screen with given target
                 lock ${target}
                 ;;
             'loop')
@@ -201,10 +191,9 @@ main() {
             *)
                 notify_error "setbg: Unknown action: ${action}"
                 ;;
-            esac
+        esac
     fi
 }
 
 cd ~
 main
-

@@ -1,0 +1,741 @@
+#!/usr/bin/env python3
+"""Multi-repo git status and update tool.
+
+Usage: git-repos [--no-fetch] [--ci] [--no-interactive] [--dir PATH]
+
+Shows status for all git repos in the workspace directory, fetches from all
+remotes, pulls repos that are behind on their tracking branch (clean only),
+and optionally offers interactive checkout and stash review.
+
+If refs/remotes/<remote>/HEAD is not set, HEAD branch detection falls back
+to a network call. To set it locally: git remote set-head <remote> -a
+"""
+
+import argparse
+import re
+import subprocess
+import sys
+import termios
+import tty
+from datetime import datetime, timezone
+from pathlib import Path
+
+# --- Colors (set by init_colors after arg parsing) ---
+GREEN = YELLOW = RED = BOLD = RESET = DIM = ""
+
+
+def init_colors(enable: bool) -> None:
+    global GREEN, YELLOW, RED, BOLD, RESET, DIM
+    if enable:
+        GREEN  = "\033[0;32m"
+        YELLOW = "\033[0;33m"
+        RED    = "\033[0;31m"
+        BOLD   = "\033[1m"
+        RESET  = "\033[0m"
+        DIM    = "\033[2m"
+
+
+# --- Git helpers ---
+
+def _git(repo: str, *args) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
+
+
+def _git_out(repo: str, *args) -> str:
+    r = _git(repo, *args)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+# --- Repo discovery ---
+
+def find_repos(workspace: str) -> list:
+    try:
+        return sorted(
+            str(e) for e in Path(workspace).iterdir()
+            if e.is_dir() and (e / ".git").exists()
+        )
+    except (PermissionError, FileNotFoundError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return []
+
+
+# --- Status collection ---
+
+def _primary_remote(repo: str, branch: str, remotes: list) -> str:
+    if not remotes:
+        return ""
+    tracking = _git_out(repo, "config", f"branch.{branch}.remote")
+    if tracking in remotes:
+        return tracking
+    for pref in ("upstream", "origin"):
+        if pref in remotes:
+            return pref
+    return remotes[0]
+
+
+def _head_branch(repo: str, remote: str) -> str:
+    """Detect HEAD branch: local symbolic-ref first, ls-remote fallback (caches result)."""
+    ref = _git_out(repo, "symbolic-ref", f"refs/remotes/{remote}/HEAD")
+    prefix = f"refs/remotes/{remote}/"
+    if ref.startswith(prefix):
+        return ref[len(prefix):]
+    # ls-remote is faster than remote-show; cache result locally for next run
+    r = _git(repo, "ls-remote", "--symref", remote, "HEAD")
+    if r.returncode == 0:
+        for line in r.stdout.splitlines():
+            m = re.match(r"^ref: refs/heads/(\S+)\s+HEAD$", line)
+            if m:
+                branch = m.group(1)
+                _git(repo, "remote", "set-head", remote, branch)
+                return branch
+    return ""
+
+
+def _ahead_behind(repo: str, remote: str, branch: str, is_tracked: bool):
+    """Return {"ahead": int, "behind": int} or None if ref unknown."""
+    if is_tracked and _git(repo, "rev-parse", "--verify", "@{upstream}").returncode == 0:
+        ref = "@{upstream}"
+    else:
+        ref = f"refs/remotes/{remote}/{branch}"
+        if _git(repo, "rev-parse", "--verify", ref).returncode != 0:
+            return None
+    counts = _git_out(repo, "rev-list", "--left-right", "--count", f"{ref}...HEAD")
+    parts = counts.split()
+    if len(parts) == 2:
+        try:
+            return {"behind": int(parts[0]), "ahead": int(parts[1])}
+        except ValueError:
+            pass
+    return None
+
+
+def _stash_already_applied(repo: str, ref: str) -> bool:
+    """Heuristic: true if the stash's changes are already present in HEAD."""
+    r = _git(repo, "stash", "show", "-p", ref)
+    if r.returncode != 0 or not r.stdout.strip():
+        return False
+    return subprocess.run(
+        ["git", "-C", repo, "apply", "--check", "--reverse"],
+        input=r.stdout, capture_output=True, text=True
+    ).returncode == 0
+
+
+def _collect_stashes(repo: str) -> list:
+    raw = _git_out(repo, "stash", "list", "--format=%gd|%aI|%gs")
+    if not raw:
+        return []
+    now = datetime.now(timezone.utc)
+    result = []
+    for line in raw.splitlines():
+        parts = line.split("|", 2)
+        if len(parts) != 3:
+            continue
+        ref, date_str, msg = parts
+        try:
+            dt = datetime.fromisoformat(date_str)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            age = (now - dt).days
+        except (ValueError, OverflowError):
+            age = -1
+
+        stat = _git_out(repo, "stash", "show", "--stat", ref)
+        files = ins = dels = 0
+        for sl in stat.splitlines():
+            m = re.search(r"(\d+) file", sl)
+            if m:
+                files = int(m.group(1))
+            m = re.search(r"(\d+) insertion", sl)
+            if m:
+                ins = int(m.group(1))
+            m = re.search(r"(\d+) deletion", sl)
+            if m:
+                dels = int(m.group(1))
+
+        auto_fmt = bool(re.match(r"^(WIP on|index on) ", msg))
+        named = bool(re.match(r"^On [^:]+: ", msg))
+        probably_safe = _stash_already_applied(repo, ref) or (auto_fmt and age > 14)
+
+        result.append({
+            "ref": ref, "message": msg, "age": age,
+            "files": files, "ins": ins, "dels": dels,
+            "probably_safe": probably_safe, "named": named,
+        })
+    return result
+
+
+def _collect_stale_branches(repo_path: str, base_ref: str,
+                            current_branch: str, head_branch: str) -> list:
+    """Find local branches fully merged or rebased into base_ref."""
+    raw = _git_out(repo_path, "branch", "--format=%(refname:short)")
+    result = []
+    for name in raw.splitlines():
+        name = name.strip()
+        if not name or name == head_branch or name == current_branch:
+            continue
+        # Merged: tip is reachable from base_ref
+        if _git(repo_path, "merge-base", "--is-ancestor", name, base_ref).returncode == 0:
+            kind = "merged"
+        else:
+            # Rebased: all commits have equivalents in base (no '+' lines in cherry)
+            cherry = _git(repo_path, "cherry", base_ref, name)
+            if cherry.returncode != 0 or any(
+                l.startswith("+") for l in cherry.stdout.splitlines()
+            ):
+                continue
+            kind = "rebased"
+        info = _git_out(repo_path, "log", "-1", "--format=%h|%s|%cr", name)
+        parts = info.split("|", 2)
+        commit = parts[0] if len(parts) > 0 else "?"
+        subject = parts[1] if len(parts) > 1 else ""
+        age = parts[2] if len(parts) > 2 else ""
+        result.append({"name": name, "kind": kind, "commit": commit,
+                        "subject": subject, "age": age})
+    return result
+
+
+def collect_status(repo_path: str, detect_head: bool = True) -> dict:
+    name = Path(repo_path).name
+
+    branch = _git_out(repo_path, "symbolic-ref", "--short", "HEAD")
+    detached = not branch
+    if detached:
+        short = _git_out(repo_path, "rev-parse", "--short", "HEAD") or "?"
+        branch = f"(detached:{short})"
+
+    porcelain = _git(repo_path, "status", "--porcelain").stdout
+    staged = unstaged = untracked = 0
+    for line in porcelain.splitlines():
+        if len(line) < 2:
+            continue
+        x, y = line[0], line[1]
+        if x == "?" and y == "?":
+            untracked += 1
+        else:
+            if x not in " ?":
+                staged += 1
+            if y not in " ?":
+                unstaged += 1
+    dirty = staged + unstaged + untracked
+
+    remotes_raw = _git_out(repo_path, "remote")
+    all_remotes = remotes_raw.splitlines() if remotes_raw else []
+    tracking = _git_out(repo_path, "config", f"branch.{branch}.remote") if not detached else ""
+    primary = _primary_remote(repo_path, branch, all_remotes)
+
+    rem_ab = (
+        {r: _ahead_behind(repo_path, r, branch, r == tracking) for r in all_remotes}
+        if not detached else {}
+    )
+
+    head_branch = (_head_branch(repo_path, primary) if detect_head else "") if primary else ""
+    base_ref = f"{primary}/{head_branch}" if primary and head_branch else ""
+    stale = (
+        _collect_stale_branches(repo_path, base_ref, branch, head_branch)
+        if base_ref and not detached else []
+    )
+
+    return {
+        "name": name,
+        "path": repo_path,
+        "branch": branch,
+        "detached": detached,
+        "head_branch": head_branch,
+        "dirty": dirty,
+        "staged": staged,
+        "unstaged": unstaged,
+        "untracked": untracked,
+        "tracking": tracking,
+        "primary": primary,
+        "remotes": rem_ab,
+        "stashes": _collect_stashes(repo_path),
+        "stale_branches": stale,
+    }
+
+
+# --- Display ---
+
+def _remote_str(rd: dict) -> str:
+    if not rd["remotes"]:
+        return "(no remotes)"
+    parts = []
+    for rname, ab in rd["remotes"].items():
+        if ab is None:
+            parts.append(f"{rname}[?]")
+        elif ab["ahead"] == 0 and ab["behind"] == 0:
+            parts.append(f"{rname}[ok]")
+        else:
+            s = ("↑" + str(ab["ahead"]) if ab["ahead"] else "") + \
+                ("↓" + str(ab["behind"]) if ab["behind"] else "")
+            parts.append(f"{rname}[{s}]")
+    return " ".join(parts)
+
+
+def _status_str(rd: dict) -> str:
+    if rd["dirty"] == 0:
+        s = "clean"
+    else:
+        parts = []
+        if rd["staged"]:   parts.append(f"{rd['staged']}s")
+        if rd["unstaged"]: parts.append(f"{rd['unstaged']}u")
+        if rd["untracked"]: parts.append(f"{rd['untracked']}?")
+        s = f"dirty({'+'.join(parts)})"
+    if rd["stashes"]:
+        s += f" stashes:{len(rd['stashes'])}"
+    if rd["stale_branches"]:
+        s += f" stale:{len(rd['stale_branches'])}"
+    return s
+
+
+def _row_color(rd: dict) -> str:
+    if rd["dirty"] > 0 or rd["stashes"] or rd["stale_branches"]:
+        return YELLOW
+    if any(ab is not None and ab["behind"] > 0 for ab in rd["remotes"].values()):
+        return RED
+    return GREEN
+
+
+def print_overview(all_rd: list) -> None:
+    headers = ["REPO", "BRANCH", "REMOTE(S)", "STATUS"]
+    rows = [[r["name"], r["branch"], _remote_str(r), _status_str(r)] for r in all_rd]
+    ws = [
+        max(len(headers[i]) + 2, max((len(row[i]) for row in rows), default=0) + 2)
+        for i in range(4)
+    ]
+    print("".join(f"{BOLD}{h:<{ws[i]}}{RESET}" for i, h in enumerate(headers)))
+    print(DIM + "─" * sum(ws) + RESET)
+    for i, row in enumerate(rows):
+        line = "".join(f"{c:<{ws[j]}}" for j, c in enumerate(row))
+        print(f"{_row_color(all_rd[i])}{line}{RESET}")
+    print()
+
+
+# --- Interactive prompt ---
+
+def ask_ynq(msg: str) -> str:
+    """Read a single keypress y/n/q. Returns 'n' for any other key."""
+    sys.stdout.write(f"{msg} [y/N/q] ")
+    sys.stdout.flush()
+    try:
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        print(ch)
+        return ch.lower() if ch.lower() in "ynq" else "n"
+    except (termios.error, AttributeError, OSError):
+        try:
+            line = input().strip().lower()
+            return line[0] if line and line[0] in "ynq" else "n"
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return "q"
+
+
+# --- Actions ---
+
+def do_fetch(repo_path: str) -> tuple:
+    r = _git(repo_path, "fetch", "--all", "--prune")
+    if r.returncode == 0:
+        return True, "fetched"
+    err = (r.stderr.strip() or r.stdout.strip()).splitlines()
+    return False, f"error: {err[0] if err else '?'}"
+
+
+def do_pull(rd: dict) -> tuple:
+    repo = rd["path"]
+    if rd["detached"]:
+        return False, "skipped (detached HEAD)"
+    if rd["dirty"]:
+        return False, f"skipped (dirty: {rd['dirty']} change(s))"
+    if not rd["tracking"]:
+        return False, "skipped (no tracking remote)"
+    ab = rd["remotes"].get(rd["tracking"])
+    if ab is not None and ab["behind"] == 0:
+        return True, "already up to date"
+    r = _git(repo, "pull", "--ff-only")
+    if r.returncode == 0:
+        lines = [l for l in r.stdout.splitlines() if l and not l.startswith("From ")]
+        return True, lines[0] if lines else "done"
+    err = r.stderr.strip()
+    if "Not possible to fast-forward" in err or "diverged" in err:
+        return False, "needs manual merge (diverged)"
+    first = err.splitlines()[0] if err else "?"
+    return False, f"failed: {first}"
+
+
+def do_checkout(rd: dict) -> tuple:
+    """Returns (ok, detail, quit_flag)."""
+    repo, branch, head = rd["path"], rd["branch"], rd["head_branch"]
+    if not head:
+        return False, "skipped (HEAD branch unknown)", False
+    if branch == head:
+        return True, f"already on {head}", False
+    if rd["dirty"]:
+        return False, f"skipped (dirty; wanted: {head})", False
+
+    primary = rd["primary"]
+    remote_ref = f"{primary}/{head}" if primary else head
+    local_exists = _git(repo, "rev-parse", "--verify", head).returncode == 0
+    cmd = f"git checkout {head}" if local_exists else f"git checkout --track {remote_ref}"
+
+    print(f"\n  {BOLD}{rd['name']}{RESET}: on {YELLOW}{branch}{RESET}, "
+          f"HEAD branch is {GREEN}{head}{RESET}")
+    print(f"  Would run: {cmd}")
+    ans = ask_ynq("  Checkout HEAD branch?")
+    if ans == "q":
+        return False, "quit", True
+    if ans != "y":
+        return False, "skipped by user", False
+
+    r = _git(repo, "checkout", head) if local_exists else \
+        _git(repo, "checkout", "--track", remote_ref)
+    if r.returncode == 0:
+        return True, f"checked out {head}", False
+    err = r.stderr.strip().splitlines()
+    return False, f"failed: {err[0] if err else '?'}", False
+
+
+def do_stash_review(rd: dict) -> tuple:
+    """Returns (dropped_count, quit_flag)."""
+    stashes, repo, name = rd["stashes"], rd["path"], rd["name"]
+    if not stashes:
+        return 0, False
+
+    dropped = 0
+    quit_flag = False
+
+    for stash in stashes:
+        orig_idx = int(re.search(r"\{(\d+)\}", stash["ref"]).group(1))
+        cur_ref = f"stash@{{{orig_idx - dropped}}}"
+
+        if stash["probably_safe"]:
+            hint = f"  {YELLOW}[probably safe to drop]{RESET}"
+        elif (stash["age"] >= 0 and stash["age"] < 7) or stash["named"]:
+            hint = f"  {GREEN}[possibly important]{RESET}"
+        else:
+            hint = ""
+
+        age_s = f"{stash['age']}d" if stash["age"] >= 0 else "?"
+        print(f"\n  {BOLD}{name}{RESET}  {cur_ref}: {stash['message']}")
+        print(f"    age={age_s}  {stash['files']} file(s)  "
+              f"+{stash['ins']}/-{stash['dels']}{hint}")
+
+        ans = ask_ynq("  Drop this stash?")
+        if ans == "q":
+            quit_flag = True
+            break
+        if ans == "y":
+            r = _git(repo, "stash", "drop", cur_ref)
+            if r.returncode == 0:
+                dropped += 1
+                print(f"  {GREEN}Dropped.{RESET}")
+            else:
+                err = r.stderr.strip().splitlines()
+                print(f"  {RED}Failed: {err[0] if err else '?'}{RESET}")
+
+    return dropped, quit_flag
+
+
+def do_stale_branch_review(rd: dict) -> tuple:
+    """Returns (n_deleted, quit_flag)."""
+    stale = rd["stale_branches"]
+    if not stale:
+        return 0, False
+
+    repo, name, branch = rd["path"], rd["name"], rd["branch"]
+
+    # Compute column width for branch names
+    w = max(len(b["name"]) for b in stale)
+
+    print(f"\n  {BOLD}{name}{RESET}  {len(stale)} stale branch(es):")
+    for b in stale:
+        color = GREEN if b["kind"] == "merged" else YELLOW
+        label = b["kind"]
+        info = f'{b["commit"]} "{b["subject"]}" ({b["age"]})'
+        print(f"    {color}{b['name']:<{w}}  {label}{RESET}  {DIM}{info}{RESET}")
+
+    ans = ask_ynq(f"  Delete all {len(stale)} stale branch(es)?")
+    if ans == "q":
+        return 0, True
+    if ans != "y":
+        return 0, False
+
+    deleted = 0
+    for b in stale:
+        if b["name"] == branch:
+            print(f"    {YELLOW}skipping {b['name']} (currently checked out){RESET}")
+            continue
+        flag = "-d" if b["kind"] == "merged" else "-D"
+        r = _git(repo, "branch", flag, b["name"])
+        if r.returncode == 0:
+            deleted += 1
+            print(f"    {GREEN}deleted {b['name']}{RESET}")
+        else:
+            err = r.stderr.strip().splitlines()
+            print(f"    {RED}failed {b['name']}: {err[0] if err else '?'}{RESET}")
+    return deleted, False
+
+
+# --- Summary ---
+
+def print_summary(actions: list) -> None:
+    print(f"\n{BOLD}=== Summary ==={RESET}")
+
+    by_repo: dict = {}
+    for repo_name, verb, detail in actions:
+        if repo_name not in by_repo:
+            by_repo[repo_name] = {"fetch": None, "updates": [], "notes": []}
+        if verb == "fetch":
+            by_repo[repo_name]["fetch"] = detail
+        elif verb == "note":
+            by_repo[repo_name]["notes"].append(detail)
+        else:
+            by_repo[repo_name]["updates"].append((verb, detail))
+
+    if not by_repo:
+        print("  (nothing done)")
+        return
+
+    headers = ["REPO", "FETCH", "UPDATES", "ATTENTION"]
+    rows = []
+    row_colors = []
+
+    for repo_name, data in by_repo.items():
+        fetch_val = data["fetch"] or "—"
+        fetch_str = "ok" if fetch_val == "fetched" else fetch_val
+
+        update_parts = []
+        for verb, detail in data["updates"]:
+            if verb == "pull":
+                if "already up" in detail:
+                    pass
+                elif "Updating" in detail or detail in ("done",):
+                    update_parts.append("pulled")
+                elif any(w in detail for w in ("failed", "diverged", "merge")):
+                    update_parts.append(detail)
+            elif verb == "checkout":
+                if "checked out" in detail or "failed" in detail:
+                    update_parts.append(detail)
+            elif verb in ("stash", "stale"):
+                update_parts.append(detail)
+
+        update_str = ", ".join(update_parts) if update_parts else "—"
+        note_str = "; ".join(data["notes"]) if data["notes"] else "—"
+        rows.append([repo_name, fetch_str, update_str, note_str])
+
+        if data["fetch"] and "error" in data["fetch"]:
+            row_colors.append(RED)
+        elif data["notes"]:
+            row_colors.append(YELLOW)
+        else:
+            row_colors.append(GREEN)
+
+    ws = [
+        max(len(headers[i]) + 2, max(len(r[i]) for r in rows) + 2)
+        for i in range(4)
+    ]
+    print("".join(f"{BOLD}{h:<{ws[i]}}{RESET}" for i, h in enumerate(headers)))
+    print(DIM + "─" * sum(ws) + RESET)
+    for i, row in enumerate(rows):
+        line = "".join(f"{c:<{ws[j]}}" for j, c in enumerate(row))
+        print(f"{row_colors[i]}{line}{RESET}")
+
+
+# --- Main ---
+
+def _pull_candidates(all_rd: list) -> list:
+    return [
+        rd for rd in all_rd
+        if not rd["detached"]
+        and not rd["dirty"]
+        and rd["tracking"]
+        and (rd["remotes"].get(rd["tracking"]) or {}).get("behind", 0) > 0
+    ]
+
+
+def _interactive_pending(all_rd: list) -> list:
+    """Return list of (repo_name, [action_str, ...]) for things -i would act on."""
+    items = []
+    for rd in all_rd:
+        parts = []
+        if (rd["head_branch"] and rd["branch"] != rd["head_branch"]
+                and not rd["detached"] and not rd["dirty"]):
+            parts.append(
+                f"checkout HEAD branch (on {rd['branch']}, HEAD={rd['head_branch']})")
+        if rd["stashes"]:
+            parts.append(f"review {len(rd['stashes'])} stash(es)")
+        if rd["stale_branches"]:
+            merged = sum(1 for b in rd["stale_branches"] if b["kind"] == "merged")
+            rebased = len(rd["stale_branches"]) - merged
+            desc = ", ".join(filter(None, [
+                f"{merged} merged" if merged else "",
+                f"{rebased} rebased" if rebased else "",
+            ]))
+            parts.append(f"delete {len(rd['stale_branches'])} stale branch(es) ({desc})")
+        if parts:
+            items.append((rd["name"], parts))
+    return items
+
+
+def _print_interactive_hint(items: list) -> None:
+    if not items:
+        return
+    print(f"\n{BOLD}Run with -i to also:{RESET}")
+    w = max(len(name) for name, _ in items)
+    for name, parts in items:
+        for i, part in enumerate(parts):
+            label = f"{BOLD}{name:<{w}}{RESET}" if i == 0 else " " * w
+            print(f"  {label}  {part}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        description="Show status and safely update all git repos in a workspace directory."
+    )
+    ap.add_argument("--no-fetch", action="store_true", help="Skip git fetch")
+    ap.add_argument("--ci", action="store_true",
+                    help="Disable color and interactive mode (for CI)")
+    ap.add_argument("-i", "--interactive", action="store_true",
+                    help="Enable interactive prompts (checkout, stash, stale branch review)")
+    ap.add_argument("--dir", metavar="PATH",
+                    help="Workspace directory (default: current directory)")
+    args = ap.parse_args()
+
+    init_colors(not args.ci and sys.stdout.isatty())
+    interactive = args.interactive and not args.ci and sys.stdin.isatty()
+    workspace = str(Path(args.dir).resolve()) if args.dir else str(Path.cwd())
+
+    repos = find_repos(workspace)
+    if not repos:
+        print(f"No git repos found in {workspace}")
+        sys.exit(0)
+
+    actions: list = []
+
+    # --- Initial scan (no head-branch detection — deferred to after fetch) ---
+    print(f"{BOLD}Workspace:{RESET} {workspace}\n")
+    if sys.stdout.isatty():
+        sys.stdout.write(f"{DIM}Scanning {len(repos)} repo(s)...{RESET}")
+        sys.stdout.flush()
+    all_rd = [collect_status(r, detect_head=False) for r in repos]
+    if sys.stdout.isatty():
+        sys.stdout.write("\r\033[K")
+        sys.stdout.flush()
+
+    # --- Fetch ---
+    if not args.no_fetch:
+        print(f"{BOLD}Fetching...{RESET}")
+        for rd in all_rd:
+            sys.stdout.write(f"  {rd['name']:<20}")
+            sys.stdout.flush()
+            ok, detail = do_fetch(rd["path"])
+            print(f"{GREEN if ok else RED}{detail}{RESET}")
+            actions.append((rd["name"], "fetch", detail))
+        print()
+    all_rd = [collect_status(r) for r in repos]
+    print_overview(all_rd)
+
+    # --- Auto-pull clean repos behind on tracked remote ---
+    to_pull = _pull_candidates(all_rd)
+    if to_pull:
+        print(f"{BOLD}Pulling...{RESET}")
+        for rd in to_pull:
+            sys.stdout.write(f"  {rd['name']:<20}")
+            sys.stdout.flush()
+            ok, detail = do_pull(rd)
+            print(f"{GREEN if ok else YELLOW}{detail}{RESET}")
+            actions.append((rd["name"], "pull", detail))
+        print()
+        all_rd = [collect_status(r) for r in repos]
+
+    # --- Non-interactive: report dirty repos in ATTENTION, hint for the rest ---
+    if not interactive:
+        for rd in all_rd:
+            if rd["dirty"]:
+                actions.append((rd["name"], "note", f"dirty ({rd['dirty']} change(s))"))
+        print_summary(actions)
+        _print_interactive_hint(_interactive_pending(all_rd))
+        return
+
+    quit_it = False
+
+    # --- Checkout review: repos not on HEAD branch ---
+    needs_co = [
+        rd for rd in all_rd
+        if rd["head_branch"] and rd["branch"] != rd["head_branch"]
+        and not rd["detached"] and not rd["dirty"]
+    ]
+    if needs_co:
+        print(f"{BOLD}Branch review:{RESET}")
+        for rd in needs_co:
+            if quit_it:
+                break
+            ok, detail, qflag = do_checkout(rd)
+            if qflag:
+                quit_it = True
+            actions.append((rd["name"], "checkout", detail))
+
+        if not quit_it:
+            all_rd = [collect_status(r) for r in repos]
+            to_pull2 = _pull_candidates(all_rd)
+            if to_pull2:
+                print(f"\n{BOLD}Pulling after checkout...{RESET}")
+                for rd in to_pull2:
+                    sys.stdout.write(f"  {rd['name']:<20}")
+                    sys.stdout.flush()
+                    ok, detail = do_pull(rd)
+                    print(f"{GREEN if ok else YELLOW}{detail}{RESET}")
+                    actions.append((rd["name"], "pull", detail))
+                all_rd = [collect_status(r) for r in repos]
+                print()
+
+    # --- Stash review ---
+    if not quit_it:
+        with_stashes = [rd for rd in all_rd if rd["stashes"]]
+        if with_stashes:
+            print(f"\n{BOLD}Stash review:{RESET}")
+            for rd in with_stashes:
+                if quit_it:
+                    break
+                n, qflag = do_stash_review(rd)
+                if qflag:
+                    quit_it = True
+                if n:
+                    actions.append((rd["name"], "stash", f"dropped {n}"))
+
+    # --- Stale branch review ---
+    if not quit_it:
+        with_stale = [rd for rd in all_rd if rd["stale_branches"]]
+        if with_stale:
+            print(f"\n{BOLD}Stale branch review:{RESET}")
+            for rd in with_stale:
+                if quit_it:
+                    break
+                n, qflag = do_stale_branch_review(rd)
+                if qflag:
+                    quit_it = True
+                if n:
+                    actions.append((rd["name"], "stale", f"deleted {n} branch(es)"))
+
+    # --- Final notes (dirty repos and anything skipped due to quit) ---
+    all_rd_final = [collect_status(r) for r in repos]
+    for rd in all_rd_final:
+        already_dirty = any(
+            rn == rd["name"] and v == "note" and "dirty" in d
+            for rn, v, d in actions
+        )
+        if rd["dirty"] and not already_dirty:
+            actions.append((rd["name"], "note",
+                            f"dirty ({rd['dirty']} change(s)) — manual action needed"))
+
+    print_summary(actions)
+    # Show hint for anything interactive mode skipped (user hit 'q' or was on dirty branch)
+    _print_interactive_hint(_interactive_pending(all_rd_final))
+
+
+if __name__ == "__main__":
+    main()
