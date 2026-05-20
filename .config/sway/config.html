@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sway Config Overview</title>
+<style>
+  :root {
+    --accent: #3250FF;
+    --accent-dim: #1a30cc;
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --border: #2a2a38;
+    --text: #d0d0e0;
+    --muted: #6a6a80;
+    --red: #e05060;
+    --green: #50c070;
+    --yellow: #d0a040;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px; line-height: 1.6; }
+
+  #topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  #topbar h1 { font-size: 15px; color: var(--accent); }
+  #topbar a { color: var(--accent); font-size: 12px; text-decoration: none; margin-left: auto; }
+  #topbar a:hover { text-decoration: underline; }
+
+  #nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  #nav a {
+    color: var(--muted); font-size: 12px; text-decoration: none;
+    padding: 3px 8px; border-radius: 3px; border: 1px solid var(--border);
+  }
+  #nav a:hover { color: var(--accent); border-color: var(--accent); }
+
+  main { padding: 20px 16px; max-width: 1000px; }
+  section { margin-bottom: 36px; }
+  section h2 {
+    color: var(--accent); font-size: 14px; font-weight: 600;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 400; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(50,80,255,0.06); }
+
+  code { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 12px; color: #a0b0ff; }
+
+  .badge {
+    display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 3px; font-weight: 600;
+  }
+  .critical { background: rgba(224,80,96,0.2); color: var(--red); }
+  .moderate { background: rgba(208,160,64,0.2); color: var(--yellow); }
+  .minor    { background: rgba(106,106,128,0.2); color: var(--muted); }
+  .ok       { background: rgba(80,192,112,0.2); color: var(--green); }
+  .design   { background: rgba(50,80,255,0.15); color: #7090ff; }
+
+  .file-path { color: #7090ff; }
+  .note { color: var(--muted); font-size: 12px; }
+
+  p { margin-bottom: 10px; color: var(--text); }
+  ul { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Sway Config Overview</h1>
+  <a href="keybindings.html">Keybindings</a>
+</div>
+
+<nav id="nav">
+  <a href="#files">Files</a>
+  <a href="#variables">Variables</a>
+  <a href="#inputs">Inputs</a>
+  <a href="#outputs">Outputs</a>
+  <a href="#workspaces">Workspaces</a>
+  <a href="#startup">Startup</a>
+  <a href="#system-include">System Include</a>
+  <a href="#issues">Issues</a>
+</nav>
+
+<main>
+
+<!-- FILE INVENTORY -->
+<section id="files">
+  <h2>File Inventory</h2>
+  <p>Config is split into numbered files loaded in alphanumeric order via <code>include ~/.config/sway/*-config</code> in the main <code>config</code> entry point. System defaults are loaded first via <code>include /etc/sway/config.d/*</code>.</p>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code class="file-path">config</code></td><td>Entry point — XWayland enable, systemd target, two includes</td></tr>
+      <tr><td><code class="file-path">10-variables-config</code></td><td>Variables: mod keys, terminal, workspace names, border/opacity</td></tr>
+      <tr><td><code class="file-path">20-inputs-outputs-config</code></td><td>Keyboard layout, Wacom tablet, monitor outputs, workspace→output mapping</td></tr>
+      <tr><td><code class="file-path">30-theme-config</code></td><td>Colors, gaps, borders, fonts, client decoration colors</td></tr>
+      <tr><td><code class="file-path">40-statusbars-config</code></td><td>Waybar (main bar); commented-out secondary bar</td></tr>
+      <tr><td><code class="file-path">50-settings-config</code></td><td>Focus behavior, mouse warping, wrapping, urgency, opacity</td></tr>
+      <tr><td><code class="file-path">60-bindings-config</code></td><td>All keybindings (~200 entries) — see <a href="keybindings.html">keybindings.html</a></td></tr>
+      <tr><td><code class="file-path">70-modes-config</code></td><td>Sway modes: nag, resize, move, system</td></tr>
+      <tr><td><code class="file-path">80-rules-config</code></td><td>Window assignments to workspaces, floating rules, chat/music apps</td></tr>
+      <tr><td><code class="file-path">81-rules-mark-config</code></td><td>Zoom marks (mostly commented out)</td></tr>
+      <tr><td><code class="file-path">82-rules-inhibit</code></td><td>Global inhibit_idle rules (fullscreen = no sleep/lock, by design)</td></tr>
+      <tr><td><code class="file-path">85-rules-config</code></td><td>Rules for games, RDP, Teams, Steam</td></tr>
+      <tr><td><code class="file-path">90-execs-config</code></td><td>Startup executables: dbus, polkit, clipboard, background, idle daemon</td></tr>
+      <tr><td><code class="file-path">99-last-config</code></td><td>Final startup command (focus primary output)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- VARIABLES -->
+<section id="variables">
+  <h2>Key Variables <span class="note">(10-variables-config)</span></h2>
+  <table>
+    <thead><tr><th>Variable</th><th>Value</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>$mod</code></td><td><code>Mod4</code></td><td>Super / Windows key — primary modifier</td></tr>
+      <tr><td><code>$Alt</code></td><td><code>Mod1</code></td><td>Alt key — secondary modifier</td></tr>
+      <tr><td><code>$term</code> / <code>$terminal</code></td><td><code>term</code></td><td>Default terminal launcher</td></tr>
+      <tr><td><code>$terminalfl</code></td><td><code>termf</code></td><td>Floating terminal launcher</td></tr>
+      <tr><td><code>$dfzf_term</code></td><td><code>foot --app-id=dfzf-popup</code></td><td>Popup terminal for dfzf tools</td></tr>
+      <tr><td><code>$lockscreen</code></td><td><code>loginctl lock-session</code></td><td>Lock screen command</td></tr>
+      <tr><td><code>$suspend</code></td><td><code>systemctl suspend</code></td><td>Suspend command</td></tr>
+      <tr><td><code>$defaultborder</code></td><td><code>pixel 5</code></td><td>Default border width</td></tr>
+      <tr><td><code>$opacity</code></td><td><code>0.9</code></td><td>Default window opacity</td></tr>
+      <tr><td><code>$ws_www</code></td><td><code>1</code></td><td>Web workspace</td></tr>
+      <tr><td><code>$ws_chat</code></td><td><code>0</code></td><td>Chat workspace (Signal, Slack, Teams…)</td></tr>
+      <tr><td><code>$ws_util</code></td><td><code>17</code></td><td>Utility workspace (htop, jobs)</td></tr>
+      <tr><td><code>$ws_music</code></td><td><code>18</code></td><td>Music workspace (Spotify, VLC…)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- INPUTS -->
+<section id="inputs">
+  <h2>Input Devices <span class="note">(20-inputs-outputs-config)</span></h2>
+  <table>
+    <thead><tr><th>Device</th><th>Settings</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>type:keyboard</code> (all keyboards)</td>
+        <td>Layout: <code>us euro</code> variant, model <code>pc105</code><br>
+            Options: <code>compose:caps</code>, <code>lv3:ralt_switch</code>, <code>eurosign:e</code>, <code>nbsp:level3n</code><br>
+            CapsLock: disabled | NumLock: enabled</td>
+      </tr>
+      <tr>
+        <td><code>Wacom Intuos BT S Pad</code></td>
+        <td>Mapped to primary output; tool mode: pen relative</td>
+      </tr>
+      <tr>
+        <td><code>Wacom Intuos BT S Pen</code></td>
+        <td>Mapped to primary output; tool mode: pen relative; accel: adaptive +1</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- OUTPUTS -->
+<section id="outputs">
+  <h2>Outputs <span class="note">(20-inputs-outputs-config)</span></h2>
+  <table>
+    <thead><tr><th>Variable</th><th>Port</th><th>Config</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>$primary</code></td>
+        <td><code>DP-5</code></td>
+        <td>7680×2160 @ scale 1.5, position 0 0, max_render_time off, DPMS on</td>
+      </tr>
+      <tr>
+        <td><code>$secondary</code></td>
+        <td><code>DP-2</code></td>
+        <td><em>Commented out</em> — was 3840×2160 @ scale 1.5</td>
+      </tr>
+      <tr>
+        <td><code>$tv</code></td>
+        <td><code>DP-7</code></td>
+        <td>1920×1080 @ pos 0 1700, no scale — DPMS commented out</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- WORKSPACES -->
+<section id="workspaces">
+  <h2>Workspace → Output Mapping</h2>
+  <table>
+    <thead><tr><th>Workspaces</th><th>Output</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>0–18</td><td><code>$primary</code> (DP-5)</td><td>All main workspaces</td></tr>
+      <tr><td>19–22</td><td><code>$tv</code> (DP-7)</td><td>TV output workspaces</td></tr>
+    </tbody>
+  </table>
+  <br>
+  <p><strong>Named workspace assignments (from 80-rules-config):</strong></p>
+  <table>
+    <thead><tr><th>Workspace</th><th>Apps assigned</th></tr></thead>
+    <tbody>
+      <tr><td>0 (chat)</td><td>Signal, Slack, Keybase, Teams, WhatsApp, Discord, Telegram, Mattermost, IRC</td></tr>
+      <tr><td>17 (util)</td><td>i3jobs, htop</td></tr>
+      <tr><td>18 (music)</td><td>Spotify, VLC, Rhythmbox, pavucontrol, pwvucontrol</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- STARTUP -->
+<section id="startup">
+  <h2>Startup Executables <span class="note">(90-execs-config)</span></h2>
+  <table>
+    <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>dbus-update-activation-environment</code></td><td>Export Wayland env vars to D-Bus (duplicate of system include)</td></tr>
+      <tr><td><code>pam_kwallet_init</code></td><td>Unlock KWallet on login</td></tr>
+      <tr><td><code>lxpolkit</code></td><td>PolicyKit authentication agent</td></tr>
+      <tr><td><code>wl-paste --watch cliphist store</code></td><td>Clipboard history manager (for dfzf-clipboard)</td></tr>
+      <tr><td><code>nmcli radio wifi off</code></td><td>Disable WiFi on startup</td></tr>
+      <tr><td><code>rfkill block bluetooth</code></td><td>Disable Bluetooth on startup</td></tr>
+      <tr><td><code>nmcli radio wwan off</code></td><td>Disable mobile data on startup</td></tr>
+      <tr><td><code>setsbg redisplay</code></td><td>Restore last wallpaper</td></tr>
+      <tr><td><code>swayidle.sh</code></td><td>Idle / lock / DPMS daemon</td></tr>
+      <tr><td><code>i3-launch-jobs</code></td><td>Launch desktop jobs (delayed 3s)</td></tr>
+      <tr><td><code>dbus-send … setGtkTheme … Breeze-dark-gtk</code></td><td>Set KDE GTK theme — <strong>has trailing quote bug</strong></td></tr>
+      <tr><td><code>gsettings set … gtk-theme Arc-Dark</code></td><td>Set GNOME GTK theme</td></tr>
+      <tr><td><code>xhost +SI:localuser:root</code></td><td>Allow root X11 access (for gksu)</td></tr>
+      <tr><td><code>makoctl mode -r do-not-disturb</code></td><td>Reset DND mode on startup</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SYSTEM INCLUDE -->
+<section id="system-include">
+  <h2>System Include <span class="note">(/etc/sway/config.d/*)</span></h2>
+  <p>Two files are loaded from the system-level config directory before the user config:</p>
+  <table>
+    <thead><tr><th>File</th><th>What it does</th><th>Relevance</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>40-sway-background.conf</code></td>
+        <td>Sets default wallpaper: <code>output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill</code></td>
+        <td class="note">Overridden immediately by <code>setsbg redisplay</code> in 90-execs-config. Visible only for a split second on first boot.</td>
+      </tr>
+      <tr>
+        <td><code>50-systemd-user.conf</code></td>
+        <td>
+          <code>exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP</code><br>
+          <code>exec dbus-update-activation-environment … XDG_CURRENT_DESKTOP=sway</code>
+        </td>
+        <td><strong>Important:</strong> sets <code>XDG_CURRENT_DESKTOP=sway</code> — apps check this for Wayland-specific behavior. The <code>dbus-update-activation-environment</code> call in <code>90-execs-config</code> duplicates part of this but omits <code>XDG_CURRENT_DESKTOP</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Verdict:</strong> The <code>include /etc/sway/config.d/*</code> line is needed for <code>XDG_CURRENT_DESKTOP=sway</code> propagation. The background file is harmless. Do not remove the include.</p>
+</section>
+
+<!-- ISSUES -->
+<section id="issues">
+  <h2>Issues Found</h2>
+
+  <table>
+    <thead><tr><th>Severity</th><th>File</th><th>Issue</th></tr></thead>
+    <tbody>
+
+      <tr>
+        <td><span class="badge ok">fixed</span></td>
+        <td><code>90-execs-config:55</code></td>
+        <td>
+          Trailing double-quote on the <code>dbus-send … setGtkTheme</code> line — was <code>""</code> instead of <code>"</code>. Fixed.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge ok">fixed</span></td>
+        <td><code>70-modes-config:77-78</code></td>
+        <td>
+          System mode was using <code>i3-msg</code> (i3-specific) and <code>shmlog</code> (does not exist in sway). Replaced with <code>swaymsg</code>, removed <code>shmlog</code>. Fixed.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge ok">fixed</span></td>
+        <td><code>60-bindings-config:44</code></td>
+        <td>
+          <code>exec showbg</code> was not a valid command. Fixed to <code>exec setsbg show</code>.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge ok">fixed</span></td>
+        <td><code>40-statusbars-config:33-36</code></td>
+        <td>
+          <code>output</code> and <code>tray_output</code> referenced <code>$secondary</code> which is commented out. Stripped to <code>$primary</code> only. Fixed.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge design">by design</span></td>
+        <td><code>80-rules-config:114,116</code></td>
+        <td>
+          Two <code>assign</code> rules for Teams — not duplicates. Line 114 targets <code>window_role="browser-window"</code> (main window), line 116 is a fallback for other Teams windows (excluding notifications via negative-lookahead title). Both assign to <code>$ws_chat</code>.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge design">by design</span></td>
+        <td><code>82-rules-inhibit:1-2</code></td>
+        <td>
+          <code>for_window [class=".*"] inhibit_idle fullscreen</code> and the same for <code>app_id</code> — prevents sleep/lock whenever <em>any</em> window is fullscreen. Intentional behavior.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge minor">minor</span></td>
+        <td><code>40-statusbars-config:80-153</code></td>
+        <td>
+          Secondary bar block is fully defined but entirely commented out. Safe to remove if <code>$secondary</code> is permanently gone.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge minor">minor</span></td>
+        <td><code>90-execs-config:9-10</code></td>
+        <td>
+          <code>dbus-update-activation-environment</code> is called here and also by <code>/etc/sway/config.d/50-systemd-user.conf</code>. Redundant but harmless.
+        </td>
+      </tr>
+
+      <tr>
+        <td><span class="badge design">by design</span></td>
+        <td><code>82-rules-inhibit:1-2</code></td>
+        <td>
+          <code>for_window [class=".*"] inhibit_idle fullscreen</code> and same for <code>app_id</code> — prevents sleep/lock whenever any window is fullscreen. Intentional.
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+</main>
+</body>
+</html>

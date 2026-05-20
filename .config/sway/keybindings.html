@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sway Keybindings</title>
+<style>
+  :root {
+    --accent: #3250FF;
+    --accent-dim: #1a30cc;
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --border: #2a2a38;
+    --text: #d0d0e0;
+    --muted: #6a6a80;
+    --red: #e05060;
+    --green: #50c070;
+    --yellow: #d0a040;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px; line-height: 1.5; }
+
+  /* top bar */
+  #topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  #topbar h1 { font-size: 15px; color: var(--accent); white-space: nowrap; }
+  #topbar a { color: var(--accent); font-size: 12px; text-decoration: none; white-space: nowrap; margin-left: auto; }
+  #topbar a:hover { text-decoration: underline; }
+  #search {
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 4px 8px; font-size: 13px; font-family: inherit;
+    width: 220px;
+  }
+  #search:focus { outline: 1px solid var(--accent); }
+
+  /* nav pills */
+  #nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  #nav a {
+    color: var(--muted); font-size: 12px; text-decoration: none;
+    padding: 3px 8px; border-radius: 3px; border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  #nav a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* content */
+  main { padding: 20px 16px; max-width: 1100px; }
+
+  section { margin-bottom: 36px; }
+  section h2 {
+    color: var(--accent); font-size: 14px; font-weight: 600;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 400; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr.hidden { display: none; }
+  tr:hover td { background: rgba(50,80,255,0.06); }
+
+  /* key rendering */
+  kbd {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+    color: #c0c8ff;
+    white-space: nowrap;
+    margin: 1px;
+  }
+  .plus { color: var(--muted); margin: 0 1px; }
+
+  /* notes badges */
+  .note { font-size: 11px; color: var(--muted); }
+  .bug  { font-size: 11px; color: var(--red); }
+  .flag { font-size: 11px; color: var(--yellow); }
+
+  /* mode sub-section */
+  .mode-entry { margin-bottom: 18px; }
+  .mode-entry h3 { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding-left: 4px; border-left: 3px solid var(--accent-dim); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Sway Keybindings</h1>
+  <a href="config.html">Config overview</a>
+  <input id="search" type="search" placeholder="Filter bindings…" autocomplete="off">
+</div>
+
+<nav id="nav">
+  <a href="#window">Window</a>
+  <a href="#focus">Focus &amp; Move</a>
+  <a href="#workspaces">Workspaces</a>
+  <a href="#outputs">Outputs</a>
+  <a href="#scratchpad">Scratchpad</a>
+  <a href="#apps">Applications</a>
+  <a href="#system">System</a>
+  <a href="#audio">Audio / Volume</a>
+  <a href="#media">Media / Player</a>
+  <a href="#elgato">Elgato Lights</a>
+  <a href="#screenshots">Screenshots</a>
+  <a href="#mouse">Mouse</a>
+  <a href="#modes">Modes</a>
+</nav>
+
+<main>
+
+<!-- WINDOW MANAGEMENT -->
+<section id="window">
+  <h2>Window Management</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>h</kbd></td><td>Split horizontal</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>v</kbd></td><td>Split vertical</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>f</kbd></td><td>Fullscreen toggle</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>f</kbd></td><td>Fullscreen global toggle</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>e</kbd></td><td>Layout toggle (splith / splitv)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>w</kbd></td><td>Layout tabbed</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>b</kbd></td><td>Border toggle</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>s</kbd></td><td>Sticky toggle</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>t</kbd></td><td>Floating toggle</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Space</kbd></td><td>Focus mode toggle (tiling / floating)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>t</kbd></td><td>Show app_id in title bar</td><td class="note">toggles title_format %title [%app_id]</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- FOCUS & MOVEMENT -->
+<section id="focus">
+  <h2>Focus &amp; Move Container</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>&#8592;</kbd></td><td>Focus left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>&#8594;</kbd></td><td>Focus right</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>&#8593;</kbd></td><td>Focus up</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>&#8595;</kbd></td><td>Focus down</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>&#8592;</kbd></td><td>Move container left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>&#8594;</kbd></td><td>Move container right</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>&#8593;</kbd></td><td>Move container up</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>&#8595;</kbd></td><td>Move container down</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Tab</kbd></td><td>Focus next sibling</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></td><td>Focus prev sibling</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>PageUp</kbd></td><td>Focus parent container</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>PageDn</kbd></td><td>Focus child container</td><td></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- WORKSPACES -->
+<section id="workspaces">
+  <h2>Workspaces</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>`</kbd></td><td>Switch to workspace 0</td><td class="note">chat (Signal, Slack, Teams…)</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>1</kbd></td><td>Switch to workspace 1</td><td class="note">www</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>2</kbd> … <kbd>9</kbd></td><td>Switch to workspace 2–9</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>0</kbd></td><td>Switch to workspace 10</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>F1</kbd> … <kbd>F6</kbd></td><td>Switch to workspace 11–16</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>F7</kbd></td><td>Switch to workspace 17</td><td class="note">util (htop, jobs)</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>F8</kbd></td><td>Switch to workspace 18</td><td class="note">music (Spotify, VLC…)</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>F9</kbd> … <kbd>F12</kbd></td><td>Switch to workspace 19–22</td><td class="note">TV output</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Tab</kbd></td><td>Workspace next</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></td><td>Workspace prev</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8594;</kbd> / <kbd>&#8595;</kbd></td><td>Workspace next</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8592;</kbd> / <kbd>&#8593;</kbd></td><td>Workspace prev</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>`</kbd></td><td>Move container to workspace 0</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>1</kbd> … <kbd>0</kbd></td><td>Move container to workspace 1–10</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>F1</kbd> … <kbd>F12</kbd></td><td>Move container to workspace 11–22</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>`</kbd></td><td>Move container to workspace 0</td><td class="note">alternate (Shift instead of Ctrl)</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>1</kbd> … <kbd>0</kbd></td><td>Move container to workspace 1–10</td><td class="note">alternate</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>F1</kbd> … <kbd>F12</kbd></td><td>Move container to workspace 11–22</td><td class="note">alternate</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- OUTPUTS -->
+<section id="outputs">
+  <h2>Outputs</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>&#8592;</kbd></td><td>Focus output left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>&#8594;</kbd></td><td>Focus output right</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>&#8593;</kbd></td><td>Focus output up</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>&#8595;</kbd></td><td>Focus output down</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8592;</kbd></td><td>Move workspace to output left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8594;</kbd></td><td>Move workspace to output right</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8593;</kbd></td><td>Move workspace to output up</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>&#8595;</kbd></td><td>Move workspace to output down</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>PageUp</kbd></td><td>Move container to output left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>PageDn</kbd></td><td>Move container to output right</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>PageUp</kbd></td><td>Move workspace to output left</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>PageDn</kbd></td><td>Move workspace to output right</td><td></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SCRATCHPAD -->
+<section id="scratchpad">
+  <h2>Scratchpad</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Esc</kbd></td><td>Send to scratchpad</td><td class="note">marks window and hides it</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Esc</kbd></td><td>Unmark scratchpad</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Esc</kbd></td><td>Show scratchpad window</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>Esc</kbd></td><td>Quickswitch scratchpad</td><td class="note">i3-quickswitch --prompt --scratchpad</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- APPLICATIONS -->
+<section id="apps">
+  <h2>Applications</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Return</kbd></td><td>Terminal</td><td class="note">term</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Return</kbd></td><td>Floating terminal</td><td class="note">termf</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>x</kbd></td><td>Kill focused window</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>x</kbd></td><td>Force kill (SIGKILL)</td><td class="note">gets PID from tree, kill -9</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>q</kbd></td><td>Window switcher</td><td class="note">dfzf-windows in foot popup</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>r</kbd></td><td>App launcher (run)</td><td class="note">wofi --show run</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>r</kbd></td><td>App launcher (drun)</td><td class="note">wofi --show drun</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>g</kbd></td><td>Get window criteria</td><td class="note">sway-get-window-criteria</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>r</kbd></td><td>Reload sway config</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>r</kbd></td><td>Move workspaces to default screens</td><td class="note">i3-move-workspaces</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>o</kbd></td><td>Firefox</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>o</kbd></td><td>Firefox private window</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>c</kbd></td><td>Calculator</td><td class="note">gnome-calculator</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>c</kbd></td><td>Clipboard picker</td><td class="note">dfzf-clipboard</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>d</kbd></td><td>File manager</td><td class="note">nemo</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>d</kbd></td><td>File manager (new window)</td><td class="note">nautilus</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>l</kbd></td><td>Launch desktop jobs</td><td class="note">launch-desktop-jobs</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>p</kbd></td><td>Printer configuration</td><td class="note">system-config-printer</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>n</kbd></td><td>Network manager</td><td class="note">i3-nmcli</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>n</kbd></td><td>Toggle WiFi</td><td class="note">nm-toggle-wifi</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>a</kbd></td><td>Dismiss all notifications</td><td class="note">makoctl dismiss --all</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SYSTEM -->
+<section id="system">
+  <h2>System &amp; Session</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>l</kbd></td><td>Lock screen</td><td class="note">loginctl lock-session</td></tr>
+      <tr><td><kbd>Pause</kbd></td><td>Lock screen</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Pause</kbd></td><td>Suspend</td><td class="note">systemctl suspend</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>l</kbd></td><td>Suspend</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>l</kbd></td><td>Power menu</td><td class="note">wlogout</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>Pause</kbd></td><td>Power menu</td><td class="note">wlogout (alternate)</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>q</kbd></td><td>Enter System mode</td><td class="note">exit / debug logging</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- AUDIO -->
+<section id="audio">
+  <h2>Audio / Volume</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>XF86AudioMute</kbd></td><td>Toggle local mute</td><td class="note">i3-volume local toggle</td></tr>
+      <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioMute</kbd></td><td>Toggle Sonos mute</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>XF86AudioMute</kbd></td><td>Set local volume to 50</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioMute</kbd></td><td>Set Sonos volume to 50</td><td></td></tr>
+      <tr><td><kbd>XF86AudioLowerVolume</kbd></td><td>Volume down (local)</td><td class="note">i3-volume local down</td></tr>
+      <tr><td><kbd>XF86AudioRaiseVolume</kbd></td><td>Volume up (local)</td><td></td></tr>
+      <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioLowerVolume</kbd></td><td>Sonos volume down</td><td></td></tr>
+      <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioRaiseVolume</kbd></td><td>Sonos volume up</td><td></td></tr>
+      <tr><td><kbd>XF86AudioMicMute</kbd></td><td>Toggle mic mute</td><td class="note">ponymix --source --device 389 toggle</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>m</kbd></td><td>Select media player</td><td class="note">i3-playerctl-select-player</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>m</kbd></td><td>Select audio output</td><td class="note">i3-pa-select-output</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>m</kbd></td><td>Rotate audio sinks</td><td class="note">pa-rotate-sinks</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MEDIA -->
+<section id="media">
+  <h2>Media / Player Control</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>XF86AudioPrev</kbd></td><td>Previous track</td><td class="note">playerctl previous</td></tr>
+      <tr><td><kbd>XF86AudioPlay</kbd></td><td>Play / Pause</td><td></td></tr>
+      <tr><td><kbd>Shift</kbd><span class="plus">+</span><kbd>XF86AudioPlay</kbd></td><td>Stop</td><td></td></tr>
+      <tr><td><kbd>XF86AudioNext</kbd></td><td>Next track</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>XF86AudioLowerVolume</kbd></td><td>Previous track</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>XF86AudioRaiseVolume</kbd></td><td>Next track</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>,</kbd></td><td>Previous track</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>.</kbd></td><td>Next track</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>/</kbd></td><td>Play / Pause</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>/</kbd></td><td>Stop</td><td></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ELGATO -->
+<section id="elgato">
+  <h2>Elgato Lights</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>/</kbd></td><td>Toggle light on/off</td><td class="note">elgato.sh toggle</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioPlay</kbd></td><td>Toggle light on/off</td><td class="note">alternate</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>,</kbd></td><td>Dimmer (−5)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>.</kbd></td><td>Brighter (+5)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>,</kbd></td><td>Color warmer (+100)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>.</kbd></td><td>Color cooler (+100)</td><td></td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioLowerVolume</kbd></td><td>Dimmer (−5)</td><td class="note">Fn key alternate</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>XF86AudioRaiseVolume</kbd></td><td>Brighter (+5)</td><td class="note">Fn key alternate</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>XF86AudioLowerVolume</kbd></td><td>Color warmer (+100)</td><td class="note">Fn key alternate</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>XF86AudioRaiseVolume</kbd></td><td>Color cooler (+100)</td><td class="note">Fn key alternate</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SCREENSHOTS -->
+<section id="screenshots">
+  <h2>Screenshots</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Print</kbd></td><td>Screenshot — select region</td><td class="note">screengrab select</td></tr>
+      <tr><td><kbd>Shift</kbd><span class="plus">+</span><kbd>Print</kbd></td><td>Screenshot — focused window</td><td class="note">screengrab window</td></tr>
+      <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Print</kbd></td><td>Screenshot — current screen</td><td class="note">screengrab screen</td></tr>
+      <tr><td><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Print</kbd></td><td>Screenshot — all screens</td><td class="note">screengrab full</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MOUSE -->
+<section id="mouse">
+  <h2>Mouse</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Middle click</kbd></td><td>Next background</td><td class="note">setsbg next; whole-window, no-repeat</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Middle click</kbd></td><td>Show current background</td><td class="note">setsbg show</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- HARDWARE -->
+<section id="hardware" style="display:none"><!-- merged into Audio/System --></section>
+<section>
+  <h2>Hardware Keys</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>XF86WLAN</kbd></td><td>Toggle WiFi</td><td class="note">nm-toggle-wifi; Fn-F8</td></tr>
+      <tr><td><kbd>XF86Bluetooth</kbd></td><td>Toggle Bluetooth</td><td class="note">bluetooth toggle; Fn-F10</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- BACKGROUND -->
+<section>
+  <h2>Background / Wallpaper</h2>
+  <table>
+    <thead><tr><th>Keybinding</th><th>Action</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>b</kbd></td><td>Show current background filename</td><td class="note">setsbg show</td></tr>
+      <tr><td><kbd>Super</kbd><span class="plus">+</span><kbd>Alt</kbd><span class="plus">+</span><kbd>b</kbd></td><td>Next background</td><td class="note">setsbg next</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MODES -->
+<section id="modes">
+  <h2>Modes</h2>
+
+  <div class="mode-entry">
+    <h3>Resize Window — enter: Super+Ctrl+Alt+r</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>&#8592;</kbd></td><td>Shrink width 10px/10%</td></tr>
+        <tr><td><kbd>&#8594;</kbd></td><td>Grow width 10px/10%</td></tr>
+        <tr><td><kbd>&#8593;</kbd></td><td>Shrink height 10px/10%</td></tr>
+        <tr><td><kbd>&#8595;</kbd></td><td>Grow height 10px/10%</td></tr>
+        <tr><td><kbd>j</kbd></td><td>Shrink width</td></tr>
+        <tr><td><kbd>k</kbd></td><td>Grow height</td></tr>
+        <tr><td><kbd>l</kbd></td><td>Shrink height</td></tr>
+        <tr><td><kbd>;</kbd></td><td>Grow width</td></tr>
+        <tr><td><kbd>Return</kbd> / <kbd>Esc</kbd></td><td>Exit mode</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mode-entry">
+    <h3>Move Window — enter: Super+Ctrl+Alt+m</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>&#8592;</kbd> / <kbd>&#8594;</kbd> / <kbd>&#8593;</kbd> / <kbd>&#8595;</kbd></td><td>Move window 50px in direction</td></tr>
+        <tr><td><kbd>Return</kbd> / <kbd>Esc</kbd></td><td>Exit mode</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mode-entry">
+    <h3>System — enter: Super+Ctrl+Alt+q</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>x</kbd></td><td>Exit sway</td></tr>
+        <tr><td><kbd>d</kbd></td><td>Enable debug logging (i3-msg — see issues)</td></tr>
+        <tr><td><kbd>Shift</kbd><span class="plus">+</span><kbd>d</kbd></td><td>Disable debug logging</td></tr>
+        <tr><td><kbd>Return</kbd> / <kbd>Esc</kbd></td><td>Exit mode</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mode-entry">
+    <h3>Nag (swaynagmode) — activated by swaynag itself</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>d</kbd></td><td>Dismiss / exit nag mode</td></tr>
+        <tr><td><kbd>Ctrl</kbd><span class="plus">+</span><kbd>c</kbd> / <kbd>q</kbd> / <kbd>Esc</kbd></td><td>Exit nag</td></tr>
+        <tr><td><kbd>Return</kbd></td><td>Confirm action</td></tr>
+        <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></td><td>Navigate options</td></tr>
+        <tr><td><kbd>&#8592;</kbd> / <kbd>&#8594;</kbd> / <kbd>&#8593;</kbd> / <kbd>&#8595;</kbd></td><td>Navigate options</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+const search = document.getElementById('search');
+search.addEventListener('input', () => {
+  const q = search.value.toLowerCase().trim();
+  document.querySelectorAll('tbody tr').forEach(row => {
+    if (!q) { row.classList.remove('hidden'); return; }
+    const text = row.textContent.toLowerCase();
+    row.classList.toggle('hidden', !text.includes(q));
+  });
+  document.querySelectorAll('section').forEach(sec => {
+    if (!q) { sec.style.display = ''; return; }
+    const visible = sec.querySelectorAll('tbody tr:not(.hidden)').length;
+    sec.style.display = visible ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

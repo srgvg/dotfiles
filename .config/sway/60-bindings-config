@@ -41,7 +41,7 @@ bindsym $mod+space focus mode_toggle
 #
 # --no-repeat for mouse button actions to prevent rapid cycling
 bindsym --whole-window --no-repeat $mod+button2					exec setsbg next
-bindsym --whole-window --no-repeat $mod+Alt+Control+button2				exec showbg
+bindsym --whole-window --no-repeat $mod+Alt+Control+button2				exec setsbg show
 
 
 # https://i3wm.org/docs/user-contributed/swapping-workspaces.html
@@ -270,9 +270,7 @@ bindsym --no-repeat $mod+Control+o		exec firefox --private-window
 
 # Show current Background filename
 bindsym --no-repeat $mod+Control+b		exec setsbg show
-bindsym --no-repeat $mod+Shift+Control+b	exec setsbg showpic
 bindsym --no-repeat $mod+Alt+b		exec setsbg next
-bindsym --no-repeat $mod+Control+Alt+b	exec setsbg
 
 # Toggle Presentation mode (disable screen saver and notifications)
 #bindsym $mod+p			exec presentation-mode

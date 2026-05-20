@@ -74,8 +74,8 @@ set $mode_system x Exit | [Shift] d [de-]activate Debugging
 bindsym $mod+Control+Alt+q mode "$mode_system"
 mode "$mode_system" {
 	bindsym x exit
-	bindsym d exec --no-startup-id i3-msg "debuglog on; shmlog on; reload; mode default"
-	bindsym Shift+d exec --no-startup-id i3-msg "debuglog off; shmlog off; reload; mode default"
+	bindsym d exec --no-startup-id swaymsg "debuglog on; reload; mode default"
+	bindsym Shift+d exec --no-startup-id swaymsg "debuglog off; reload; mode default"
 	# back to normal: Enter or Escape
 	bindsym Return mode "default"
 	bindsym Escape mode "default"

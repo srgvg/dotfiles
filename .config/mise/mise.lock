@@ -58,36 +58,36 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.4.2/argocd-windo
 url = "https://github.com/argoproj/argo-cd/releases/download/v3.4.2/argocd-cli.intoto.jsonl"
 
 [[tools.awscli]]
-version = "2.34.48"
+version = "2.34.49"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.48.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.49.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.48.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.49.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:deed6de1d09e196be631b7e5ccdc99be992cd7c49b9388ed394890980bac3e4f"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.48.zip"
+checksum = "blake3:25fb380b9aba0911bbdd0a23c88b7d337ea42ac3d54b608e1217589f23c4340c"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.49.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.48.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.49.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.48.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.49.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.48.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.49.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.48.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.49.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.48.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.49.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.48.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.49.pkg"
 
 [[tools.azure-cli]]
 version = "2.86.0"
@@ -458,7 +458,7 @@ version = "1.1.0"
 backend = "github:khairul169/garage-webui"
 
 [[tools.gcloud]]
-version = "568.0.0"
+version = "569.0.0"
 backend = "asdf:gcloud"
 
 [[tools.git-who]]
@@ -866,11 +866,55 @@ checksum = "sha256:20d2ceafb4ed41b96b879010927b28bc92a5be57a7c1801ce365a9ca51d32
 url = "https://dl.google.com/go/go1.26.3.windows-amd64.zip"
 
 [[tools.go-containerregistry]]
-version = "0.21.5"
+version = "0.21.6"
 backend = "aqua:google/go-containerregistry"
 
 [tools.go-containerregistry.options]
 "vars.exe" = "crane"
+
+[tools.go-containerregistry."platforms.linux-arm64"]
+checksum = "sha256:6f61571ca0c2a5da27c2927fcb143255ccb2b74b8977dfcb44645b372ab0f951"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-arm64-musl"]
+checksum = "sha256:6f61571ca0c2a5da27c2927fcb143255ccb2b74b8977dfcb44645b372ab0f951"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64"]
+checksum = "sha256:7ebbdcd05b652345c1f5105f8475e518534b90d66f3bdb50017be63f426ea435"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-baseline"]
+checksum = "sha256:7ebbdcd05b652345c1f5105f8475e518534b90d66f3bdb50017be63f426ea435"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl"]
+checksum = "sha256:7ebbdcd05b652345c1f5105f8475e518534b90d66f3bdb50017be63f426ea435"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:7ebbdcd05b652345c1f5105f8475e518534b90d66f3bdb50017be63f426ea435"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Linux_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-arm64"]
+checksum = "sha256:a124f297d1e63e8b6c63c2463e43565290d2fd074c1dadb5ca73d737bc7b2484"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Darwin_arm64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64"]
+checksum = "sha256:f1e653737a1d6e8a412734d0ac25009e04eccec98853be2eb59b8c744dede834"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.macos-x64-baseline"]
+checksum = "sha256:f1e653737a1d6e8a412734d0ac25009e04eccec98853be2eb59b8c744dede834"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Darwin_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64"]
+checksum = "sha256:fb78f814f68ab47266458f319ca7e642a303453ea25c8993a14eb9850c56e870"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Windows_x86_64.tar.gz"
+
+[tools.go-containerregistry."platforms.windows-x64-baseline"]
+checksum = "sha256:fb78f814f68ab47266458f319ca7e642a303453ea25c8993a14eb9850c56e870"
+url = "https://github.com/google/go-containerregistry/releases/download/v0.21.6/go-containerregistry_Windows_x86_64.tar.gz"
 
 [[tools."go:github.com/apricote/hcloud-upload-image"]]
 version = "1.4.0"
@@ -913,7 +957,7 @@ version = "0.45.0"
 backend = "go:golang.org/x/tools/cmd/gonew"
 
 [[tools."go:golang.org/x/tools/gopls"]]
-version = "0.21.1"
+version = "0.22.0"
 backend = "go:golang.org/x/tools/gopls"
 
 [[tools."go:honnef.co/go/tools/cmd/staticcheck"]]
@@ -1116,63 +1160,63 @@ version = "0.6.3"
 backend = "aqua:pulumi/kubespy"
 
 [[tools.kubewall]]
-version = "0.0.19"
+version = "0.0.20"
 backend = "github:kubewall/kubewall"
 
 [tools.kubewall."platforms.linux-arm64"]
-checksum = "sha256:0540ee8a42fcc1ef58c8824d25b0d0e8d4b9b892e285f6ee28b3c40923b41d3c"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397018"
+checksum = "sha256:d6da4ea0ef49925f349e3fded608930d7952e48934e9d263b0da5f227e671c58"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860484"
 
 [tools.kubewall."platforms.linux-arm64-musl"]
-checksum = "sha256:0540ee8a42fcc1ef58c8824d25b0d0e8d4b9b892e285f6ee28b3c40923b41d3c"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397018"
+checksum = "sha256:d6da4ea0ef49925f349e3fded608930d7952e48934e9d263b0da5f227e671c58"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860484"
 
 [tools.kubewall."platforms.linux-x64"]
-checksum = "sha256:3f17e0af7f8241103e24f8f09e5e76de2c75b71d7ec234496a342ce0ed0393e5"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397027"
+checksum = "sha256:01130c74013925d5bd5bcab933da2912465080d16b93e1ba0726502c16b05f08"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860486"
 
 [tools.kubewall."platforms.linux-x64-baseline"]
-checksum = "sha256:3f17e0af7f8241103e24f8f09e5e76de2c75b71d7ec234496a342ce0ed0393e5"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397027"
+checksum = "sha256:01130c74013925d5bd5bcab933da2912465080d16b93e1ba0726502c16b05f08"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860486"
 
 [tools.kubewall."platforms.linux-x64-musl"]
-checksum = "sha256:3f17e0af7f8241103e24f8f09e5e76de2c75b71d7ec234496a342ce0ed0393e5"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397027"
+checksum = "sha256:01130c74013925d5bd5bcab933da2912465080d16b93e1ba0726502c16b05f08"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860486"
 
 [tools.kubewall."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:3f17e0af7f8241103e24f8f09e5e76de2c75b71d7ec234496a342ce0ed0393e5"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397027"
+checksum = "sha256:01130c74013925d5bd5bcab933da2912465080d16b93e1ba0726502c16b05f08"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860486"
 
 [tools.kubewall."platforms.macos-arm64"]
-checksum = "sha256:902345f0ddda60f3b73ad712d1615d386a877ca6ac1800fe8359f29f1ff81bb8"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Darwin_all.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397029"
+checksum = "sha256:3e4b7c8daa603a95855fc8e8b326b1fde9fa3a5fbf525f9cf488d0245f27191e"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860503"
 
 [tools.kubewall."platforms.macos-x64"]
-checksum = "sha256:902345f0ddda60f3b73ad712d1615d386a877ca6ac1800fe8359f29f1ff81bb8"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Darwin_all.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397029"
+checksum = "sha256:3e4b7c8daa603a95855fc8e8b326b1fde9fa3a5fbf525f9cf488d0245f27191e"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860503"
 
 [tools.kubewall."platforms.macos-x64-baseline"]
-checksum = "sha256:902345f0ddda60f3b73ad712d1615d386a877ca6ac1800fe8359f29f1ff81bb8"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Darwin_all.tar.gz"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397029"
+checksum = "sha256:3e4b7c8daa603a95855fc8e8b326b1fde9fa3a5fbf525f9cf488d0245f27191e"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Darwin_all.tar.gz"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860503"
 
 [tools.kubewall."platforms.windows-x64"]
-checksum = "sha256:c3fec369d6cf2b1a460a078b37c769a9f58fcc6d3a762b664955d72a5ca7538f"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Windows_x86_64.zip"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397028"
+checksum = "sha256:4d6fcd6dda5d91d0561fb54608168c41581980abecfadd076ee17bdae0015cdd"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860498"
 
 [tools.kubewall."platforms.windows-x64-baseline"]
-checksum = "sha256:c3fec369d6cf2b1a460a078b37c769a9f58fcc6d3a762b664955d72a5ca7538f"
-url = "https://github.com/kubewall/kubewall/releases/download/v0.0.19/kubewall_Windows_x86_64.zip"
-url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/420397028"
+checksum = "sha256:4d6fcd6dda5d91d0561fb54608168c41581980abecfadd076ee17bdae0015cdd"
+url = "https://github.com/kubewall/kubewall/releases/download/v0.0.20/kubewall_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/kubewall/kubewall/releases/assets/423860498"
 
 [[tools.kubie]]
 version = "0.27.0"
@@ -1235,7 +1279,7 @@ version = "11.14.1"
 backend = "npm:npm"
 
 [[tools."npm:pnpm"]]
-version = "11.1.2"
+version = "11.1.3"
 backend = "npm:pnpm"
 
 [[tools.nsc]]
@@ -1440,8 +1484,52 @@ version = "0.20.1"
 backend = "github:gabm/Satty"
 
 [[tools.scaleway-cli]]
-version = "2.55.0"
+version = "2.56.0"
 backend = "aqua:scaleway/scaleway-cli"
+
+[tools.scaleway-cli."platforms.linux-arm64"]
+checksum = "sha256:777edee41ac0721be9d6405585c1cbb996c9f08e49e17acc58ae2ad26cde8bea"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_arm64"
+
+[tools.scaleway-cli."platforms.linux-arm64-musl"]
+checksum = "sha256:777edee41ac0721be9d6405585c1cbb996c9f08e49e17acc58ae2ad26cde8bea"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_arm64"
+
+[tools.scaleway-cli."platforms.linux-x64"]
+checksum = "sha256:28b1c650c85eb2b78f33fb56a2b7f79135840776fd6aacdd589942b61324e937"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.linux-x64-baseline"]
+checksum = "sha256:28b1c650c85eb2b78f33fb56a2b7f79135840776fd6aacdd589942b61324e937"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.linux-x64-musl"]
+checksum = "sha256:28b1c650c85eb2b78f33fb56a2b7f79135840776fd6aacdd589942b61324e937"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:28b1c650c85eb2b78f33fb56a2b7f79135840776fd6aacdd589942b61324e937"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_linux_amd64"
+
+[tools.scaleway-cli."platforms.macos-arm64"]
+checksum = "sha256:ec4f1b893a2ab5c5bdd89d683f1f7eaf8c9418fc98f3460a4dfdde465933bb03"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_darwin_arm64"
+
+[tools.scaleway-cli."platforms.macos-x64"]
+checksum = "sha256:b50b96623859a53c6912ce11e9b6a0e467c062fc9e3c1a8769c85ccc30f8ff5d"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_darwin_amd64"
+
+[tools.scaleway-cli."platforms.macos-x64-baseline"]
+checksum = "sha256:b50b96623859a53c6912ce11e9b6a0e467c062fc9e3c1a8769c85ccc30f8ff5d"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_darwin_amd64"
+
+[tools.scaleway-cli."platforms.windows-x64"]
+checksum = "sha256:6b32955d3c7d648a4932c4a29144282751d0c069240e9a8f4212cc391d841ccc"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_windows_amd64.exe"
+
+[tools.scaleway-cli."platforms.windows-x64-baseline"]
+checksum = "sha256:6b32955d3c7d648a4932c4a29144282751d0c069240e9a8f4212cc391d841ccc"
+url = "https://github.com/scaleway/scaleway-cli/releases/download/v2.56.0/scaleway-cli_2.56.0_windows_amd64.exe"
 
 [[tools.slsa-verifier]]
 version = "2.7.1"
@@ -1704,42 +1792,62 @@ version = "3.3.0"
 backend = "aqua:jdx/usage"
 
 [[tools.uv]]
-version = "0.11.14"
+version = "0.11.15"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:d7d3966e46915c5f6932692aaf152a2473eecb1d2517ca4f8e88a07484b380b6"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:6505075cec3f551fad4fe9026922967ff9c895c9f513c97682b24e7a1c9becd3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:d7d3966e46915c5f6932692aaf152a2473eecb1d2517ca4f8e88a07484b380b6"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:6505075cec3f551fad4fe9026922967ff9c895c9f513c97682b24e7a1c9becd3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:077d36f45a0cc6d440b653b2d5c53e7731121e99e54b0221267eec5d1cae76ce"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:200ccf2f351849c5d6698714e7e7eb9ead1e8c097dbdbb43730e1a4e059ceb87"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.uv."platforms.linux-x64-baseline"]
+checksum = "sha256:200ccf2f351849c5d6698714e7e7eb9ead1e8c097dbdbb43730e1a4e059ceb87"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:077d36f45a0cc6d440b653b2d5c53e7731121e99e54b0221267eec5d1cae76ce"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:200ccf2f351849c5d6698714e7e7eb9ead1e8c097dbdbb43730e1a4e059ceb87"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.uv."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:200ccf2f351849c5d6698714e7e7eb9ead1e8c097dbdbb43730e1a4e059ceb87"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:4333af5c0730d94323a7819bbdf87ce92dd07fc857d67fff0059e0fca31b5c02"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:7e5b336108f8576eda1939920ca0a805b4a9a3c3d3eb2f6140e38b7092fbe4f3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-aarch64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:9836c1440b0bd6aa5f81793648a339bd01d593b7b8f575de3b855dae4ab64654"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:42bca7cc879d117ed7139a0e26de8cab0b6f033ad439a32144f324d1f8580d8c"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-apple-darwin.tar.gz"
+provenance = "github-attestations"
+
+[tools.uv."platforms.macos-x64-baseline"]
+checksum = "sha256:42bca7cc879d117ed7139a0e26de8cab0b6f033ad439a32144f324d1f8580d8c"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:52ba5d19409aaa688a8a1a6ec8dfb6a4817230d20186e75f4006105c3e39a846"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.14/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:04b98d414a9000e25e5e0e7c9f53749e66b790cdaffc582829e6f58c544ee11c"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-pc-windows-msvc.zip"
+provenance = "github-attestations"
+
+[tools.uv."platforms.windows-x64-baseline"]
+checksum = "sha256:04b98d414a9000e25e5e0e7c9f53749e66b790cdaffc582829e6f58c544ee11c"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.15/uv-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
 [[tools.vcluster]]
@@ -1747,8 +1855,52 @@ version = "0.34.0"
 backend = "aqua:loft-sh/vcluster"
 
 [[tools.velero]]
-version = "1.18.0"
+version = "1.18.1"
 backend = "aqua:vmware-tanzu/velero"
+
+[tools.velero."platforms.linux-arm64"]
+checksum = "sha256:d5ca8652502a58b270d73cbea4e3ac8be91733edddbd6d2c09a6ef0f3a3d1308"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-arm64.tar.gz"
+
+[tools.velero."platforms.linux-arm64-musl"]
+checksum = "sha256:d5ca8652502a58b270d73cbea4e3ac8be91733edddbd6d2c09a6ef0f3a3d1308"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-arm64.tar.gz"
+
+[tools.velero."platforms.linux-x64"]
+checksum = "sha256:f483cf07b0fa09f33d91f264528492f362e031afa85546b47cbfdf9f77662067"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-amd64.tar.gz"
+
+[tools.velero."platforms.linux-x64-baseline"]
+checksum = "sha256:f483cf07b0fa09f33d91f264528492f362e031afa85546b47cbfdf9f77662067"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-amd64.tar.gz"
+
+[tools.velero."platforms.linux-x64-musl"]
+checksum = "sha256:f483cf07b0fa09f33d91f264528492f362e031afa85546b47cbfdf9f77662067"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-amd64.tar.gz"
+
+[tools.velero."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:f483cf07b0fa09f33d91f264528492f362e031afa85546b47cbfdf9f77662067"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-linux-amd64.tar.gz"
+
+[tools.velero."platforms.macos-arm64"]
+checksum = "sha256:e483722b5a38b60903c9f2bd77bd4e8fbbc5a04aefd5dbe2917808a338e2efae"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-darwin-arm64.tar.gz"
+
+[tools.velero."platforms.macos-x64"]
+checksum = "sha256:3527350999bb90f56caa1b7ef82f8f8c0de8318ce8a27d787fc003139d2374fe"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-darwin-amd64.tar.gz"
+
+[tools.velero."platforms.macos-x64-baseline"]
+checksum = "sha256:3527350999bb90f56caa1b7ef82f8f8c0de8318ce8a27d787fc003139d2374fe"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-darwin-amd64.tar.gz"
+
+[tools.velero."platforms.windows-x64"]
+checksum = "sha256:9cf5844b6df42a2774a1a52512fd85ea0a2742aab894637acbdd5381a25e1b18"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-windows-amd64.tar.gz"
+
+[tools.velero."platforms.windows-x64-baseline"]
+checksum = "sha256:9cf5844b6df42a2774a1a52512fd85ea0a2742aab894637acbdd5381a25e1b18"
+url = "https://github.com/velero-io/velero/releases/download/v1.18.1/velero-v1.18.1-windows-amd64.tar.gz"
 
 [[tools.vfox]]
 version = "1.0.11"

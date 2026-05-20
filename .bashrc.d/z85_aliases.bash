@@ -1,3 +1,8 @@
+# z85: must sort after z80_mise.bash — some aliases (e.g. yazi) guard on `hash`
+# and require mise to be activated first so the tool is in PATH.
+# Two-digit numeric prefixes (z70/z80/z85/z90) are locale-safe: digit-vs-digit
+# comparison is consistent across all LC_COLLATE settings (unlike _ vs letters).
+
 # a
 alias ai='sudo apt install'
 alias as='apt-cache search'
