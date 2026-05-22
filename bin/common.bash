@@ -12,7 +12,7 @@ set -o pipefail
 
 PATH=$HOME/bin:$PATH
 source "$HOME/bin/parameters.bash"
-source "$HOME/.bashrc.d/functions.bash"
+source "$HOME/.bashrc.d/z86_functions.bash"
 # Use shims for scripts (faster than eval "$(mise env -s bash)")
 # Only add shims if mise tools are not already in PATH
 if ! echo "$PATH" | grep -q "mise/installs\|mise/shims"; then

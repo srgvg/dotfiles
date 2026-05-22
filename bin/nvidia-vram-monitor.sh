@@ -28,10 +28,13 @@ GROWTH_THRESHOLD=100  # MiB delta per reading to count as growth
 GROWTH_ALERT_COUNT=3  # consecutive readings before alerting
 GROWTH_ALERTED=0      # only alert once per leak episode
 
-# During-lock VRAM protection via SIGSTOP
-# When sway VRAM exceeds threshold during swaylock, SIGSTOP non-essential GPU clients.
+# Rate-limit "no stoppable clients" notification — tracks last alert timestamp
+VRAM_NOACT_LAST_NOTIF=0
+
+# VRAM protection via SIGSTOP during display-suppressed state (swaylock OR DPMS-off)
+# When sway VRAM exceeds threshold, SIGSTOP non-essential GPU clients.
 # This halts new wl_buffer commits, stopping texture leak accumulation.
-# SIGCONT is sent by swayidle.sh unlock handler, which then runs resume_displays()
+# SIGCONT is sent by swayidle.sh unlock/resume handler, which then runs resume_displays()
 # to free the accumulated textures via modeset cycle (safe when VRAM < 92%).
 # Note: SIGSTOP does NOT free existing leaked textures — it prevents further accumulation.
 SWAY_VRAM_STOP_THRESHOLD="${NVIDIA_VRAM_STOP_THRESHOLD:-2000}"  # MiB
@@ -107,20 +110,42 @@ find_swaysock() {
     ls -t "/run/user/${uid}/sway-ipc."*.sock 2>/dev/null | head -1
 }
 
+# Export SWAYSOCK for swaymsg calls in is_display_suppressed().
+# The monitor runs in a screen session that doesn't inherit the sway environment.
+if [ -z "${SWAYSOCK:-}" ]; then
+    SWAYSOCK=$(find_swaysock)
+    export SWAYSOCK
+fi
 
-check_vram_during_lock() {
+is_display_suppressed() {
+    # Returns 0 (true) when frame presentation is suppressed: swaylock running or any output DPMS-off.
+    # Both states block wlroots GC, causing DMA-BUF texture accumulation.
+    # Capture swaymsg output separately: piping into jq loses the timeout exit code (124 via
+    # pipefail looks like non-zero → "not suppressed"), which would silently bypass protection.
+    # Re-detect SWAYSOCK each call: sway restart changes the socket path (PID-encoded filename),
+    # and the monitor runs long enough that a sway restart during a session is plausible.
+    pgrep -x swaylock > /dev/null 2>&1 && return 0
+    local _out
+    SWAYSOCK=$(find_swaysock)
+    export SWAYSOCK
+    [ -n "$SWAYSOCK" ] || return 1
+    _out=$(timeout 3 swaymsg -t get_outputs 2>/dev/null) || return 1
+    echo "$_out" | jq -e 'any(.[]; .dpms == false)' > /dev/null 2>&1
+}
+
+check_vram_during_display_off() {
     local current_sway_vram="$1"
 
     if [ -z "$current_sway_vram" ] || [ "$current_sway_vram" -le "$SWAY_VRAM_STOP_THRESHOLD" ]; then
         return
     fi
 
-    # Only act during swaylock
-    if ! pgrep -x swaylock > /dev/null 2>&1; then
+    # Only act during swaylock or DPMS-off (both suppress frame presentation → block GC)
+    if ! is_display_suppressed; then
         return
     fi
 
-    # Only act once per lock session (state file present = already handled)
+    # Only act once per suppressed session (state file present = already handled)
     if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
         return
     fi
@@ -153,15 +178,20 @@ check_vram_during_lock() {
         done)
 
     if [ -z "$pids_to_stop" ]; then
-        notify_desktop_always normal "VRAM Warning" \
-            "sway=${current_sway_vram}M during lock — no stoppable GPU clients found"
-        # Write empty file so we don't spam this check
-        touch "$VRAM_STOPPED_PIDS_FILE"
+        # Don't write PID file — allow retry next cycle in case GPU clients appear later.
+        # Rate-limit the notification to avoid bursts when display comes back on.
+        local _now; _now=$(date +%s)
+        if [ $(( _now - VRAM_NOACT_LAST_NOTIF )) -gt 300 ]; then
+            notify_desktop_always normal "VRAM Warning" \
+                "sway=${current_sway_vram}M during display-off — no stoppable GPU clients found"
+            VRAM_NOACT_LAST_NOTIF=$_now
+        fi
         return
     fi
+    VRAM_NOACT_LAST_NOTIF=0
 
     notify_desktop_always normal "VRAM Protection" \
-        "Pausing GPU clients to halt leak (sway=${current_sway_vram}M). Will resume on unlock."
+        "Pausing GPU clients to halt leak (sway=${current_sway_vram}M). Will resume on display-on."
     notify "SIGSTOP GPU clients: $(echo "$pids_to_stop" | tr '\n' ' ')"
 
     # Write PIDs before stopping so unlock handler can always find them
@@ -188,12 +218,13 @@ write_snapshot() {
 
     echo "${ts} | ${used}/${total} MiB (${pct}%) | ${pmon_raw}" >>"${SNAPSHOT_LOG}"
 
-    # Rotate: keep last MAX_SNAPSHOTS lines
+    # Rotate: keep last TRUNC_SNAPSHOTS lines. Use tail+mv (atomic) instead of sed -i
+    # to avoid data loss if monitor writes while rotation is in progress.
     local lines
     lines=$(wc -l <"${SNAPSHOT_LOG}")
     if [ "${lines}" -gt "${MAX_SNAPSHOTS}" ]; then
-        local excess=$((lines - TRUNC_SNAPSHOTS))
-        sed -i "1,${excess}d" "${SNAPSHOT_LOG}"
+        local tmp="${SNAPSHOT_LOG}.tmp.$$"
+        tail -n "${TRUNC_SNAPSHOTS}" "${SNAPSHOT_LOG}" > "${tmp}" && mv "${tmp}" "${SNAPSHOT_LOG}" ||:
     fi
 }
 
@@ -260,7 +291,7 @@ while true; do
     # Check sway VRAM growth rate and during-lock protection
     sway_vram=$(extract_sway_vram "$all_procs")
     check_growth_rate "${sway_vram:-}"
-    check_vram_during_lock "${sway_vram:-}"
+    check_vram_during_display_off "${sway_vram:-}"
 
     if [ "${pct}" -ge "${CRIT_PCT}" ]; then
         notify_desktop_always critical "GPU VRAM Critical" \

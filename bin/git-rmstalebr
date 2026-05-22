@@ -117,16 +117,16 @@ while IFS= read -r branch; do
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
 	REMOTE_MERGED+=("$branch")
 done < <(git for-each-ref --merged="$BASE_REF" \
-	--format='%(refname:short)' "refs/remotes/${REMOTE}/" \
-	| sed "s|^${REMOTE}/||")
+	--format='%(refname)' "refs/remotes/${REMOTE}/" \
+	| sed "s|^refs/remotes/${REMOTE}/||")
 
 while IFS= read -r branch; do
 	[[ "$branch" == "HEAD" ]] && continue
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
 	REMOTE_NOT_MERGED+=("$branch")
 done < <(git for-each-ref --no-merged="$BASE_REF" \
-	--format='%(refname:short)' "refs/remotes/${REMOTE}/" \
-	| sed "s|^${REMOTE}/||")
+	--format='%(refname)' "refs/remotes/${REMOTE}/" \
+	| sed "s|^refs/remotes/${REMOTE}/||")
 
 # Cherry-pick detection for non-merged branches — all jobs run in parallel
 tmpdir=$(mktemp -d)
@@ -254,18 +254,31 @@ else
 	CONFIRM=""
 	read -rp "Delete these ${TOTAL} branch(es)? Enter Y to confirm: " CONFIRM || true
 	if [[ "$CONFIRM" == "Y" ]]; then
-		for branch in "${MERGED[@]}"; do
-			delete_branch "$branch" -d
-		done
-		for branch in "${REBASED[@]}"; do
-			delete_branch "$branch" -D
-		done
-		for branch in "${REMOTE_MERGED[@]}"; do
-			delete_remote_branch "$branch"
-		done
-		for branch in "${REMOTE_REBASED[@]}"; do
-			delete_remote_branch "$branch"
-		done
+		if [[ $LOCAL_TOTAL -gt 0 ]]; then
+			echo -e "${echo_bold_white}Deleting ${LOCAL_TOTAL} stale local branch(es):${echo_normal}"
+			for branch in "${MERGED[@]}"; do
+				print_branch "$branch" "merged " "$echo_green"
+				delete_branch "$branch" -d
+			done
+			for branch in "${REBASED[@]}"; do
+				print_branch "$branch" "rebased" "$echo_yellow"
+				delete_branch "$branch" -D
+			done
+		fi
+		if [[ $REMOTE_TOTAL -gt 0 ]]; then
+			[[ $LOCAL_TOTAL -gt 0 ]] && echo
+			echo -e "${echo_bold_white}Deleting ${REMOTE_TOTAL} stale remote branch(es):${echo_normal}"
+			for branch in "${REMOTE_MERGED[@]}"; do
+				print_remote_branch "$branch" "merged " "$echo_green"
+				delete_remote_branch "$branch"
+			done
+			for branch in "${REMOTE_REBASED[@]}"; do
+				print_remote_branch "$branch" "rebased" "$echo_yellow"
+				delete_remote_branch "$branch"
+			done
+		fi
+	else
+		echo -e "${echo_yellow}Aborted — no branches deleted.${echo_normal}"
 	fi
 fi
 

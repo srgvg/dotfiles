@@ -27,6 +27,17 @@ VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 
+# Safety trap: if swayidle is killed while processes are SIGSTOP'd, SIGCONT them.
+# No-op when file doesn't exist (normal exits, subcommand invocations).
+_vram_cleanup_trap() {
+    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
+        echo "== swayidle trap: SIGCONT SIGSTOP'd processes before exit"
+        # shellcheck disable=SC2046
+        kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+    fi
+}
+trap _vram_cleanup_trap TERM INT
+
 # Auto-detect SWAYSOCK if not set (needed when called from SSH/TTY rescue context)
 if [ -z "${SWAYSOCK:-}" ]; then
     SWAYSOCK=$(ls -t "/run/user/$(id -u)/sway-ipc."*.sock 2>/dev/null | head -1 || true)
@@ -75,6 +86,23 @@ function resume_notifications() {
 	sleep 1
 }
 function pause_displays() {
+	# Pre-DPMS modeset cycle: free Vulkan textures before GC stops running.
+	# Same 85% guard as pre-lock cycle — skip if VRAM too high (cycle would fail).
+	local pre_vram vram_total vram_crit
+	pre_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
+	    | awk '/sway/ && $4 ~ /^[0-9]+$/ { print $4; exit }') || pre_vram=""
+	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+	vram_crit=$(( vram_total * 85 / 100 ))
+	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
+		echo "== pre-dpms: sway VRAM=${pre_vram}M > ${vram_crit}M, skipping modeset cycle" | ts
+	else
+		echo "== pre-dpms modeset cycle (free Vulkan textures before DPMS off)" | ts
+		for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null ||:); do
+			echo "== pre-dpms: disable/enable ${display}" | ts
+			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
+		done
+		sleep 1
+	fi
 	echo swaymsg 'output * dpms off' ||:
 	swaymsg 'output * dpms off' ||:
 }
@@ -94,23 +122,22 @@ function lowres_modeset_recovery() {
 }
 function resume_displays(){
 	echo "== resume displays"
-	# Use wildcard first - don't rely on wlr-randr when display is off
-	echo swaymsg 'output * dpms on' ||:
-	swaymsg 'output * dpms on' &
-	# Then handle any disabled outputs (non-blocking)
-	for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null)
-	do
-		echo swaymsg "output ${display} dpms on" ||:
-		swaymsg "output ${display} dpms on" &
-		if [ $(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled") = "false" ]
-		then
-			echo wlr-randr --output ${display} --on ||:
-			wlr-randr --output ${display} --on ||:
+	# DPMS-on synchronously — must complete before modeset cycle to avoid races
+	# where disable/enable fires against a DPMS-on that is still in-flight.
+	echo swaymsg 'output * dpms on'
+	swaymsg 'output * dpms on' ||:
+	sleep 1
+	for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
+		echo swaymsg "output ${display} dpms on"
+		swaymsg "output ${display} dpms on" ||:
+		if [ "$(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled" 2>/dev/null)" = "false" ]; then
+			echo wlr-randr --output "${display}" --on
+			wlr-randr --output "${display}" --on ||:
 			sleep 1
 		fi
 	done
-	# Force modeset cycle after suspend resume to work around nvidia-drm bug
-	# where DPMS on succeeds at IPC level but GPU display engine doesn't drive output.
+	# Force modeset cycle in background — DPMS is already on above; this works around the
+	# nvidia-drm bug where DPMS on succeeds at IPC level but GPU display engine doesn't drive output.
 	# At >80% VRAM the normal disable/enable cycle fails (NVKMS GEM alloc error for
 	# ~200 MiB 7680x2160 scanout framebuffers) — use low-res recovery path instead.
 	(sleep 3 && for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
@@ -123,7 +150,7 @@ function resume_displays(){
 			lowres_modeset_recovery "${display}"
 		else
 			echo "== forcing modeset cycle on ${display}" | ts
-			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable
+			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
 		fi
 	done) &
 }
@@ -202,6 +229,14 @@ function lock() {
 }
 function resume() {
 	echo "=== resume"
+	# Resume any GPU clients SIGSTOP'd by nvidia-vram-monitor during DPMS-off.
+	# This mirrors the unlock() handler — both paths must send SIGCONT.
+	if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
+		echo "== resuming SIGSTOP'd GPU clients"
+		# shellcheck disable=SC2046
+		kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+		rm -f "$VRAM_STOPPED_PIDS_FILE"
+	fi
 	resume_mouse
 	resume_notifications
 	resume_displays
