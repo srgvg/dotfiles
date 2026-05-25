@@ -48,7 +48,8 @@ function i3-launch-job() {
         notify_error "Nothing to launch"
         return
     fi
-    _pid=$(pgrep -P ${I3SCREENPID} -f "$*" -u $(whoami) -r R,S | xargs || echo -n 0)
+    _pattern=$(printf '%s\n' "$*" | sed 's/[[\.*^$()+?{|]/\\&/g')
+    _pid=$(pgrep -P ${I3SCREENPID} -f "$_pattern" -u $(whoami) -r R,S | xargs || echo -n 0)
     if [ "${_pid}" -ne 0 ]; then
         echo -n "."
     else

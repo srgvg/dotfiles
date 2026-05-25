@@ -58,36 +58,36 @@ url = "https://github.com/argoproj/argo-cd/releases/download/v3.4.2/argocd-windo
 url = "https://github.com/argoproj/argo-cd/releases/download/v3.4.2/argocd-cli.intoto.jsonl"
 
 [[tools.awscli]]
-version = "2.34.52"
+version = "2.34.53"
 backend = "aqua:aws/aws-cli"
 
 [tools.awscli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.52.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.53.zip"
 
 [tools.awscli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.52.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.53.zip"
 
 [tools.awscli."platforms.linux-x64"]
-checksum = "blake3:830f437c022c73e5f686ac5fd3fa26ea8ae4610a81d3ef031d9761c4a10ab1d4"
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.52.zip"
+checksum = "blake3:dac97fa178e1741026139e3fc134199a3d1a192feb23680625fe754d7018330d"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.53.zip"
 
 [tools.awscli."platforms.linux-x64-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.52.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.53.zip"
 
 [tools.awscli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.52.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.53.zip"
 
 [tools.awscli."platforms.linux-x64-musl-baseline"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.52.zip"
+url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.34.53.zip"
 
 [tools.awscli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.52.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.53.pkg"
 
 [tools.awscli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.52.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.53.pkg"
 
 [tools.awscli."platforms.macos-x64-baseline"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.52.pkg"
+url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.53.pkg"
 
 [[tools.azure-cli]]
 version = "2.86.0"
@@ -593,6 +593,54 @@ backend = "github:khairul169/garage-webui"
 version = "569.0.0"
 backend = "asdf:gcloud"
 
+[[tools.git-cliff]]
+version = "2.13.1"
+backend = "aqua:orhun/git-cliff"
+
+[tools.git-cliff."platforms.linux-arm64"]
+checksum = "sha256:4054c124b926c117f3fa048939bc8be0a954f29f3b6f367627e8cb22c1971882"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.linux-arm64-musl"]
+checksum = "sha256:4054c124b926c117f3fa048939bc8be0a954f29f3b6f367627e8cb22c1971882"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.linux-x64"]
+checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.linux-x64-baseline"]
+checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.linux-x64-musl"]
+checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.git-cliff."platforms.macos-arm64"]
+checksum = "sha256:21547ae4a0421164070ab75c2522864ea5565858a011fabc5f583061b20f1226"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-apple-darwin.tar.gz"
+
+[tools.git-cliff."platforms.macos-x64"]
+checksum = "sha256:6e60ae390d375cecb9d8008c49f0e724a8dfe40390b532ef5501e421d2cc8acb"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-apple-darwin.tar.gz"
+
+[tools.git-cliff."platforms.macos-x64-baseline"]
+checksum = "sha256:6e60ae390d375cecb9d8008c49f0e724a8dfe40390b532ef5501e421d2cc8acb"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-apple-darwin.tar.gz"
+
+[tools.git-cliff."platforms.windows-x64"]
+checksum = "sha256:3ae3a5549e85c7ad5b20192ebcfee4371269deca51255f6f2f2e051c6541f5ca"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-pc-windows-msvc.zip"
+
+[tools.git-cliff."platforms.windows-x64-baseline"]
+checksum = "sha256:3ae3a5549e85c7ad5b20192ebcfee4371269deca51255f6f2f2e051c6541f5ca"
+url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-pc-windows-msvc.zip"
+
 [[tools.git-who]]
 version = "1.3"
 backend = "github:sinclairtarget/git-who"
@@ -641,63 +689,63 @@ version = "1.0.2"
 backend = "github:k-krew/hanoi-cli"
 
 [[tools."github:lynxbase/lynxdb"]]
-version = "0.2.1"
+version = "0.2.2"
 backend = "github:lynxbase/lynxdb"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-arm64"]
-checksum = "sha256:e65f0781c3ef040709ff404fea11f49d1764adc0ad89c2f3d968df40d362eb09"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485787"
+checksum = "sha256:ee468dfe3a100f642a230d7bf4651d8f7e6c480a6eb176cfbabfdc76acab779a"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215345"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-arm64-musl"]
-checksum = "sha256:b7abbff9d5029c157e1bcfa6077ffdff4672e110d77d7a2c9194e105b72cc28f"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485786"
+checksum = "sha256:868b10ac9cd3e9c12c688910a5fdbd1b7e2e8d8e5187708d50b66f31c456ee14"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215397"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-x64"]
-checksum = "sha256:483801629ad437bb9ced2ba6c0c7b03509a47c29a4474a7ca375a752e403077c"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485765"
+checksum = "sha256:6c9b668281b93a6195a7e432a41b956a745892dd425e9a04ac4726916a8c8be0"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215343"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-x64-baseline"]
-checksum = "sha256:483801629ad437bb9ced2ba6c0c7b03509a47c29a4474a7ca375a752e403077c"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485765"
+checksum = "sha256:6c9b668281b93a6195a7e432a41b956a745892dd425e9a04ac4726916a8c8be0"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215343"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-x64-musl"]
-checksum = "sha256:ea81b1838e39238577e4e87d1a8e6fe9590cdeaef2760d82944da55e14a35ab9"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-amd64-musl.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485792"
+checksum = "sha256:dcc19846e088477da74fbb96f393ca344b127306603ac9f78a0d4a28107705e8"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-amd64-musl.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215400"
 
 [tools."github:lynxbase/lynxdb"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:ea81b1838e39238577e4e87d1a8e6fe9590cdeaef2760d82944da55e14a35ab9"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-linux-amd64-musl.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485792"
+checksum = "sha256:dcc19846e088477da74fbb96f393ca344b127306603ac9f78a0d4a28107705e8"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-linux-amd64-musl.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215400"
 
 [tools."github:lynxbase/lynxdb"."platforms.macos-arm64"]
-checksum = "sha256:deb4e1b5ede573c9b3a23c8a6ad6879c6581b9948d8dcf0630c4abf06f4900de"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485763"
+checksum = "sha256:e49daca8d28ea0bd34db60fb2a8bd4aae649793d69b152cc7f3b22864ef76324"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215396"
 
 [tools."github:lynxbase/lynxdb"."platforms.macos-x64"]
-checksum = "sha256:7d5a42c04d2a98c57c0998805ff86aef1bb1215077a1a1ac4e5c067d4b082111"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-darwin-amd64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485784"
+checksum = "sha256:3cb124c795cd567c0e51343ffd7576fd72c906b59b3b046e5e195377a1f31c63"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215346"
 
 [tools."github:lynxbase/lynxdb"."platforms.macos-x64-baseline"]
-checksum = "sha256:7d5a42c04d2a98c57c0998805ff86aef1bb1215077a1a1ac4e5c067d4b082111"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-darwin-amd64.tar.gz"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485784"
+checksum = "sha256:3cb124c795cd567c0e51343ffd7576fd72c906b59b3b046e5e195377a1f31c63"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215346"
 
 [tools."github:lynxbase/lynxdb"."platforms.windows-x64"]
-checksum = "sha256:91429df35fe4e030142555348b2466b46a2f68b6aba393468417948bec39ebb0"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-windows-amd64.zip"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485766"
+checksum = "sha256:8dbcb5e152d5d34cfbf3b912d28c7c7376c778147b0038e0fb55eea73630c4d1"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-windows-amd64.zip"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215394"
 
 [tools."github:lynxbase/lynxdb"."platforms.windows-x64-baseline"]
-checksum = "sha256:91429df35fe4e030142555348b2466b46a2f68b6aba393468417948bec39ebb0"
-url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.1/lynxdb-v0.2.1-windows-amd64.zip"
-url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/425485766"
+checksum = "sha256:8dbcb5e152d5d34cfbf3b912d28c7c7376c778147b0038e0fb55eea73630c4d1"
+url = "https://github.com/lynxbase/lynxdb/releases/download/v0.2.2/lynxdb-v0.2.2-windows-amd64.zip"
+url_api = "https://api.github.com/repos/lynxbase/lynxdb/releases/assets/427215394"
 
 [[tools."github:openbao/openbao"]]
 version = "2.5.4"
@@ -1501,7 +1549,7 @@ version = "11.15.0"
 backend = "npm:npm"
 
 [[tools."npm:pnpm"]]
-version = "11.2.2"
+version = "11.3.0"
 backend = "npm:pnpm"
 
 [[tools.nsc]]

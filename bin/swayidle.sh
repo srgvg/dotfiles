@@ -27,6 +27,21 @@ VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 
+SNAPSHOT_LOG="$HOME/logs/nvidia-vram-snapshots.log"
+
+# Write a timestamped EVENT line to the VRAM snapshot log.
+# Usage: log_event <event_name> [detail ...]
+log_event() {
+    local event="$1"; shift
+    echo "$(date '+%Y-%m-%d %H:%M:%S') | EVENT | ${event}${*:+ ($*)}" >> "$SNAPSHOT_LOG"
+}
+
+# Query sway's current VRAM (MiB) from nvidia-smi pmon.
+_get_sway_vram() {
+    nvidia-smi pmon -c 1 -s m 2>/dev/null \
+        | awk '/sway/ && $4~/^[0-9]+$/{print $4;exit}'
+}
+
 # Safety trap: if swayidle is killed while processes are SIGSTOP'd, SIGCONT them.
 # No-op when file doesn't exist (normal exits, subcommand invocations).
 _vram_cleanup_trap() {
@@ -89,22 +104,27 @@ function pause_displays() {
 	# Pre-DPMS modeset cycle: free Vulkan textures before GC stops running.
 	# Same 85% guard as pre-lock cycle — skip if VRAM too high (cycle would fail).
 	local pre_vram vram_total vram_crit
-	pre_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
-	    | awk '/sway/ && $4 ~ /^[0-9]+$/ { print $4; exit }') || pre_vram=""
+	pre_vram=$(_get_sway_vram) || pre_vram=""
 	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
 	vram_crit=$(( vram_total * 85 / 100 ))
 	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
 		echo "== pre-dpms: sway VRAM=${pre_vram}M > ${vram_crit}M, skipping modeset cycle" | ts
+		log_event "pre_dpms_modeset_skipped" "sway=${pre_vram}M > ${vram_crit}M threshold"
 	else
 		echo "== pre-dpms modeset cycle (free Vulkan textures before DPMS off)" | ts
+		log_event "pre_dpms_modeset" "sway=${pre_vram:-?}M"
 		for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null ||:); do
 			echo "== pre-dpms: disable/enable ${display}" | ts
 			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
 		done
 		sleep 1
+		local post_vram
+		post_vram=$(_get_sway_vram) || post_vram=""
+		log_event "pre_dpms_modeset_done" "sway=${pre_vram:-?}M -> ${post_vram:-?}M"
 	fi
 	echo swaymsg 'output * dpms off' ||:
 	swaymsg 'output * dpms off' ||:
+	log_event "dpms_off"
 }
 function lowres_modeset_recovery() {
 	# Recover display when VRAM is too high for normal modeset (NVKMS GEM alloc fails at
@@ -113,12 +133,18 @@ function lowres_modeset_recovery() {
 	# and frees leaked DMA-BUF textures, then we restore the configured mode.
 	# Caller must ensure swaylock is NOT running (GC only fires when background surfaces render).
 	local display="$1"
+	local _vram_before
+	_vram_before=$(_get_sway_vram) || _vram_before=""
 	echo "== low-res recovery on ${display}: 1280x720 -> ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" | ts
+	log_event "lowres_recovery_start" "display=${display} sway=${_vram_before:-?}M"
 	swaymsg "output ${display} mode 1280x720" ||:
 	sleep 1
 	swaymsg "output ${display} dpms on" ||:
 	sleep 10
 	swaymsg "output ${display} mode ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" ||:
+	local _vram_after
+	_vram_after=$(_get_sway_vram) || _vram_after=""
+	log_event "lowres_recovery_done" "display=${display} sway=${_vram_before:-?}M -> ${_vram_after:-?}M"
 }
 function resume_displays(){
 	echo "== resume displays"
@@ -142,14 +168,16 @@ function resume_displays(){
 	# ~200 MiB 7680x2160 scanout framebuffers) — use low-res recovery path instead.
 	(sleep 3 && for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
 		local _vram _total _crit
-		_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null | awk '/sway/ && $4~/^[0-9]+$/{print $4;exit}') || _vram=""
+		_vram=$(_get_sway_vram) || _vram=""
 		_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
 		_crit=$(( _total * 80 / 100 ))
 		if [ -n "$_vram" ] && [ "$_vram" -gt "$_crit" ]; then
 			echo "== modeset: sway VRAM=${_vram}M > ${_crit}M — using low-res recovery" | ts
+			log_event "resume_modeset_lowres" "display=${display} sway=${_vram}M > ${_crit}M threshold"
 			lowres_modeset_recovery "${display}"
 		else
 			echo "== forcing modeset cycle on ${display}" | ts
+			log_event "resume_modeset_normal" "display=${display} sway=${_vram:-?}M"
 			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
 		fi
 	done) &
@@ -207,13 +235,18 @@ function lock() {
 	local vram_crit=$(( vram_total * 85 / 100 ))
 	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
 		echo "== pre-lock: sway VRAM=${pre_vram}M > ${vram_crit}M critical, skipping modeset cycle"
+		log_event "pre_lock_modeset_skipped" "sway=${pre_vram}M > ${vram_crit}M threshold"
 	else
 		echo "== pre-lock modeset cycle (free leaked Vulkan textures)"
+		log_event "pre_lock_modeset" "sway=${pre_vram:-?}M"
 		for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null ||:); do
 			echo "== pre-lock: disable/enable ${display}" | ts
 			swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable ||:
 		done
 		sleep 1
+		local _post_vram
+		_post_vram=$(_get_sway_vram) || _post_vram=""
+		log_event "pre_lock_modeset_done" "sway=${pre_vram:-?}M -> ${_post_vram:-?}M"
 	fi
 
 	# Ensure display is on before launching swaylock — the modeset cycle could have
@@ -233,9 +266,12 @@ function resume() {
 	# This mirrors the unlock() handler — both paths must send SIGCONT.
 	if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
 		echo "== resuming SIGSTOP'd GPU clients"
-		# shellcheck disable=SC2046
-		kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+		local _pids
+		_pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
+		# shellcheck disable=SC2086
+		kill -CONT $_pids 2>/dev/null ||:
 		rm -f "$VRAM_STOPPED_PIDS_FILE"
+		log_event "vram_clients_resumed" "pids=$(echo "$_pids" | tr '\n' ',')"
 	fi
 	resume_mouse
 	resume_notifications
@@ -245,8 +281,10 @@ function resume() {
 function idlecommand() {
 	command=${1}
 
-	# Log event marker to VRAM snapshot log for correlation with VRAM data
-	echo "$(date '+%Y-%m-%d %H:%M:%S') | EVENT | ${command}" >> "$HOME/logs/nvidia-vram-snapshots.log"
+	# Log event marker to VRAM snapshot log with current sway VRAM for correlation
+	local _ev_vram
+	_ev_vram=$(_get_sway_vram) || _ev_vram=""
+	log_event "${command}" "sway=${_ev_vram:-?}M"
 
 	if [ "${command}" = "timeout" ]
 	then
@@ -268,9 +306,12 @@ function idlecommand() {
 		# Resume any GPU clients that were SIGSTOP'd by nvidia-vram-monitor during the lock session
 		if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
 			echo "== resuming SIGSTOP'd GPU clients"
-			# shellcheck disable=SC2046
-			kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+			local _pids
+			_pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
+			# shellcheck disable=SC2086
+			kill -CONT $_pids 2>/dev/null ||:
 			rm -f "$VRAM_STOPPED_PIDS_FILE"
+			log_event "vram_clients_resumed" "pids=$(echo "$_pids" | tr '\n' ',')"
 		fi
 
 		resume_mouse

@@ -18,8 +18,12 @@ WARN_PCT="${NVIDIA_VRAM_WARN_PCT:-65}"
 CRIT_PCT="${NVIDIA_VRAM_CRIT_PCT:-75}"
 INTERVAL_DEFAULT="${INTERVAL}"
 SNAPSHOT_LOG="$HOME/logs/nvidia-vram-snapshots.log"
-MAX_SNAPSHOTS=10000
-TRUNC_SNAPSHOTS=9000
+MAX_SNAPSHOTS=30000
+TRUNC_SNAPSHOTS=28000
+# Snapshot writes are decoupled from notification frequency: notifications fire at
+# INTERVAL (5s/10s/30s depending on VRAM level), but file writes happen at most once
+# per SNAPSHOT_INTERVAL seconds so the rolling log covers ~10 days at 30s/entry.
+SNAPSHOT_INTERVAL="${NVIDIA_VRAM_SNAPSHOT_INTERVAL:-30}"
 
 # Growth rate detection: track sway's VRAM across readings
 PREV_SWAY_VRAM=""
@@ -212,9 +216,8 @@ write_snapshot() {
     used=$1
     total=$2
     pct=$3
-
-    # Get full per-process breakdown with PIDs
-    pmon_raw=$(get_all_processes)
+    # Accept pre-fetched pmon string as $4 to avoid a redundant nvidia-smi call
+    pmon_raw="${4:-$(get_all_processes)}"
 
     echo "${ts} | ${used}/${total} MiB (${pct}%) | ${pmon_raw}" >>"${SNAPSHOT_LOG}"
 
@@ -244,7 +247,7 @@ dump_snapshot() {
     pmon_raw=$(get_all_processes)
 
     echo "VRAM: ${used}/${total} MiB (${pct}%) | ${pmon_raw}"
-    write_snapshot "${used}" "${total}" "${pct}"
+    write_snapshot "${used}" "${total}" "${pct}" "${pmon_raw}"
     exit 0
 }
 
@@ -253,7 +256,7 @@ if [ "${1:-}" = "--dump" ]; then
     dump_snapshot
 fi
 
-notify "Starting VRAM monitor (interval=${INTERVAL}s, warn=${WARN_PCT}%, crit=${CRIT_PCT}%)"
+notify "Starting VRAM monitor (notify_interval=${INTERVAL}s, snapshot_interval=${SNAPSHOT_INTERVAL}s, warn=${WARN_PCT}%, crit=${CRIT_PCT}%)"
 
 # Warn if known GPU-leak apps still have active GPU processes — their Flatpak
 # devices=!dri or --disable-gpu overrides may be ineffective or not yet applied.
@@ -264,6 +267,8 @@ if [ -n "$_leak_check" ]; then
     notify_desktop_always normal "VRAM Leak Risk" \
         "GPU processes present that should be blocked: ${_leak_check} — restart affected apps"
 fi
+
+last_snapshot_ts=0
 
 while true; do
     read -r total used free < <(
@@ -279,14 +284,18 @@ while true; do
 
     pct=$((used * 100 / total))
 
-    # Get process info
+    # Get process info — one pmon call feeds snapshot, growth check, and SIGSTOP check
     top_procs=$(get_top_processes)
     all_procs=$(get_all_processes)
 
     notify "VRAM: ${used}/${total} MiB (${pct}%) | Top: ${top_procs}"
 
-    # Write snapshot to file (with full PID-annotated list)
-    write_snapshot "${used}" "${total}" "${pct}"
+    # Write snapshot at SNAPSHOT_INTERVAL cadence regardless of notification frequency
+    _now=$(date +%s)
+    if (( _now - last_snapshot_ts >= SNAPSHOT_INTERVAL )); then
+        write_snapshot "${used}" "${total}" "${pct}" "${all_procs}"
+        last_snapshot_ts=$_now
+    fi
 
     # Check sway VRAM growth rate and during-lock protection
     sway_vram=$(extract_sway_vram "$all_procs")
