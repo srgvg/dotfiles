@@ -24,6 +24,7 @@ mkdir -p "$SWAYIDLE_STATE_DIR"
 LOCK_DEBOUNCE_FILE="$SWAYIDLE_STATE_DIR/lock-debounce"
 SLEEP_STATE_FILE="$SWAYIDLE_STATE_DIR/sleep-state"
 VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
+VRAM_RECOVERY_FILE="$SWAYIDLE_STATE_DIR/vram-recovery-active"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 
@@ -50,6 +51,7 @@ _vram_cleanup_trap() {
         # shellcheck disable=SC2046
         kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
     fi
+    rm -f "$VRAM_RECOVERY_FILE"
 }
 trap _vram_cleanup_trap TERM INT
 
@@ -135,13 +137,24 @@ function lowres_modeset_recovery() {
 	local display="$1"
 	local _vram_before
 	_vram_before=$(_get_sway_vram) || _vram_before=""
-	echo "== low-res recovery on ${display}: 1280x720 -> ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" | ts
-	log_event "lowres_recovery_start" "display=${display} sway=${_vram_before:-?}M"
+	# Query the display's current mode and scale before switching to low-res, so we restore
+	# the correct mode for this specific output rather than the hard-coded PRIMARY defaults.
+	local restore_mode restore_scale
+	restore_mode=$(wlr-randr --json 2>/dev/null \
+	    | jq -r ".[] | select(.name == \"${display}\") | .modes[] | select(.current == true) | \"\(.width)x\(.height)\"" \
+	    2>/dev/null || echo "")
+	restore_scale=$(wlr-randr --json 2>/dev/null \
+	    | jq -r ".[] | select(.name == \"${display}\") | .scale" \
+	    2>/dev/null || echo "")
+	restore_mode="${restore_mode:-$OUTPUT_MODE}"
+	restore_scale="${restore_scale:-$OUTPUT_SCALE}"
+	echo "== low-res recovery on ${display}: 1280x720 -> ${restore_mode} scale ${restore_scale}" | ts
+	log_event "lowres_recovery_start" "display=${display} sway=${_vram_before:-?}M restore=${restore_mode}@${restore_scale}"
 	swaymsg "output ${display} mode 1280x720" ||:
 	sleep 1
 	swaymsg "output ${display} dpms on" ||:
 	sleep 10
-	swaymsg "output ${display} mode ${OUTPUT_MODE} scale ${OUTPUT_SCALE}" ||:
+	swaymsg "output ${display} mode ${restore_mode} scale ${restore_scale}" ||:
 	local _vram_after
 	_vram_after=$(_get_sway_vram) || _vram_after=""
 	log_event "lowres_recovery_done" "display=${display} sway=${_vram_before:-?}M -> ${_vram_after:-?}M"
@@ -210,6 +223,11 @@ function lock() {
 	# Record lock time for debouncing future calls
 	date +%s > "$LOCK_DEBOUNCE_FILE"
 
+	# Clear recovery marker — a real lock is starting, any previous recovery window is over.
+	# Placed here (after both early-return guards) so debounced/skipped lock signals do NOT
+	# clear the marker and reopen the re-SIGSTOP race during an active recovery window.
+	rm -f "$VRAM_RECOVERY_FILE"
+
 	echo "=== lock"
 
 	# Clear any stale SIGSTOP state from a previous session that didn't unlock cleanly.
@@ -268,6 +286,9 @@ function resume() {
 		echo "== resuming SIGSTOP'd GPU clients"
 		local _pids
 		_pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
+		# Write recovery marker BEFORE deleting PID file to close the gap where the monitor
+		# would see neither file and re-SIGSTOP clients during the display recovery window.
+		date +%s > "$VRAM_RECOVERY_FILE"
 		# shellcheck disable=SC2086
 		kill -CONT $_pids 2>/dev/null ||:
 		rm -f "$VRAM_STOPPED_PIDS_FILE"
@@ -308,6 +329,9 @@ function idlecommand() {
 			echo "== resuming SIGSTOP'd GPU clients"
 			local _pids
 			_pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
+			# Write recovery marker BEFORE deleting PID file to close the gap where the monitor
+			# would see neither file and re-SIGSTOP clients during the display recovery window.
+			date +%s > "$VRAM_RECOVERY_FILE"
 			# shellcheck disable=SC2086
 			kill -CONT $_pids 2>/dev/null ||:
 			rm -f "$VRAM_STOPPED_PIDS_FILE"

@@ -154,6 +154,18 @@ check_vram_during_display_off() {
         return
     fi
 
+    # Skip if swayidle just sent SIGCONT — allow 60s for display state to settle and GC to run.
+    # Prevents re-SIGSTOP in the window between SIGCONT and display becoming unsuppressed.
+    local _recovery_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/swayidle/vram-recovery-active"
+    if [ -f "$_recovery_file" ]; then
+        local _rts _now
+        _rts=$(cat "$_recovery_file" 2>/dev/null || echo 0)
+        _now=$(date +%s)
+        if [ $(( _now - _rts )) -lt 60 ]; then
+            return
+        fi
+    fi
+
     # Find Wayland-connected processes that are likely surface submitters.
     # Two sources:
     #   1. nvidia-smi pmon: direct GPU users (alacritty, browsers using dmabuf)
