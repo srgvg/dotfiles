@@ -7,9 +7,14 @@ set -euo pipefail
 tmp_peer="$(mktemp)"
 tmp_ep="$(mktemp)"
 tmp_spec="$(mktemp)"
-trap 'rm -f "$tmp_peer" "$tmp_ep" "$tmp_spec"' EXIT
+tmp_host="$(mktemp)"
+tmp_perr="$(mktemp)"
+tmp_eerr="$(mktemp)"
+tmp_serr="$(mktemp)"
+tmp_herr="$(mktemp)"
+trap 'rm -f "$tmp_peer" "$tmp_ep" "$tmp_spec" "$tmp_host" "$tmp_perr" "$tmp_eerr" "$tmp_serr" "$tmp_herr"' EXIT
 
-NODES_CSV=$(talosctl config info -o json | jq -r '.nodes | join(",")')
+NODES_CSV=$(talosctl config info -o json | jq -r '.nodes | unique | join(",")')
 if [ -z "$NODES_CSV" ]; then
     echo "No nodes found in talosctl config. Check TALOSCONFIG / talosctl context."
     exit 2
@@ -24,18 +29,28 @@ normalize_to_array='
   ] | flatten
 '
 
-{ talosctl get kubespanpeerstatuses --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
-    jq -cs "$normalize_to_array" >"$tmp_peer" || echo '[]' >"$tmp_peer"
+# Fetch each resource type; runs concurrently so an unreachable node's dial
+# timeout is paid once (in parallel) rather than stacking across calls.
+# $1 = resource type, $2 = output file, $3 = stderr capture file
+fetch() {
+    { talosctl get "$1" --nodes "$NODES_CSV" -o json 2>"$3" || true; } |
+        jq -cs "$normalize_to_array" >"$2" || echo '[]' >"$2"
+}
 
-{ talosctl get kubespanendpoints --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
-    jq -cs "$normalize_to_array" >"$tmp_ep" || echo '[]' >"$tmp_ep"
+fetch kubespanpeerstatuses "$tmp_peer" "$tmp_perr" &
+fetch kubespanendpoints    "$tmp_ep"   "$tmp_eerr" &
+fetch kubespanpeerspecs    "$tmp_spec" "$tmp_serr" &
+fetch hostname             "$tmp_host" "$tmp_herr" &
+wait
 
-{ talosctl get kubespanpeerspecs --nodes "$NODES_CSV" -o json 2>/dev/null || true; } |
-    jq -cs "$normalize_to_array" >"$tmp_spec" || echo '[]' >"$tmp_spec"
+# Flag config nodes talosctl could not reach (ground-truth from its dial errors).
+unreachable=$(grep -hoE 'dial tcp [0-9.]+:50000' "$tmp_perr" "$tmp_eerr" "$tmp_serr" "$tmp_herr" 2>/dev/null |
+    awk '{print $3}' | sed 's/:50000//' | sort -u | paste -sd, -)
+[ -n "$unreachable" ] && echo "WARNING: no data from config nodes: $unreachable" >&2
 
 now_epoch="$(date +%s)"
 
-jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps "$tmp_ep" --slurpfile specs "$tmp_spec" '
+jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps "$tmp_ep" --slurpfile specs "$tmp_spec" --slurpfile hosts "$tmp_host" '
   # Get the node this peer status was collected from (the reporting node)
   def node:
     .node
@@ -55,34 +70,16 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
     // "unknown-peer";
 
   def state:
-    (
-      .spec.state
-      // .status.state
-      // .spec.peerState
-      // .status.peerState
-      // "unknown"
-    ) | tostring | ascii_downcase;
+    (.spec.state // "unknown") | tostring | ascii_downcase;
 
   def endpoint:
-    (
-      .spec.endpoint
-      // .status.endpoint
-      // .spec.currentEndpoint
-      // .status.currentEndpoint
-      // ""
-    ) | tostring;
+    (.spec.endpoint // "") | tostring;
 
-  def rx: ((.spec.receiveBytes // .spec.rxBytes // .status.receiveBytes // .status.rxBytes // 0) | tonumber);
-  def tx: ((.spec.transmitBytes // .spec.txBytes // .status.transmitBytes // .status.txBytes // 0) | tonumber);
+  def rx: ((.spec.receiveBytes // 0) | tonumber);
+  def tx: ((.spec.transmitBytes // 0) | tonumber);
 
   def hs_epoch:
-    (
-      .spec.lastHandshakeTime
-      // .status.lastHandshakeTime
-      // .spec.lastHandshake
-      // .status.lastHandshake
-      // null
-    ) as $t
+    (.spec.lastHandshakeTime // null) as $t
     | if $t == null then null
       elif ($t|type) == "number" then ($t|floor)
       elif ($t|type) == "string" then
@@ -111,11 +108,13 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
   ($peers[0] // []) as $p
   | ($eps[0] // []) as $e
   | ($specs[0] // []) as $s
+  # Map reporting-node IP -> hostname (from the `hostname` resource); fall back to IP.
+  | (($hosts[0] // []) | map({ key: .node, value: .spec.hostname }) | from_entries) as $hostmap
 
   | "KubeSpan overview (all TALOSCONFIG nodes)"
-  , "--------------------------------------------------------------------------------"
-  , "NODE                           PEERS   UP  DOWN   WORST_HS   RX       TX      EPS"
-  , "--------------------------------------------------------------------------------"
+  , "------------------------------------------------------------------------------"
+  , "NODE                    PEERS   UP  DOWN   WORST_HS   RX       TX      EPS"
+  , "------------------------------------------------------------------------------"
 
   , (
       $p
@@ -133,7 +132,8 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
       | sort_by(.n)
       | .[]
       | . as $row
-      | ($row.n | if length < 30 then . + (" " * (30 - length)) else .[0:30] end)
+      | ($hostmap[$row.n] // $row.n) as $rowname
+      | ($rowname | if length < 22 then . + (" " * (22 - length)) else .[0:22] end)
         + "  "
         + (($row.total|tostring) | (if length<5 then (" "*(5-length)) + . else . end))
         + "  "
@@ -158,7 +158,7 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
   , ""
   , "Endpoint details per peer"
   , "-------------------------"
-  , "PEER         CURRENT ENDPOINT             AVAILABLE ENDPOINTS"
+  , "PEER                   CURRENT ENDPOINT             AVAILABLE ENDPOINTS"
   , (
       # Get unique peers with their endpoint info (deduplicated by peer label)
       $p
@@ -177,7 +177,7 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
       | .current as $cur
       | .lastUsed as $last
       | .available as $avail
-      | ($lbl | if length < 12 then . + (" " * (12 - length)) else .[0:12] end) as $lblPad
+      | ($lbl | if length < 22 then . + (" " * (22 - length)) else .[0:22] end) as $lblPad
       | ($cur | if length < 28 then . + (" " * (28 - length)) else .[0:28] end) as $curPad
       # Extract IP from current endpoint for comparison (handle [ipv6]:port and ip:port)
       | ($cur | gsub("^\\[|\\]:[0-9]+$|:[0-9]+$"; "")) as $curIP
@@ -195,8 +195,8 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
   , "  * = currently in use"
 
   , ""
-  , "Issues (down/unknown peers, up to 12)"
-  , "-------------------------------------"
+  , "Issues (down/unknown peers, up to 12) — NODE cannot reach PEER"
+  , "--------------------------------------------------------------"
   , (
       $p
       | map({ n: node, peer: peer_id, st: state, ep: endpoint, hs: age_s, rx: rx, tx: tx })
@@ -204,7 +204,11 @@ jq -rn --argjson NOW "$now_epoch" --slurpfile peers "$tmp_peer" --slurpfile eps 
       | sort_by(.hs // 1e18) | reverse
       | .[0:12]
       | if length==0 then "No down/unknown peers detected (from the selected nodes)."
-        else .[] | "\(.n): \(.peer) state=\(.st) hs=\(fmt_age(.hs)) ep=\(.ep) rx=\(fmt_bytes(.rx)) tx=\(fmt_bytes(.tx))"
+        else .[]
+          | (($hostmap[.n] // .n)
+             | if length < 22 then . + (" " * (22 - length)) else . end) as $nodePad
+          | (.peer | if length < 22 then . + (" " * (22 - length)) else . end) as $peerPad
+          | "\($nodePad) -> \($peerPad) state=\(.st) hs=\(fmt_age(.hs)) ep=\(.ep) rx=\(fmt_bytes(.rx)) tx=\(fmt_bytes(.tx))"
         end
     )
 '

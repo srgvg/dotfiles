@@ -34,6 +34,9 @@ _codex() {
             codex,debug)
                 cmd="codex__debug"
                 ;;
+            codex,doctor)
+                cmd="codex__doctor"
+                ;;
             codex,e)
                 cmd="codex__exec"
                 ;;
@@ -91,6 +94,9 @@ _codex() {
             codex,update)
                 cmd="codex__update"
                 ;;
+            codex__app__server,daemon)
+                cmd="codex__app__server__daemon"
+                ;;
             codex__app__server,generate-internal-json-schema)
                 cmd="codex__app__server__generate__internal__json__schema"
                 ;;
@@ -106,6 +112,63 @@ _codex() {
             codex__app__server,proxy)
                 cmd="codex__app__server__proxy"
                 ;;
+            codex__app__server__daemon,bootstrap)
+                cmd="codex__app__server__daemon__bootstrap"
+                ;;
+            codex__app__server__daemon,disable-remote-control)
+                cmd="codex__app__server__daemon__disable__remote__control"
+                ;;
+            codex__app__server__daemon,enable-remote-control)
+                cmd="codex__app__server__daemon__enable__remote__control"
+                ;;
+            codex__app__server__daemon,help)
+                cmd="codex__app__server__daemon__help"
+                ;;
+            codex__app__server__daemon,pid-update-loop)
+                cmd="codex__app__server__daemon__pid__update__loop"
+                ;;
+            codex__app__server__daemon,restart)
+                cmd="codex__app__server__daemon__restart"
+                ;;
+            codex__app__server__daemon,start)
+                cmd="codex__app__server__daemon__start"
+                ;;
+            codex__app__server__daemon,stop)
+                cmd="codex__app__server__daemon__stop"
+                ;;
+            codex__app__server__daemon,version)
+                cmd="codex__app__server__daemon__version"
+                ;;
+            codex__app__server__daemon__help,bootstrap)
+                cmd="codex__app__server__daemon__help__bootstrap"
+                ;;
+            codex__app__server__daemon__help,disable-remote-control)
+                cmd="codex__app__server__daemon__help__disable__remote__control"
+                ;;
+            codex__app__server__daemon__help,enable-remote-control)
+                cmd="codex__app__server__daemon__help__enable__remote__control"
+                ;;
+            codex__app__server__daemon__help,help)
+                cmd="codex__app__server__daemon__help__help"
+                ;;
+            codex__app__server__daemon__help,pid-update-loop)
+                cmd="codex__app__server__daemon__help__pid__update__loop"
+                ;;
+            codex__app__server__daemon__help,restart)
+                cmd="codex__app__server__daemon__help__restart"
+                ;;
+            codex__app__server__daemon__help,start)
+                cmd="codex__app__server__daemon__help__start"
+                ;;
+            codex__app__server__daemon__help,stop)
+                cmd="codex__app__server__daemon__help__stop"
+                ;;
+            codex__app__server__daemon__help,version)
+                cmd="codex__app__server__daemon__help__version"
+                ;;
+            codex__app__server__help,daemon)
+                cmd="codex__app__server__help__daemon"
+                ;;
             codex__app__server__help,generate-internal-json-schema)
                 cmd="codex__app__server__help__generate__internal__json__schema"
                 ;;
@@ -120,6 +183,30 @@ _codex() {
                 ;;
             codex__app__server__help,proxy)
                 cmd="codex__app__server__help__proxy"
+                ;;
+            codex__app__server__help__daemon,bootstrap)
+                cmd="codex__app__server__help__daemon__bootstrap"
+                ;;
+            codex__app__server__help__daemon,disable-remote-control)
+                cmd="codex__app__server__help__daemon__disable__remote__control"
+                ;;
+            codex__app__server__help__daemon,enable-remote-control)
+                cmd="codex__app__server__help__daemon__enable__remote__control"
+                ;;
+            codex__app__server__help__daemon,pid-update-loop)
+                cmd="codex__app__server__help__daemon__pid__update__loop"
+                ;;
+            codex__app__server__help__daemon,restart)
+                cmd="codex__app__server__help__daemon__restart"
+                ;;
+            codex__app__server__help__daemon,start)
+                cmd="codex__app__server__help__daemon__start"
+                ;;
+            codex__app__server__help__daemon,stop)
+                cmd="codex__app__server__help__daemon__stop"
+                ;;
+            codex__app__server__help__daemon,version)
+                cmd="codex__app__server__help__daemon__version"
                 ;;
             codex__cloud,apply)
                 cmd="codex__cloud__apply"
@@ -277,6 +364,9 @@ _codex() {
             codex__help,debug)
                 cmd="codex__help__debug"
                 ;;
+            codex__help,doctor)
+                cmd="codex__help__doctor"
+                ;;
             codex__help,exec)
                 cmd="codex__help__exec"
                 ;;
@@ -331,6 +421,9 @@ _codex() {
             codex__help,update)
                 cmd="codex__help__update"
                 ;;
+            codex__help__app__server,daemon)
+                cmd="codex__help__app__server__daemon"
+                ;;
             codex__help__app__server,generate-internal-json-schema)
                 cmd="codex__help__app__server__generate__internal__json__schema"
                 ;;
@@ -342,6 +435,30 @@ _codex() {
                 ;;
             codex__help__app__server,proxy)
                 cmd="codex__help__app__server__proxy"
+                ;;
+            codex__help__app__server__daemon,bootstrap)
+                cmd="codex__help__app__server__daemon__bootstrap"
+                ;;
+            codex__help__app__server__daemon,disable-remote-control)
+                cmd="codex__help__app__server__daemon__disable__remote__control"
+                ;;
+            codex__help__app__server__daemon,enable-remote-control)
+                cmd="codex__help__app__server__daemon__enable__remote__control"
+                ;;
+            codex__help__app__server__daemon,pid-update-loop)
+                cmd="codex__help__app__server__daemon__pid__update__loop"
+                ;;
+            codex__help__app__server__daemon,restart)
+                cmd="codex__help__app__server__daemon__restart"
+                ;;
+            codex__help__app__server__daemon,start)
+                cmd="codex__help__app__server__daemon__start"
+                ;;
+            codex__help__app__server__daemon,stop)
+                cmd="codex__help__app__server__daemon__stop"
+                ;;
+            codex__help__app__server__daemon,version)
+                cmd="codex__help__app__server__daemon__version"
                 ;;
             codex__help__cloud,apply)
                 cmd="codex__help__cloud__apply"
@@ -415,11 +532,23 @@ _codex() {
             codex__help__mcp,remove)
                 cmd="codex__help__mcp__remove"
                 ;;
+            codex__help__plugin,add)
+                cmd="codex__help__plugin__add"
+                ;;
+            codex__help__plugin,list)
+                cmd="codex__help__plugin__list"
+                ;;
             codex__help__plugin,marketplace)
                 cmd="codex__help__plugin__marketplace"
                 ;;
+            codex__help__plugin,remove)
+                cmd="codex__help__plugin__remove"
+                ;;
             codex__help__plugin__marketplace,add)
                 cmd="codex__help__plugin__marketplace__add"
+                ;;
+            codex__help__plugin__marketplace,list)
+                cmd="codex__help__plugin__marketplace__list"
                 ;;
             codex__help__plugin__marketplace,remove)
                 cmd="codex__help__plugin__marketplace__remove"
@@ -427,14 +556,11 @@ _codex() {
             codex__help__plugin__marketplace,upgrade)
                 cmd="codex__help__plugin__marketplace__upgrade"
                 ;;
-            codex__help__sandbox,linux)
-                cmd="codex__help__sandbox__linux"
+            codex__help__remote__control,start)
+                cmd="codex__help__remote__control__start"
                 ;;
-            codex__help__sandbox,macos)
-                cmd="codex__help__sandbox__macos"
-                ;;
-            codex__help__sandbox,windows)
-                cmd="codex__help__sandbox__windows"
+            codex__help__remote__control,stop)
+                cmd="codex__help__remote__control__stop"
                 ;;
             codex__login,help)
                 cmd="codex__login__help"
@@ -490,20 +616,41 @@ _codex() {
             codex__mcp__help,remove)
                 cmd="codex__mcp__help__remove"
                 ;;
+            codex__plugin,add)
+                cmd="codex__plugin__add"
+                ;;
             codex__plugin,help)
                 cmd="codex__plugin__help"
+                ;;
+            codex__plugin,list)
+                cmd="codex__plugin__list"
                 ;;
             codex__plugin,marketplace)
                 cmd="codex__plugin__marketplace"
                 ;;
+            codex__plugin,remove)
+                cmd="codex__plugin__remove"
+                ;;
+            codex__plugin__help,add)
+                cmd="codex__plugin__help__add"
+                ;;
             codex__plugin__help,help)
                 cmd="codex__plugin__help__help"
+                ;;
+            codex__plugin__help,list)
+                cmd="codex__plugin__help__list"
                 ;;
             codex__plugin__help,marketplace)
                 cmd="codex__plugin__help__marketplace"
                 ;;
+            codex__plugin__help,remove)
+                cmd="codex__plugin__help__remove"
+                ;;
             codex__plugin__help__marketplace,add)
                 cmd="codex__plugin__help__marketplace__add"
+                ;;
+            codex__plugin__help__marketplace,list)
+                cmd="codex__plugin__help__marketplace__list"
                 ;;
             codex__plugin__help__marketplace,remove)
                 cmd="codex__plugin__help__marketplace__remove"
@@ -517,6 +664,9 @@ _codex() {
             codex__plugin__marketplace,help)
                 cmd="codex__plugin__marketplace__help"
                 ;;
+            codex__plugin__marketplace,list)
+                cmd="codex__plugin__marketplace__list"
+                ;;
             codex__plugin__marketplace,remove)
                 cmd="codex__plugin__marketplace__remove"
                 ;;
@@ -529,41 +679,32 @@ _codex() {
             codex__plugin__marketplace__help,help)
                 cmd="codex__plugin__marketplace__help__help"
                 ;;
+            codex__plugin__marketplace__help,list)
+                cmd="codex__plugin__marketplace__help__list"
+                ;;
             codex__plugin__marketplace__help,remove)
                 cmd="codex__plugin__marketplace__help__remove"
                 ;;
             codex__plugin__marketplace__help,upgrade)
                 cmd="codex__plugin__marketplace__help__upgrade"
                 ;;
-            codex__sandbox,help)
-                cmd="codex__sandbox__help"
+            codex__remote__control,help)
+                cmd="codex__remote__control__help"
                 ;;
-            codex__sandbox,landlock)
-                cmd="codex__sandbox__linux"
+            codex__remote__control,start)
+                cmd="codex__remote__control__start"
                 ;;
-            codex__sandbox,linux)
-                cmd="codex__sandbox__linux"
+            codex__remote__control,stop)
+                cmd="codex__remote__control__stop"
                 ;;
-            codex__sandbox,macos)
-                cmd="codex__sandbox__macos"
+            codex__remote__control__help,help)
+                cmd="codex__remote__control__help__help"
                 ;;
-            codex__sandbox,seatbelt)
-                cmd="codex__sandbox__macos"
+            codex__remote__control__help,start)
+                cmd="codex__remote__control__help__start"
                 ;;
-            codex__sandbox,windows)
-                cmd="codex__sandbox__windows"
-                ;;
-            codex__sandbox__help,help)
-                cmd="codex__sandbox__help__help"
-                ;;
-            codex__sandbox__help,linux)
-                cmd="codex__sandbox__help__linux"
-                ;;
-            codex__sandbox__help,macos)
-                cmd="codex__sandbox__help__macos"
-                ;;
-            codex__sandbox__help,windows)
-                cmd="codex__sandbox__help__windows"
+            codex__remote__control__help,stop)
+                cmd="codex__remote__control__help__stop"
                 ;;
             *)
                 ;;
@@ -572,7 +713,7 @@ _codex() {
 
     case "${cmd}" in
         codex)
-            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -669,7 +810,7 @@ _codex() {
             return 0
             ;;
         codex__app__server)
-            opts="-c -h --listen --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help proxy generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="-c -h --strict-config --listen --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -707,6 +848,416 @@ _codex() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon)
+            opts="-c -h --config --enable --disable --help bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__bootstrap)
+            opts="-c -h --remote-control --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__disable__remote__control)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__enable__remote__control)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help)
+            opts="bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__bootstrap)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__disable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__enable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__pid__update__loop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__restart)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__start)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__stop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__help__version)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__pid__update__loop)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__restart)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__start)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__stop)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__daemon__version)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 --config)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -853,8 +1404,134 @@ _codex() {
             return 0
             ;;
         codex__app__server__help)
-            opts="proxy generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon)
+            opts="bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__bootstrap)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__disable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__enable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__pid__update__loop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__restart)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__start)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__stop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__app__server__help__daemon__version)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -1720,8 +2397,38 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__doctor)
+            opts="-c -h --json --summary --all --no-color --ascii --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__exec)
-            opts="-i -p -s -C -m -o -c -h -V --image --oss --local-provider --profile --sandbox --cd --add-dir --model --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --color --json --output-last-message --config --enable --disable --help --version [PROMPT] resume review help"
+            opts="-i -p -s -C -m -o -c -h -V --strict-config --image --oss --local-provider --profile --sandbox --cd --add-dir --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --color --json --output-last-message --config --enable --disable --help --version [PROMPT] resume review help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1818,7 +2525,7 @@ _codex() {
             return 0
             ;;
         codex__exec__server)
-            opts="-c -h --listen --remote --executor-id --name --config --enable --disable --help"
+            opts="-c -h --strict-config --listen --remote --environment-id --name --use-agent-identity-auth --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1832,7 +2539,7 @@ _codex() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --executor-id)
+                --environment-id)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1920,7 +2627,7 @@ _codex() {
             return 0
             ;;
         codex__exec__resume)
-            opts="-i -m -o -c -h --last --all --image --model --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --json --output-last-message --config --enable --disable --help [SESSION_ID] [PROMPT]"
+            opts="-i -m -o -c -h --last --all --image --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --json --output-last-message --config --enable --disable --help [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1939,6 +2646,10 @@ _codex() {
                     return 0
                     ;;
                 -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --output-schema)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1974,7 +2685,7 @@ _codex() {
             return 0
             ;;
         codex__exec__review)
-            opts="-m -o -c -h --uncommitted --base --commit --title --model --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --json --output-last-message --config --enable --disable --help [PROMPT]"
+            opts="-m -o -c -h --uncommitted --base --commit --title --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --json --output-last-message --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1997,6 +2708,10 @@ _codex() {
                     return 0
                     ;;
                 -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --output-schema)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -2332,7 +3047,7 @@ _codex() {
             return 0
             ;;
         codex__fork)
-            opts="-i -m -p -s -C -a -c -h -V --last --all --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
+            opts="-i -m -p -s -C -a -c -h -V --last --all --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2429,7 +3144,7 @@ _codex() {
             return 0
             ;;
         codex__help)
-            opts="exec review login logout mcp plugin mcp-server app-server remote-control completion update sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="exec review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2443,8 +3158,134 @@ _codex() {
             return 0
             ;;
         codex__help__app__server)
-            opts="proxy generate-ts generate-json-schema generate-internal-json-schema"
+            opts="daemon proxy generate-ts generate-json-schema generate-internal-json-schema"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon)
+            opts="bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__bootstrap)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__disable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__enable__remote__control)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__pid__update__loop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__restart)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__start)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__stop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__app__server__daemon__version)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -2711,6 +3552,20 @@ _codex() {
         codex__help__debug__trace__reduce)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__doctor)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3045,7 +3900,7 @@ _codex() {
             return 0
             ;;
         codex__help__plugin)
-            opts="marketplace"
+            opts="add list marketplace remove"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3058,8 +3913,36 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__help__plugin__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__help__plugin__marketplace)
-            opts="add upgrade remove"
+            opts="add list upgrade remove"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3073,6 +3956,20 @@ _codex() {
             return 0
             ;;
         codex__help__plugin__marketplace__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__plugin__marketplace__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3114,9 +4011,51 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        codex__help__remote__control)
+        codex__help__plugin__remove)
             opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__remote__control)
+            opts="start stop"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__remote__control__start)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__remote__control__stop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3171,50 +4110,8 @@ _codex() {
             return 0
             ;;
         codex__help__sandbox)
-            opts="macos linux windows"
+            opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__help__sandbox__linux)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__help__sandbox__macos)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__help__sandbox__windows)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3429,7 +4326,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__server)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --strict-config --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3459,7 +4356,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__add)
-            opts="-c -h --env --url --bearer-token-env-var --config --enable --disable --help <NAME> [COMMAND]..."
+            opts="-c -h --env --url --bearer-token-env-var --oauth-client-id --oauth-resource --config --enable --disable --help <NAME> [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3474,6 +4371,14 @@ _codex() {
                     return 0
                     ;;
                 --bearer-token-env-var)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --oauth-client-id)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --oauth-resource)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -3767,7 +4672,7 @@ _codex() {
             return 0
             ;;
         codex__plugin)
-            opts="-c -h --config --enable --disable --help marketplace help"
+            opts="-c -h --config --enable --disable --help add list marketplace remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3796,9 +4701,61 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        codex__plugin__help)
-            opts="marketplace help"
+        codex__plugin__add)
+            opts="-m -c -h --marketplace --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --marketplace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help)
+            opts="add list marketplace remove help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3824,8 +4781,22 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__plugin__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__plugin__help__marketplace)
-            opts="add upgrade remove"
+            opts="add list upgrade remove"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3839,6 +4810,20 @@ _codex() {
             return 0
             ;;
         codex__plugin__help__marketplace__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__help__marketplace__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3880,8 +4865,60 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__plugin__help__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__list)
+            opts="-m -c -h --marketplace --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --marketplace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__plugin__marketplace)
-            opts="-c -h --config --enable --disable --help add upgrade remove help"
+            opts="-c -h --config --enable --disable --help add list upgrade remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3949,7 +4986,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__help)
-            opts="add upgrade remove help"
+            opts="add list upgrade remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3990,6 +5027,20 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__plugin__marketplace__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__plugin__marketplace__help__remove)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 5 ]] ; then
@@ -4011,6 +5062,36 @@ _codex() {
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__plugin__marketplace__list)
+            opts="-c -h --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4078,9 +5159,163 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__plugin__remove)
+            opts="-m -c -h --marketplace --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --marketplace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__remote__control)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --json --config --enable --disable --help start stop help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__help)
+            opts="start stop help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__help__start)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__help__stop)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__start)
+            opts="-c -h --json --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__stop)
+            opts="-c -h --json --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -4155,7 +5390,7 @@ _codex() {
             return 0
             ;;
         codex__resume)
-            opts="-i -m -p -s -C -a -c -h -V --last --all --include-non-interactive --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
+            opts="-i -m -p -s -C -a -c -h -V --last --all --include-non-interactive --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4252,7 +5487,7 @@ _codex() {
             return 0
             ;;
         codex__review)
-            opts="-c -h --uncommitted --base --commit --title --config --enable --disable --help [PROMPT]"
+            opts="-c -h --strict-config --uncommitted --base --commit --title --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4294,201 +5529,21 @@ _codex() {
             return 0
             ;;
         codex__sandbox)
-            opts="-c -h --config --enable --disable --help macos seatbelt linux landlock windows help"
+            opts="-p -C -c -h --permissions-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --config)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -c)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --enable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --disable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__help)
-            opts="macos linux windows help"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__help__help)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__help__linux)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__help__macos)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__help__windows)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__linux)
-            opts="-C -c -h --permissions-profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
                 --permissions-profile)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --cd)
+                --profile)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                -C)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --config)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -c)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --enable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --disable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__macos)
-            opts="-C -c -h --permissions-profile --cd --include-managed-config --allow-unix-socket --log-denials --config --enable --disable --help [COMMAND]..."
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                --permissions-profile)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --cd)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -C)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --allow-unix-socket)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --config)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -c)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --enable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --disable)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        codex__sandbox__windows)
-            opts="-C -c -h --permissions-profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                --permissions-profile)
+                -p)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

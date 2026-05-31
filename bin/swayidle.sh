@@ -107,7 +107,8 @@ function pause_displays() {
 	# Same 85% guard as pre-lock cycle — skip if VRAM too high (cycle would fail).
 	local pre_vram vram_total vram_crit
 	pre_vram=$(_get_sway_vram) || pre_vram=""
-	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | grep -oP '^\d+$' | head -1)
+	vram_total=${vram_total:-8188}
 	vram_crit=$(( vram_total * 85 / 100 ))
 	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
 		echo "== pre-dpms: sway VRAM=${pre_vram}M > ${vram_crit}M, skipping modeset cycle" | ts
@@ -182,7 +183,8 @@ function resume_displays(){
 	(sleep 3 && for display in $(wlr-randr --json | jq -r .[].name ||: 2>/dev/null); do
 		local _vram _total _crit
 		_vram=$(_get_sway_vram) || _vram=""
-		_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+		_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | grep -oP '^\d+$' | head -1)
+		_total=${_total:-8188}
 		_crit=$(( _total * 80 / 100 ))
 		if [ -n "$_vram" ] && [ "$_vram" -gt "$_crit" ]; then
 			echo "== modeset: sway VRAM=${_vram}M > ${_crit}M — using low-res recovery" | ts
@@ -249,7 +251,8 @@ function lock() {
 	pre_vram=$(nvidia-smi pmon -c 1 -s m 2>/dev/null \
 	    | awk '/sway/ && $4 ~ /^[0-9]+$/ { print $4; exit }') || pre_vram=""
 	local vram_total
-	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo 8188)
+	vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | grep -oP '^\d+$' | head -1)
+	vram_total=${vram_total:-8188}
 	local vram_crit=$(( vram_total * 85 / 100 ))
 	if [ -n "$pre_vram" ] && [ "$pre_vram" -gt "$vram_crit" ]; then
 		echo "== pre-lock: sway VRAM=${pre_vram}M > ${vram_crit}M critical, skipping modeset cycle"
