@@ -138,7 +138,6 @@ Wallpapers
 .claude/memory/
 .claude/settings.json
 .claude/ccstatusline.sh
-.claude/hooks/
 
 .config/git/
 .config/mopidy/mopidy.conf
@@ -271,20 +270,28 @@ function resolve_conflicts() {
 
             IFS=$OIFS
             case "${choice,,}" in
-                o) vcsh run "$repo" git checkout --ours -- "$file"
-                   vcsh run "$repo" git add "$file"
-                   log "Kept local: $file" ;;
-                t) vcsh run "$repo" git checkout --theirs -- "$file"
-                   vcsh run "$repo" git add "$file"
-                   log "Kept remote: $file" ;;
-                e) "${EDITOR:-vi}" "$HOME/$file"
-                   vcsh run "$repo" git add "$file"
-                   log "Manually edited: $file" ;;
-                q) err "Left [$repo] in conflicted state"
-                   IFS=$_ifs
-                   return 1 ;;
+                o)
+                    vcsh run "$repo" git checkout --ours -- "$file"
+                    vcsh run "$repo" git add "$file"
+                    log "Kept local: $file"
+                    ;;
+                t)
+                    vcsh run "$repo" git checkout --theirs -- "$file"
+                    vcsh run "$repo" git add "$file"
+                    log "Kept remote: $file"
+                    ;;
+                e)
+                    "${EDITOR:-vi}" "$HOME/$file"
+                    vcsh run "$repo" git add "$file"
+                    log "Manually edited: $file"
+                    ;;
+                q)
+                    err "Left [$repo] in conflicted state"
+                    IFS=$_ifs
+                    return 1
+                    ;;
             esac
-        done <<< "$conflicts"
+        done <<<"$conflicts"
 
         remaining=$(vcsh run "$repo" git diff --name-only --diff-filter=U 2>/dev/null) || true
         if [[ -n "$remaining" ]]; then

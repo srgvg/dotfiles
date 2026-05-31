@@ -323,15 +323,7 @@ url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/
 checksum = "sha256:ae1d0a60e7101eb6c5cea650740b3d8d3b50cd8c724a2a375ddd5744df6ea544"
 url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-linux-amd64"
 
-[tools.clusterctl."platforms.linux-x64-baseline"]
-checksum = "sha256:ae1d0a60e7101eb6c5cea650740b3d8d3b50cd8c724a2a375ddd5744df6ea544"
-url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-linux-amd64"
-
 [tools.clusterctl."platforms.linux-x64-musl"]
-checksum = "sha256:ae1d0a60e7101eb6c5cea650740b3d8d3b50cd8c724a2a375ddd5744df6ea544"
-url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-linux-amd64"
-
-[tools.clusterctl."platforms.linux-x64-musl-baseline"]
 checksum = "sha256:ae1d0a60e7101eb6c5cea650740b3d8d3b50cd8c724a2a375ddd5744df6ea544"
 url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-linux-amd64"
 
@@ -343,15 +335,7 @@ url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/
 checksum = "sha256:11845d69686986187f36cfec7a3e9bba352845d92169eadf8a68ca7c68c3fddf"
 url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-darwin-amd64"
 
-[tools.clusterctl."platforms.macos-x64-baseline"]
-checksum = "sha256:11845d69686986187f36cfec7a3e9bba352845d92169eadf8a68ca7c68c3fddf"
-url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-darwin-amd64"
-
 [tools.clusterctl."platforms.windows-x64"]
-checksum = "sha256:9114e085b39b297f415e1318349dbcea4ab2fed65ff6845b833625e5f843abb6"
-url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-windows-amd64.exe"
-
-[tools.clusterctl."platforms.windows-x64-baseline"]
 checksum = "sha256:9114e085b39b297f415e1318349dbcea4ab2fed65ff6845b833625e5f843abb6"
 url = "https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.13.2/clusterctl-windows-amd64.exe"
 
@@ -709,54 +693,6 @@ backend = "github:khairul169/garage-webui"
 [[tools.gcloud]]
 version = "570.0.0"
 backend = "asdf:gcloud"
-
-[[tools.git-cliff]]
-version = "2.13.1"
-backend = "aqua:orhun/git-cliff"
-
-[tools.git-cliff."platforms.linux-arm64"]
-checksum = "sha256:4054c124b926c117f3fa048939bc8be0a954f29f3b6f367627e8cb22c1971882"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.linux-arm64-musl"]
-checksum = "sha256:4054c124b926c117f3fa048939bc8be0a954f29f3b6f367627e8cb22c1971882"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.linux-x64"]
-checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.linux-x64-baseline"]
-checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.linux-x64-musl"]
-checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools.git-cliff."platforms.macos-arm64"]
-checksum = "sha256:21547ae4a0421164070ab75c2522864ea5565858a011fabc5f583061b20f1226"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-aarch64-apple-darwin.tar.gz"
-
-[tools.git-cliff."platforms.macos-x64"]
-checksum = "sha256:6e60ae390d375cecb9d8008c49f0e724a8dfe40390b532ef5501e421d2cc8acb"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-apple-darwin.tar.gz"
-
-[tools.git-cliff."platforms.macos-x64-baseline"]
-checksum = "sha256:6e60ae390d375cecb9d8008c49f0e724a8dfe40390b532ef5501e421d2cc8acb"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-apple-darwin.tar.gz"
-
-[tools.git-cliff."platforms.windows-x64"]
-checksum = "sha256:3ae3a5549e85c7ad5b20192ebcfee4371269deca51255f6f2f2e051c6541f5ca"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-pc-windows-msvc.zip"
-
-[tools.git-cliff."platforms.windows-x64-baseline"]
-checksum = "sha256:3ae3a5549e85c7ad5b20192ebcfee4371269deca51255f6f2f2e051c6541f5ca"
-url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-pc-windows-msvc.zip"
 
 [[tools.git-who]]
 version = "1.3"
@@ -1423,15 +1359,7 @@ url = "https://get.helm.sh/helm-v4.2.0-linux-arm64.tar.gz"
 checksum = "sha256:97dbeb971be4ac4b27e3839976d9564c0fb35c6f3b1da89dd1e292d236af4096"
 url = "https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz"
 
-[tools.helm."platforms.linux-x64-baseline"]
-checksum = "sha256:97dbeb971be4ac4b27e3839976d9564c0fb35c6f3b1da89dd1e292d236af4096"
-url = "https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz"
-
 [tools.helm."platforms.linux-x64-musl"]
-checksum = "sha256:97dbeb971be4ac4b27e3839976d9564c0fb35c6f3b1da89dd1e292d236af4096"
-url = "https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz"
-
-[tools.helm."platforms.linux-x64-musl-baseline"]
 checksum = "sha256:97dbeb971be4ac4b27e3839976d9564c0fb35c6f3b1da89dd1e292d236af4096"
 url = "https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz"
 
@@ -1443,15 +1371,7 @@ url = "https://get.helm.sh/helm-v4.2.0-darwin-arm64.tar.gz"
 checksum = "sha256:1376ea697140e4db316736e760d5a47d12afc1524dce704476ef06fd7fdeddc6"
 url = "https://get.helm.sh/helm-v4.2.0-darwin-amd64.tar.gz"
 
-[tools.helm."platforms.macos-x64-baseline"]
-checksum = "sha256:1376ea697140e4db316736e760d5a47d12afc1524dce704476ef06fd7fdeddc6"
-url = "https://get.helm.sh/helm-v4.2.0-darwin-amd64.tar.gz"
-
 [tools.helm."platforms.windows-x64"]
-checksum = "sha256:34bf9659f8f04f3841a60131183b8e2acc44e260db4c93b889ff09718cacca6f"
-url = "https://get.helm.sh/helm-v4.2.0-windows-amd64.tar.gz"
-
-[tools.helm."platforms.windows-x64-baseline"]
 checksum = "sha256:34bf9659f8f04f3841a60131183b8e2acc44e260db4c93b889ff09718cacca6f"
 url = "https://get.helm.sh/helm-v4.2.0-windows-amd64.tar.gz"
 
@@ -1814,6 +1734,7 @@ checksum = "sha256:bf52461d25017479cdc549642c4e7a2303ac5c5395d7c3d026d5d8b3fa283
 url = "https://nodejs.org/dist/v26.2.0/node-v26.2.0-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-arm64-musl"]
+checksum = "sha256:4593d822012fe3238814721909408c66f2a82955e0141457643a7a4c84e132fd"
 url = "https://unofficial-builds.nodejs.org/download/release/v26.2.0/node-v26.2.0-linux-arm64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64"]
@@ -2253,25 +2174,11 @@ url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.li
 [tools.sops."platforms.linux-x64".provenance.slsa]
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
 
-[tools.sops."platforms.linux-x64-baseline"]
-checksum = "sha256:620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a"
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64"
-
-[tools.sops."platforms.linux-x64-baseline".provenance.slsa]
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
-
 [tools.sops."platforms.linux-x64-musl"]
 checksum = "sha256:620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a"
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64"
 
 [tools.sops."platforms.linux-x64-musl".provenance.slsa]
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
-
-[tools.sops."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a"
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64"
-
-[tools.sops."platforms.linux-x64-musl-baseline".provenance.slsa]
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
 
 [tools.sops."platforms.macos-arm64"]
@@ -2288,25 +2195,11 @@ url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.da
 [tools.sops."platforms.macos-x64".provenance.slsa]
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
 
-[tools.sops."platforms.macos-x64-baseline"]
-checksum = "sha256:dad79d1b1dea767ca38ffaa50e10330a3e807dd13c853ef9c880567acef4f1ef"
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.amd64"
-
-[tools.sops."platforms.macos-x64-baseline".provenance.slsa]
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
-
 [tools.sops."platforms.windows-x64"]
 checksum = "sha256:4654e53fff6d0a1842facd3a0ed5a66a8ab6164004b0ad4ca2d5e2b1c5473b65"
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.amd64.exe"
 
 [tools.sops."platforms.windows-x64".provenance.slsa]
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
-
-[tools.sops."platforms.windows-x64-baseline"]
-checksum = "sha256:4654e53fff6d0a1842facd3a0ed5a66a8ab6164004b0ad4ca2d5e2b1c5473b65"
-url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.amd64.exe"
-
-[tools.sops."platforms.windows-x64-baseline".provenance.slsa]
 url = "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl"
 
 [[tools.starship]]
@@ -2340,15 +2233,7 @@ url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhel
 checksum = "sha256:56657c596ae027354bf9c2bc58a2b6235cb743b7f9130bd748f3cc82c9870465"
 url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_linux_amd64.tar.gz"
 
-[tools.talhelper."platforms.linux-x64-baseline"]
-checksum = "sha256:56657c596ae027354bf9c2bc58a2b6235cb743b7f9130bd748f3cc82c9870465"
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_linux_amd64.tar.gz"
-
 [tools.talhelper."platforms.linux-x64-musl"]
-checksum = "sha256:56657c596ae027354bf9c2bc58a2b6235cb743b7f9130bd748f3cc82c9870465"
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_linux_amd64.tar.gz"
-
-[tools.talhelper."platforms.linux-x64-musl-baseline"]
 checksum = "sha256:56657c596ae027354bf9c2bc58a2b6235cb743b7f9130bd748f3cc82c9870465"
 url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_linux_amd64.tar.gz"
 
@@ -2360,15 +2245,7 @@ url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhel
 checksum = "sha256:f5ed79ead5a4291d6ab31771494ca75b78461add6e59a75a59246ab15ce560da"
 url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_darwin_amd64.tar.gz"
 
-[tools.talhelper."platforms.macos-x64-baseline"]
-checksum = "sha256:f5ed79ead5a4291d6ab31771494ca75b78461add6e59a75a59246ab15ce560da"
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_darwin_amd64.tar.gz"
-
 [tools.talhelper."platforms.windows-x64"]
-checksum = "sha256:092e12cd232929b6d589d67a6eb0e4217ab421c5dcb9fd22595cb0f3be04a826"
-url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_windows_amd64.tar.gz"
-
-[tools.talhelper."platforms.windows-x64-baseline"]
 checksum = "sha256:092e12cd232929b6d589d67a6eb0e4217ab421c5dcb9fd22595cb0f3be04a826"
 url = "https://github.com/budimanjojo/talhelper/releases/download/v3.1.10/talhelper_windows_amd64.tar.gz"
 
