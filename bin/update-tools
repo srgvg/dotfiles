@@ -554,36 +554,56 @@ get_misc() {
 get_shell_init_cache() {
 
     local cache_dir="$HOME/.cache/shell-init"
+    local mise_bin="${MISE_BIN:-$HOME/.local/bin/mise}"  # overridable for testing
+    local rc=0
     mkdir -p "$cache_dir"
 
     title "shell init cache"
 
-    # Starship init
+    # Atomically (re)generate one cache file: run <cmd...> into a temp file, require it to be
+    # non-empty (and to contain <must_contain> when given), then move it into place. On any
+    # failure leave the existing cache untouched, drop the temp file, and record the failure so
+    # run_component flags shell_init in the FAILURES SUMMARY instead of silently keeping a stale
+    # cache. Uses the enclosing function's $rc via bash dynamic scope.
+    _write_cache() {
+        local name="$1" dest="$2" must_contain="$3"
+        shift 3
+        local tmp="${dest}.tmp"
+        if "$@" >"$tmp" &&
+            [ -s "$tmp" ] &&
+            { [ -z "$must_contain" ] || grep -q -- "$must_contain" "$tmp"; }; then
+            mv "$tmp" "$dest"
+        else
+            err "shell-init: '${name}' cache generation failed (kept previous)"
+            rm -f "$tmp"
+            rc=1
+        fi
+    }
+
     log "starship"
-    starship init bash >"$cache_dir/starship.bash.tmp" &&
-        mv "$cache_dir/starship.bash.tmp" "$cache_dir/starship.bash"
+    _write_cache starship "$cache_dir/starship.bash" "" \
+        starship init bash
 
-    # Atuin init
     log "atuin"
-    atuin init bash --disable-up-arrow --disable-ctrl-r >"$cache_dir/atuin.bash.tmp" &&
-        mv "$cache_dir/atuin.bash.tmp" "$cache_dir/atuin.bash"
+    _write_cache atuin "$cache_dir/atuin.bash" "" \
+        atuin init bash --disable-up-arrow --disable-ctrl-r
 
-    # Mise activate (interactive mode)
     log "mise"
-    $HOME/.local/bin/mise activate bash >"$cache_dir/mise-activate.bash.tmp" &&
-        mv "$cache_dir/mise-activate.bash.tmp" "$cache_dir/mise-activate.bash"
-    # Run hook-env without shims in PATH to avoid "shims + activation" conflict
-    PATH=$(echo "$PATH" | tr ':' '\n' | grep -v 'mise/shims' | tr '\n' ':' | sed 's/:$//') \
-        $HOME/.local/bin/mise hook-env >"$cache_dir/mise-hook.bash.tmp" &&
-        mv "$cache_dir/mise-hook.bash.tmp" "$cache_dir/mise-hook.bash"
+    _write_cache mise-activate "$cache_dir/mise-activate.bash" "" \
+        "$mise_bin" activate bash
+    # hook-env must run without shims in PATH to avoid the "shims + activation" conflict
+    local nonshim_path
+    nonshim_path=$(echo "$PATH" | tr ':' '\n' | grep -v 'mise/shims' | tr '\n' ':' | sed 's/:$//')
+    _write_cache mise-hook "$cache_dir/mise-hook.bash" "export PATH" \
+        env PATH="$nonshim_path" "$mise_bin" hook-env
 
-    # Dircolors
     log "dircolors"
-    dircolors >"$cache_dir/dircolors.bash.tmp" &&
-        mv "$cache_dir/dircolors.bash.tmp" "$cache_dir/dircolors.bash"
+    _write_cache dircolors "$cache_dir/dircolors.bash" "" \
+        dircolors
 
     log "done"
 
+    return "$rc"
 }
 
 ##########################################################################################################
