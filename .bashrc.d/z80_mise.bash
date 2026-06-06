@@ -1,5 +1,5 @@
 # Only activate mise if tools are not already in PATH
-# Note: Don't check MISE_SHELL - it's inherited but PATH is rebuilt by 2-path.bash
+# Note: Don't check MISE_SHELL - it's inherited but PATH is rebuilt by 2-path.bash / z70_path.bash
 if ! echo "$PATH" | grep -q "mise/installs\|mise/shims"; then
     MISE_PATH="$HOME/.local/bin/mise"
     if [[ -t 0 ]]; then

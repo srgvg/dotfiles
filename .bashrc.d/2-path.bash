@@ -8,6 +8,6 @@ pathmunge /usr/local/sbin after
 pathmunge /usr/bin after
 pathmunge /usr/sbin after
 
-# mise shims are now handled by 3-mise.bash with proper safeguards
+# mise shims are now handled by z80_mise.bash with proper safeguards
 
 export PATH

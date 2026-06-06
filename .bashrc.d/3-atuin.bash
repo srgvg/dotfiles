@@ -19,7 +19,7 @@ fi
 unset _atuin_cache
 
 # bind to ctrl-r, add any other bindings you want here too
-# Atuin Ctrl-R binding is disabled - using fzf instead (see fzf-keys.bash)
+# Atuin Ctrl-R binding is disabled - using fzf instead (see 5-fzf-keys.bash)
 #bind -x '"\C-r": __atuin_history'
 
 # bind to the up key, which depends on terminal mode
