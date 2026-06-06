@@ -1,0 +1,11 @@
+[Unit]
+Description=Run update-tools every 4h (catches up missed runs after suspend)
+
+[Timer]
+# Mirrors the old cron schedule "15 1-21/4 * * *".
+OnCalendar=*-*-* 01,05,09,13,17,21:15:00
+# Run the missed occurrence once on resume/boot instead of skipping it (cron did not).
+Persistent=true
+
+[Install]
+WantedBy=timers.target
