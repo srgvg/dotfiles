@@ -23,7 +23,7 @@ _satty() {
 
     case "${cmd}" in
         satty)
-            opts="-c -f -o -d -h -V --config --filename --fullscreen --resize --floating-hack --output-filename --early-exit --early-exit-save-as --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --save-after-copy --actions-on-enter --actions-on-escape --actions-on-right-click --default-hide-toolbars --focus-toggles-toolbars --default-fill-shapes --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --no-window-decoration --brush-smooth-history-size --zoom-factor --pan-step-size --text-move-length --input-scale --right-click-copy --action-on-enter --help --version"
+            opts="-c -f -o -d -h -V --man --license --config --filename --fullscreen --resize --floating-hack --output-filename --early-exit --corner-roundness --init-tool --initial-tool --copy-command --annotation-size-factor --save-after-copy --auto-copy --actions-on-enter --actions-on-escape --actions-on-right-click --default-hide-toolbars --focus-toggles-toolbars --default-fill-shapes --font-family --font-style --primary-highlighter --disable-notifications --profile-startup --no-window-decoration --brush-smooth-history-size --zoom-factor --pan-step-size --text-move-length --input-scale --title --app-id --right-click-copy --action-on-enter --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -59,6 +59,10 @@ _satty() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --early-exit)
+                    COMPREPLY=($(compgen -W "all copy save save-as" -- "${cur}"))
                     return 0
                     ;;
                 --corner-roundness)
@@ -122,6 +126,14 @@ _satty() {
                     return 0
                     ;;
                 --input-scale)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --title)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --app-id)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

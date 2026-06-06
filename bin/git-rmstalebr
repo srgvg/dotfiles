@@ -17,16 +17,16 @@ DO_IT=false
 FAILED=0
 
 usage() {
-	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-d|--do-it]"
+	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-y|--yes]"
 	echo
 	echo "  Lists local and remote branches already merged or rebased into the repo's default branch."
 	echo "  In dry-run mode, prompts for confirmation before deleting."
-	echo "  -d, --do-it    Delete the stale branches without prompting"
+	echo "  -y, --yes    Delete the stale branches without prompting"
 }
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
-		-d|--do-it) DO_IT=true; shift ;;
+		-y|--yes)   DO_IT=true; shift ;;
 		-h|--help)  usage; exit 0 ;;
 		*) echo -e "${echo_red}Unknown option: $1${echo_normal}" >&2; usage >&2; exit 1 ;;
 	esac

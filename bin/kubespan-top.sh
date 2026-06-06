@@ -44,9 +44,11 @@ fetch hostname             "$tmp_host" "$tmp_herr" &
 wait
 
 # Flag config nodes talosctl could not reach (ground-truth from its dial errors).
-unreachable=$(grep -hoE 'dial tcp [0-9.]+:50000' "$tmp_perr" "$tmp_eerr" "$tmp_serr" "$tmp_herr" 2>/dev/null |
+unreachable=$( { grep -hoE 'dial tcp [0-9.]+:50000' "$tmp_perr" "$tmp_eerr" "$tmp_serr" "$tmp_herr" 2>/dev/null || true; } |
     awk '{print $3}' | sed 's/:50000//' | sort -u | paste -sd, -)
-[ -n "$unreachable" ] && echo "WARNING: no data from config nodes: $unreachable" >&2
+if [ -n "$unreachable" ]; then
+    echo "WARNING: no data from config nodes: $unreachable" >&2
+fi
 
 now_epoch="$(date +%s)"
 
