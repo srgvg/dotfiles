@@ -187,7 +187,7 @@ check_vram_during_display_off() {
             case "$_comm" in
                 sway|swaylock|Xwayland|alacritty|nvidia-smi|nvidia-vram-m*) ;;
                 bash|sh|tee|wl-paste|swayidle|waybar|mako|lxpolkit|wlr-randr) ;;
-                atuin|gdm-wayland-ses|systemd|claude|less|git|delta|kubie) ;;
+                atuin|gdm-wayland-ses|systemd|claude|codex|node-MainThread|less|git|delta|kubie) ;;
                 "") ;;  # process already gone
                 *) echo "$pid" ;;
             esac
