@@ -1,10 +1,11 @@
 [Unit]
 Description=Bluetooth autoconnect service
-Before=bluetooth.service
+# Runs as a user service; talks to the BlueZ system D-Bus to auto-connect
+# trusted devices when an adapter is powered on.
 
 [Service]
 Type=simple
 ExecStart=/home/serge/bin/bluetooth-autoconnect -d
 
 [Install]
-WantedBy=bluetooth.service
+WantedBy=default.target

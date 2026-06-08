@@ -13,8 +13,9 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 # switch to the IRC window, or start it
+# emulator-agnostic via term-run ($TERMINAL: alacritty|foot)
 wmctrl -a WeeChat  || \
-$HOME/.cargo/bin/alacritty --class IRCWINDOW --command bash -ci irc &
+term-run IRCWINDOW -- bash -ci irc &
 #/usr/bin/terminator \
 #            --geometry 800x600 \
 #            --title IRCWINDOW \

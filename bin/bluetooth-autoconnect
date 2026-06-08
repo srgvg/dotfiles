@@ -1,4 +1,8 @@
-#!/usr/bin/env -S python3 -u
+#!/usr/bin/python3 -u
+# Pinned to system python3 (Debian) on purpose: this script needs the system
+# dbus/gi bindings (python3-dbus, python3-gi) which live only in the distro
+# python. Using `env python3` would pick up the mise-shimmed python first and
+# fail with ModuleNotFoundError: No module named 'dbus'.
 
 import getopt
 import os

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# term-run — launch the session terminal with a given app-id + title, running a
+# command. Emulator-agnostic: the ONLY CLI difference between alacritty and foot
+# is the app-id flag (--class vs --app-id); -e, --title and --working-directory
+# are identical (foot accepts and ignores -e for xterm compat).
+#
+# The emulator is chosen by $TERMINAL (default foot) — set in
+# ~/.config/environment.d/sway.conf (and ~/.bashrc.d/4-windowmanager.bash default).
+# Set TERMINAL=alacritty to fall back.
+#
+# Usage: term-run <app-id> [--title <title>] -- <command> [args...]
+
+set -o nounset
+
+id="$1"; shift
+title="$id"
+if [ "${1:-}" = "--title" ]; then title="$2"; shift 2; fi
+if [ "${1:-}" = "--" ]; then shift; fi
+
+term="${TERMINAL:-foot}"
+term="${term%% *}"   # bare emulator only; tolerate a polluted multi-word $TERMINAL
+case "${term##*/}" in
+	foot) idflag="--app-id" ;;
+	*)    idflag="--class" ;;
+esac
+
+# Server mode: route foot through the running foot --server (footclient) for instant
+# startup; -E inherits this caller's environment. Fall back to plain foot if the socket
+# is down. footclient accepts the same --app-id/--title/-D/-e flags. alacritty unchanged.
+footsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/foot.sock"
+if [ "$term" = foot ] && [ -S "$footsock" ]; then
+	exec footclient -E --server-socket="$footsock" "$idflag" "$id" --title "$title" -e "$@"
+fi
+exec "$term" "$idflag" "$id" --title "$title" -e "$@"

@@ -15,26 +15,50 @@ source "$HOME/bin/common.bash"
 
 #DEBUG=1
 #TERMINAL="/usr/bin/gnome-terminal --geometry 100x40+0+0"
-TERMINAL="${TERMINAL:-alacritty}"
+TERMINAL="${TERMINAL:-foot}"
+TERMINAL="${TERMINAL%% *}"   # bare emulator only; never inherit/compound a built command line
 TERMINAL_COMMAND="${TERMINAL_COMMAND:-$TERMINAL -e}"
 
+# Emulator-agnostic app-id flag: --class (alacritty) vs --app-id (foot).
+# $TERMINAL is the single switch (set in ~/.config/environment.d/sway.conf).
+case "${TERMINAL##*/}" in
+	foot) IDFLAG="--app-id" ;;
+	*)    IDFLAG="--class" ;;
+esac
+
 CARGS="$*"
+
+# Build the launch command in a local var; do NOT mutate the exported $TERMINAL
+# (children must inherit the bare emulator name, not a full command line).
+# Server mode: when the emulator is foot and the foot --server socket is up, hand off
+# to footclient (instant startup, shared font/glyph caches). -E makes the new terminal
+# inherit THIS shell's environment (SSH agent, kube context) rather than the server's.
+# Falls back to plain foot if the socket is absent. See ~/etc/docs/foot-migration.md.
+_footsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/foot.sock"
+if [ "$TERMINAL" = foot ] && [ -S "$_footsock" ]
+then
+	# --server-socket points straight at the systemd socket (%t/foot.sock), avoiding
+	# footclient's default foot-$WAYLAND_DISPLAY.sock miss + stderr fallback warning.
+	cmd="footclient -E --server-socket=$_footsock"
+else
+	cmd="$TERMINAL"
+fi
 
 if [ -z "$CARGS" ]
 then
 	if [ "$(basename $0)" = "termf" ]
 	then
-		#TERMINAL="$TERMINAL --role gnome-terminal-floating"
-		TERMINAL="$TERMINAL --class alacritty-floating"
+		#cmd="$TERMINAL --role gnome-terminal-floating"
+		cmd="$cmd $IDFLAG terminal-floating"
 	else
 		PWD="$(sway-get-window-cwd ||:)"
 		[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ] && PWD="$HOME"
-		#TERMINAL="$TERMINAL --role gnome-terminal-tiled"
-		TERMINAL="$TERMINAL --class alacritty-tiled"
-		TERMINAL="$TERMINAL --working-directory=${PWD}"
+		#cmd="$TERMINAL --role gnome-terminal-tiled"
+		cmd="$cmd $IDFLAG terminal-tiled"
+		cmd="$cmd --working-directory=${PWD}"
 	fi
 else
-	TERMINAL="$TERMINAL $CARGS"
+	cmd="$cmd $CARGS"
 fi
 
 if ifdebug1
@@ -42,7 +66,7 @@ then
 	mkdir -p $HOMETMPDIR/tmp/term/
 	filename=$HOME/tmp/term/$(date +%Y%m%d-%H%M%S).trace.log
 	ln -nfs $filename $HOMETMPDIR/tmp/term/latest.trace.log
-	exec strace -o $filename -tt -T -y -yy -f $TERMINAL
+	exec strace -o $filename -tt -T -y -yy -f $cmd
 else
-	exec $TERMINAL $CARGS
+	exec $cmd
 fi

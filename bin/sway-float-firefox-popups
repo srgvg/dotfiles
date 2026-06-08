@@ -1,0 +1,128 @@
+#!/usr/bin/python3
+"""Float Firefox extension pop-out windows (e.g. Bitwarden) the instant they map.
+
+Why this exists:
+  Firefox extension pop-outs (browser.windows.create type=popup) map as an ordinary
+  toplevel: app_id=firefox, empty title, tiled. Firefox only sets the real title
+  ("Extension: ...") ~100ms later, and only flushes it once the window holds focus.
+  With `focus_follows_mouse yes` (50-settings-config), a pop-out opened while the
+  cursor is over the main window never gains focus, so the title-based float rule
+  (80-rules-config) does not fire until you hover it. Result: it maps tiled and stays
+  tiled until hover.
+
+  The only property available at the map (`new`) event that distinguishes a pop-out
+  from a normal window is its requested geometry: pop-outs are small (~600x630),
+  normal browser windows are large (>1200 wide). sway criteria cannot match on size,
+  so this helper does.
+
+Two-step sizing (important):
+  Floating must be claimed at `new` to avoid the hover dependency, but a resize issued
+  that early is clobbered when the map completes: the window briefly tiles into a
+  full-height column, Firefox renders its (potentially long) content into that height,
+  and sway re-applies the stored tiling geometry. So we float+size immediately AND
+  re-assert the size once after the map settles (~250ms), when Firefox has finished
+  configuring; that resize then sticks.
+
+  A tiny tiled flash (and, when the vault is long, a brief tall→correct snap) remains:
+  an external IPC helper can only act after the window maps; only a native sway rule
+  would be atomic, and sway can't match on window size.
+
+  We speak the sway IPC protocol directly over $SWAYSOCK (no `swaymsg` subprocess) to
+  keep latency minimal. Complements the title rule in 80-rules-config (kept as a
+  harmless fallback).
+
+Launched as a flock singleton from sway via exec_always (see 90-execs-config).
+"""
+import json
+import os
+import socket
+import struct
+import sys
+import threading
+
+# A firefox toplevel whose mapped geometry is at most this large is treated as an
+# extension pop-out / dialog and floated. Normal browser windows are ~1269x1388+.
+MAX_W = 1000
+MAX_H = 1000
+
+# Re-assert the float size this long after the window maps, once Firefox has settled.
+SETTLE_DELAY = 0.25
+
+MAGIC = b"i3-ipc"
+HEADER = struct.Struct("=II")        # payload length, message type (native endian)
+MSG_RUN_COMMAND = 0
+MSG_SUBSCRIBE = 2
+
+
+def connect():
+    path = os.environ.get("SWAYSOCK")
+    if not path:
+        sys.exit("SWAYSOCK not set")
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect(path)
+    return s
+
+
+def send(sock, msg_type, payload=b""):
+    if isinstance(payload, str):
+        payload = payload.encode()
+    sock.sendall(MAGIC + HEADER.pack(len(payload), msg_type) + payload)
+
+
+def recv(sock):
+    """Read one IPC message; return (type, decoded-json payload)."""
+    buf = b""
+    while len(buf) < len(MAGIC) + HEADER.size:
+        chunk = sock.recv(len(MAGIC) + HEADER.size - len(buf))
+        if not chunk:
+            return None, None
+        buf += chunk
+    length, mtype = HEADER.unpack(buf[len(MAGIC):])
+    payload = b""
+    while len(payload) < length:
+        chunk = sock.recv(length - len(payload))
+        if not chunk:
+            return None, None
+        payload += chunk
+    return mtype, json.loads(payload or b"null")
+
+
+def run_command(cmd):
+    """Run a sway command on its own short-lived connection (thread-safe)."""
+    try:
+        s = connect()
+        send(s, MSG_RUN_COMMAND, cmd)
+        recv(s)
+        s.close()
+    except OSError:
+        pass
+
+
+def place(cid, w, h):
+    cmd = ("[con_id=%d] floating enable, "
+           "resize set width %d px height %d px, "
+           "move position center" % (cid, w, h))
+    run_command(cmd)                                        # immediate: claim floating
+    threading.Timer(SETTLE_DELAY, run_command, (cmd,)).start()  # re-assert size
+
+
+def main():
+    ev_sock = connect()
+    send(ev_sock, MSG_SUBSCRIBE, '["window"]')
+    while True:
+        mtype, ev = recv(ev_sock)
+        if ev is None:
+            break
+        if not isinstance(ev, dict) or ev.get("change") != "new":
+            continue
+        c = ev.get("container") or {}
+        if c.get("app_id") != "firefox" or c.get("type") == "floating_con":
+            continue
+        geo = c.get("geometry") or {}
+        w, h = geo.get("width", 0), geo.get("height", 0)
+        if 0 < w <= MAX_W and 0 < h <= MAX_H:
+            place(c.get("id"), w, h)
+
+
+if __name__ == "__main__":
+    main()

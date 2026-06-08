@@ -1,0 +1,17 @@
+# xdg-desktop-portal-wlr screencast config — goldorak
+# Window (toplevel) capture needs xdpw >= 0.8.0 + sway 1.12 / wlroots 0.20.
+# See `man 5 xdg-desktop-portal-wlr` and ~/etc/docs/.
+#
+# chooser_type=dmenu: xdpw pipes a newline list of sources to chooser_cmd —
+#   "Monitor: <output>" entries AND "Window: <toplevel>" entries — and we pick one.
+#   (chooser_type=default would use slurp first = region select, which can't pick a window.)
+
+[screencast]
+# NVIDIA: force linear dmabuf modifiers — fixes "ext: frame capture failed:
+# buffer constraint mismatch" in the toplevel (window) capture path.
+force_mod_linear=1
+chooser_type=dmenu
+# wofi: GTK (inherits the system theme), wide enough to show "Window: app_id (title)".
+# NB: thumbnails are NOT possible — xdpw passes a plain text list, no preview images.
+chooser_cmd=wofi --dmenu --width=1000 --height=450 --prompt="Share window / screen: "
+max_fps=30

@@ -26,12 +26,12 @@ else
 
         solaar --window hide  --battery-icons symbolic --debug
 		syncthing serve --no-browser --log-file=$HOME/logs/syncthing-$HOSTNAME.log --log-max-old-files=2 --log-max-size=5242880
-		runflatpak.sh signal
+		runflatpak.sh signal --disable-gpu
 		runflatpak.sh mattermost --ozone-platform=x11 --disable-gpu
 		runflatpak.sh com.slack.Slack
 		runflatpak.sh com.rtosta.zapzap
 		runflatpak.sh nextcloud
-        runflatpak.sh com.bitwarden.desktop
+        #runflatpak.sh com.bitwarden.desktop
 
 	EOF
     )
@@ -84,7 +84,7 @@ if ifinteractive; then
         : #wmctrl -a i3jobs
     else
         notify "start a terminal and attach"
-        alacritty --class i3jobs --title i3jobs --command screen -D -r i3jobs &
+        term-run i3jobs --title i3jobs -- screen -D -r i3jobs &
         >/dev/null 2>&1
     fi
 fi

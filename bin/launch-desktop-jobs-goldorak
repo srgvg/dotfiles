@@ -4,7 +4,7 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
 
     # https://github.com/parisni/dfzf
     /usr/local/bin/dfzf-daemon --debug
-    wl-paste --watch cliphist -max-items 1000 store
+    # wl-paste --watch cliphist watcher lives in sway ~/.config/sway/90-execs-config (single owner; avoid duplicate)
     #
     /home/serge/bin/vorta.sh
     runflatpak.sh com.spotify.Client
@@ -13,7 +13,7 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     /usr/bin/nm-applet
     /usr/bin/blueman-applet
     /usr/bin/system-config-printer-applet --debug
-    /usr/bin/alacritty --class htop --title htop --command htop --delay=100 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
+    term-run htop --title htop -- htop --delay=100 --highlight-changes --no-mouse --readonly --sort-key=PERCENT_CPU
     vlc $HOME/Documents/Misc/StreamingRadios_BE_NL.xspf
     /home/serge/bin/nvidia-vram-monitor-loop.sh
 

@@ -20,7 +20,13 @@ exec_always pgrep lxpolkit || lxpolkit
 
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows.
-exec_always pkill wl-paste ; wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard
+exec_always sh -c 'pkill wl-paste; wl-paste --watch cliphist -max-items 1000 store'  # for dfzf-clipboard
+
+# Float Firefox extension pop-outs (Bitwarden) at map time by their small geometry,
+# which sway criteria cannot match. See ~/bin/sway-float-firefox-popups.
+# flock makes it a singleton: on reload the running instance keeps the lock and a
+# second one cannot start (avoids the pkill -f self-match pitfall).
+exec_always sh -c 'exec flock -n "$XDG_RUNTIME_DIR/sway-float-firefox-popups.lock" "$HOME/bin/sway-float-firefox-popups"'
 
 #exec_always pkill swayidle ;  \
 #	swayidle -d -w \
