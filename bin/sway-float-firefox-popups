@@ -1,5 +1,10 @@
 #!/usr/bin/python3
-"""Float Firefox extension pop-out windows (e.g. Bitwarden) the instant they map.
+"""Float browser extension pop-out windows (e.g. Bitwarden) the instant they map.
+
+Covers Firefox and Chromium (Edge/Chrome). Firefox pop-outs map as app_id=firefox;
+Chromium derives a per-extension app_id — Edge Bitwarden = "msedge-<extid>-Profile_N",
+Chrome = "chrome-<extid>-Default", older Chromium = "crx_<extid>". The small-geometry
+filter keeps normal/PWA windows (large) tiled.
 
 Why this exists:
   Firefox extension pop-outs (browser.windows.create type=popup) map as an ordinary
@@ -40,7 +45,17 @@ import struct
 import sys
 import threading
 
-# A firefox toplevel whose mapped geometry is at most this large is treated as an
+# Browser toplevels to consider: firefox (exact) + Chromium per-extension/app_id
+# prefixes (Edge "msedge-…", Chrome "chrome-…", older Chromium "crx_…"/"chromium-…").
+BROWSER_EXACT = ("firefox",)
+BROWSER_PREFIXES = ("msedge-", "chrome-", "crx_", "chromium-")
+
+
+def is_browser_window(app_id):
+    return bool(app_id) and (app_id in BROWSER_EXACT or app_id.startswith(BROWSER_PREFIXES))
+
+
+# A matching toplevel whose mapped geometry is at most this large is treated as an
 # extension pop-out / dialog and floated. Normal browser windows are ~1269x1388+.
 MAX_W = 1000
 MAX_H = 1000
@@ -116,7 +131,7 @@ def main():
         if not isinstance(ev, dict) or ev.get("change") != "new":
             continue
         c = ev.get("container") or {}
-        if c.get("app_id") != "firefox" or c.get("type") == "floating_con":
+        if not is_browser_window(c.get("app_id")) or c.get("type") == "floating_con":
             continue
         geo = c.get("geometry") or {}
         w, h = geo.get("width", 0), geo.get("height", 0)

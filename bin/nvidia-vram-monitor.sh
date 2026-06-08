@@ -185,7 +185,7 @@ check_vram_during_display_off() {
         while IFS= read -r pid; do
             _comm=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
             case "$_comm" in
-                sway|swaylock|Xwayland|alacritty|foot|nvidia-smi|nvidia-vram-m*) ;;
+                sway|swaylock|Xwayland|alacritty|nvidia-smi|nvidia-vram-m*) ;;  # TEMP 2026-06-08: 'foot' removed to A/B-test whether the foot server is the residual lock leaker — REVERT after
                 bash|sh|tee|wl-paste|swayidle|waybar|mako|lxpolkit|wlr-randr) ;;
                 atuin|gdm-wayland-ses|systemd|claude|codex|node-MainThread|less|git|delta|kubie) ;;
                 "") ;;  # process already gone

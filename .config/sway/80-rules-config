@@ -102,9 +102,14 @@ for_window [app_id="firefox" title="^$"] floating enable
 #
 assign		[window_role="irc"]										$ws_chat
 assign		[instance="IRCWINDOW"]									$ws_chat
+# ircwindow terminal is now foot (Wayland) → match app_id, not X11 instance/role
+assign		[app_id="IRCWINDOW"]									$ws_chat
 
 assign		[class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	$ws_chat
 assign		[app_id="org.signal.Signal" shell="xdg_shell"]	$ws_chat
+# Slack is now a native Wayland app (app_id=com.slack.Slack) — the class rule above
+# never matches it (Wayland clients have no X11 class). Assign on app_id. Cf. Spotify below.
+assign		[app_id="com.slack.Slack" shell="xdg_shell"]	$ws_chat
 #for_window  [class="Signal|Slack|Keybase" instance="signal|slack|keybase"]	layout tabbed
 #for_window  [app_id="org.signal.Signal" shell="xdg_shell"]	layout tabbed
 assign      [app_id="com.rtosta.zapzap" shell="xdg_shell"]     $ws_chat
@@ -132,7 +137,8 @@ assign	[class="discord" instance="discord"] $ws_chat
 assign	[app_id="org.telegram.desktop"] $ws_chat
 #for_window	[app_id="org.telegram.desktop"] layout tabbed
 
-assign [class="Mattermost" instance="mattermost" window_role="browser-window"] $ws_chat
+# Mattermost main window has window_role=None (not "browser-window") → don't require it
+assign [class="Mattermost" instance="mattermost"] $ws_chat
 #for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
 
 #######################################################################################################################
