@@ -27,19 +27,21 @@ set -o pipefail
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
-app_pid="$(swaymsg -t get_tree | jq -r '..|try select(.focused == true).pid' || echo -n 0 | sed s/null/0/ | cut -d: -f2 )"
-if [ ${app_pid} -gt 1 ] 2>/dev/null
+app_pid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? == true)) | .pid // 0' 2>/dev/null || echo 0)"
+
+# Foot runs in server mode: every window shares the one `foot --server` pid, so probing it
+# (pgrep -P → pwdx) returns an arbitrary sibling shell's cwd, not the focused window's. Bail and
+# emit nothing — ~/bin/term owns foot windows via foot's own OSC-7 spawn (spawn-terminal). comm
+# resolves to "foot" for both the shared server and any standalone foot. See foot-migration.md §0d.
+[ "${app_pid:-0}" -gt 1 ] 2>/dev/null && [ "$(ps -o comm= -p "${app_pid}" 2>/dev/null)" = foot ] && exit 0
+
+# Non-foot windows (alacritty / any single-process emulator) report a real per-window pid:
+# focused pid → first child shell → its cwd.
+if [ "${app_pid:-0}" -gt 1 ] 2>/dev/null
 then
-	#child_pid="$( pgrep -P ${app_pid} | tail -n1 )"
-	#child_pid="$( pstree -p ${app_pid} -ncTU | sed 's/[^[0-9\.\-]]*/ /g' | xargs -n1 | tail -n1 )"
-	child_pid="$(pgrep -P ${app_pid} | head -n1)"
-	cwd="$(pwdx ${child_pid} | cut -d: -f2 | xargs -n1)"
-	if ! [[ "${cwd}" = /home* ]]
-	then
-		cwd=$HOME
-	fi
+	child_pid="$(pgrep -P "${app_pid}" 2>/dev/null | head -n1 || true)"
+	[ -n "${child_pid:-}" ] && cwd="$(pwdx "${child_pid}" 2>/dev/null | cut -d: -f2 | xargs -n1 || true)"
 fi
-if [ -n "${cwd:-}" ]
-then
-	echo -n "${cwd}"
-fi
+
+# Emit only a real home-rooted path; leave empty/non-home for ~/bin/term to map to $HOME (term:55).
+[[ "${cwd:-}" = /home* ]] && echo -n "${cwd}"

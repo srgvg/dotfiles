@@ -51,6 +51,18 @@ then
 		#cmd="$TERMINAL --role gnome-terminal-floating"
 		cmd="$cmd $IDFLAG terminal-floating"
 	else
+		# Same-dir spawn: under foot server mode all windows share one pid, so the focused
+		# window's cwd isn't readable externally (the title is clobbered by claude/vim/ssh). If
+		# foot is the emulator and a foot window is focused, let foot spawn the new window itself
+		# via its OSC-7 tracking — inject its spawn-terminal binding with wtype. comm=foot matches
+		# both the shared server pid and any standalone foot. Non-foot windows fall through to the
+		# sway-get-window-cwd pid method. Needs foot.ini's Mod4+Control+Shift+n binding loaded
+		# (foot-server restart) — see ~/etc/docs/foot-migration.md §0d.
+		_fpid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? == true)) | .pid // 0' 2>/dev/null || echo 0)"
+		if [ "$TERMINAL" = foot ] && [ "${_fpid:-0}" -gt 1 ] 2>/dev/null && [ "$(ps -o comm= -p "${_fpid}" 2>/dev/null)" = foot ]
+		then
+			exec wtype -M ctrl -M shift -k n -m shift -m ctrl
+		fi
 		PWD="$(sway-get-window-cwd ||:)"
 		[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ] && PWD="$HOME"
 		#cmd="$TERMINAL --role gnome-terminal-tiled"
