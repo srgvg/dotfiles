@@ -1,0 +1,489 @@
+# ask_fallback: defer (claude target) — nah blocks dangerous + allows safe
+# outright; anything it would ask about emits nothing so Claude's own
+# permission/auto-mode decides (active_allow stays default true, so nah-safe
+# still short-circuits). Per-target setting; the claude hook runs target=claude.
+targets:
+  claude:
+    ask_fallback: defer
+allow_paths:
+  /home/serge/.claude:
+  - /home/serge/.claude
+  /home/serge/.config/nah:
+  - /home/serge/.config/nah
+classify:
+  container_destructive:
+  - kubectl delete
+  - talosctl rollback
+  - talosctl etcd leave
+  - talosctl etcd remove-member
+  - talosctl etcd forfeit-leadership
+  - talosctl cluster destroy
+  - flux delete
+  - flux uninstall
+  package_run:
+  - make test
+  - make verify
+  - make lint
+  - make check
+  - source
+  - export
+  - kubie exec
+  - pipx run
+  - mise run
+  - mempalace
+  - swaymsg
+  service_write:
+  - systemctl reload
+  - systemctl daemon-reload
+  filesystem_read:
+  - find
+  - base64
+  - nm
+  - curl
+  - go env
+  - gofmt -l
+  - golangci-lint run
+  - golangci-lint
+  - staticcheck
+  - govulncheck
+  - grep
+  - ps
+  - which
+  - apt-cache
+  - nvidia-smi
+  - wlr-randr
+  - swaymsg -t
+  - helm show
+  - helm list
+  - helm status
+  - helm search
+  - helm get
+  - helm history
+  - helm version
+  - mise tasks
+  - black --check
+  - ruff check
+  - ruff format --check
+  - journalctl
+  - jq
+  - yq
+  - systemctl status
+  - systemctl --user status
+  - systemctl show
+  - systemctl cat
+  - systemctl list-units
+  - systemctl list-unit-files
+  - systemctl is-active
+  - systemctl is-enabled
+  - systemctl --user is-active
+  - systemctl --user is-enabled
+  - systemctl --user show
+  - systemctl --user cat
+  - systemctl --user list-units
+  - systemctl --user list-unit-files
+  - systemctl --user show-environment
+  - mise ls
+  - mise list
+  - mise current
+  - mise which
+  - mise where
+  - mise ls-remote
+  - mise search
+  - mise latest
+  - mise outdated
+  - mise registry
+  - mise bin-paths
+  - mise doctor
+  - mise version
+  - mise env
+  - mise completion
+  - mise tool
+  - mise config ls
+  - mise config get
+  - mise activate
+  - mise deactivate
+  - kubectl get
+  - kubectl describe
+  - kubectl logs
+  - kubectl top
+  - kubectl api-resources
+  - kubectl api-versions
+  - kubectl cluster-info
+  - kubectl config view
+  - kubectl config get-contexts
+  - kubectl config current-context
+  - kubectl config get-clusters
+  - kubectl config get-users
+  - kubectl explain
+  - kubectl diff
+  - kubectl auth can-i
+  - kubectl auth whoami
+  - kubectl version
+  - kubectl events
+  - kubectl wait
+  - kubie ns
+  - kubie ctx
+  - kubie info
+  - kubie export
+  - kubie lint
+  - talosctl dashboard
+  - talosctl dmesg
+  - talosctl events
+  - talosctl get
+  - talosctl health
+  - talosctl inspect
+  - talosctl list
+  - talosctl logs
+  - talosctl memory
+  - talosctl mounts
+  - talosctl netstat
+  - talosctl pcap
+  - talosctl processes
+  - talosctl read
+  - talosctl stats
+  - talosctl time
+  - talosctl usage
+  - talosctl version
+  - talosctl containers
+  - talosctl etcd members
+  - talosctl etcd status
+  - talosctl service
+  - talosctl support
+  - talosctl image list
+  - talosctl config info
+  - talosctl config contexts
+  - talosctl validate
+  - talosctl completion
+  - talosctl cgroups
+  - talhelper validate
+  - flux check
+  - flux diff
+  - flux events
+  - flux export
+  - flux get
+  - flux list
+  - flux logs
+  - flux stats
+  - flux trace
+  - flux tree
+  - flux version
+  - hcloud context list
+  - hcloud server list
+  - hcloud server describe
+  - hcloud image list
+  - hcloud network list
+  - hcloud volume list
+  - hcloud load-balancer list
+  - hcloud context active
+  - hcloud context use
+  - openssl version
+  - openssl list
+  - openssl dgst
+  - openssl x509 -text
+  - openssl rsa -text
+  - pipx list
+  - pipx environment
+  - pipx completions
+  - man
+  - col
+  - getent
+  - lsblk
+  - infocmp
+  - tlp-stat
+  - dpkg -l
+  - dpkg -L
+  - dpkg -s
+  - dpkg -S
+  - dpkg --list
+  - dpkg --status
+  - dpkg --listfiles
+  - dpkg-query
+  lang_exec:
+  - python
+  - node
+  - perl
+  - mise exec
+  - mise x
+  - mise watch
+  - mise w
+  - mise en
+  - kubectl exec
+  - kubectl run
+  - kubectl attach
+  - kubectl debug
+  - kubectl port-forward
+  - kubectl proxy
+  - kubectl cp
+  - pipx runpip
+  network_outbound:
+  - playwright
+  - mcp__playwright__*
+  - mcp__context7__*
+  - flux reconcile
+  git_safe:
+  - gh pr
+  - gh auth
+  - gh auth login
+  - gh issue
+  - gh pr list
+  - gh pr view
+  - gh pr checks
+  - gh pr diff
+  - gh pr status
+  - gh issue list
+  - gh issue view
+  - gh issue status
+  - gh run list
+  - gh run view
+  - gh run watch
+  - gh repo list
+  - gh repo view
+  - gh release list
+  - gh release view
+  - gh workflow list
+  - gh workflow view
+  - gh auth status
+  - gh status
+  - gh label list
+  - gh search repos
+  - gh search issues
+  - gh search prs
+  - gh gist list
+  - gh gist view
+  - gh api
+  - gh -R
+  - glab api
+  - glab auth status
+  - glab repo view
+  - glab repo list
+  - glab mr view
+  - glab mr diff
+  - glab mr checks
+  - glab mr list
+  - glab mr status
+  - glab issue view
+  - glab issue list
+  - glab issue status
+  - glab issue note list
+  - glab pipeline view
+  - glab pipeline list
+  - glab ci get
+  - glab ci view
+  - glab ci list
+  - glab ci trace
+  - glab ci status
+  - glab release list
+  - glab release view
+  - glab label list
+  - glab search repos
+  - glab search issues
+  - vcsh list
+  - vcsh status
+  - vcsh foreach diff
+  - vcsh foreach diff-index
+  - vcsh foreach log
+  - vcsh foreach myinfo
+  - vcsh foreach lola
+  - vcsh foreach status
+  - vs
+  - vsd
+  - vsi
+  - vsl
+  git_write:
+  - gh api -X POST
+  - gh api -X PUT
+  - gh api -X PATCH
+  - gh api --method POST
+  - gh api --method PUT
+  - gh api --method PATCH
+  - gh api -f
+  - gh api --field
+  - glab api -X POST
+  - glab api -X PUT
+  - glab api -X PATCH
+  - glab api --method POST
+  - glab api --method PUT
+  - glab api --method PATCH
+  - glab mr create
+  - glab mr update
+  - glab mr merge
+  - glab mr approve
+  - glab mr close
+  - glab mr reopen
+  - glab issue create
+  - glab issue update
+  - glab issue close
+  - glab issue reopen
+  - glab issue note
+  - glab mr note
+  - glab mr note create
+  - glab mr notes
+  - vcsh pull
+  - vcsh push
+  - vcsh commit
+  - vcsh init
+  - vcsh clone
+  - vcsh rename
+  - vcsh run
+  - vcsh foreach pull
+  - vcsh foreach push
+  - vcsh foreach pushall
+  - vcsh foreach commit
+  - vcsh foreach remote
+  - vcsh dot pull
+  - vcsh dot push
+  - vcsh dot commit
+  - vcsh dot update-index
+  - vcsh sdot pull
+  - vcsh sdot push
+  - vcsh sdot commit
+  - vcsh sdot update-index
+  - dotfiles
+  - vd
+  git_destructive:
+  - gh api -X DELETE
+  - gh api --method DELETE
+  - glab api -X DELETE
+  - glab api --method DELETE
+  - glab mr delete
+  - glab issue delete
+  - vcsh delete
+  package_install:
+  - mise install
+  - mise upgrade
+  - mise sync
+  - mise link
+  - mise reshim
+  - mise self-update
+  - mise plugins install
+  - mise plugins update
+  - flux bootstrap
+  - flux install
+  - pipx install
+  - pipx upgrade
+  - pipx upgrade-all
+  - pipx inject
+  - pipx reinstall
+  - pipx reinstall-all
+  - pipx ensurepath
+  - pipx pin
+  - pipx unpin
+  filesystem_write:
+  - gofmt
+  - black
+  - ruff format
+  - ssh-keygen
+  - openssl genrsa
+  - openssl genpkey
+  - openssl req
+  - openssl pkcs12
+  - kubie edit
+  - kubie edit-config
+  - kubie update
+  - mise use
+  - mise set
+  - mise unset
+  - mise unuse
+  - mise config set
+  - mise fmt
+  - mise trust
+  - mise lock
+  - mise generate
+  - mise edit
+  package_uninstall:
+  - kubie delete
+  - mise uninstall
+  - mise prune
+  - mise implode
+  - mise plugins uninstall
+  - pipx uninstall
+  - pipx uninstall-all
+  - pipx uninject
+  network_write:
+  - kubectl apply
+  - kubectl create
+  - kubectl patch
+  - kubectl replace
+  - kubectl label
+  - kubectl annotate
+  - kubectl scale
+  - kubectl autoscale
+  - kubectl edit
+  - kubectl set
+  - kubectl expose
+  - kubectl taint
+  - kubectl cordon
+  - kubectl uncordon
+  - kubectl drain
+  - kubectl rollout pause
+  - kubectl rollout resume
+  - kubectl rollout restart
+  - kubectl rollout undo
+  - kubectl config set
+  - kubectl config set-context
+  - kubectl config set-cluster
+  - kubectl config set-credentials
+  - kubectl config use-context
+  - kubectl config unset
+  - kubectl config rename-context
+  - kubectl config delete-context
+  - kubectl config delete-cluster
+  - kubectl config delete-user
+  - kubectl certificate
+  - talosctl apply-config
+  - talosctl edit
+  - talosctl patch
+  - talosctl bootstrap
+  - talosctl upgrade
+  - talosctl upgrade-k8s
+  - talosctl config add
+  - talosctl config context
+  - talosctl config endpoint
+  - talosctl config merge
+  - talosctl config new
+  - talosctl config node
+  - talosctl config remove
+  - talosctl kubeconfig
+  - talosctl rotate-ca
+  - talosctl etcd alarm
+  - talosctl etcd defrag
+  - talosctl etcd snapshot
+  - talosctl gen
+  - talosctl image pull
+  - flux create
+  - flux resume
+  - flux suspend
+  - gdbus
+  process_signal:
+  - talosctl reset
+  - talosctl shutdown
+  - talosctl reboot
+  - talosctl wipe
+actions:
+  git_remote_write: allow
+  filesystem_write: context
+  filesystem_delete: context
+  network_outbound: allow
+  network_write: context
+  git_write: allow
+  git_destructive: ask
+  package_install: allow
+  package_run: allow
+  package_uninstall: context
+  filesystem_read: allow
+  process_signal: block
+  service_write: ask
+known_registries:
+- github.com
+- gitlab.com
+- localhost
+- 127.0.0.1
+trusted_paths:
+- /tmp
+- /home/serge/.claude/plans
+- /home/serge/.claude/projects
+- /home/serge/src/autops/wharf
+- /home/serge/.kube
+- /home/serge/.bashrc.d
+- /home/serge/bin
+- /home/serge/etc
