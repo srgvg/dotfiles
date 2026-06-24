@@ -1,0 +1,10 @@
+[Unit]
+Description=Backstop re-link of firefoxpwa runtime (catches dir-swap missed by .path)
+Documentation=file:%h/etc/docs/firefoxpwa.md
+
+[Timer]
+OnCalendar=*-*-* 02,06,10,14,18,22:35:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

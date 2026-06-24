@@ -1,0 +1,10 @@
+[Unit]
+Description=Re-link firefoxpwa runtime after Firefox in-place update
+Documentation=file:%h/etc/docs/firefoxpwa.md
+
+[Service]
+Type=oneshot
+# firefoxpwa lives in /usr/bin; keep mise shims + ~/bin so cronjobs.sh/common.bash resolve.
+Environment=PATH=%h/.local/share/mise/shims:%h/bin:%h/bins:%h/bin2:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:%h/.local/bin
+# cronjobs.sh keeps its own per-run logging under ~/logs/cronjobs/.
+ExecStart=%h/bin/cronjobs.sh firefoxpwa-relink

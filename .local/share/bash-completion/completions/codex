@@ -25,6 +25,9 @@ _codex() {
             codex,apply)
                 cmd="codex__apply"
                 ;;
+            codex,archive)
+                cmd="codex__archive"
+                ;;
             codex,cloud)
                 cmd="codex__cloud"
                 ;;
@@ -33,6 +36,9 @@ _codex() {
                 ;;
             codex,debug)
                 cmd="codex__debug"
+                ;;
+            codex,delete)
+                cmd="codex__delete"
                 ;;
             codex,doctor)
                 cmd="codex__doctor"
@@ -90,6 +96,9 @@ _codex() {
                 ;;
             codex,stdio-to-uds)
                 cmd="codex__stdio__to__uds"
+                ;;
+            codex,unarchive)
+                cmd="codex__unarchive"
                 ;;
             codex,update)
                 cmd="codex__update"
@@ -355,6 +364,9 @@ _codex() {
             codex__help,apply)
                 cmd="codex__help__apply"
                 ;;
+            codex__help,archive)
+                cmd="codex__help__archive"
+                ;;
             codex__help,cloud)
                 cmd="codex__help__cloud"
                 ;;
@@ -363,6 +375,9 @@ _codex() {
                 ;;
             codex__help,debug)
                 cmd="codex__help__debug"
+                ;;
+            codex__help,delete)
+                cmd="codex__help__delete"
                 ;;
             codex__help,doctor)
                 cmd="codex__help__doctor"
@@ -417,6 +432,9 @@ _codex() {
                 ;;
             codex__help,stdio-to-uds)
                 cmd="codex__help__stdio__to__uds"
+                ;;
+            codex__help,unarchive)
+                cmd="codex__help__unarchive"
                 ;;
             codex__help,update)
                 cmd="codex__help__update"
@@ -713,7 +731,7 @@ _codex() {
 
     case "${cmd}" in
         codex)
-            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply a resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply a resume archive delete unarchive fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -810,7 +828,7 @@ _codex() {
             return 0
             ;;
         codex__app__server)
-            opts="-c -h --strict-config --listen --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="-c -h --strict-config --listen --stdio --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1677,6 +1695,95 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__archive)
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --enable --disable --help <SESSION>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --remote)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --remote-auth-token-env)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --image)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --model)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --local-provider)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --profile)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -p)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --sandbox)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                -s)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                --cd)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -C)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --add-dir)
+                    COMPREPLY=()
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o plusdirs
+                    fi
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__cloud)
             opts="-c -h -V --config --enable --disable --help --version exec status list apply diff help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -2372,6 +2479,95 @@ _codex() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__delete)
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --force --enable --disable --help <SESSION>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --remote)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --remote-auth-token-env)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --image)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --model)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --local-provider)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --profile)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -p)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --sandbox)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                -s)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                --cd)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -C)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --add-dir)
+                    COMPREPLY=()
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o plusdirs
+                    fi
                     return 0
                     ;;
                 --config)
@@ -3144,7 +3340,7 @@ _codex() {
             return 0
             ;;
         codex__help)
-            opts="exec review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply resume fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="exec review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply resume archive delete unarchive fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3367,6 +3563,20 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__help__archive)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__help__cloud)
             opts="exec status list apply diff"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -3552,6 +3762,20 @@ _codex() {
         codex__help__debug__trace__reduce)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__delete)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -4137,6 +4361,20 @@ _codex() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        codex__help__unarchive)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         codex__help__update)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -4702,7 +4940,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__add)
-            opts="-m -c -h --marketplace --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
+            opts="-m -c -h --marketplace --json --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4880,7 +5118,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__list)
-            opts="-m -c -h --marketplace --config --enable --disable --help"
+            opts="-m -c -h --marketplace --json --available --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4948,7 +5186,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__add)
-            opts="-c -h --ref --sparse --config --enable --disable --help <SOURCE>"
+            opts="-c -h --ref --sparse --json --config --enable --disable --help <SOURCE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5070,7 +5308,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__list)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --json --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5100,7 +5338,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__remove)
-            opts="-c -h --config --enable --disable --help <MARKETPLACE_NAME>"
+            opts="-c -h --json --config --enable --disable --help <MARKETPLACE_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5130,7 +5368,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__upgrade)
-            opts="-c -h --config --enable --disable --help [MARKETPLACE_NAME]"
+            opts="-c -h --json --config --enable --disable --help [MARKETPLACE_NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5160,7 +5398,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__remove)
-            opts="-m -c -h --marketplace --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
+            opts="-m -c -h --marketplace --json --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5529,13 +5767,17 @@ _codex() {
             return 0
             ;;
         codex__sandbox)
-            opts="-p -C -c -h --permissions-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
+            opts="-P -p -C -c -h --permissions-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 --permissions-profile)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -P)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -5585,6 +5827,95 @@ _codex() {
                 return 0
             fi
             case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__unarchive)
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --enable --disable --help <SESSION>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --remote)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --remote-auth-token-env)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --image)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --model)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --local-provider)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --profile)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -p)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --sandbox)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                -s)
+                    COMPREPLY=($(compgen -W "read-only workspace-write danger-full-access" -- "${cur}"))
+                    return 0
+                    ;;
+                --cd)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -C)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --add-dir)
+                    COMPREPLY=()
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o plusdirs
+                    fi
+                    return 0
+                    ;;
                 --config)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0

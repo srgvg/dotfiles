@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Re-link the firefoxpwa runtime to the local manual-tarball Firefox after that
+# Firefox auto-updates itself in place. The runtime's library/omni.ja symlinks
+# auto-follow the update, but the copied firefox/firefox-bin + the chrome patch
+# drift from the new libxul, so they must be refreshed.
+#
+# BuildID-guarded: a no-op unless application.ini's BuildID changed since the
+# last successful re-link (marker file). Safe to run frequently / repeatedly.
+# See ~/etc/docs/firefoxpwa.md §5.
+set -euo pipefail
+
+APPINI="$HOME/Documents/Applications/firefox/application.ini"
+MARKER="$HOME/.local/share/firefoxpwa/.linked-buildid"
+FFPWA=/usr/bin/firefoxpwa
+
+cur=$(awk -F= '/^BuildID=/{print $2; exit}' "$APPINI")
+[ -n "$cur" ] || { echo "ERROR: cannot read BuildID from $APPINI"; exit 1; }
+
+prev=$(cat "$MARKER" 2>/dev/null || true)
+if [ "$cur" = "$prev" ]; then
+    echo "firefoxpwa runtime up to date (BuildID $cur)"
+    exit 0
+fi
+
+echo "Firefox BuildID ${prev:-none} -> $cur; re-linking firefoxpwa runtime"
+"$FFPWA" runtime install --link
+"$FFPWA" runtime patch
+printf '%s\n' "$cur" > "$MARKER"
+echo "firefoxpwa runtime re-linked to BuildID $cur"

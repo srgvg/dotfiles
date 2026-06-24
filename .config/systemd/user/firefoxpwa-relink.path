@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch local Firefox install for in-place updates
+Documentation=file:%h/etc/docs/firefoxpwa.md
+
+[Path]
+PathChanged=%h/Documents/Applications/firefox/application.ini
+Unit=firefoxpwa-relink.service
+
+[Install]
+WantedBy=default.target

@@ -129,6 +129,11 @@ function execute() {
         $HOME/bin/update-tools
 
     ###############################################################################
+    elif [ "${command}" = "firefoxpwa-relink" ]; then
+
+        $HOME/bin/firefoxpwa-relink
+
+    ###############################################################################
     elif [ "${command}" = "backup" ]; then
 
         : # no-op

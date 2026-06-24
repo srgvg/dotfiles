@@ -1,6 +1,19 @@
 idlehint 900
-#timeout 1800 "swayidle.sh lock"
-#timeout 3600 "swayidle.sh timeout" resume "swayidle.sh resume"  # temp-disabled 2026-05-26: re-enable after --nodevice=all validation
+
+# NO idle timeouts — manual lock only (decision 2026-06-24).
+# The swaylock/locked-state VRAM leak is an upstream sway/wlroots-Vulkan + NVIDIA
+# bug: sway's own renderer accumulates ~115 MiB/min while an ext-session-lock is
+# active, independent of all clients/swaylock/wallpaper/DPMS (proven by exhaustive
+# freeze tests — see ~/etc/docs/nvidia-setup.md Phase 26). It is unfixable locally.
+# The only thing that stops it is suspend (GPU off) or unlock (modeset recovery).
+# Auto-suspend WAS tried here but conflicts with long unattended jobs (it would
+# suspend the host mid-job), so it is removed. With manual-lock-only, you control
+# the exposure: lock briefly, or use $mod+Pause (suspend) when leaving for long.
+#   timeout 1800 "swayidle.sh lock"
+#   timeout 3600 "swayidle.sh timeout" resume "swayidle.sh resume"
+#   timeout 1500 "systemctl suspend"
+# CAVEAT: a manual lock still leaks ~115 MiB/min — don't leave it locked-and-awake
+# for more than ~45 min (≈8 GiB ceiling) or sway may OOM; suspend instead.
 
 lock "swayidle.sh lock"
 unlock "swayidle.sh unlock"
