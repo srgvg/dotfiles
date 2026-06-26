@@ -17,20 +17,20 @@ if [ "$action" = "sonos" ]; then
     device="sonos"
     device2="Sonos"
     shift
-    action=${1:-get}
+    action=${1:-set}
 elif [ "$action" = "local" ]; then
     device="pa"
     device2="$(pa-default long)"
     shift
-    action=${1:-get}
+    action=${1:-set}
 else
     device="pa"
     device2="$(pa-default long)"
-    action=${1:-get}
+    action=${1:-set}
 fi
 value=${2:-50}
-steppa=1
-stepso=1
+steppa=5
+stepso=5
 icon="audio-volume-medium"
 
 function sonos_playing() {

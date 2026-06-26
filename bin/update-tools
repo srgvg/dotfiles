@@ -392,9 +392,9 @@ get_flatpak() {
     local rc=0
 
     title "flatpak"
-    log "flatpak update global"
-    sudo flatpak update --assumeyes --noninteractive --system || rc=$?
-    log ""
+    #log "flatpak update global"
+    #sudo flatpak update --assumeyes --noninteractive --system || rc=$?
+    #log ""
     log "flatpak update user"
     flatpak update --assumeyes --noninteractive --user || rc=$?
     log ""
@@ -554,7 +554,7 @@ get_misc() {
 get_shell_init_cache() {
 
     local cache_dir="$HOME/.cache/shell-init"
-    local mise_bin="${MISE_BIN:-$HOME/.local/bin/mise}"  # overridable for testing
+    local mise_bin="${MISE_BIN:-$HOME/.local/bin/mise}" # overridable for testing
     local rc=0
     mkdir -p "$cache_dir"
 
