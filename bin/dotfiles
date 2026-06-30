@@ -136,11 +136,6 @@ Wallpapers
 .azure.d/ :!.azure.d/*/cliextensions/ :!.azure.d/*/logs/ :!.azure.d/*/commands/ :!.azure.d/*/telemetry.txt .azure.d/*/azureProfile.json :!.azure.d/*/clouds.config :!.azure.d/*/commandIndex.json :!.azure.d/*/msal_http_cache.bin :!.azure.d/*/msal_token_cache.json :!.azure.d/*/versionCheck.json :!.azure.d/*/azureProfile.json :!.azure.d/*/az_survey.json
 .cert/
 
-.claude/CLAUDE.md
-.claude/memory/
-.claude/settings.json
-.claude/ccstatusline.sh
-
 .config/git/
 .config/mopidy/mopidy.conf
 .config/doctl/ :!.config/doctl/cache/
@@ -168,6 +163,24 @@ bins/  :!*/__pycache__/*
 etc/    :!etc/vpn/teledyne/hipreport.log
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')
+"
+
+    # cdot = Claude Code config (private). Curated dirs where the dir holds only wanted
+    # content (docs/, workflows/, memory/ = .md only — runtime state lives in sibling
+    # dirs and can't be absorbed). plugins/ is an 82M cache, so track only the two config
+    # files there by name, never the dir.
+    cdotadds="
+.gitignore.d/cdot
+
+.claude/CLAUDE.md
+.claude/settings.json
+.claude/ccstatusline.sh
+.claude/docs/
+.claude/workflows/
+.claude/plugins/known_marketplaces.json
+.claude/plugins/claude-hud/config.json
+
+.claude/projects/-home-serge/memory/
 "
 }
 
@@ -197,6 +210,19 @@ function dotsadd() {
     for entry in ${sdotadds}; do
         IFS=$OIFS
         if ! vcsh run sdot git add --force ${entry}; then
+            err=$?
+            echo
+            title "ERROR ADDING ${entry}"
+            exit $err
+        fi
+        IFS=$NIFS
+    done
+    echo
+    sub "cdot"
+    echo "adding [cdot] entries"
+    for entry in ${cdotadds}; do
+        IFS=$OIFS
+        if ! vcsh run cdot git add --force ${entry}; then
             err=$?
             echo
             title "ERROR ADDING ${entry}"
@@ -250,7 +276,7 @@ function resolve_conflicts() {
     local repo file choice remaining
     local _ifs=$IFS
 
-    for repo in dot sdot; do
+    for repo in dot sdot cdot; do
         IFS=$OIFS
         local conflicts
         conflicts=$(vcsh run "$repo" git diff --name-only --diff-filter=U 2>/dev/null) || true

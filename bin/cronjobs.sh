@@ -129,6 +129,14 @@ function execute() {
         $HOME/bin/update-tools
 
     ###############################################################################
+    elif [ "${command}" = "etc-drift" ]; then
+
+        # Report drift between the curated /etc mirror (~/etc/r) and the live system.
+        # `make status` uses `sudo -n`, so root-only files (sudoers) show NEEDS-SUDO in cron;
+        # a non-zero exit means a world-readable managed file has drifted or is missing.
+        make -C "$HOME/etc/r" status
+
+    ###############################################################################
     elif [ "${command}" = "firefoxpwa-relink" ]; then
 
         $HOME/bin/firefoxpwa-relink

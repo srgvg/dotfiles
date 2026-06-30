@@ -265,7 +265,7 @@ get_krew() {
         if ! cmp --quiet $HOME/.config/krew-index-list <(krew index list); then
             for indexname in $(grep -v -e INDEX -e URL $HOME/.config/krew-index-list | awk '{print $1}'); do
                 if ! krew index list | grep --quiet $indexname; then
-                    indexurl=$(grep --quiet $indexname $HOME/.config/krew-index-list | awk '{print $2}')
+                    indexurl=$(grep "$indexname" "$HOME/.config/krew-index-list" | awk '{print $2}')
                     krew index add $indexname $indexurl
                 fi
             done
@@ -274,11 +274,13 @@ get_krew() {
     log "\nkrew (un)install new/removed plugins"
     if [ -f $HOME/.config/krew-list ]; then
         if ! cmp --quiet $HOME/.config/krew-list <(krew list); then
-            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^+ | sed 's/^+//'); do
-                krew install $plugin
+            # plugins listed in the saved config but not currently installed -> install
+            for plugin in $(comm -23 <(sort "$HOME/.config/krew-list") <(krew list | sort)); do
+                krew install "$plugin"
             done
-            for plugin in $(diff $HOME/.config/krew-list <(echo papa 1) | grep ^- | sed 's/^-//'); do
-                krew uninstall $plugin
+            # plugins currently installed but no longer in the saved config -> uninstall
+            for plugin in $(comm -13 <(sort "$HOME/.config/krew-list") <(krew list | sort)); do
+                krew uninstall "$plugin"
             done
         fi
     fi
@@ -343,8 +345,13 @@ get_asdf() {
 
     title "asdf install add-ons for asdf tools"
     log "\ngithub cli extensions"
-    gh auth login --hostname github.com || gh extension install dlvhdr/gh-dash
-    gh extension upgrade dlvhdr/gh-dash
+    # non-interactive: never attempt `gh auth login` from cron (it prompts/opens a browser).
+    if gh auth status --hostname github.com >/dev/null 2>&1; then
+        gh extension list | grep -q gh-dash || gh extension install dlvhdr/gh-dash
+        gh extension upgrade dlvhdr/gh-dash
+    else
+        err "gh not authenticated on github.com; skipping gh-dash extension"
+    fi
 }
 
 ##########################################################################################################
@@ -392,9 +399,11 @@ get_flatpak() {
     local rc=0
 
     title "flatpak"
-    #log "flatpak update global"
-    #sudo flatpak update --assumeyes --noninteractive --system || rc=$?
-    #log ""
+    log "flatpak update global"
+    # sudo -n so cron fails fast instead of blocking on the fingerprint reader;
+    # relies on the NOPASSWD rule in /etc/sudoers.d/serge (see ~/etc/r).
+    sudo -n flatpak update --assumeyes --noninteractive --system || rc=$?
+    log ""
     log "flatpak update user"
     flatpak update --assumeyes --noninteractive --user || rc=$?
     log ""
