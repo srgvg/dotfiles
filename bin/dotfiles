@@ -378,7 +378,7 @@ if [ "${action}" = "pull" ] || [ "${action}" = "all" ]; then
     title Pull
     vcsh foreach pull
     info
-    if [ "$(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e '^dot:$' -e '^sdot:$' | wc -l)" -gt 0 ]; then
+    if [ "$(vcsh foreach diff --name-only --diff-filter=U --relative | grep -v -e '^dot:$' -e '^sdot:$' -e '^cdot:$' | wc -l)" -gt 0 ]; then
         err "Merge conflicts detected"
         vcsh foreach diff --name-only --diff-filter=U --relative
         resolve_conflicts || exit 1
