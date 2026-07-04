@@ -42,6 +42,22 @@ report_errors() {
         exit 1
     fi
 }
+
+# $HOME is a mise *project* dir, not "global". A stray ~/mise.toml (usually a
+# `mise use <tool>` run in ~ WITHOUT -g) pins tools home-wide and shadows system binaries
+# — e.g. python, breaking virt-manager / GTK tools (`No module named 'gi'`). Checked from
+# trap_exit so it surfaces in EVERY run mode, including `quick` (whose backgrounded jobs
+# can't touch FAILED_COMPONENTS). Warn and fail (report_errors exits 1); do NOT
+# auto-delete (may be intentional).
+# See ~/etc/docs/mise.md "~/mise.toml keeps reappearing".
+check_stray_home_mise_config() {
+    if [ -f "$HOME/mise.toml" ]; then
+        FAILED_COMPONENTS+=("stray_home_mise_config")
+        err "stray ~/mise.toml present — home-wide tool pin (use 'mise use -g' instead):"
+        err "$(cat "$HOME/mise.toml")"
+        err "Fix: rm -f ~/mise.toml ~/mise.lock   (see ~/etc/docs/mise.md)"
+    fi
+}
 #
 ##########################################################################################################
 #
@@ -51,6 +67,7 @@ trap_exit() {
     title "cleanup"
     cd $HOME
     rm -rfv "$(dirname $TMPPATH)"
+    check_stray_home_mise_config
     title "end"
     report_errors
 }
