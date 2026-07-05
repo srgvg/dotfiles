@@ -51,6 +51,10 @@ backend = "core:bun"
 version = "0.6.3"
 backend = "cargo:mq-run"
 
+[[tools."cargo:wlr-chooser"]]
+version = "1.4.0"
+backend = "cargo:wlr-chooser"
+
 [[tools.cilium-cli]]
 version = "0.19.5"
 backend = "aqua:cilium/cilium-cli"
@@ -400,43 +404,43 @@ version = "0.2.0"
 backend = "github:traiproject/yaml-schema-router"
 
 [[tools."github:vicanso/zedis"]]
-version = "0.5.1"
+version = "0.5.2"
 backend = "github:vicanso/zedis"
 
 [tools."github:vicanso/zedis"."platforms.linux-arm64"]
-checksum = "sha256:f7252d0842b214d2292d0c0e6d28be1df68b399ee52b1fdef3da5ca95fef5681"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-linux-aarch64.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071956"
+checksum = "sha256:5c3bd8b9a47f7ff48c190ba8076f60561925fa42ed356e0e108dd1788f5996da"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125305"
 
 [tools."github:vicanso/zedis"."platforms.linux-arm64-musl"]
-checksum = "sha256:f7252d0842b214d2292d0c0e6d28be1df68b399ee52b1fdef3da5ca95fef5681"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-linux-aarch64.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071956"
+checksum = "sha256:5c3bd8b9a47f7ff48c190ba8076f60561925fa42ed356e0e108dd1788f5996da"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125305"
 
 [tools."github:vicanso/zedis"."platforms.linux-x64"]
-checksum = "sha256:6291af8c4cebbefea1ab5ff9c1510dc9cbe9bdf45867379ca67baeef55108802"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-linux-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071705"
+checksum = "sha256:e11f14fa739e9f45eeb48826742697857281c1b1790978fc610a7d2cac8abc35"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125623"
 
 [tools."github:vicanso/zedis"."platforms.linux-x64-musl"]
-checksum = "sha256:6291af8c4cebbefea1ab5ff9c1510dc9cbe9bdf45867379ca67baeef55108802"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-linux-x86_64.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071705"
+checksum = "sha256:e11f14fa739e9f45eeb48826742697857281c1b1790978fc610a7d2cac8abc35"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125623"
 
 [tools."github:vicanso/zedis"."platforms.macos-arm64"]
-checksum = "sha256:2136a61e5fc5e522e2cf87dfbf19a76a3ccdb0a2c84303ce387c6115bbe1f2b2"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-aarch64.AppImage.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071967"
+checksum = "sha256:7a8f7eb129b2d6f5e733ecc2d82144385c2de517a439398fb1933b271c6bbf6d"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-aarch64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125335"
 
 [tools."github:vicanso/zedis"."platforms.macos-x64"]
-checksum = "sha256:033479bbb0398f2ef4c240066a8ea2257aaa1868b5e0e5a2d9f7c1707a2fe0c5"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-x86_64.AppImage.tar.gz"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466071713"
+checksum = "sha256:fe2c30c75f3e19dc95d96c450d35fd876a76dd9151fabd862e9df8784e19ba91"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-x86_64.AppImage.tar.gz"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467125626"
 
 [tools."github:vicanso/zedis"."platforms.windows-x64"]
-checksum = "sha256:eac10b065354b908b1be0021d398231501f01feb7256f164435b24c8bd0682af"
-url = "https://github.com/vicanso/zedis/releases/download/v0.5.1/zedis-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/466075903"
+checksum = "sha256:5b94deaa953035fe79bee949937a02401bc2eda86207c824c45bfaf4e5a8f225"
+url = "https://github.com/vicanso/zedis/releases/download/v0.5.2/zedis-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/vicanso/zedis/releases/assets/467123693"
 
 [[tools."github:vmware-tanzu/tanzu-cli"]]
 version = "1.5.4"
@@ -843,8 +847,29 @@ version = "1.0.11"
 backend = "aqua:version-fox/vfox"
 
 [[tools."vfox:mise-plugins/vfox-neovim"]]
-version = "0.12.3"
+version = "0.12.4"
 backend = "vfox:mise-plugins/vfox-neovim"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-arm64"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-linux-arm64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-arm64-musl"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-linux-arm64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-linux-x86_64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.linux-x64-musl"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-linux-x86_64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.macos-arm64"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-macos-arm64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.macos-x64"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-macos-x86_64.tar.gz"
+
+[tools."vfox:mise-plugins/vfox-neovim"."platforms.windows-x64"]
+url = "https://github.com/neovim/neovim/releases/download/v0.12.4/nvim-win64.zip"
 
 [[tools.yamlfmt]]
 version = "0.21.0"

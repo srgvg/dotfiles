@@ -229,7 +229,10 @@ bindsym --no-repeat $mod+Control+Alt+x exec swaymsg -t get_tree | \
 # quickswitch
 #bindsym $mod+q	exec sway-list-windows.py
 # --no-repeat for menu/picker tools - should only open once
-bindsym --no-repeat $mod+q	exec $dfzf_term dfzf-windows
+# mod+q: wlr-switcher grid exposé (live previews, all workspaces; focuses picked window)
+bindsym --no-repeat $mod+q		exec wlr-switcher --layout grid
+# mod+Shift+q: dfzf-windows fzf popup (fuzzy search + color-mark/kill/urgent extras)
+bindsym --no-repeat $mod+Shift+q	exec $dfzf_term dfzf-windows
 
 # run launcher
 bindsym --no-repeat $mod+r	        exec wofi --insensitive --show run  --gtk-dark

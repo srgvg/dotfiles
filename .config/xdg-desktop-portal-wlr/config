@@ -1,17 +1,19 @@
 # xdg-desktop-portal-wlr screencast config — goldorak
 # Window (toplevel) capture needs xdpw >= 0.8.0 + sway 1.12 / wlroots 0.20.
-# See `man 5 xdg-desktop-portal-wlr` and ~/etc/docs/.
+# See `man 5 xdg-desktop-portal-wlr` and ~/etc/docs/screen-sharing.md.
 #
-# chooser_type=dmenu: xdpw pipes a newline list of sources to chooser_cmd —
-#   "Monitor: <output>" entries AND "Window: <toplevel>" entries — and we pick one.
-#   (chooser_type=default would use slurp first = region select, which can't pick a window.)
+# chooser_type=simple: xdpw runs chooser_cmd and reads the chosen source from its
+#   stdout ("Monitor: <output>" / "Window: <id>"). wlr-chooser enumerates the sources
+#   itself and shows a grid of LIVE thumbnails — no text list is piped in.
+#   Fallback: chooser_type=dmenu pipes a plain text list to a dmenu picker (wofi/fuzzel/
+#   rofi) — no thumbnails. chooser_type=default uses slurp (region only, can't pick a window).
 
 [screencast]
 # NVIDIA: force linear dmabuf modifiers — fixes "ext: frame capture failed:
 # buffer constraint mismatch" in the toplevel (window) capture path.
+# (Governs xdpw's own capture, not the chooser.)
 force_mod_linear=1
-chooser_type=dmenu
-# wofi: GTK (inherits the system theme), wide enough to show "Window: app_id (title)".
-# NB: thumbnails are NOT possible — xdpw passes a plain text list, no preview images.
-chooser_cmd=wofi --dmenu --width=1000 --height=450 --prompt="Share window / screen: "
+chooser_type=simple
+# wlr-chooser (wlr-utils, ~/.cargo/bin): rofi-like overlay, live window/monitor previews.
+chooser_cmd=wlr-chooser
 max_fps=30
