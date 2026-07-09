@@ -284,7 +284,7 @@ function resolve_conflicts() {
 
         sub "Conflicts in [$repo]"
 
-        while IFS= read -r file; do
+        while IFS= read -r file <&3; do
             [[ -z "$file" ]] && continue
             echo ""
             title "Conflict: $file"
@@ -319,7 +319,7 @@ function resolve_conflicts() {
                     return 1
                     ;;
             esac
-        done <<<"$conflicts"
+        done 3<<<"$conflicts"
 
         remaining=$(vcsh run "$repo" git diff --name-only --diff-filter=U 2>/dev/null) || true
         if [[ -n "$remaining" ]]; then

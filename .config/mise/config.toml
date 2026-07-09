@@ -39,7 +39,6 @@ nats-cli       = "github:nats-io/natscli"
 nats-server    = "github:nats-io/nats-server"
 nats-top       = "github:nats-io/nats-top"
 nsc            = "github:nats-io/nsc"
-satty          = "cargo:satty"
 snitch         = "github:karol-broda/snitch"
 ### ALIASES #################################################################
 
@@ -49,7 +48,7 @@ snitch         = "github:karol-broda/snitch"
 age                                             = { version = "latest" }
 argocd                                          = { version = "latest" }
 awscli                                          = { version = "latest" }
-azure-cli                                       = { version = "latest" }
+"pipx:azure-cli"                                = { version = "latest", exe = "az", uvx_args = "--prerelease=allow" }
 bat                                             = { version = "latest" }
 bitwarden                                       = { version = "latest" }
 bun                                             = { version = "latest" }
@@ -72,14 +71,14 @@ flux9s                                          = { version = "latest" }
 forward-email                                   = { version = "v0.2.0-alpha.2" }
 fx                                              = { version = "latest", exe = "fx" }
 garage-webui                                    = { version = "latest" }
-gcloud                                          = { version = "latest" }
+"vfox:mise-plugins/vfox-gcloud"                 = { version = "latest" }
 git-who                                         = { version = "latest" }
 github-cli                                      = { version = "latest" }
 gitlab-cli                                      = { version = "latest" }
 go                                              = { version = "latest" }
 go-containerregistry                            = { version = "latest", exe = "crane" }
 grpcurl                                         = { version = "latest", exe = "grpcurl" }
-hcloud                                          = { version = "latest" }
+"aqua:hetznercloud/cli"                         = { version = "latest", exe = "hcloud" }
 helm                                            = { version = "latest" }
 hubble                                          = { version = "latest", exe = "hubble" }
 hugo                                            = { version = "latest" }
@@ -101,8 +100,8 @@ kubebuilder                                     = { version = "latest" }
 kubecolor                                       = { version = "latest" }
 kubeconform                                     = { version = "latest" }
 kubectl                                         = { version = "latest" }
-kubent                                          = { version = "latest" }
-kubeseal                                        = { version = "latest" }
+"aqua:doitintl/kube-no-trouble"                 = { version = "latest", exe = "kubent" }
+"aqua:bitnami-labs/sealed-secrets"              = { version = "latest", exe = "kubeseal" }
 kubesec                                         = { version = "latest" }
 kubespy                                         = { version = "latest" }
 kubewall                                        = { version = "latest" }
@@ -140,7 +139,7 @@ regbot                                          = { version = "latest" }
 regctl                                          = { version = "latest" }
 ripgrep                                         = { version = "latest", exe = "rg" }
 rust                                            = { version = "latest" }
-satty                                           = { version = "latest", exe = "satty" }
+"cargo:satty"                                   = { version = "latest" }
 scaleway-cli                                    = { version = "latest" }
 slsa-verifier                                   = { version = "latest" }
 snitch                                          = { version = "latest" }
