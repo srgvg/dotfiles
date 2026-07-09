@@ -8,6 +8,8 @@ experimental = true
 lockfile = true
 log_level = "error"
 disable_backends = ["asdf"]
+# Trust ~/etc so its task runner (mise-tasks/etc/*) runs non-interactively, incl. cron.
+trusted_config_paths = ["~/etc"]
 
 [settings.status]
 show_env = true
@@ -178,3 +180,5 @@ git-cliff = "latest"
 "github:Ataraxy-Labs/sem" = "latest"
 "github:janosmiko/lfk" = "latest"
 gitleaks = "latest"
+"github:openziti/ziti" = "latest"
+"github:openziti/ziti-tunnel-sdk-c" = "latest"

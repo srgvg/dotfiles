@@ -131,10 +131,11 @@ function execute() {
     ###############################################################################
     elif [ "${command}" = "etc-drift" ]; then
 
-        # Report drift between the curated /etc mirror (~/etc/r) and the live system.
-        # `make status` uses `sudo -n`, so root-only files (sudoers) show NEEDS-SUDO in cron;
-        # a non-zero exit means a world-readable managed file has drifted or is missing.
-        make -C "$HOME/etc/r" status
+        # Report drift between the curated /etc mirror (~/etc/r) and live /etc via the
+        # `etc:status` mise task (~/etc/mise-tasks/etc/status; see ~/etc/docs/etc-config-mirror.md).
+        # It uses `sudo -n`, so root-only files show NEEDS-SUDO in cron; exit 2 means a readable,
+        # non-ignored managed file has drifted. Absolute mise path: cron PATH may lack ~/.local/bin.
+        "$HOME/.local/bin/mise" --cd "$HOME/etc" run etc:status
 
     ###############################################################################
     elif [ "${command}" = "firefoxpwa-relink" ]; then

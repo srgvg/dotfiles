@@ -160,7 +160,7 @@ Wallpapers
 .ssh/ :!.ssh/*_known_hosts :!.ssh/known_hosts*
 .talos/
 bins/  :!*/__pycache__/*
-etc/    :!etc/vpn/teledyne/hipreport.log
+etc/    :!etc/vpn/teledyne/hipreport.log :!etc/keys/teledyne/cascade-hetzner/platform/
 src/*.sh
 $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path '*/src/tmp/*' -not -path '*/src/upstream/*' -not -path '*/src/go/*')
 "
