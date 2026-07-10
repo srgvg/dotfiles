@@ -171,15 +171,18 @@ $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path 
     # files there by name, never the dir.
     cdotadds="
 .gitignore.d/cdot
-
 .claude/CLAUDE.md
 .claude/settings.json
 .claude/ccstatusline.sh
 .claude/docs/
 .claude/workflows/
+.claude/plans/
+.claude/rules/
+.claude/skills
+.claude/workflows/
+.claude/policy-limits.json
 .claude/plugins/known_marketplaces.json
 .claude/plugins/claude-hud/config.json
-
 .claude/projects/-home-serge*/memory/
 "
 }
