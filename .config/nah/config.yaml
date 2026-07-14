@@ -10,6 +10,15 @@ allow_paths:
   - /home/serge/.claude
   /home/serge/.config/nah:
   - /home/serge/.config/nah
+  - /home/serge
+  /home/serge/.bashrc:
+  - /home/serge
+  /home/serge/.bash_profile:
+  - /home/serge
+  /home/serge/.zshrc:
+  - /home/serge
+  /home/serge/.profile:
+  - /home/serge
 classify:
   container_destructive:
   - kubectl delete
@@ -37,6 +46,7 @@ classify:
   - systemctl daemon-reload
   filesystem_read:
   - find
+  - shellcheck
   - base64
   - nm
   - curl

@@ -181,12 +181,21 @@ $(find $HOME/src/ -name '.envrc' -type f -not -path '*/src/archive*' -not -path 
 .claude/skills
 .claude/workflows/
 .claude/policy-limits.json
-.claude/plugins/known_marketplaces.json
 .claude/plugins/claude-hud/config.json
 .claude/projects/-home-serge*/memory/
+
+.codex/config.toml
+.codex/skills/  :!.codex/skills/.system/
+
+.nah.yaml
+
+.vibe/AGENTS.md
+.vibe/bin/
+.vibe/config.toml
+.vibe/logs/session/ :!.vibe/logs/session/.last_session/
+.vibe/trusted_folders.toml
 "
 }
-
 ###############################################################################
 
 function dotsadd() {
