@@ -58,6 +58,7 @@ completion_bash_commands=(
     yq
     zitadel
     zli
+    ziti
     # completionS
     starship
     # --completion

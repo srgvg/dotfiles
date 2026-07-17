@@ -14,23 +14,35 @@ source "$HOME/bin/common.bash"
 ###############################################################################
 
 DO_IT=false
+WORKTREE_WIDE=false
 FAILED=0
 
 usage() {
-	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-y|--yes]"
+	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-y|--yes] [-w|--worktree]"
 	echo
 	echo "  Lists local and remote branches already merged or rebased into the repo's default branch."
+	echo "  Cleans up linked worktrees that can be removed without losing data: detached-HEAD"
+	echo "  worktrees and worktrees holding a stale branch (so the branch becomes deletable)."
 	echo "  In dry-run mode, prompts for confirmation before deleting."
-	echo "  -y, --yes    Delete the stale branches without prompting"
+	echo "  -y, -Y, --yes, --YES    Delete without prompting"
+	echo "  -w, --worktree          Also remove worktrees on active (non-stale) branches;"
+	echo "                          requires -y/--yes"
 }
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
-		-y|--yes)   DO_IT=true; shift ;;
+		-y|-Y|--yes|--YES)     DO_IT=true; shift ;;
+		-w|--worktree)         WORKTREE_WIDE=true; shift ;;
 		-h|--help)  usage; exit 0 ;;
 		*) echo -e "${echo_red}Unknown option: $1${echo_normal}" >&2; usage >&2; exit 1 ;;
 	esac
 done
+
+if $WORKTREE_WIDE && ! $DO_IT; then
+	echo -e "${echo_red}-w/--worktree requires -y/--yes.${echo_normal}" >&2
+	usage >&2
+	exit 1
+fi
 
 if ! git rev-parse --git-dir &>/dev/null; then
 	echo -e "${echo_red}Not a git repository.${echo_normal}" >&2
@@ -41,10 +53,21 @@ fi
 CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo "origin")
 
-# Fetch from remote (non-fatal)
+# Fetch from remote (non-fatal). In a shallow clone, git's ancestry and reachability
+# checks are unreliable (truncated history makes fast-forwardable branches look diverged
+# and reachable worktree commits look orphaned), so unshallow first for accurate analysis.
 echo -e "${echo_lightgray}Fetching from ${REMOTE}...${echo_normal}"
-if git fetch "$REMOTE" 2>/dev/null; then
+declare -a FETCH_ARGS=("$REMOTE")
+if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+	echo -e "  ${echo_yellow}Shallow clone — unshallowing for accurate branch/worktree analysis...${echo_normal}"
+	FETCH_ARGS=(--unshallow "$REMOTE")
+fi
+if git fetch "${FETCH_ARGS[@]}" 2>/dev/null; then
 	# Ensure remote HEAD is resolved so symbolic-ref works
+	git remote set-head "$REMOTE" --auto &>/dev/null || true
+elif [[ "${FETCH_ARGS[0]}" == "--unshallow" ]] && git fetch "$REMOTE" 2>/dev/null; then
+	# Unshallow can fail offline or if already complete — fall back to a plain fetch.
+	echo -e "  ${echo_yellow}Unshallow failed — proceeding with existing (shallow) history.${echo_normal}"
 	git remote set-head "$REMOTE" --auto &>/dev/null || true
 else
 	echo -e "  ${echo_yellow}Could not reach ${REMOTE} — proceeding without fetch.${echo_normal}"
@@ -151,8 +174,125 @@ LOCAL_TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
 REMOTE_TOTAL=$(( ${#REMOTE_MERGED[@]} + ${#REMOTE_REBASED[@]} ))
 TOTAL=$(( LOCAL_TOTAL + REMOTE_TOTAL ))
 
-if [[ $TOTAL -eq 0 ]]; then
-	echo -e "${echo_green}No stale branches found.${echo_normal}"
+# Collect linked worktrees to clean up. A worktree is a candidate when it is disposable
+# (detached HEAD, or holding a stale local branch); with -w it widens to any worktree on a
+# non-stale branch too. A candidate is only removed if doing so loses no data — clean,
+# unlocked, and (when detached) not orphaning commits. Unsafe candidates are reported, kept.
+declare -A STALE_SET=()
+for branch in "${MERGED[@]}" "${REBASED[@]}"; do
+	[[ "$branch" == "$CURRENT_BRANCH" ]] && continue
+	STALE_SET["$branch"]=1
+done
+
+CURRENT_WT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+MAIN_WT=""   # first entry of `git worktree list` is always the main worktree
+
+declare -a WT_REMOVE_PATHS=()
+declare -a WT_REMOVE_LABELS=()
+declare -a WT_SKIP_MSGS=()
+
+# commit_on_remote SHA -> true if the commit is a ref tip on the remote (branches, tags,
+# and refs/pull/*), i.e. recoverable even if the local worktree is removed. The remote ref
+# list is fetched once and cached.
+REMOTE_TIP_SHAS=""
+REMOTE_TIP_SHAS_LOADED=false
+commit_on_remote() {
+	local sha=$1
+	if ! $REMOTE_TIP_SHAS_LOADED; then
+		REMOTE_TIP_SHAS=$(git ls-remote "$REMOTE" 2>/dev/null | awk '{print $1}')
+		REMOTE_TIP_SHAS_LOADED=true
+	fi
+	[[ -n "$sha" ]] && grep -qxF "$sha" <<<"$REMOTE_TIP_SHAS"
+}
+
+# commit_merged_into_base SHA -> true if every commit in SHA beyond the base branch is
+# patch-equivalent to a commit already in the base (i.e. rebased-and-merged, like the
+# merge queue does). Same test the script uses to flag "rebased" branches: git cherry
+# marks patch-equivalent commits with '-' and genuinely new ones with '+'.
+commit_merged_into_base() {
+	local head=$1 out
+	if out=$(git cherry "$BASE_REF" "$head" 2>/dev/null); then
+		! grep -q '^+' <<<"$out"
+	else
+		return 1   # can't tell (no merge base / error) -> treat as not merged
+	fi
+}
+
+process_worktree() {   # consumes the accumulated wt_* fields
+	local path=$1 head=$2 branch=$3 locked=$4 lockreason=$5
+	[[ -z "$path" ]] && return
+	[[ -z "$MAIN_WT" ]] && MAIN_WT="$path"          # remember the main worktree
+	[[ "$path" == "$MAIN_WT" ]] && return           # never remove the main worktree
+	[[ "$path" == "$CURRENT_WT" ]] && return        # never remove the one we're in
+
+	local label detached=false
+	if [[ -n "$branch" ]]; then
+		label="$branch"
+		# candidate iff stale, or wide mode (any non-stale branch)
+		if [[ -z "${STALE_SET[$branch]:-}" ]] && ! $WORKTREE_WIDE; then
+			return
+		fi
+	else
+		detached=true
+		label="detached ${head:0:8}"
+		# detached worktrees are always disposable candidates
+	fi
+
+	# Safety: locked worktrees are left alone.
+	if [[ -n "$locked" ]]; then
+		WT_SKIP_MSGS+=("$path  (locked${lockreason:+: $lockreason})")
+		return
+	fi
+	# Safety: uncommitted or untracked changes -> would lose data.
+	if [[ -n "$(git -C "$path" status --porcelain 2>/dev/null)" ]]; then
+		WT_SKIP_MSGS+=("$path  (dirty — uncommitted/untracked changes)")
+		return
+	fi
+	# Safety: a detached HEAD is only safe to remove if its commit survives elsewhere —
+	#  - reachable from a local ref (branch/tag/remote-tracking; git rev-list --all counts
+	#    linked-worktree HEADs, so use for-each-ref which only sees refs/), or
+	#  - present as a tip on the remote (recoverable via fetch), or
+	#  - rebased-and-merged: its changes are already patch-equivalent in the base branch.
+	# Otherwise removing it orphans the commit.
+	if $detached \
+		&& [[ -z "$(git for-each-ref --contains "$head" --count=1 --format='x' 2>/dev/null)" ]] \
+		&& ! commit_on_remote "$head" \
+		&& ! commit_merged_into_base "$head"; then
+		WT_SKIP_MSGS+=("$path  (detached HEAD holds unmerged commit(s) not on any branch/tag or the remote)")
+		return
+	fi
+
+	WT_REMOVE_PATHS+=("$path")
+	WT_REMOVE_LABELS+=("$label")
+}
+
+wt_path="" wt_head="" wt_branch="" wt_locked="" wt_lockreason=""
+while IFS= read -r line; do
+	case $line in
+		"worktree "*)          wt_path="${line#worktree }" ;;
+		"HEAD "*)              wt_head="${line#HEAD }" ;;
+		"branch refs/heads/"*) wt_branch="${line#branch refs/heads/}" ;;
+		"locked"*)             wt_locked=1; wt_lockreason="${line#locked}"; wt_lockreason="${wt_lockreason# }" ;;
+		"")
+			process_worktree "$wt_path" "$wt_head" "$wt_branch" "$wt_locked" "$wt_lockreason"
+			wt_path="" wt_head="" wt_branch="" wt_locked="" wt_lockreason=""
+			;;
+	esac
+done < <(git worktree list --porcelain 2>/dev/null)
+process_worktree "$wt_path" "$wt_head" "$wt_branch" "$wt_locked" "$wt_lockreason"   # final record
+
+WT_TOTAL=${#WT_REMOVE_PATHS[@]}
+
+if [[ $TOTAL -eq 0 && $WT_TOTAL -eq 0 ]]; then
+	if [[ ${#WT_SKIP_MSGS[@]} -gt 0 ]]; then
+		echo -e "${echo_green}No stale branches found.${echo_normal}"
+		echo -e "${echo_yellow}Skipped worktree(s) (unsafe to remove):${echo_normal}"
+		for msg in "${WT_SKIP_MSGS[@]}"; do
+			echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+		done
+	else
+		echo -e "${echo_green}Nothing to clean.${echo_normal}"
+	fi
 	exit 0
 fi
 
@@ -206,7 +346,28 @@ delete_remote_branch() {
 	fi
 }
 
-if $DO_IT; then
+remove_worktree() {
+	local path=$1
+	local label=$2
+	printf "  ${echo_yellow}%s${echo_normal}  ${echo_lightgray}(%s)${echo_normal}\n" \
+		"$path" "$label"
+	local err
+	if ! err=$(git worktree remove "$path" 2>&1); then
+		echo -e "    ${echo_red}(failed: ${err})${echo_normal}" >&2
+		(( FAILED++ )) || true
+	fi
+}
+
+# Removes stale worktrees, then local, then remote branches (shared by both the
+# --yes and confirmed-interactive paths).
+do_deletions() {
+	if [[ $WT_TOTAL -gt 0 ]]; then
+		echo -e "${echo_bold_white}Removing ${WT_TOTAL} worktree(s):${echo_normal}"
+		for i in "${!WT_REMOVE_PATHS[@]}"; do
+			remove_worktree "${WT_REMOVE_PATHS[$i]}" "${WT_REMOVE_LABELS[$i]}"
+		done
+		echo
+	fi
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Deleting ${LOCAL_TOTAL} stale local branch(es):${echo_normal}"
 		for branch in "${MERGED[@]}"; do
@@ -230,6 +391,20 @@ if $DO_IT; then
 			delete_remote_branch "$branch"
 		done
 	fi
+}
+
+print_skipped_worktrees() {
+	[[ ${#WT_SKIP_MSGS[@]} -eq 0 ]] && return
+	echo
+	echo -e "${echo_bold_white}Skipped worktree(s) (unsafe to remove):${echo_normal}"
+	for msg in "${WT_SKIP_MSGS[@]}"; do
+		echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+	done
+}
+
+if $DO_IT; then
+	do_deletions
+	print_skipped_worktrees
 else
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Stale local branches (${LOCAL_TOTAL}):${echo_normal}"
@@ -250,39 +425,37 @@ else
 			print_remote_branch "$branch" "rebased" "$echo_yellow"
 		done
 	fi
-	echo
-	CONFIRM=""
-	read -rp "Delete these ${TOTAL} branch(es)? Enter Y to confirm: " CONFIRM || true
-	if [[ "$CONFIRM" == "Y" ]]; then
-		if [[ $LOCAL_TOTAL -gt 0 ]]; then
-			echo -e "${echo_bold_white}Deleting ${LOCAL_TOTAL} stale local branch(es):${echo_normal}"
-			for branch in "${MERGED[@]}"; do
-				print_branch "$branch" "merged " "$echo_green"
-				delete_branch "$branch" -d
-			done
-			for branch in "${REBASED[@]}"; do
-				print_branch "$branch" "rebased" "$echo_yellow"
-				delete_branch "$branch" -D
-			done
-		fi
-		if [[ $REMOTE_TOTAL -gt 0 ]]; then
-			[[ $LOCAL_TOTAL -gt 0 ]] && echo
-			echo -e "${echo_bold_white}Deleting ${REMOTE_TOTAL} stale remote branch(es):${echo_normal}"
-			for branch in "${REMOTE_MERGED[@]}"; do
-				print_remote_branch "$branch" "merged " "$echo_green"
-				delete_remote_branch "$branch"
-			done
-			for branch in "${REMOTE_REBASED[@]}"; do
-				print_remote_branch "$branch" "rebased" "$echo_yellow"
-				delete_remote_branch "$branch"
-			done
-		fi
-	else
-		echo -e "${echo_yellow}Aborted — no branches deleted.${echo_normal}"
+	if [[ $WT_TOTAL -gt 0 ]]; then
+		echo
+		echo -e "${echo_bold_white}Worktrees to remove (${WT_TOTAL}):${echo_normal}"
+		for i in "${!WT_REMOVE_PATHS[@]}"; do
+			printf "  ${echo_yellow}%s${echo_normal}  ${echo_lightgray}(%s)${echo_normal}\n" \
+				"${WT_REMOVE_PATHS[$i]}" "${WT_REMOVE_LABELS[$i]}"
+		done
 	fi
+	print_skipped_worktrees
+	echo
+
+	# Build a prompt covering whichever of branches / worktrees are present.
+	prompt="Delete"
+	[[ $TOTAL -gt 0 ]] && prompt+=" ${TOTAL} branch(es)"
+	[[ $TOTAL -gt 0 && $WT_TOTAL -gt 0 ]] && prompt+=" and"
+	[[ $WT_TOTAL -gt 0 ]] && prompt+=" remove ${WT_TOTAL} worktree(s)"
+	prompt+="? Enter Y to confirm: "
+
+	CONFIRM=""
+	read -rp "$prompt" CONFIRM || true
+	case "$CONFIRM" in
+		y|yes|Y|YES)
+			do_deletions
+			;;
+		*)
+			echo -e "${echo_yellow}Aborted — nothing deleted.${echo_normal}"
+			;;
+	esac
 fi
 
 if (( FAILED > 0 )); then
-	echo -e "${echo_red}${FAILED} branch(es) could not be deleted.${echo_normal}" >&2
+	echo -e "${echo_red}${FAILED} item(s) could not be removed.${echo_normal}" >&2
 	exit 1
 fi

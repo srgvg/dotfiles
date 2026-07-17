@@ -574,6 +574,9 @@ _codex() {
             codex__help__plugin__marketplace,upgrade)
                 cmd="codex__help__plugin__marketplace__upgrade"
                 ;;
+            codex__help__remote__control,pair)
+                cmd="codex__help__remote__control__pair"
+                ;;
             codex__help__remote__control,start)
                 cmd="codex__help__remote__control__start"
                 ;;
@@ -709,6 +712,9 @@ _codex() {
             codex__remote__control,help)
                 cmd="codex__remote__control__help"
                 ;;
+            codex__remote__control,pair)
+                cmd="codex__remote__control__pair"
+                ;;
             codex__remote__control,start)
                 cmd="codex__remote__control__start"
                 ;;
@@ -717,6 +723,9 @@ _codex() {
                 ;;
             codex__remote__control__help,help)
                 cmd="codex__remote__control__help__help"
+                ;;
+            codex__remote__control__help,pair)
+                cmd="codex__remote__control__help__pair"
                 ;;
             codex__remote__control__help,start)
                 cmd="codex__remote__control__help__start"
@@ -813,11 +822,11 @@ _codex() {
                     return 0
                     ;;
                 --ask-for-approval)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 -a)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -3309,11 +3318,11 @@ _codex() {
                     return 0
                     ;;
                 --ask-for-approval)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 -a)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 --config)
@@ -4250,8 +4259,22 @@ _codex() {
             return 0
             ;;
         codex__help__remote__control)
-            opts="start stop"
+            opts="start stop pair"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__help__remote__control__pair)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -5436,7 +5459,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control)
-            opts="-c -h --json --config --enable --disable --help start stop help"
+            opts="-c -h --json --config --enable --disable --help start stop pair help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5466,7 +5489,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control__help)
-            opts="start stop help"
+            opts="start stop pair help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5480,6 +5503,20 @@ _codex() {
             return 0
             ;;
         codex__remote__control__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__help__pair)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -5514,6 +5551,36 @@ _codex() {
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        codex__remote__control__pair)
+            opts="-c -h --json --config --enable --disable --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --enable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --disable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -5694,11 +5761,11 @@ _codex() {
                     return 0
                     ;;
                 --ask-for-approval)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 -a)
-                    COMPREPLY=($(compgen -W "untrusted on-failure on-request never" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "untrusted on-request never" -- "${cur}"))
                     return 0
                     ;;
                 --config)
@@ -5767,13 +5834,21 @@ _codex() {
             return 0
             ;;
         codex__sandbox)
-            opts="-P -p -C -c -h --permissions-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
+            opts="-P -p -C -c -h --sandbox-state-json --sandbox-state-readable-root --sandbox-state-disable-network --permission-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --permissions-profile)
+                --sandbox-state-json)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --sandbox-state-readable-root)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --permission-profile)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
