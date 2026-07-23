@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+
+# foot-server-mask-check — assert that foot is NOT running in server mode.
+#
+# foot runs as standalone instances (one process per window) since 2026-07-22: a
+# `foot --server` crash used to take every window and its shells/jobs down at once
+# (~/etc/docs/foot-migration.md §0e/§0f). The teardown relies on
+# `systemctl --user mask foot-server.socket foot-server.service`, because the Debian
+# package preset ALSO wants both units from the root-owned
+# /etc/systemd/user/graphical-session.target.wants/ — plain `disable` is not enough,
+# and a future foot package upgrade re-running the preset is exactly the regression
+# this guards against.
+#
+# Silent when healthy. On failure it notifies (mako) and logs to stderr, which sway
+# captures in its journal. Run from ~/.config/sway/90-execs-config at every login;
+# safe to run by hand at any time.
+#
+# Exit: 0 = standalone as intended, 1 = server mode is back.
+
+set -o nounset
+set -o pipefail
+
+bad=()
+
+for unit in foot-server.socket foot-server.service
+do
+	state="$(systemctl --user is-enabled "$unit" 2>/dev/null || true)"
+	[ "$state" = masked ] || bad+=("$unit is '${state:-unknown}', expected masked")
+done
+
+# Anchored so it can't match a shell wrapper whose command line merely contains the
+# string (e.g. this script being invoked from `bash -c '… foot --server …'`).
+if pgrep -f '^(/usr/bin/)?foot (-s|--server)' >/dev/null 2>&1
+then
+	bad+=("a 'foot --server' process is running")
+fi
+
+[ ${#bad[@]} -eq 0 ] && exit 0
+
+printf 'foot-server-mask-check: %s\n' "${bad[@]}" >&2
+notify-send -u critical "foot server mode is back" \
+	"$(printf '%s\n' "${bad[@]}")
+Fix: systemctl --user mask foot-server.socket foot-server.service
+See ~/etc/docs/foot-migration.md §0f" 2>/dev/null || true
+exit 1

@@ -56,6 +56,10 @@ exec_always --no-startup-id "setsbg redisplay"
 # desktop stuff
 #
 exec_always "/home/serge/bin/swayidle.sh"
+# Assert foot did not fall back into server mode (masked units vs the Debian package
+# preset in /etc/systemd/user/…; see ~/etc/docs/foot-migration.md §0f). Silent unless
+# broken; the sleep lets the notification daemon come up first.
+exec_always "sleep 15 && $HOME/bin/foot-server-mask-check"
 exec_always "sleep 3 && $HOME/bin/i3-launch-jobs ; sleep 1 && swaymsg 'focus output $primary'"
 # https://major.io/p/sway-dark-mode/
 exec --no-startup-id "dbus-send --session --dest=org.kde.GtkConfig --type=method_call /GtkConfig org.kde.GtkConfig.setGtkTheme string:Breeze-dark-gtk"

@@ -29,8 +29,6 @@ else
     action=${1:-set}
 fi
 value=${2:-50}
-steppa=5
-stepso=5
 icon="audio-volume-medium"
 
 function sonos_playing() {
@@ -99,6 +97,20 @@ function sonos_toggle() {
     fi
 }
 
+# snap CURRENT to the adjacent multiple of 5 in the DIR ("up"/"down"),
+# clamped to 0..100
+function step_multiple() {
+    local current="$1" dir="$2" step=5 target
+    if [ "$dir" = "up" ]; then
+        target=$(( current / step * step + step ))
+    else
+        target=$(( (current + step - 1) / step * step - step ))
+    fi
+    [ "$target" -lt 0 ]   && target=0
+    [ "$target" -gt 100 ] && target=100
+    echo "$target"
+}
+
 function volume() {
     local device="${1}"
     local action="${2}"
@@ -121,10 +133,16 @@ function volume() {
         up)
             case "${device}" in
                 sonos)
-                    sonos volume +${stepso}
+                    _target="$(step_multiple "${level1}" up)"
+                    _delta=$(( _target - level1 ))
+                    if [ "$_delta" -ge 0 ]; then
+                        sonos volume "+${_delta}"
+                    else
+                        sonos volume "${_delta}"
+                    fi
                     ;;
                 pa)
-                    ponymix increase ${steppa}
+                    ponymix set-volume "$(step_multiple "${level1}" up)"
                     ;;
             esac
             icon=audio-volume-high
@@ -132,10 +150,16 @@ function volume() {
         down)
             case "${device}" in
                 sonos)
-                    sonos volume -${stepso}
+                    _target="$(step_multiple "${level1}" down)"
+                    _delta=$(( _target - level1 ))
+                    if [ "$_delta" -ge 0 ]; then
+                        sonos volume "+${_delta}"
+                    else
+                        sonos volume "${_delta}"
+                    fi
                     ;;
                 pa)
-                    ponymix decrease ${steppa}
+                    ponymix set-volume "$(step_multiple "${level1}" down)"
                     ;;
             esac
             icon=audio-volume-low

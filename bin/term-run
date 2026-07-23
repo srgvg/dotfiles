@@ -25,11 +25,7 @@ case "${term##*/}" in
 	*)    idflag="--class" ;;
 esac
 
-# Server mode: route foot through the running foot --server (footclient) for instant
-# startup; -E inherits this caller's environment. Fall back to plain foot if the socket
-# is down. footclient accepts the same --app-id/--title/-D/-e flags. alacritty unchanged.
-footsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/foot.sock"
-if [ "$term" = foot ] && [ -S "$footsock" ]; then
-	exec footclient -E --server-socket="$footsock" "$idflag" "$id" --title "$title" -e "$@"
-fi
+# foot runs as standalone instances (one process per window); server mode (footclient) was
+# reverted — a `foot --server` crash took every window down at once. See
+# ~/etc/docs/foot-migration.md §0f.
 exec "$term" "$idflag" "$id" --title "$title" -e "$@"

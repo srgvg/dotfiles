@@ -190,6 +190,7 @@ MAIN_WT=""   # first entry of `git worktree list` is always the main worktree
 declare -a WT_REMOVE_PATHS=()
 declare -a WT_REMOVE_LABELS=()
 declare -a WT_SKIP_MSGS=()
+declare -A ALL_WT_BRANCHES=()   # branch -> worktree path, for every linked/main worktree
 
 # commit_on_remote SHA -> true if the commit is a ref tip on the remote (branches, tags,
 # and refs/pull/*), i.e. recoverable even if the local worktree is removed. The remote ref
@@ -221,6 +222,9 @@ commit_merged_into_base() {
 process_worktree() {   # consumes the accumulated wt_* fields
 	local path=$1 head=$2 branch=$3 locked=$4 lockreason=$5
 	[[ -z "$path" ]] && return
+	# Record the branch->path for every worktree (incl. main/current) before any early
+	# return, so branch deletion can tell which branches are pinned by a surviving worktree.
+	[[ -n "$branch" ]] && ALL_WT_BRANCHES["$branch"]="$path"
 	[[ -z "$MAIN_WT" ]] && MAIN_WT="$path"          # remember the main worktree
 	[[ "$path" == "$MAIN_WT" ]] && return           # never remove the main worktree
 	[[ "$path" == "$CURRENT_WT" ]] && return        # never remove the one we're in
@@ -283,13 +287,49 @@ process_worktree "$wt_path" "$wt_head" "$wt_branch" "$wt_locked" "$wt_lockreason
 
 WT_TOTAL=${#WT_REMOVE_PATHS[@]}
 
+# A stale branch checked out in a worktree that is NOT being removed cannot be deleted
+# (git refuses: "used by worktree"). Drop such branches from the deletion lists and report
+# them, so we never attempt a doomed delete. Branches whose worktree IS slated for removal
+# stay deletable — do_deletions removes those worktrees first.
+declare -A WT_REMOVE_SET=()
+for path in "${WT_REMOVE_PATHS[@]}"; do WT_REMOVE_SET["$path"]=1; done
+
+declare -a PINNED_BRANCH_MSGS=()
+filter_pinned() {   # $1 = name of a branch array to rewrite in place
+	local -n arr=$1
+	local -a kept=()
+	local b p
+	for b in "${arr[@]}"; do
+		p="${ALL_WT_BRANCHES[$b]:-}"
+		if [[ -n "$p" && -z "${WT_REMOVE_SET[$p]:-}" ]]; then
+			PINNED_BRANCH_MSGS+=("$b  (checked out in ${p} — kept)")
+		else
+			kept+=("$b")
+		fi
+	done
+	arr=("${kept[@]}")
+}
+filter_pinned MERGED
+filter_pinned REBASED
+
+LOCAL_TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
+TOTAL=$(( LOCAL_TOTAL + REMOTE_TOTAL ))
+
 if [[ $TOTAL -eq 0 && $WT_TOTAL -eq 0 ]]; then
-	if [[ ${#WT_SKIP_MSGS[@]} -gt 0 ]]; then
-		echo -e "${echo_green}No stale branches found.${echo_normal}"
-		echo -e "${echo_yellow}Skipped worktree(s) (unsafe to remove):${echo_normal}"
-		for msg in "${WT_SKIP_MSGS[@]}"; do
-			echo -e "  ${echo_lightgray}${msg}${echo_normal}"
-		done
+	if [[ ${#WT_SKIP_MSGS[@]} -gt 0 || ${#PINNED_BRANCH_MSGS[@]} -gt 0 ]]; then
+		echo -e "${echo_green}No branches to delete.${echo_normal}"
+		if [[ ${#WT_SKIP_MSGS[@]} -gt 0 ]]; then
+			echo -e "${echo_yellow}Skipped worktree(s) (unsafe to remove):${echo_normal}"
+			for msg in "${WT_SKIP_MSGS[@]}"; do
+				echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+			done
+		fi
+		if [[ ${#PINNED_BRANCH_MSGS[@]} -gt 0 ]]; then
+			echo -e "${echo_yellow}Skipped branch(es) (checked out in a kept worktree):${echo_normal}"
+			for msg in "${PINNED_BRANCH_MSGS[@]}"; do
+				echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+			done
+		fi
 	else
 		echo -e "${echo_green}Nothing to clean.${echo_normal}"
 	fi
@@ -402,9 +442,19 @@ print_skipped_worktrees() {
 	done
 }
 
+print_pinned_branches() {
+	[[ ${#PINNED_BRANCH_MSGS[@]} -eq 0 ]] && return
+	echo
+	echo -e "${echo_bold_white}Skipped branch(es) (checked out in a kept worktree):${echo_normal}"
+	for msg in "${PINNED_BRANCH_MSGS[@]}"; do
+		echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+	done
+}
+
 if $DO_IT; then
 	do_deletions
 	print_skipped_worktrees
+	print_pinned_branches
 else
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Stale local branches (${LOCAL_TOTAL}):${echo_normal}"
@@ -434,6 +484,7 @@ else
 		done
 	fi
 	print_skipped_worktrees
+	print_pinned_branches
 	echo
 
 	# Build a prompt covering whichever of branches / worktrees are present.

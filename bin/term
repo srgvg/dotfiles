@@ -30,19 +30,10 @@ CARGS="$*"
 
 # Build the launch command in a local var; do NOT mutate the exported $TERMINAL
 # (children must inherit the bare emulator name, not a full command line).
-# Server mode: when the emulator is foot and the foot --server socket is up, hand off
-# to footclient (instant startup, shared font/glyph caches). -E makes the new terminal
-# inherit THIS shell's environment (SSH agent, kube context) rather than the server's.
-# Falls back to plain foot if the socket is absent. See ~/etc/docs/foot-migration.md.
-_footsock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/foot.sock"
-if [ "$TERMINAL" = foot ] && [ -S "$_footsock" ]
-then
-	# --server-socket points straight at the systemd socket (%t/foot.sock), avoiding
-	# footclient's default foot-$WAYLAND_DISPLAY.sock miss + stderr fallback warning.
-	cmd="footclient -E --server-socket=$_footsock"
-else
-	cmd="$TERMINAL"
-fi
+# foot runs as standalone instances (one process per window) — server mode was reverted
+# because a `foot --server` crash took every window down at once. See
+# ~/etc/docs/foot-migration.md §0f.
+cmd="$TERMINAL"
 
 if [ -z "$CARGS" ]
 then
@@ -51,13 +42,12 @@ then
 		#cmd="$TERMINAL --role gnome-terminal-floating"
 		cmd="$cmd $IDFLAG terminal-floating"
 	else
-		# Same-dir spawn: under foot server mode all windows share one pid, so the focused
-		# window's cwd isn't readable externally (the title is clobbered by claude/vim/ssh). If
-		# foot is the emulator and a foot window is focused, let foot spawn the new window itself
-		# via its OSC-7 tracking — inject its spawn-terminal binding with wtype. comm=foot matches
-		# both the shared server pid and any standalone foot. Non-foot windows fall through to the
-		# sway-get-window-cwd pid method. Needs foot.ini's Mod4+Control+Shift+n binding loaded
-		# (foot-server restart) — see ~/etc/docs/foot-migration.md §0d.
+		# Same-dir spawn: if foot is the emulator and a foot window is focused, let foot spawn the
+		# new window itself via its OSC-7 tracking — inject its spawn-terminal binding with wtype.
+		# OSC-7 is the authoritative cwd: it survives OSC-2 title clobbering (claude/vim/ssh) and
+		# needs no pid probing. Non-foot windows fall through to the sway-get-window-cwd pid
+		# method. Needs foot.ini's Mod4+Control+Shift+n binding — see
+		# ~/etc/docs/foot-migration.md §0d.
 		_fpid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? == true)) | .pid // 0' 2>/dev/null || echo 0)"
 		if [ "$TERMINAL" = foot ] && [ "${_fpid:-0}" -gt 1 ] 2>/dev/null && [ "$(ps -o comm= -p "${_fpid}" 2>/dev/null)" = foot ]
 		then
