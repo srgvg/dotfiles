@@ -698,7 +698,7 @@ init() {
 post() {
 
     title "add dotfiles"
-    if ! $HOME/bin/dotfiles add; then
+    if ! $HOME/bins/dotfiles add; then
         FAILED_COMPONENTS+=("dotfiles")
         err "dotfiles add failed"
     fi
