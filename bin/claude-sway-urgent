@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# Mark this Claude Code session's sway window urgent and pop a notification identifying the
+# session, when Claude stops and waits for input. Wired to the Notification and Stop hooks in
+# ~/.claude/settings.json. Reads the hook JSON payload on stdin.
+#
+# Why it exists: foot signals the bell over xdg-system-bell-v1, which sway 1.12 does not
+# implement, and sway honours client-set urgency only for XWayland windows -- so foot's own
+# bell can never raise client.urgent here. sway's `urgent enable` command sets the state
+# manually and bypasses both. See ~/etc/docs/foot-migration.md section 0c-bis.
+#
+# Limitation: identifies the window by the terminal's pid, which assumes one process per
+# window. Under foot server mode (a documented rollback) every window shares one pid and this
+# would mark them all urgent.
+set -euo pipefail
+
+# No sway (ssh, tty, non-graphical): nothing to do.
+[ -n "${SWAYSOCK:-}" ] || exit 0
+
+# Bounded: hooks always pipe the payload and close stdin, but a bare `cat` would block forever
+# if this is ever run by hand from a terminal -- and a hung Stop hook stalls the session.
+payload=$(timeout 2 cat || true)
+# `// empty` matters: jq -r '.message' on {} prints the literal string "null" and exits 0.
+# Stop payloads carry no .message at all.
+cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null || true)
+msg=$(printf '%s' "$payload" | jq -r '.message // empty' 2>/dev/null || true)
+
+# --- which window --------------------------------------------------------------------------
+# Walk up to the terminal emulator. Read PPid: from /proc/<pid>/status rather than field 4 of
+# /proc/<pid>/stat: the field number is right, but comm is parenthesised and may contain
+# spaces, which breaks naive field splitting. Every read is guarded -- an ancestor can exit
+# mid-walk, and an unguarded failure would abort under `set -e` before the notification.
+term=""
+pid=$PPID
+for _ in {1..16}; do
+	[ "$pid" -gt 1 ] || break
+	comm=""
+	# 2>/dev/null must come BEFORE the input redirect: redirections are applied left to right,
+	# so with the input first, bash's "No such file or directory" escapes to the real stderr.
+	read -r comm 2>/dev/null < "/proc/$pid/comm" || break
+	case $comm in
+		foot | footclient | alacritty | kitty)
+			term=$pid
+			break
+			;;
+	esac
+	ppid=$(awk '/^PPid:/ {print $2}' "/proc/$pid/status" 2>/dev/null || true)
+	# awk exits 0 on no match, so test the value rather than the status. Reaching PPid: 0
+	# (init's parent) or anything non-numeric ends the walk.
+	case $ppid in
+		'' | 0 | *[!0-9]*) break ;;
+	esac
+	pid=$ppid
+done
+
+if [ -n "$term" ]; then
+	# success:false means the window is gone since the walk (or never matched). Not an error
+	# worth failing on -- the notification below is the fallback cue either way.
+	swaymsg "[pid=$term] urgent enable" 2>/dev/null | jq -e '.[0].success' >/dev/null || true
+fi
+
+# --- which session -------------------------------------------------------------------------
+# The window title is Claude Code's /rename slug: it names the TASK, not the location, so it
+# cannot tell you which checkout needs attention. Derive repo/branch/worktree/MR from .cwd.
+repo="" branch="" wt="" mr=""
+top=$(git -C "${cwd:-/nonexistent}" rev-parse --show-toplevel 2>/dev/null || true)
+if [ -n "$top" ]; then
+	repo=${top##*/}
+	branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
+	# In a linked worktree the per-worktree git dir differs from the shared common dir. The
+	# toplevel is then the worktree dir, whose basename is the branch slug (~/etc/docs puts
+	# them at <parent>/_wt/<repo>/<branch-slug>/) -- so take the repo name from the common dir
+	# instead, or the popup would name the branch twice and never the repo.
+	gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
+	common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
+	if [ -n "$gitdir" ] && [ "$gitdir" != "$common" ]; then
+		wt=" (worktree)"
+		mainroot=${common%/.git}
+		repo=${mainroot##*/}
+	fi
+
+	# MR/PR for this branch. Network, so: capped by `timeout`, and cached per repo+branch for
+	# 10 minutes -- otherwise an offline or VPN-down forge would add the full timeout to every
+	# single turn end, across every open session.
+	if [ -n "$branch" ]; then
+		cachedir="${XDG_RUNTIME_DIR:-/tmp}/claude-urgent"
+		mkdir -p "$cachedir"
+		key="$cachedir/$(printf '%s@%s' "$repo" "$branch" | tr -c 'A-Za-z0-9@._-' '_')"
+		if [ -z "$(find "$key" -newermt '-10 minutes' 2>/dev/null || true)" ]; then
+			remote=$(git -C "$top" remote get-url origin 2>/dev/null || true)
+			# Both forge CLIs resolve the project from the CWD, not from a flag: run outside the
+			# checkout and glab prints "ERROR" and still *exits 0*, so the failure is invisible
+			# to `|| true` and lands as an empty cache entry.
+			case $remote in
+				*github.com*)
+					(cd "$top" && timeout 3 gh pr list --head "$branch" --json number \
+						--jq '.[0].number // empty | "#" + tostring' 2>/dev/null) > "$key" || true
+					;;
+				*)
+					# GITLAB_TOKEN must be unset for glab on this host.
+					(cd "$top" && timeout 3 env -u GITLAB_TOKEN glab mr list --source-branch "$branch" 2>/dev/null) \
+						| awk '/^!/ { print $1; exit }' > "$key" || true
+					;;
+			esac
+			# A timeout or an error leaves an empty file, which is a valid "none known" and
+			# stops the next 10 minutes of turn-ends from retrying a dead forge.
+			[ -f "$key" ] || : > "$key"
+		fi
+		mr=$(head -c 32 "$key" 2>/dev/null | tr -d '\n' || true)
+	fi
+fi
+
+# --- notify --------------------------------------------------------------------------------
+# Header is "[<sway workspace>] claude : <repo>" so a glance says which workspace to switch to
+# and which checkout is asking. One get_tree call serves both the workspace and the fallback
+# title; calling it twice would double the cost on every turn end.
+ws="" title=""
+if [ -n "$term" ]; then
+	tree=$(swaymsg -t get_tree 2>/dev/null || true)
+	if [ -n "$tree" ]; then
+		# The workspace is an ancestor of the terminal's node, so recurse from each workspace
+		# and look for the pid among its descendants -- .pid lives on leaf containers only.
+		ws=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+			'[.. | objects | select(.type == "workspace")
+			   | select(([recurse(.nodes[]?, .floating_nodes[]?) | .pid] | index($p)) != null)
+			   | .name] | .[0] // empty' 2>/dev/null || true)
+		title=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+			'[.. | objects | select(.pid == $p) | .name] | .[0] // empty' 2>/dev/null || true)
+	fi
+fi
+
+if [ -n "$repo" ]; then
+	subject=$repo
+else
+	# Not a checkout (~, /tmp, a scratch dir): fall back to the sway window title, which is
+	# Claude Code's /rename slug. It names the task rather than the location, but it is the
+	# only identifier left -- and the path is in the body anyway. Claude Code prefixes the
+	# title with a braille spinner glyph while it is working, so strip any leading non-ASCII
+	# run -- otherwise the header reads "claude : <U+2802> some-slug".
+	subject=${title:-${cwd:-unknown}}
+	subject=$(printf '%s' "$subject" | sed -E 's/^[^[:alnum:]/~]+//')
+fi
+summary="${ws:+[$ws] }claude : $subject"
+
+# Body: where first, then what. The branch rides with the path rather than the header, so the
+# header stays one short repo name -- in a worktree the path already carries the branch slug.
+location="${cwd:-unknown path}${wt}${branch:+ @ $branch}"
+notify-send -a claude "$summary" "${mr:+$mr · }$location
+${msg:-waiting for input}"
