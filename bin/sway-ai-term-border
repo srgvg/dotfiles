@@ -1,0 +1,251 @@
+#!/usr/bin/env bash
+# Give a sway titlebar to terminal windows in which a full-screen program (in practice an AI
+# CLI: claude, codex, opencode, vibe) owns the window title, and take it away again when the
+# shell prompt reclaims the title.
+#
+# Discriminator: ~/.bashrc.d/set_term_title.bash makes every shell prompt title start with
+# "[pts/". Anything else in a terminal-{tiled,floating} window means a full-screen program is
+# running. No per-CLI knowledge is needed, which is the whole point -- codex/opencode/vibe never
+# had to be characterised.
+#
+# Why a daemon and not `for_window`: sway executes each for_window criteria AT MOST ONCE per
+# window (sway/tree/view.c view_execute_criteria skips anything already in
+# view->executed_criteria, which is cleared only in view_unmap). Criteria are re-evaluated on
+# every title change (sway/desktop/xdg_shell.c handle_set_title) but the command is skipped the
+# second time, so a config rule can latch a border on and can never take it off again.
+#
+# Run from ~/bin/launch-desktop-jobs-goldorak. See ~/etc/docs/terminal.md.
+
+set -uo pipefail
+
+readonly SCOPE_RE='^terminal-(tiled|floating)$'
+readonly VARFILE="$HOME/.config/sway/10-variables-config"
+# A daemon whose every correction is rejected but whose subscription stays healthy is worse than
+# one that dies: the launcher cannot see it. Give up after this many consecutive write failures.
+readonly MAX_CONSECUTIVE_FAILURES=10
+
+dry_run=0
+case "${1:-}" in
+	--dry-run) dry_run=1; shift ;;
+	'') ;;
+	*) printf 'usage: %s [--dry-run]\n' "${0##*/}" >&2; exit 2 ;;
+esac
+[ $# -eq 0 ] || { printf 'usage: %s [--dry-run]\n' "${0##*/}" >&2; exit 2; }
+
+log() { printf '%s %s\n' "$(date +%H:%M:%S)" "$*" >&2; }
+
+# --- socket resolution -----------------------------------------------------------------------
+# $SWAYSOCK cannot be trusted here. This runs as a job of the detached `i3jobs` screen server,
+# whose environment is frozen at the moment that server started (PPID 1, survives sway exit), so
+# after a relogin it names a socket belonging to a dead sway. foot-migration.md section 0a records
+# this exact failure class biting before. Probe every candidate and use the first that answers.
+sock_works() { SWAYSOCK="$1" swaymsg -t get_version >/dev/null 2>&1; }
+
+resolve_sock() {
+	local cand pid
+	if [ -n "${SWAYSOCK:-}" ] && sock_works "$SWAYSOCK"; then
+		printf '%s' "$SWAYSOCK"; return 0
+	fi
+	# sway setenv()s SWAYSOCK into its own environment (sway/ipc-server.c), so this is the
+	# authoritative value -- unlike reconstructing the path, which is built from
+	# $XDG_RUNTIME_DIR (not necessarily /run/user/<uid>) and can be overridden at sway startup.
+	while read -r pid; do
+		[ -n "$pid" ] || continue
+		# 2>/dev/null must come BEFORE the input redirect: redirections are applied left to
+		# right, so with the input first a "Permission denied" escapes to the real stderr.
+		cand=$(tr '\0' '\n' 2>/dev/null < "/proc/$pid/environ" | sed -n 's/^SWAYSOCK=//p' | head -1)
+		if [ -n "$cand" ] && sock_works "$cand"; then
+			printf '%s' "$cand"; return 0
+		fi
+	done < <(pgrep -x -u "$(id -u)" sway 2>/dev/null)
+	# Last resort: whatever sockets exist for this user.
+	for cand in "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/sway-ipc."$(id -u)".*.sock; do
+		[ -S "$cand" ] || continue
+		if sock_works "$cand"; then printf '%s' "$cand"; return 0; fi
+	done
+	return 1
+}
+
+if ! SWAYSOCK=$(resolve_sock); then
+	log "FATAL: no working sway IPC socket (tried \$SWAYSOCK, /proc/<sway>/environ, ${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/sway-ipc.*)"
+	exit 1
+fi
+export SWAYSOCK
+# NB: not "${dry_run:+...}" -- dry_run is 0 or 1, and "0" is a non-empty string, so :+ would
+# expand for both.
+if [ "$dry_run" -eq 1 ]; then
+	log "using SWAYSOCK=$SWAYSOCK (dry-run: no writes will be issued)"
+else
+	log "using SWAYSOCK=$SWAYSOCK"
+fi
+
+# --- default border --------------------------------------------------------------------------
+# $defaultborder lives in an included config file; `swaymsg -t get_config` returns only the
+# top-level file, so it has to be read off disk. The assignment is tab-separated.
+def_style=pixel def_width=5 def_src=fallback
+if [ -r "$VARFILE" ]; then
+	read -r def_style def_width < <(
+		awk '$1=="set" && $2=="$defaultborder" { print $3, $4; exit }' "$VARFILE"
+	)
+	if [ -n "${def_style:-}" ]; then
+		def_src=${VARFILE##*/}
+	else
+		def_style=pixel def_width=5
+	fi
+fi
+log "default border: style=$def_style width=$def_width source=$def_src"
+
+# --- the decision ----------------------------------------------------------------------------
+# Pure function of the title. jq computes it (see the filter below) so that the hot path needs no
+# subprocess per event:
+#   title is "" (JSON null becomes "") | starts with "[pts/" | is exactly "foot"  -> default
+#   anything else                                                                 -> normal
+# The null case matters: IPC serialises an unset title as JSON null (sway/ipc-json.c), and a
+# window maps before its first shell prompt. Rendering that as the string "null" would give every
+# new terminal a titlebar.
+#
+# The title is emitted last and via @tsv, which escapes any embedded tab/newline/CR to a literal
+# \t/\n/\r. That is what keeps one event on one line; do NOT "sanitise" it with a gsub character
+# class instead -- `gsub("[\\u0000-\\u001f]"; " ")` looks right and is not: inside a single-quoted
+# shell string the doubled backslash reaches Oniguruma literally, so the class becomes the range
+# 0-\ (0x30-0x5C) and eats digits and capitals out of every title.
+# shellcheck disable=SC2016  # $scope/$defstyle are jq variables (--arg), not shell expansions
+readonly JQ_FILTER='
+  select((.change == "new" or .change == "title")
+         and ((.container.app_id // "") | test($scope)))
+  | .container
+  | (.name // "") as $t
+  | (if ($t == "") or ($t | startswith("[pts/")) or ($t == "foot")
+     then $defstyle else "normal" end) as $want
+  | [ (.id|tostring), .border, (.current_border_width|tostring), $want, $t ]
+  | @tsv'
+
+writes=0 skips=0 failures=0 consecutive=0
+# con_id -> the border we last decided that window should have. The skip decision is made against
+# THIS, never against the border reported in the event.
+#
+# Why: an event carries the border as it was when the event fired. Events that arrive while the
+# initial sweep is running therefore hold a pre-sweep snapshot, and acting on it corrupts the
+# result. Concretely, with two buffered events (AI title, then prompt title) both stamped
+# `pixel`: the sweep sees the final prompt title and skips; draining the AI event writes `normal`;
+# draining the prompt event compares against its stale `pixel`, thinks nothing is needed, and the
+# window keeps a titlebar it should not have -- indefinitely, because no further event is coming.
+# Comparing desired-against-last-desired is immune to that, and still costs zero writes at rest.
+declare -A last_want
+
+# The write MUST be criteria-addressed. An unqualified `swaymsg border ...` acts on the FOCUSED
+# container, which would make this repaint whatever window you happen to be looking at on every
+# event. `--` stops swaymsg parsing "[con_id=...]" as an option.
+apply() {
+	local id=$1 want=$2 cur_style=$3 cur_width=$4 title=$5 cmd
+	if [ "${last_want[$id]:-}" = "$want" ]; then
+		# A skip is evidence the daemon is healthy, so it clears the failure run. Without this
+		# the counter is a lifetime accumulator rather than a consecutive one: the steady state
+		# here is skips (nothing to write), only a successful *write* would reset it, and ten
+		# unrelated transient failures spread over days would then kill a working daemon.
+		skips=$((skips+1)); consecutive=0; return 0
+	fi
+	if [ "$want" = normal ]; then
+		# `border normal` takes no width argument, and sway leaves border_thickness untouched
+		# when none is given (sway/commands/border.c), so the width survives the round trip.
+		cmd="border normal"
+	else
+		# def_width is empty for a widthless default (`none`, `csd`, or a bare `pixel`), and
+		# appending an empty argument would make the command a no-op-with-error. Emit the style
+		# alone in that case.
+		cmd="border $def_style${def_width:+ $def_width}"
+	fi
+
+	if [ "$dry_run" -eq 1 ]; then
+		log "would: con_id=$id '$title' $cur_style/$cur_width -> $want"
+		last_want[$id]=$want
+		return 0
+	fi
+
+	if swaymsg -- "[con_id=$id] $cmd" >/dev/null 2>&1 </dev/null; then
+		writes=$((writes+1)); consecutive=0
+		last_want[$id]=$want
+	else
+		# A vanished window is normal, not a fault -- but it is indistinguishable from a real
+		# rejection without parsing, and a vanished window will not produce more events either.
+		failures=$((failures+1)); consecutive=$((consecutive+1))
+		log "write failed (consecutive=$consecutive): con_id=$id $cmd"
+		if [ "$consecutive" -ge "$MAX_CONSECUTIVE_FAILURES" ]; then
+			log "FATAL: $consecutive consecutive write failures; exiting"
+			exit 1
+		fi
+	fi
+}
+
+# --- subscribe, then sweep, then drain ---------------------------------------------------------
+# Order matters. Sweeping first would lose any title change that happened between the tree read
+# and the subscription, and that window would stay wrong until its next title event -- possibly
+# never, for an idle terminal. `swaymsg -t subscribe` emits no acknowledgement (verified: the
+# first bytes on stdout are a window event), so there is nothing to wait for; instead the stream
+# is opened on fd 3 FIRST and the kernel pipe buffers whatever arrives while the sweep runs.
+# Residual race: the few ms between forking swaymsg and it connecting. Accepted, and small.
+exec 3< <(swaymsg -t subscribe -m '["window"]' 2>/dev/null \
+	| jq --unbuffered -r --arg scope "$SCOPE_RE" --arg defstyle "$def_style" "$JQ_FILTER")
+# $! is the subshell running the pipeline, NOT its members: killing it alone leaves `swaymsg`
+# and `jq` behind (verified -- the child of a killed process-substitution subshell survives), and
+# an idle `swaymsg -t subscribe` would then linger until some later event gave it a SIGPIPE.
+sub_pid=$!
+trap 'pkill -P "$sub_pid" 2>/dev/null; kill "$sub_pid" 2>/dev/null; exec 3<&-' EXIT
+
+sweep() {
+	local tree
+	tree=$(swaymsg -t get_tree 2>/dev/null) || return 1
+	[ -n "$tree" ] || return 1
+	printf '%s' "$tree" | jq -r --arg scope "$SCOPE_RE" --arg defstyle "$def_style" '
+	  [ .. | objects | select((.app_id // "") | test($scope)) ]
+	  | .[]
+	  | (.name // "") as $t
+	  | (if ($t == "") or ($t | startswith("[pts/")) or ($t == "foot")
+	     then $defstyle else "normal" end) as $want
+	  | [ (.id|tostring), .border, (.current_border_width|tostring), $want, $t ] | @tsv'
+}
+
+if ! sweep_out=$(sweep); then
+	log "sweep failed once, retrying"
+	sleep 1
+	if ! sweep_out=$(sweep); then
+		# Carrying on would leave every window that emits no further title event permanently
+		# wrong, with the daemon alive and looking healthy. That is the failure this exits on.
+		log "FATAL: initial sweep failed twice"
+		exit 1
+	fi
+fi
+swept=0
+while IFS=$'\t' read -r id cur_style cur_width want title; do
+	[ -n "${id:-}" ] || continue
+	# Seed the memo from windows that are ALREADY correct, so they cost no write. Reading the
+	# live border is only sound here: the sweep's `get_tree` is a fresh read, unlike the
+	# snapshot carried by a queued event (see the note on last_want).
+	if { [ "$want" = normal ] && [ "$cur_style" = normal ]; } ||
+	   { [ "$want" != normal ] && [ "$cur_style" = "$def_style" ] &&
+	     { [ -z "$def_width" ] || [ "$cur_width" = "$def_width" ]; }; }; then
+		last_want[$id]=$want
+	fi
+	apply "$id" "$want" "$cur_style" "$cur_width" "$title"
+	swept=$((swept+1))
+done <<< "$sweep_out"
+log "sweep: $swept window(s) examined, writes=$writes skips=$skips"
+
+# --- event loop --------------------------------------------------------------------------------
+while IFS=$'\t' read -r id cur_style cur_width want title <&3; do
+	[ -n "${id:-}" ] || continue
+	before=$writes
+	apply "$id" "$want" "$cur_style" "$cur_width" "$title"
+	# Log only when something actually changed. Logging every event would turn over screen's
+	# 10000-line scrollback in a few hours at the measured event rate, discarding precisely the
+	# startup lines (socket, default border, sweep summary) worth having when diagnosing.
+	[ "$writes" -ne "$before" ] &&
+		log "con_id=$id '$title' $cur_style/$cur_width -> $want (writes=$writes skips=$skips failures=$failures)"
+done
+
+# Reaching here means the stream ended -- sway exited, or swaymsg/jq died. Either way this daemon
+# is no longer doing its job. The launcher only probes liveness (`pgrep -P` in
+# ~/bin/launch-desktop-jobs), so it cannot read this status -- exiting at all is what makes the
+# failure visible. The status is for a human reading the screen pane.
+log "FATAL: event stream ended (sway gone?); exiting non-zero"
+exit 1
