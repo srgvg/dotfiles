@@ -1,35 +1,61 @@
 #!/usr/bin/env bash
-# Mark this Claude Code session's sway window urgent and pop a notification identifying the
-# session, when Claude stops and waits for input. Wired to the Notification and Stop hooks in
-# ~/.claude/settings.json. Reads the hook JSON payload on stdin.
+# Pop an OSD notification, and mark the sway window urgent, when a Claude Code session is
+# BLOCKED ON THE USER. Wired to the Notification and Stop hooks in ~/.claude/settings.json.
+# Reads the hook JSON payload on stdin.
 #
 # Why it exists: foot signals the bell over xdg-system-bell-v1, which sway 1.12 does not
 # implement, and sway honours client-set urgency only for XWayland windows -- so foot's own
 # bell can never raise client.urgent here. sway's `urgent enable` command sets the state
 # manually and bypasses both. See ~/etc/docs/foot-migration.md section 0c-bis.
 #
+# Policy (2026-07-28): a popup means "something is blocked on you right now", nothing else.
+#   - Stop is ALWAYS silent. It fires at every turn end, and with auto-mode sessions ending
+#     their own turns it was the bulk of the noise. Nothing in a Stop payload distinguishes
+#     "the model wants input" from "the model moved on by itself" -- a workspace-visibility
+#     gate was measured silencing only 3 of 6 live sessions, so it is not a fixable signal.
+#   - Notification is filtered by a DENYLIST of known-informational notification_type values.
+#     Not an allowlist: the 8 values in the settings.json matcher metadata are autocomplete,
+#     not the runtime universe (the binary constructs 13), and an allowlist silently dropped
+#     worker_permission_prompt and elicitation_url_dialog. A missed permission prompt blocks
+#     the user without telling them; a spare popup only annoys. Err toward noise.
+#   - idle_prompt is denied on purpose: it is the 60s "waiting for your input" reminder, and
+#     keeping it would break the rule that a popup always means blocked-on-you. The cost is
+#     that a finished session is silent until you look at it.
+#
+# Every invocation appends one JSON record to $XDG_STATE_HOME/claude-sway-urgent.log, so any
+# silence is attributable to a named gate. Nothing rotates it here; trim it by hand with
+#   flock -w 5 <log>.lock -c 'tail -n 1000 <log> > <log>.tmp && mv <log>.tmp <log>'
+#
 # Limitation: identifies the window by the terminal's pid, which assumes one process per
-# window. Under foot server mode (a documented rollback) every window shares one pid and this
-# would mark them all urgent.
+# window. Under foot server mode (a documented rollback, ~/etc/docs/foot-migration.md:230-234)
+# every window shares one pid: the title becomes arbitrary and all of them are marked urgent.
 set -euo pipefail
 
-# No sway (ssh, tty, non-graphical): nothing to do.
-[ -n "${SWAYSOCK:-}" ] || exit 0
-
+# Read and parse BEFORE any exit path, so even a no-sway exit is logged with its fields.
 # Bounded: hooks always pipe the payload and close stdin, but a bare `cat` would block forever
 # if this is ever run by hand from a terminal -- and a hung Stop hook stalls the session.
 payload=$(timeout 2 cat || true)
 # `// empty` matters: jq -r '.message' on {} prints the literal string "null" and exits 0.
 # Stop payloads carry no .message at all.
-cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null || true)
-msg=$(printf '%s' "$payload" | jq -r '.message // empty' 2>/dev/null || true)
+jq_field() { printf '%s' "$payload" | jq -r "$1 // empty" 2>/dev/null || true; }
+cwd=$(jq_field '.cwd')
+msg=$(jq_field '.message')
+event=$(jq_field '.hook_event_name')
+ntype=$(jq_field '.notification_type')
+session_id=$(jq_field '.session_id')
 
 # --- which window --------------------------------------------------------------------------
 # Walk up to the terminal emulator. Read PPid: from /proc/<pid>/status rather than field 4 of
 # /proc/<pid>/stat: the field number is right, but comm is parenthesised and may contain
 # spaces, which breaks naive field splitting. Every read is guarded -- an ancestor can exit
 # mid-walk, and an unguarded failure would abort under `set -e` before the notification.
+#
+# This runs BEFORE the gates, not after, because $chain is the only record of what spawned a
+# session: unexplained cwd=/tmp sessions exit at the Stop gate, and a walk placed after the
+# gates would never see them. cmdline and cwd are captured per hop -- comm alone yields
+# "bash", "timeout", "claude" and identifies nothing.
 term=""
+chain=""
 pid=$PPID
 for _ in {1..16}; do
 	[ "$pid" -gt 1 ] || break
@@ -37,6 +63,9 @@ for _ in {1..16}; do
 	# 2>/dev/null must come BEFORE the input redirect: redirections are applied left to right,
 	# so with the input first, bash's "No such file or directory" escapes to the real stderr.
 	read -r comm 2>/dev/null < "/proc/$pid/comm" || break
+	hop_args=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | cut -c1-160 || true)
+	hop_cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
+	chain="${chain}${chain:+ | }${pid}:${comm} cwd=${hop_cwd:-?} :: ${hop_args:-?}"
 	case $comm in
 		foot | footclient | alacritty | kitty)
 			term=$pid
@@ -52,11 +81,75 @@ for _ in {1..16}; do
 	pid=$ppid
 done
 
-if [ -n "$term" ]; then
-	# success:false means the window is gone since the walk (or never matched). Not an error
-	# worth failing on -- the notification below is the fallback cue either way.
-	swaymsg "[pid=$term] urgent enable" 2>/dev/null | jq -e '.[0].success' >/dev/null || true
+# --- audit log -----------------------------------------------------------------------------
+# JSONL, not a delimited line: cwd, titles and cmdlines contain spaces, quotes and pipes, and
+# one torn record would make the log unreadable exactly when it is being used as evidence.
+#
+# The lock is taken on <log>.lock by BOTH this appender and the documented trim command. They
+# must agree on the object: an appender holding the log inode does not exclude a trimmer
+# holding <log>.lock, and the trim's `mv` swaps the inode out from under it -- measured at 60
+# records lost in one run. `-w 1` bounds the wait (6 concurrent writers measured at 3.4ms max)
+# and the `|| exit 0` inside the subshell is required, because flock exits 1 on timeout and
+# `set -e` would otherwise kill the hook before it notifies.
+log_dir=${XDG_STATE_HOME:-$HOME/.local/state}
+log="$log_dir/claude-sway-urgent.log"
+log_decision() {
+	local rec
+	rec=$(jq -cn \
+		--arg ts "$(date -Is 2>/dev/null || true)" \
+		--arg event "$event" --arg ntype "$ntype" --arg session_id "$session_id" \
+		--arg cwd "$cwd" --arg chain "$chain" --arg term "$term" --arg decision "$1" \
+		'{ts:$ts,event:$event,notification_type:$ntype,session_id:$session_id,
+		  cwd:$cwd,chain:$chain,term:$term,decision:$decision}' 2>/dev/null) || return 0
+	( flock -w 1 9 || exit 0
+	  printf '%s\n' "$rec" >> "$log" ) 9>>"$log.lock" 2>/dev/null || true
+}
+
+# --- gates ---------------------------------------------------------------------------------
+# Ordered. Each one exits 0 after logging why. Anything reaching the bottom notifies.
+
+# 0. No sway (ssh, tty, non-graphical): nothing to raise.
+if [ -z "${SWAYSOCK:-}" ]; then
+	log_decision skip-nosway
+	exit 0
 fi
+
+# 1. Stop: always silent. This is the policy.
+if [ "$event" = Stop ]; then
+	log_decision skip-stop
+	exit 0
+fi
+
+# 2. Anything that is not a recognised event -- including an empty payload, which `timeout 2
+#    cat || true` above can legitimately produce -- is not evidence that anyone is blocked.
+#    Without this the gate set is fail-OPEN: an unparseable payload would notify, which is the
+#    symptom this script exists to remove.
+if [ "$event" != Notification ]; then
+	log_decision skip-malformed
+	exit 0
+fi
+
+# 3. Known-informational notification types. Denylist, so an unrecognised or newly added type
+#    reaches the user rather than being silently dropped.
+case $ntype in
+	idle_prompt | auth_success | elicitation_complete | elicitation_response | \
+	agent_completed | computer_use_enter | computer_use_exit)
+		log_decision skip-notiftype
+		exit 0
+		;;
+esac
+
+# 4. No terminal window found: nothing to mark urgent and nothing to switch to.
+if [ -z "$term" ]; then
+	log_decision skip-nowindow
+	exit 0
+fi
+
+log_decision notify
+
+# success:false means the window is gone since the walk (or never matched). Not an error
+# worth failing on -- the notification below is the fallback cue either way.
+swaymsg "[pid=$term] urgent enable" 2>/dev/null | jq -e '.[0].success' >/dev/null || true
 
 # --- which session -------------------------------------------------------------------------
 # The window title is Claude Code's /rename slug: it names the TASK, not the location, so it
@@ -80,10 +173,10 @@ if [ -n "$top" ]; then
 
 	# MR/PR for this branch. Network, so: capped by `timeout`, and cached per repo+branch for
 	# 10 minutes -- otherwise an offline or VPN-down forge would add the full timeout to every
-	# single turn end, across every open session.
+	# single notification, across every open session.
 	if [ -n "$branch" ]; then
 		cachedir="${XDG_RUNTIME_DIR:-/tmp}/claude-urgent"
-		mkdir -p "$cachedir"
+		mkdir -p "$cachedir" || true
 		key="$cachedir/$(printf '%s@%s' "$repo" "$branch" | tr -c 'A-Za-z0-9@._-' '_')"
 		if [ -z "$(find "$key" -newermt '-10 minutes' 2>/dev/null || true)" ]; then
 			remote=$(git -C "$top" remote get-url origin 2>/dev/null || true)
@@ -102,7 +195,7 @@ if [ -n "$top" ]; then
 					;;
 			esac
 			# A timeout or an error leaves an empty file, which is a valid "none known" and
-			# stops the next 10 minutes of turn-ends from retrying a dead forge.
+			# stops the next 10 minutes of notifications from retrying a dead forge.
 			[ -f "$key" ] || : > "$key"
 		fi
 		mr=$(head -c 32 "$key" 2>/dev/null | tr -d '\n' || true)
@@ -112,20 +205,18 @@ fi
 # --- notify --------------------------------------------------------------------------------
 # Header is "[<sway workspace>] claude : <repo>" so a glance says which workspace to switch to
 # and which checkout is asking. One get_tree call serves both the workspace and the fallback
-# title; calling it twice would double the cost on every turn end.
+# title; calling it twice would double the cost.
 ws="" title=""
-if [ -n "$term" ]; then
-	tree=$(swaymsg -t get_tree 2>/dev/null || true)
-	if [ -n "$tree" ]; then
-		# The workspace is an ancestor of the terminal's node, so recurse from each workspace
-		# and look for the pid among its descendants -- .pid lives on leaf containers only.
-		ws=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
-			'[.. | objects | select(.type == "workspace")
-			   | select(([recurse(.nodes[]?, .floating_nodes[]?) | .pid] | index($p)) != null)
-			   | .name] | .[0] // empty' 2>/dev/null || true)
-		title=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
-			'[.. | objects | select(.pid == $p) | .name] | .[0] // empty' 2>/dev/null || true)
-	fi
+tree=$(swaymsg -t get_tree 2>/dev/null || true)
+if [ -n "$tree" ]; then
+	# The workspace is an ancestor of the terminal's node, so recurse from each workspace
+	# and look for the pid among its descendants -- .pid lives on leaf containers only.
+	ws=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+		'[.. | objects | select(.type == "workspace")
+		   | select(([recurse(.nodes[]?, .floating_nodes[]?) | .pid] | index($p)) != null)
+		   | .name] | .[0] // empty' 2>/dev/null || true)
+	title=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+		'[.. | objects | select(.pid == $p) | .name] | .[0] // empty' 2>/dev/null || true)
 fi
 
 if [ -n "$repo" ]; then
@@ -145,4 +236,4 @@ summary="${ws:+[$ws] }claude : $subject"
 # header stays one short repo name -- in a worktree the path already carries the branch slug.
 location="${cwd:-unknown path}${wt}${branch:+ @ $branch}"
 notify-send -a claude "$summary" "${mr:+$mr · }$location
-${msg:-waiting for input}"
+${msg:-blocked on you}"
