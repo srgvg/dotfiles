@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Sample Vorta's RSS into ~/logs/vorta-rss.log, one line per run.
+#
+# Why: Vorta was found holding 4.3 GiB after ~27 h uptime on 2026-07-28. Idle
+# was flat and a complete backup run *released* 49 MiB, so the growth is not
+# reproducible from what was measured. This establishes whether it recurs at
+# all before anyone reaches for gdb/py-spy. See ~/etc/docs/memory-oom.md.
+#
+# Also records whether borg was running, so a step can be attributed to a
+# backup run rather than guessed at.
+set -o nounset -o pipefail
+
+LOG="$HOME/logs/vorta-rss.log"
+mkdir -p "$(dirname "$LOG")" || exit 1
+
+ts=$(date '+%F %H:%M')
+pid=$(pgrep -f 'bin/vorta$' | head -1)
+
+if [[ -z ${pid:-} ]]; then
+	printf '%s  vorta=down\n' "$ts" >>"$LOG"
+	exit 0
+fi
+
+# /proc can vanish between pgrep and read if Vorta exits right here.
+read -r rss anon < <(awk '/^VmRSS:/{r=$2} /^RssAnon:/{a=$2} END{print r+0, a+0}' \
+	"/proc/$pid/status" 2>/dev/null) || true
+[[ -n ${rss:-} && $rss -gt 0 ]] || {
+	printf '%s  vorta=vanished\n' "$ts" >>"$LOG"
+	exit 0
+}
+
+borg=no
+pgrep -x borg >/dev/null 2>&1 && borg=yes
+
+# Uptime in whole minutes, so a step can be placed against how long it has run.
+up=$(($(date +%s) - $(stat -c %Y "/proc/$pid" 2>/dev/null || date +%s)))
+
+printf '%s  pid=%-8s rss=%-9s anon=%-9s up_min=%-6s borg=%s\n' \
+	"$ts" "$pid" "$rss" "$anon" "$((up / 60))" "$borg" >>"$LOG"

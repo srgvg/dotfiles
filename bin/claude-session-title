@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Prefix the Claude Code session title with the checkout it belongs to, so a sway titlebar says
+# WHICH repo is asking and not only what the task is:
+#
+#     ⠂ meta:fix/39-render-matrix-validate-input · Understand MR READY concept
+#
+# Wired to the SessionStart and UserPromptSubmit hooks in ~/.claude/settings.json; reads the hook
+# JSON payload on stdin and prints hookSpecificOutput.sessionTitle. See ~/etc/docs/terminal.md.
+#
+# Why the base label comes from the transcript and not from the payload: a hook-set title is
+# stored as a CUSTOM title, and `session_title` in the UserPromptSubmit payload is that same
+# custom field -- i.e. what this script wrote last time. Reading it back would compound the prefix
+# every turn. The task name lives in the separate `ai-title` transcript record instead. Taking the
+# last of either record type also means a `/rename` (which writes `custom-title`) wins over a
+# stale ai-title, and is picked up on the next prompt.
+#
+# CONTRACT: print valid JSON, always exit 0. A UserPromptSubmit hook's non-JSON stdout is injected
+# into the conversation as context, and a non-zero exit blocks the prompt outright.
+set -euo pipefail
+
+# Bounded: the harness always pipes the payload and closes stdin, but a bare `cat` would hang
+# forever if this is ever run by hand, and a stalled UserPromptSubmit hook stalls the prompt.
+payload=$(timeout 2 cat || true)
+
+jq_field() { printf '%s' "$payload" | jq -r "$1 // empty" 2>/dev/null || true; }
+cwd=$(jq_field '.cwd')
+transcript=$(jq_field '.transcript_path')
+event=$(jq_field '.hook_event_name')
+[ -n "$event" ] || event=UserPromptSubmit
+
+# --- prefix: which checkout ------------------------------------------------------------------
+# Same derivation as ~/bin/claude-sway-urgent:159-174, kept deliberately in sync.
+prefix=""
+top=$(git -C "${cwd:-/nonexistent}" rev-parse --show-toplevel 2>/dev/null || true)
+if [ -n "$top" ]; then
+	repo=${top##*/}
+	branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
+	# In a linked worktree the per-worktree git dir differs from the shared common dir. The
+	# toplevel is then the worktree dir, whose basename is the branch slug (~/etc/docs puts them
+	# at <parent>/_wt/<repo>/<branch-slug>/) -- so take the repo name from the common dir
+	# instead, or the title would name the branch twice and never the repo.
+	gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
+	common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
+	if [ -n "$gitdir" ] && [ "$gitdir" != "$common" ]; then
+		mainroot=${common%/.git}
+		repo=${mainroot##*/}
+	fi
+	prefix="${repo}${branch:+:$branch}"
+elif [ -n "$cwd" ]; then
+	# Not a checkout: use the basename. $HOME is special-cased to the word "home" rather than
+	# its basename "serge" (which reads as a person, not a place) -- and rather than "~", which
+	# was tried first and is too small a glyph to register in a titlebar.
+	if [ "$cwd" = "${HOME:-/nonexistent}" ]; then
+		prefix="home"
+	else
+		prefix=${cwd##*/}
+	fi
+fi
+
+# The strip below recognises a previously-applied prefix by it being a single space-free token, so
+# a prefix containing a space would never be stripped and would accumulate. An empty one has
+# nothing to say anyway. Either way, emit `{}` and leave the title alone.
+case $prefix in
+'' | *' '*)
+	printf '{}\n'
+	exit 0
+	;;
+esac
+
+# --- base: what the task is ------------------------------------------------------------------
+# Titles are appended as {"type":"ai-title","aiTitle":...} / {"type":"custom-title",
+# "customTitle":...}. Scan the whole file rather than a tail window: ai-title records are written
+# early and rarely, so a fixed tail would miss them in any long session.
+#
+# grep is only a prefilter -- it also matches lines that merely *quote* those strings (a
+# tool_result from a session that greps its own transcript does exactly that), so jq re-checks
+# the top-level .type before trusting the line. `fromjson?` swallows a torn or oversized line
+# instead of aborting the stream and losing every record after it.
+base=""
+if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+	base=$( { grep -aE '"type": ?"(ai|custom)-title"' "$transcript" 2>/dev/null || true; } |
+		jq -rR 'fromjson? | select(.type == "ai-title" or .type == "custom-title")
+		        | .aiTitle // .customTitle // empty' 2>/dev/null |
+		tail -n 1 || true)
+fi
+
+# Strip our own prefix if this title has been through here before. `${base#* · }` alone is WRONG:
+# its `*` matches spaces too, so an ai-title that genuinely contains " · " (say "foo bar · baz")
+# would be cut down to "baz". Strip only when the part before the first " · " is a single
+# space-free token -- which is exactly the shape this script emits and nothing else.
+case $base in
+*' · '*)
+	lead=${base%%' · '*}
+	case $lead in
+	*' '*) ;;
+	*) base=${base#* · } ;;
+	esac
+	;;
+esac
+base=$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
+
+title="$prefix${base:+ · $base}"
+
+# Cap: a sway titlebar is finite and Claude Code truncates long titles itself. Cut on characters,
+# not bytes -- `·` and any non-ASCII in the task name are multibyte.
+if [ "${#title}" -gt 120 ]; then
+	title=${title:0:119}…
+fi
+
+jq -cn --arg e "$event" --arg t "$title" \
+	'{hookSpecificOutput: {hookEventName: $e, sessionTitle: $t}}' 2>/dev/null ||
+	printf '{}\n'

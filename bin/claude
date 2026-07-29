@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Run Claude Code inside its own systemd user scope with a memory ceiling.
+#
+# Why: on 2026-07-28 a Claude Code process grew to 15.2 GiB in ~90s and pushed
+# goldorak into a global OOM that killed the flir-its-1 VM (25.2 GiB). Every
+# desktop process lives in one flat session-3.scope, so there was no per-session
+# limit to hit. This wrapper creates one. See ~/etc/docs/memory-oom.md.
+#
+# ~/bin precedes ~/.local/bin on PATH, so this shadows the ~/.local/bin/claude
+# symlink. It must exec that symlink by absolute path, never `claude`, or it
+# recurses.
+set -uo pipefail
+
+REAL="$HOME/.local/bin/claude"
+
+[[ -x $REAL ]] || {
+	printf 'claude wrapper: %s is missing or not executable\n' "$REAL" >&2
+	exit 127
+}
+
+# Already inside a scope this wrapper created? Exec directly. Without this, a
+# claude that spawns claude via PATH would get a fresh sibling scope with its
+# own full budget instead of counting against its parent's.
+if [[ -n ${CLAUDE_MEM_SCOPE:-} ]]; then
+	exec "$REAL" "$@"
+fi
+
+# No user manager reachable (cron, ssh without lingering): start unwrapped
+# rather than refuse to start at all.
+#
+# Probe reachability, NOT health. `is-system-running` was used here first and
+# was a fail-open bug: it prints "degraded" and exits 1 whenever *any* user
+# unit has ever failed — one stale `run-p*.service` from an unrelated tool was
+# enough — so every session silently ran uncapped from 11:03 to 15:00 on
+# 2026-07-28. `show -p Version` is one D-Bus round trip, creates no unit, and
+# fails only when the manager genuinely cannot be reached.
+if ! systemctl --user show -p Version --value >/dev/null 2>&1; then
+	exec "$REAL" "$@"
+fi
+
+# MemoryHigh throttles and reclaims (slow session); MemoryMax is the hard stop
+# that invokes the cgroup OOM killer on the scope only. MemorySwapMax keeps a
+# capped session from displacing everything else into the 16 GiB swap.
+exec systemd-run --user --quiet --collect --scope \
+	--setenv=CLAUDE_MEM_SCOPE=1 \
+	-p MemoryHigh=6G \
+	-p MemoryMax=12G \
+	-p MemorySwapMax=4G \
+	-- "$REAL" "$@"

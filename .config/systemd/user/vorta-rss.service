@@ -1,0 +1,7 @@
+[Unit]
+Description=Sample Vorta RSS into ~/logs/vorta-rss.log
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/vorta-rss-sample

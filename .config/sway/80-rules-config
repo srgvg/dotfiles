@@ -15,8 +15,10 @@
 #for_window [ con_id="__focused__" ] border $defaultborder
 #for_window [ con_id="(?!__focused__)" ] border $noborder
 
-# https://github.com/swaywm/sway/wiki#is-an-application-using-xwayland
-for_window [shell=".*"] title_format "<b>%title</b> (%app_id %shell %class %instance)"
+# Bold the title, nothing else. This used to append "(%app_id %shell %class %instance)" as an
+# XWayland-vs-native debugging aid (https://github.com/swaywm/sway/wiki#is-an-application-using-xwayland),
+# which cost ~30 columns of every titlebar; `swaymsg -t get_tree` answers the same question on demand.
+for_window [shell=".*"] title_format "<b>%title</b>"
 
 #######################################################################################################################
 #

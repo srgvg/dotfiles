@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Sample swap + zswap effectiveness into ~/logs/zswap.log, one line per run.
+#
+# Answers two questions the 2026-07-28 OOM work left open:
+#   1. does zstd compress better than lzo here, and by how much
+#   2. is the 16 GiB swap actually big enough for this workload
+#
+# Note on (2): zswap-held pages still consume swap *slots*. Compression saves
+# RAM and disk I/O, it does not buy more swap. So swap_used can reach 100 %
+# with the zswap pool nowhere near its cap — they are different limits.
+#
+# LC_ALL=C is required, not cosmetic: this host runs en_GB/nl_BE, where printf
+# rejects "15.40" because the locale wants a decimal comma. All arithmetic and
+# formatting happens inside one awk for the same reason.
+#
+# See ~/etc/docs/memory-oom.md.
+set -o nounset -o pipefail
+export LC_ALL=C
+
+LOG="$HOME/logs/zswap.log"
+mkdir -p "$(dirname "$LOG")" || exit 1
+
+sysfs() { cat "/sys/module/zswap/parameters/$1" 2>/dev/null || echo "?"; }
+
+awk -v comp="$(sysfs compressor)" \
+	-v enab="$(sysfs enabled)" \
+	-v cap="$(sysfs max_pool_percent)" \
+	-v ts="$(date '+%F %H:%M')" '
+	/^MemTotal:/     { memtotal = $2 }
+	/^MemAvailable:/ { memavail = $2 }
+	/^SwapTotal:/    { swaptotal = $2 }
+	/^SwapFree:/     { swapfree = $2 }
+	/^Zswap:/        { pool = $2 }
+	/^Zswapped:/     { stored = $2 }
+	END {
+		G = 1048576
+		used    = swaptotal - swapfree
+		swappct = swaptotal > 0 ? used * 100 / swaptotal : 0
+		ratio   = pool > 0 ? stored / pool : 0
+		poolmax = (cap + 0 > 0) ? memtotal * cap / 100 : 0
+		poolpct = poolmax > 0 ? pool * 100 / poolmax : 0
+		printf "%s  comp=%-5s on=%s  swap=%5.2fG/%.0fG(%3.0f%%)  stored=%6.2fG  pool=%5.2fG(%3.0f%%cap)  ratio=%.2fx  avail=%5.1fG\n",
+			ts, comp, enab, used/G, swaptotal/G, swappct, stored/G, pool/G, poolpct, ratio, memavail/G
+	}
+' /proc/meminfo >>"$LOG"

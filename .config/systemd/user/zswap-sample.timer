@@ -1,0 +1,12 @@
+[Unit]
+Description=Sample swap + zswap every 10 minutes (lzo vs zstd, swap sizing)
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+# No Persistent= — a catch-up burst after suspend would log identical lines
+# and skew any before/after comparison of the compressor.
+
+[Install]
+WantedBy=timers.target

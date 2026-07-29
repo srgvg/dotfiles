@@ -1,0 +1,7 @@
+[Unit]
+Description=Sample swap + zswap effectiveness into ~/logs/zswap.log
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/zswap-sample

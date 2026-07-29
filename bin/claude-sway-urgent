@@ -58,27 +58,27 @@ term=""
 chain=""
 pid=$PPID
 for _ in {1..16}; do
-	[ "$pid" -gt 1 ] || break
-	comm=""
-	# 2>/dev/null must come BEFORE the input redirect: redirections are applied left to right,
-	# so with the input first, bash's "No such file or directory" escapes to the real stderr.
-	read -r comm 2>/dev/null < "/proc/$pid/comm" || break
-	hop_args=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | cut -c1-160 || true)
-	hop_cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
-	chain="${chain}${chain:+ | }${pid}:${comm} cwd=${hop_cwd:-?} :: ${hop_args:-?}"
-	case $comm in
-		foot | footclient | alacritty | kitty)
-			term=$pid
-			break
-			;;
-	esac
-	ppid=$(awk '/^PPid:/ {print $2}' "/proc/$pid/status" 2>/dev/null || true)
-	# awk exits 0 on no match, so test the value rather than the status. Reaching PPid: 0
-	# (init's parent) or anything non-numeric ends the walk.
-	case $ppid in
-		'' | 0 | *[!0-9]*) break ;;
-	esac
-	pid=$ppid
+    [ "$pid" -gt 1 ] || break
+    comm=""
+    # 2>/dev/null must come BEFORE the input redirect: redirections are applied left to right,
+    # so with the input first, bash's "No such file or directory" escapes to the real stderr.
+    read -r comm 2>/dev/null <"/proc/$pid/comm" || break
+    hop_args=$(tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null | cut -c1-160 || true)
+    hop_cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
+    chain="${chain}${chain:+ | }${pid}:${comm} cwd=${hop_cwd:-?} :: ${hop_args:-?}"
+    case $comm in
+        foot | footclient | alacritty | kitty)
+            term=$pid
+            break
+            ;;
+    esac
+    ppid=$(awk '/^PPid:/ {print $2}' "/proc/$pid/status" 2>/dev/null || true)
+    # awk exits 0 on no match, so test the value rather than the status. Reaching PPid: 0
+    # (init's parent) or anything non-numeric ends the walk.
+    case $ppid in
+        '' | 0 | *[!0-9]*) break ;;
+    esac
+    pid=$ppid
 done
 
 # --- audit log -----------------------------------------------------------------------------
@@ -94,15 +94,17 @@ done
 log_dir=${XDG_STATE_HOME:-$HOME/.local/state}
 log="$log_dir/claude-sway-urgent.log"
 log_decision() {
-	local rec
-	rec=$(jq -cn \
-		--arg ts "$(date -Is 2>/dev/null || true)" \
-		--arg event "$event" --arg ntype "$ntype" --arg session_id "$session_id" \
-		--arg cwd "$cwd" --arg chain "$chain" --arg term "$term" --arg decision "$1" \
-		'{ts:$ts,event:$event,notification_type:$ntype,session_id:$session_id,
+    local rec
+    rec=$(jq -cn \
+        --arg ts "$(date -Is 2>/dev/null || true)" \
+        --arg event "$event" --arg ntype "$ntype" --arg session_id "$session_id" \
+        --arg cwd "$cwd" --arg chain "$chain" --arg term "$term" --arg decision "$1" \
+        '{ts:$ts,event:$event,notification_type:$ntype,session_id:$session_id,
 		  cwd:$cwd,chain:$chain,term:$term,decision:$decision}' 2>/dev/null) || return 0
-	( flock -w 1 9 || exit 0
-	  printf '%s\n' "$rec" >> "$log" ) 9>>"$log.lock" 2>/dev/null || true
+    (
+        flock -w 1 9 || exit 0
+        printf '%s\n' "$rec" >>"$log"
+    ) 9>>"$log.lock" 2>/dev/null || true
 }
 
 # --- gates ---------------------------------------------------------------------------------
@@ -110,14 +112,14 @@ log_decision() {
 
 # 0. No sway (ssh, tty, non-graphical): nothing to raise.
 if [ -z "${SWAYSOCK:-}" ]; then
-	log_decision skip-nosway
-	exit 0
+    log_decision skip-nosway
+    exit 0
 fi
 
 # 1. Stop: always silent. This is the policy.
 if [ "$event" = Stop ]; then
-	log_decision skip-stop
-	exit 0
+    log_decision skip-stop
+    exit 0
 fi
 
 # 2. Anything that is not a recognised event -- including an empty payload, which `timeout 2
@@ -125,24 +127,24 @@ fi
 #    Without this the gate set is fail-OPEN: an unparseable payload would notify, which is the
 #    symptom this script exists to remove.
 if [ "$event" != Notification ]; then
-	log_decision skip-malformed
-	exit 0
+    log_decision skip-malformed
+    exit 0
 fi
 
 # 3. Known-informational notification types. Denylist, so an unrecognised or newly added type
 #    reaches the user rather than being silently dropped.
 case $ntype in
-	idle_prompt | auth_success | elicitation_complete | elicitation_response | \
-	agent_completed | computer_use_enter | computer_use_exit)
-		log_decision skip-notiftype
-		exit 0
-		;;
+    idle_prompt | auth_success | elicitation_complete | elicitation_response | \
+        agent_completed | computer_use_enter | computer_use_exit)
+        log_decision skip-notiftype
+        exit 0
+        ;;
 esac
 
 # 4. No terminal window found: nothing to mark urgent and nothing to switch to.
 if [ -z "$term" ]; then
-	log_decision skip-nowindow
-	exit 0
+    log_decision skip-nowindow
+    exit 0
 fi
 
 log_decision notify
@@ -157,49 +159,49 @@ swaymsg "[pid=$term] urgent enable" 2>/dev/null | jq -e '.[0].success' >/dev/nul
 repo="" branch="" wt="" mr=""
 top=$(git -C "${cwd:-/nonexistent}" rev-parse --show-toplevel 2>/dev/null || true)
 if [ -n "$top" ]; then
-	repo=${top##*/}
-	branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
-	# In a linked worktree the per-worktree git dir differs from the shared common dir. The
-	# toplevel is then the worktree dir, whose basename is the branch slug (~/etc/docs puts
-	# them at <parent>/_wt/<repo>/<branch-slug>/) -- so take the repo name from the common dir
-	# instead, or the popup would name the branch twice and never the repo.
-	gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
-	common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
-	if [ -n "$gitdir" ] && [ "$gitdir" != "$common" ]; then
-		wt=" (worktree)"
-		mainroot=${common%/.git}
-		repo=${mainroot##*/}
-	fi
+    repo=${top##*/}
+    branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
+    # In a linked worktree the per-worktree git dir differs from the shared common dir. The
+    # toplevel is then the worktree dir, whose basename is the branch slug (~/etc/docs puts
+    # them at <parent>/_wt/<repo>/<branch-slug>/) -- so take the repo name from the common dir
+    # instead, or the popup would name the branch twice and never the repo.
+    gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
+    common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
+    if [ -n "$gitdir" ] && [ "$gitdir" != "$common" ]; then
+        wt=" (worktree)"
+        mainroot=${common%/.git}
+        repo=${mainroot##*/}
+    fi
 
-	# MR/PR for this branch. Network, so: capped by `timeout`, and cached per repo+branch for
-	# 10 minutes -- otherwise an offline or VPN-down forge would add the full timeout to every
-	# single notification, across every open session.
-	if [ -n "$branch" ]; then
-		cachedir="${XDG_RUNTIME_DIR:-/tmp}/claude-urgent"
-		mkdir -p "$cachedir" || true
-		key="$cachedir/$(printf '%s@%s' "$repo" "$branch" | tr -c 'A-Za-z0-9@._-' '_')"
-		if [ -z "$(find "$key" -newermt '-10 minutes' 2>/dev/null || true)" ]; then
-			remote=$(git -C "$top" remote get-url origin 2>/dev/null || true)
-			# Both forge CLIs resolve the project from the CWD, not from a flag: run outside the
-			# checkout and glab prints "ERROR" and still *exits 0*, so the failure is invisible
-			# to `|| true` and lands as an empty cache entry.
-			case $remote in
-				*github.com*)
-					(cd "$top" && timeout 3 gh pr list --head "$branch" --json number \
-						--jq '.[0].number // empty | "#" + tostring' 2>/dev/null) > "$key" || true
-					;;
-				*)
-					# GITLAB_TOKEN must be unset for glab on this host.
-					(cd "$top" && timeout 3 env -u GITLAB_TOKEN glab mr list --source-branch "$branch" 2>/dev/null) \
-						| awk '/^!/ { print $1; exit }' > "$key" || true
-					;;
-			esac
-			# A timeout or an error leaves an empty file, which is a valid "none known" and
-			# stops the next 10 minutes of notifications from retrying a dead forge.
-			[ -f "$key" ] || : > "$key"
-		fi
-		mr=$(head -c 32 "$key" 2>/dev/null | tr -d '\n' || true)
-	fi
+    # MR/PR for this branch. Network, so: capped by `timeout`, and cached per repo+branch for
+    # 10 minutes -- otherwise an offline or VPN-down forge would add the full timeout to every
+    # single notification, across every open session.
+    if [ -n "$branch" ]; then
+        cachedir="${XDG_RUNTIME_DIR:-/tmp}/claude-urgent"
+        mkdir -p "$cachedir" || true
+        key="$cachedir/$(printf '%s@%s' "$repo" "$branch" | tr -c 'A-Za-z0-9@._-' '_')"
+        if [ -z "$(find "$key" -newermt '-10 minutes' 2>/dev/null || true)" ]; then
+            remote=$(git -C "$top" remote get-url origin 2>/dev/null || true)
+            # Both forge CLIs resolve the project from the CWD, not from a flag: run outside the
+            # checkout and glab prints "ERROR" and still *exits 0*, so the failure is invisible
+            # to `|| true` and lands as an empty cache entry.
+            case $remote in
+                *github.com*)
+                    (cd "$top" && timeout 3 gh pr list --head "$branch" --json number \
+                        --jq '.[0].number // empty | "#" + tostring' 2>/dev/null) >"$key" || true
+                    ;;
+                *)
+                    # GITLAB_TOKEN must be unset for glab on this host.
+                    (cd "$top" && timeout 3 env -u GITLAB_TOKEN glab mr list --source-branch "$branch" 2>/dev/null) |
+                        awk '/^!/ { print $1; exit }' >"$key" || true
+                    ;;
+            esac
+            # A timeout or an error leaves an empty file, which is a valid "none known" and
+            # stops the next 10 minutes of notifications from retrying a dead forge.
+            [ -f "$key" ] || : >"$key"
+        fi
+        mr=$(head -c 32 "$key" 2>/dev/null | tr -d '\n' || true)
+    fi
 fi
 
 # --- notify --------------------------------------------------------------------------------
@@ -209,31 +211,50 @@ fi
 ws="" title=""
 tree=$(swaymsg -t get_tree 2>/dev/null || true)
 if [ -n "$tree" ]; then
-	# The workspace is an ancestor of the terminal's node, so recurse from each workspace
-	# and look for the pid among its descendants -- .pid lives on leaf containers only.
-	ws=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
-		'[.. | objects | select(.type == "workspace")
+    # The workspace is an ancestor of the terminal's node, so recurse from each workspace
+    # and look for the pid among its descendants -- .pid lives on leaf containers only.
+    ws=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+        '[.. | objects | select(.type == "workspace")
 		   | select(([recurse(.nodes[]?, .floating_nodes[]?) | .pid] | index($p)) != null)
 		   | .name] | .[0] // empty' 2>/dev/null || true)
-	title=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
-		'[.. | objects | select(.pid == $p) | .name] | .[0] // empty' 2>/dev/null || true)
+    title=$(printf '%s' "$tree" | jq -r --argjson p "$term" \
+        '[.. | objects | select(.pid == $p) | .name] | .[0] // empty' 2>/dev/null || true)
 fi
 
 if [ -n "$repo" ]; then
-	subject=$repo
+    subject=$repo
 else
-	# Not a checkout (~, /tmp, a scratch dir): fall back to the sway window title, which is
-	# Claude Code's /rename slug. It names the task rather than the location, but it is the
-	# only identifier left -- and the path is in the body anyway. Claude Code prefixes the
-	# title with a braille spinner glyph while it is working, so strip any leading non-ASCII
-	# run -- otherwise the header reads "claude : <U+2802> some-slug".
-	subject=${title:-${cwd:-unknown}}
-	subject=$(printf '%s' "$subject" | sed -E 's/^[^[:alnum:]/~]+//')
+    # Not a checkout (~, /tmp, a scratch dir): fall back to the sway window title, which is
+    # Claude Code's /rename slug. It names the task rather than the location, but it is the
+    # only identifier left -- and the path is in the body anyway. Claude Code prefixes the
+    # title with a braille spinner glyph while it is working, so strip any leading non-ASCII
+    # run -- otherwise the header reads "claude : <U+2802> some-slug".
+    subject=${title:-${cwd:-unknown}}
+    subject=$(printf '%s' "$subject" | sed -E 's/^[^[:alnum:]/~]+//')
 fi
 summary="${ws:+[$ws] }claude : $subject"
 
 # Body: where first, then what. The branch rides with the path rather than the header, so the
 # header stays one short repo name -- in a worktree the path already carries the branch slug.
 location="${cwd:-unknown path}${wt}${branch:+ @ $branch}"
-notify-send -a claude "$summary" "${mr:+$mr · }$location
+
+# Urgency (2026-07-29). `low` is the default and stays the default: mako auto-dismisses it after
+# ~5s, which is right for the ordinary "blocked on you" popup -- you see it or you see the sway
+# urgent border set at line 154.
+#
+# `critical` is reserved for cases that must survive an empty chair: mako does not auto-dismiss it,
+# so it persists until acknowledged. Blanket-critical was tried and reverted the same day -- it
+# would make every permission prompt a sticky popup, and this file's whole design is that volume is
+# controlled by the GATES above, not by urgency.
+#
+# NOTE, so this is not re-derived: the case that motivated critical -- a Ralph loop stranded for
+# ~2h01 (activity ended 16:54 CEST, restarted by hand at 18:55) -- does NOT reach this line at all.
+# It is a Stop event, and Stop is gated silent at `log_decision skip-stop`. There was no popup to
+# make sticky. Ralph's own Stop hook had exited at stop-hook.sh:15-17 because
+# `RALPH_STATE_FILE=".claude/ralph-loop.local.md"` is cwd-relative and resolved nowhere, so the loop
+# died without a sound. Fixing that belongs at ARM time (assert the state file lands where the Stop
+# hook will look), not here: a sibling Stop hook cannot see Ralph's `{"decision":"block"}` and so
+# cannot tell a stranded loop from a healthy iteration.
+urgency=low
+notify-send -u "$urgency" -a claude "$summary" "${mr:+$mr · }$location
 ${msg:-blocked on you}"

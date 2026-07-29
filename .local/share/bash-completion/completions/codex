@@ -837,12 +837,16 @@ _codex() {
             return 0
             ;;
         codex__app__server)
-            opts="-c -h --strict-config --listen --stdio --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="-c -h --code-mode-host --strict-config --listen --stdio --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --code-mode-host)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --listen)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0

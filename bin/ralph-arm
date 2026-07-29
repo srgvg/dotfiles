@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# Arm a Ralph loop and PROVE the state file landed where the Stop hook will look for it.
+#
+# Why this exists
+# ---------------
+# Both sides of Ralph's state file use a bare relative path, resolved in different processes:
+#
+#   WRITE  setup-ralph-loop.sh:131  mkdir -p .claude                    <- invoking shell's cwd
+#   WRITE  setup-ralph-loop.sh:140  cat > .claude/ralph-loop.local.md   <- same
+#   READ   stop-hook.sh:13          RALPH_STATE_FILE=".claude/ralph-loop.local.md"  <- HOOK's cwd
+#   READ   stop-hook.sh:15-18       [[ ! -f "$RALPH_STATE_FILE" ]] && exit 0
+#
+# That last line is the whole problem: "not found" is treated as "no active loop" and the turn is
+# allowed to end, silently, with no error and no notification. Arm from a directory that is not the
+# one the hook runs in and the loop is stranded forever.
+#
+# Observed, 2026-07-28: a /gpl run armed into ~/src/autops/wharf/dot-github (a repo holding nothing
+# but AGENTS.md) and stranded at iteration 2 of 4 with completion_promise PLAN-READY. Its orphaned
+# state file was still on disk a day later. The operator had to type "why is this paused instead of
+# going to round 3?" and "nothing running again?" in session 86f7c0f7 to discover it.
+#
+# A sibling Stop hook cannot detect this after the fact: Ralph signals continuation by printing
+# {"decision":"block"} and hooks cannot see each other's output, so a stranded loop and a healthy
+# iteration are indistinguishable downstream. Detection is not available; prevention is. Hence an
+# assertion at arm time.
+#
+# Usage
+#   ralph-arm [--dir <abs-path>] <prompt> --max-iterations <N> --completion-promise <PROMISE>
+#
+# --dir defaults to $PWD. It must be absolute and must exist. Everything else is passed through to
+# setup-ralph-loop.sh untouched.
+#
+# Exits non-zero, loudly, if the state file is not readable at <dir>/.claude/ralph-loop.local.md
+# afterwards. A loop that cannot be proven armed must not be reported as armed.
+
+set -euo pipefail
+
+SETUP=/home/serge/.claude/plugins/cache/claude-plugins-official/ralph-loop/1.0.0/scripts/setup-ralph-loop.sh
+REL=.claude/ralph-loop.local.md
+
+die() { printf 'ralph-arm: %s\n' "$*" >&2; exit 1; }
+
+armdir=$PWD
+if [ "${1:-}" = "--dir" ]; then
+    [ $# -ge 2 ] || die "--dir needs a path"
+    armdir=$2; shift 2
+fi
+
+case "$armdir" in
+    /*) ;;
+    *)  die "--dir must be absolute, got: $armdir" ;;
+esac
+[ -d "$armdir" ] || die "no such directory: $armdir"
+[ -x "$SETUP" ]  || die "setup script not executable: $SETUP"
+[ $# -ge 1 ]     || die "no prompt given"
+
+target="$armdir/$REL"
+
+# 1. Refuse to clobber another session's live loop. setup-ralph-loop.sh:140 overwrites
+#    unconditionally, which is how one session silently kills another's loop.
+if [ -e "$target" ]; then
+    prev_sid=$(sed -n 's/^session_id: *//p' "$target" | head -1)
+    prev_it=$(sed -n 's/^iteration: *//p' "$target" | head -1)
+    prev_max=$(sed -n 's/^max_iterations: *//p' "$target" | head -1)
+    printf 'ralph-arm: a state file already exists at %s\n' "$target" >&2
+    printf '           session_id=%s iteration=%s/%s\n' "${prev_sid:-?}" "${prev_it:-?}" "${prev_max:-?}" >&2
+    printf '           Overwriting it strands that loop. Cancel it first with\n' >&2
+    printf '             /ralph-loop:cancel-ralph   (run from %s)\n' "$armdir" >&2
+    printf '           or re-run with RALPH_ARM_FORCE=1 if it is definitely yours.\n' >&2
+    [ "${RALPH_ARM_FORCE:-}" = "1" ] || exit 1
+fi
+
+# 2. Report orphans before arming. These are loops that will never resume: their Stop hook looks
+#    somewhere else. Reporting is all we do -- deleting another session's state file is not ours
+#    to decide.
+orphans=$(find /home/serge/src /home/serge/.claude -name ralph-loop.local.md \
+            -not -path "$target" 2>/dev/null || true)
+if [ -n "$orphans" ]; then
+    printf 'ralph-arm: NOTE, other ralph state files exist elsewhere:\n' >&2
+    printf '%s\n' "$orphans" | while read -r o; do
+        printf '           %s  (session %s, iteration %s)\n' \
+            "$o" \
+            "$(sed -n 's/^session_id: *//p' "$o" | head -1)" \
+            "$(sed -n 's/^iteration: *//p' "$o" | head -1)" >&2
+    done
+    printf '           If one is a stranded loop of yours, cancel it from ITS directory.\n' >&2
+fi
+
+# 3. Arm, from the resolved directory, explicitly. `cd` in a subshell so a failure cannot leave the
+#    caller somewhere unexpected.
+( cd "$armdir" && "$SETUP" "$@" ) || die "setup-ralph-loop.sh failed (rc=$?); loop NOT armed"
+
+# 4. Prove it. This is the entire point of the wrapper: setup exiting 0 is not evidence the file
+#    landed where the hook will read it.
+[ -f "$target" ] || die "setup reported success but no state file at $target -- loop NOT armed"
+[ -r "$target" ] || die "state file at $target is not readable -- loop NOT armed"
+
+sid=$(sed -n 's/^session_id: *//p' "$target" | head -1)
+it=$(sed -n 's/^iteration: *//p' "$target" | head -1)
+maxit=$(sed -n 's/^max_iterations: *//p' "$target" | head -1)
+promise=$(sed -n 's/^completion_promise: *//p' "$target" | head -1)
+
+[ -n "$sid" ] || die "state file at $target has no session_id -- refusing to report it as armed"
+
+# 5. Tell the caller exactly what to put in the run log, and where to cancel from. The cancel
+#    command is plugin-scoped: the bare /cancel-ralph does not resolve and falls through to bash.
+cat <<EOF
+ralph-arm: ARMED
+  state file : $target
+  session_id : $sid
+  iteration  : ${it:-?} of ${maxit:-?}
+  promise    : ${promise:-none}
+  cancel     : /ralph-loop:cancel-ralph   (must be run with cwd = $armdir)
+
+  The Stop hook resolves '$REL' against ITS OWN cwd. If this session's cwd is not
+  $armdir when a turn ends, the loop will strand silently.
+EOF

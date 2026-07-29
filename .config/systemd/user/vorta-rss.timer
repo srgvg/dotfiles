@@ -1,0 +1,12 @@
+[Unit]
+Description=Sample Vorta RSS every 5 minutes (memory-growth watch)
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+# No Persistent= — a missed sample while suspended is worthless, and catching
+# up on wake would write a burst of identical lines.
+
+[Install]
+WantedBy=timers.target
