@@ -262,7 +262,10 @@ bindsym --no-repeat $mod+Control+Alt+Pause	exec wlogout
 # --no-repeat for app launchers - should only open one instance
 #bindsym $mod+c				exec gnome-calculator
 bindsym --no-repeat $mod+c				exec gnome-calculator
-bindsym --no-repeat $mod+Control+c		exec $dfzf_term dfzf-clipboard
+# Clipboard history picker. cliphist -> swayclip 2026-08-02; uncomment the dfzf line and
+# re-enable the watcher in 90-execs-config to roll back. See ~/etc/docs/sway-setup.md §9.2.
+#bindsym --no-repeat $mod+Control+c		exec $dfzf_term dfzf-clipboard
+bindsym --no-repeat $mod+Control+c		exec $dfzf_term swayclip-picker
 bindsym --no-repeat $mod+Control+d	    exec nautilus --new-window
 bindsym --no-repeat $mod+d		exec nemo
 bindsym --no-repeat $mod+Shift+l	exec foot --app-id=terminal-floating --hold launch-desktop-jobs
@@ -307,6 +310,11 @@ bindsym --no-repeat XF86AudioMute			exec i3-volume local toggle
 bindsym --no-repeat Control+XF86AudioMute		exec i3-volume sonos toggle
 bindsym --no-repeat $mod+XF86AudioMute		exec i3-volume local set 50
 bindsym --no-repeat $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
+
+# Bluetooth speaker switching. The adapter carries only one A2DP transport at
+# a time, so these disconnect the live speaker before connecting the other.
+bindsym --no-repeat $mod+Shift+b			exec bt-speaker
+bindsym --no-repeat $mod+Shift+XF86AudioMute	exec bt-speaker toggle
 
 # Fn-F2  XF86AudioLowerVolume
 # Fn-F3  XF86AudioRaiseVolume

@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# fzf preview helper for swayclip-picker. Takes one line of `swctl list` output on argv and
+# renders that entry's contents.
+#
+# Split out of swayclip-picker rather than inlined because fzf runs --preview through `sh -c`,
+# where a shell function would not be visible and the nested quoting is unreadable.
+#
+# Counterpart of the dfzf-clipboard-cat / dfzf-clipboard-icat pair that the cliphist picker used.
+# See ~/etc/docs/sway-setup.md §9.2.
+
+set -o nounset
+set -o pipefail
+
+line="${1:-}"
+[ -n "$line" ] || exit 0
+
+# Field 1 is the entry ID; awk splits on any whitespace, so this survives fzf collapsing the
+# tab separator into a space when it quotes {} for the preview command.
+id="$(printf '%s' "$line" | awk '{print $1}')"
+
+case "$id" in
+    '' | *[!0-9]*) exit 0 ;; # not an ID, nothing to preview
+esac
+
+# swctl has no "describe one entry" command, so filter the full JSON list. content_mime_type is
+# the type swctl itself considers the entry's content, picked by precedence in the daemon.
+mime="$(swctl list --json 2>/dev/null | jq -r --argjson i "$id" '.[] | select(.id == $i) | .content_mime_type')"
+
+if [ -z "$mime" ] || [ "$mime" = "null" ]; then
+    printf 'entry %s: no longer in history\n' "$id"
+    exit 0
+fi
+
+case "$mime" in
+image/*)
+    if [ -n "${KITTY_WINDOW_ID:-}" ] && command -v dfzf-clipboard-icat >/dev/null; then
+        swctl get "$id" "$mime" | dfzf-clipboard-icat
+    elif command -v chafa >/dev/null; then
+        swctl get "$id" "$mime" | chafa
+    else
+        # chafa is not installed on goldorak, so there is no terminal image renderer. Say so
+        # rather than dumping raw bytes into the popup.
+        printf '%s\n\n%s bytes\n\nNo preview: install chafa for inline images.\n' \
+            "$mime" "$(swctl get "$id" "$mime" | wc -c)"
+    fi
+    ;;
+*)
+    # dfzf-clipboard-cat reads stdin when given no file argument, both in its bat branch and in
+    # its plain-cat fallback.
+    swctl get "$id" "$mime" | dfzf-clipboard-cat
+    ;;
+esac

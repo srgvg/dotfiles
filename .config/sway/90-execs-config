@@ -20,7 +20,13 @@ exec_always pgrep lxpolkit || lxpolkit
 
 # By default, the clipboard is emptied whenever a window is closed. This can be a surprising default behaviour.
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows.
-exec_always sh -c 'pkill wl-paste; wl-paste --watch cliphist -max-items 1000 store'  # for dfzf-clipboard
+#
+# Retired 2026-08-02 in favour of swayclip, which keeps the mime types the source client offered
+# instead of flattening to text. swayclip is NOT started here: it runs from the i3jobs screen via
+# ~/bin/launch-desktop-jobs-goldorak, so its --debug output is readable. Consequence: unlike this
+# exec_always, nothing is captured until $mod+Shift+l has been pressed once. See ~/etc/docs/sway-setup.md §9.2.
+# To roll back: uncomment the line below, and restore the dfzf-clipboard binding in 60-bindings-config.
+#exec_always sh -c 'pkill wl-paste; wl-paste --watch cliphist -max-items 1000 store'  # for dfzf-clipboard
 
 # Float Firefox extension pop-outs (Bitwarden) at map time by their small geometry,
 # which sway criteria cannot match. See ~/bin/sway-float-firefox-popups.

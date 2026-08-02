@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# Switch the active Bluetooth A2DP speaker on goldorak.
+#
+# The AX201 controller carries only ONE live A2DP media transport at a time
+# (proven symmetric and codec-independent, 2026-08-02), so a second speaker
+# cannot simply be selected. Two complications follow from that:
+#
+#   * `bluetoothctl` reports the baseband link, not the audio stream, so both
+#     speakers routinely read "Connected" while only one has a sink. The
+#     transport objects under org.bluez are the only reliable indicator.
+#   * Setting a card profile to "off" is NOT enough to free the transport --
+#     the object survives in state "idle" and still blocks the other speaker.
+#     Only a BlueZ-level disconnect releases it.
+#
+# Both speakers are trusted, so a disconnected one re-pages within seconds and
+# races to reclaim the transport. Hence the retry loop rather than one shot.
+#
+# Usage:
+#   bt-speaker              pick from a wofi menu
+#   bt-speaker toggle       switch to the other paired speaker
+#   bt-speaker lg           match a paired speaker by name or MAC substring
+#   bt-speaker --list       show paired speakers and which one is live
+
+set -euo pipefail
+
+A2DP_UUID='0000110b-0000-1000-8000-00805f9b34fb'
+SWITCH_ATTEMPTS=4
+SINK_WAIT=12
+RELEASE_WAIT=10
+
+die() { printf '%s: %s\n' "${0##*/}" "$1" >&2; exit 1; }
+
+notify() {
+	command -v notify-send >/dev/null 2>&1 && notify-send -u low "BT speaker" "$1"
+	printf '%s\n' "$1"
+}
+
+# Paired devices advertising the A2DP Audio Sink UUID, as "MAC<TAB>Name".
+paired_speakers() {
+	local mac name
+	while read -r _ mac name; do
+		[ -n "$mac" ] || continue
+		if bluetoothctl info "$mac" 2>/dev/null | grep -qF -- "$A2DP_UUID"; then
+			printf '%s\t%s\n' "$mac" "$name"
+		fi
+	done < <(bluetoothctl devices Paired 2>/dev/null)
+}
+
+# MACs that currently own an A2DP transport. A transport is the only thing
+# that yields a sink; an ACL link on its own does not.
+transport_macs() {
+	busctl tree org.bluez 2>/dev/null \
+		| grep -oE 'dev_([0-9A-F]{2}_){5}[0-9A-F]{2}/sep[0-9]+/fd[0-9]+$' \
+		| sed -E 's#^dev_##; s#/.*##; s#_#:#g' \
+		| sort -u
+}
+
+# Sink name for a MAC, empty if it has none. The trailing index is assigned by
+# PipeWire and is not always 1, so match the prefix instead of assuming it.
+sink_for() {
+	pactl list short sinks 2>/dev/null \
+		| awk -v p="bluez_output.${1//:/_}." 'index($2, p) == 1 { print $2; exit }'
+}
+
+wait_gone() {
+	local mac=$1 i
+	for ((i = 0; i < RELEASE_WAIT; i++)); do
+		transport_macs | grep -qxF -- "$mac" || return 0
+		sleep 1
+	done
+	return 1
+}
+
+wait_sink() {
+	local mac=$1 i
+	for ((i = 0; i < SINK_WAIT; i++)); do
+		[ -n "$(sink_for "$mac")" ] && return 0
+		sleep 1
+	done
+	return 1
+}
+
+# Point the default at the new sink and drag already-playing streams over,
+# which set-default alone does not do for streams that are already routed.
+activate_sink() {
+	local sink=$1 id
+	pactl set-default-sink "$sink"
+	while read -r id _; do
+		[ -n "$id" ] || continue
+		pactl move-sink-input "$id" "$sink" 2>/dev/null || true
+	done < <(pactl list short sink-inputs 2>/dev/null)
+}
+
+# A card left at profile "off" by an earlier switch produces no sink even once
+# connected, so re-arm it before waiting on one.
+restore_profile() {
+	local mac=$1 card
+	card="bluez_card.${mac//:/_}"
+	pactl list short cards 2>/dev/null | grep -qF -- "$card" || return 0
+	if pactl list cards 2>/dev/null | grep -qF 'a2dp-sink-sbc_xq'; then
+		pactl set-card-profile "$card" a2dp-sink-sbc_xq 2>/dev/null || true
+	fi
+}
+
+speakers=$(paired_speakers)
+[ -n "$speakers" ] || die 'no paired A2DP speakers found'
+current=$(transport_macs | head -n1)
+
+if [ "${1:-}" = '--list' ]; then
+	while IFS=$'\t' read -r mac name; do
+		if [ "$mac" = "$current" ]; then
+			printf '* %s  %s (live)\n' "$mac" "$name"
+		else
+			printf '  %s  %s\n' "$mac" "$name"
+		fi
+	done <<<"$speakers"
+	exit 0
+fi
+
+case "${1:-}" in
+	'')
+		command -v wofi >/dev/null 2>&1 || die 'wofi not found; pass a name instead'
+		choice=$(cut -f2 <<<"$speakers" | wofi --dmenu --prompt 'BT speaker') || exit 0
+		[ -n "$choice" ] || exit 0
+		target=$(awk -F'\t' -v n="$choice" '$2 == n { print $1; exit }' <<<"$speakers")
+		;;
+	toggle)
+		# First entry that is not the live one; with two speakers, "the other".
+		target=$(awk -F'\t' -v c="$current" '$1 != c { print $1; exit }' <<<"$speakers")
+		;;
+	*)
+		target=$(grep -iF -- "$1" <<<"$speakers" | head -n1 | cut -f1)
+		;;
+esac
+
+[ -n "${target:-}" ] || die "no paired speaker matches '${1:-}'"
+target_name=$(awk -F'\t' -v m="$target" '$1 == m { print $2; exit }' <<<"$speakers")
+
+if [ "$target" = "$current" ]; then
+	sink=$(sink_for "$target")
+	[ -n "$sink" ] && activate_sink "$sink"
+	notify "$target_name is already live"
+	exit 0
+fi
+
+# Only the selected speaker stays trusted. A trusted idle speaker re-pages and
+# reclaims the single transport within ~30s of being disconnected, silently
+# stealing audio back; untrusting it is what makes a switch actually stick.
+# Consequence: a speaker only auto-connects once selected here at least once.
+while IFS=$'\t' read -r mac _; do
+	if [ "$mac" = "$target" ]; then
+		bluetoothctl trust "$mac" >/dev/null 2>&1 || true
+	else
+		bluetoothctl untrust "$mac" >/dev/null 2>&1 || true
+	fi
+done <<<"$speakers"
+
+for ((attempt = 1; attempt <= SWITCH_ATTEMPTS; attempt++)); do
+	# Free the transport. Anything still holding one blocks the target with
+	# br-connection-create-socket or "Host is down (112)".
+	while read -r mac; do
+		if [ -z "$mac" ] || [ "$mac" = "$target" ]; then continue; fi
+		bluetoothctl disconnect "$mac" >/dev/null 2>&1 || true
+		wait_gone "$mac" || true
+	done < <(transport_macs)
+
+	# The connect can exceed bluetoothctl's own timeout yet still succeed, so
+	# the sink -- not this exit status -- is what decides.
+	timeout 20 bluetoothctl connect "$target" >/dev/null 2>&1 || true
+	restore_profile "$target"
+
+	if wait_sink "$target"; then
+		activate_sink "$(sink_for "$target")"
+		notify "switched to $target_name"
+		exit 0
+	fi
+done
+
+die "could not switch to $target_name after $SWITCH_ATTEMPTS attempts"

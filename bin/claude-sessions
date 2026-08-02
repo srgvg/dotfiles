@@ -1,0 +1,335 @@
+#!/usr/bin/env bash
+# One table of every Claude Code session on this host: what it is, where it is, and what it is
+# working from. Answers "what are my seven windows doing" without alt-tabbing through them.
+#
+#   $ claude-sessions
+#   PID       ST    AGE  WHERE                SUBJECT                              PLAN
+#   1158137   busy   2m  opsmaster:master     frigate-0 OOM — diagnostic plan…     peppy-crafting-lemur.md
+#   1649448   idle   5h  home                 bios-capsule-flash-video-p340        -
+#
+#   --all     also list state files whose process is gone (or whose pid was reused)
+#   --plain   tab-separated, no colour, no truncation -- for scripts
+#   --json    full records, nothing truncated or padded; `[]` when there are none
+#
+# Only the table truncates, and only its SUBJECT column, to fit the terminal. --plain and --json
+# always carry the full value.
+#
+# Sources, and why each:
+#   ~/.claude/sessions/<pid>.json   pid, sessionId, launch cwd, status, kind, procStart
+#   the transcript's title records  the SUBJECT -- authoritative for what the titlebar shows.
+#                                   The state file's `name` lags it (a session has been observed
+#                                   with name "serge-1c" while its transcript already said "home"),
+#                                   so it is only a fallback. See ~/etc/docs/terminal.md.
+#   ~/.claude/plans/.by-session/    the plan, an O(1) pointer written by ~/bin/claude-plan-index
+#
+# Liveness is `procStart` vs field 22 of /proc/<pid>/stat, not merely /proc/<pid> existing: state
+# files outlive their process and a recycled pid would otherwise be reported as a running session.
+set -euo pipefail
+
+CFG=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
+SESSIONS=$CFG/sessions
+PLANPTR=$CFG/plans/.by-session
+
+show_all=0
+plain=0
+json=0
+for a in "$@"; do
+	case $a in
+	--all) show_all=1 ;;
+	--plain) plain=1 ;;
+	--json) json=1 ;;
+	-h | --help)
+		sed -n '2,20p' "$0" | sed -e 's/^# \{0,1\}//'
+		exit 0
+		;;
+	*)
+		printf 'claude-sessions: unknown option %s\n' "$a" >&2
+		exit 2
+		;;
+	esac
+done
+
+[ -d "$SESSIONS" ] || {
+	printf 'no session directory at %s\n' "$SESSIONS" >&2
+	exit 1
+}
+
+# One find for every transcript, rather than one per session: ~/.claude/projects fans out into a
+# directory per project and a session can have /cd-ed away from the one its name implies.
+declare -A TRANSCRIPT=()
+while IFS= read -r f; do
+	b=${f##*/}
+	TRANSCRIPT[${b%.jsonl}]=$f
+done < <(find "$CFG/projects" -name '*.jsonl' -type f 2>/dev/null || true)
+
+# "repo:branch", matching ~/bin/claude-session-title: a linked worktree takes its repo name from
+# the git COMMON dir, since the toplevel basename there is the branch slug, not the repo.
+repo_label_for() {
+	local dir=$1 top repo branch gitdir common mainroot
+	[ -n "$dir" ] || return 0
+	top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null || true)
+	if [ -z "$top" ]; then
+		if [ "$dir" = "${HOME:-/nonexistent}" ]; then printf 'home'; else printf '%s' "${dir##*/}"; fi
+		return 0
+	fi
+	repo=${top##*/}
+	branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
+	gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
+	common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
+	if [ -n "$gitdir" ] && [ "$gitdir" != "$common" ]; then
+		mainroot=${common%/.git}
+		repo="wt:${mainroot##*/}"
+	fi
+	printf '%s' "${repo}${branch:+:$branch}"
+}
+
+# Last ai-title / custom-title, minus the "repo:branch · " prefix the title hook adds -- WHERE
+# already carries that. jq re-checks .type because the grep prefilter also matches tool output
+# that merely quotes those strings.
+subject_of() {
+	local t=$1 s lead
+	[ -n "$t" ] && [ -f "$t" ] || return 0
+	s=$( { grep -aE '"type": ?"(ai|custom)-title"' "$t" 2>/dev/null || true; } |
+		jq -rR 'fromjson? | select(.type == "ai-title" or .type == "custom-title")
+		        | .aiTitle // .customTitle // empty' 2>/dev/null | tail -n 1 || true)
+	case $s in
+	*' · '*)
+		lead=${s%%' · '*}
+		case $lead in
+		*' '*) ;;
+		*) s=${s#* · } ;;
+		esac
+		;;
+	esac
+	printf '%s' "$s"
+}
+
+human_age() { # seconds -> 2m / 5h / 3d
+	local s=$1
+	if [ "$s" -lt 3600 ]; then printf '%dm' $((s / 60));
+	elif [ "$s" -lt 86400 ]; then printf '%dh' $((s / 3600));
+	else printf '%dd' $((s / 86400)); fi
+}
+
+printf -v now '%(%s)T' -1
+rows=()
+jargs=()
+shopt -s nullglob
+for f in "$SESSIONS"/*.json; do
+	pid=${f##*/}
+	pid=${pid%.json}
+
+	# Read every field in one jq pass; a per-field call would fork six times per session.
+	IFS=$'\t' read -r sid cwd status kind procstart updated name < <(
+		jq -r '[(.sessionId//""), (.cwd//""), (.status//"?"), (.kind//"?"),
+		        (.procStart//""), ((.updatedAt//0)|floor), (.name//"")] | @tsv' "$f" 2>/dev/null
+	) || continue
+
+	live=1
+	if [ ! -d "/proc/$pid" ]; then
+		live=0
+	elif [ -n "$procstart" ]; then
+		real=$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null || true)
+		# A recycled pid is a different process wearing this session's number.
+		[ "$real" = "$procstart" ] || live=0
+	fi
+	[ "$live" = 1 ] || [ "$show_all" = 1 ] || continue
+	# Kept before the display mangling below, so --json reports the raw state.
+	status_raw=$status
+	[ "$live" = 1 ] || status=dead
+	# A backgrounded job and a window you can type into are not the same thing, so say which.
+	[ "$kind" = interactive ] || status="$kind:$status"
+
+	where=$(repo_label_for "$cwd" || true)
+	subject=$(subject_of "${TRANSCRIPT[$sid]:-}" || true)
+	# The state file's own name is the fallback, and only when it is not a derived slug echoing
+	# the location -- that would just repeat WHERE.
+	[ -n "$subject" ] || subject=$name
+	[ "$subject" != "$where" ] || subject=""
+
+	plan="-"
+	planpath=""
+	if [ -r "$PLANPTR/$sid" ]; then
+		# `[ -n ] && x=...` would abort under `set -e` on an empty pointer: it is the last
+		# command in this block, so its status 1 becomes the block's.
+		read -r p <"$PLANPTR/$sid" || p=""
+		if [ -n "$p" ]; then
+			planpath=$p
+			plan=${p##*/}
+		fi
+	fi
+
+	age="-"
+	secs=0
+	if [ "${updated:-0}" -gt 0 ]; then
+		secs=$((now - updated / 1000))
+		age=$(human_age "$secs")
+	fi
+
+	# Sort key first, stripped before printing.
+	rows+=("$(printf '%012d\t%s\t%s\t%s\t%s\t%s\t%s' \
+		"${updated:-0}" "$pid" "$status" "$age" "${where:--}" "${subject:--}" "$plan")")
+
+	# Passed to jq as positional arguments rather than packed into a delimited line: jq then does
+	# the escaping, so a tab or a quote inside a title cannot corrupt the output. Values here are
+	# the FULL ones -- the table's truncation happens at print time and never touches these.
+	jargs+=("$pid" "$sid" "$status_raw" "$kind" "$live" "${where:-}" "$cwd" "$subject"
+		"${planpath:-}" "${TRANSCRIPT[$sid]:-}" "${updated:-0}" "$secs")
+done
+shopt -u nullglob
+
+# JSON first: it is the one output that must never be truncated, wrapped or padded, so it is
+# emitted before any of the terminal-width logic below runs. An empty result is `[]`, not a
+# message, so a consumer can pipe it unconditionally.
+if [ "$json" = 1 ]; then
+	if [ ${#jargs[@]} -eq 0 ]; then
+		printf '[]\n'
+		exit 0
+	fi
+	jq -n --args '
+	  [ range(0; ($ARGS.positional | length); 12) as $i
+	    | $ARGS.positional[$i : $i + 12]
+	    | { pid:          (.[0] | tonumber),
+	        session_id:   .[1],
+	        status:       .[2],
+	        kind:         .[3],
+	        live:         (.[4] == "1"),
+	        where:        (if .[5] == "" then null else .[5] end),
+	        cwd:          (if .[6] == "" then null else .[6] end),
+	        subject:      (if .[7] == "" then null else .[7] end),
+	        plan:         (if .[8] == "" then null
+	                       else { path: .[8], name: (.[8] | split("/") | last) } end),
+	        transcript:   (if .[9] == "" then null else .[9] end),
+	        updated_at:   (.[10] | tonumber),
+	        age_seconds:  (.[11] | tonumber) }
+	  ] | sort_by(.updated_at) | reverse' "${jargs[@]}"
+	exit 0
+fi
+
+if [ ${#rows[@]} -eq 0 ]; then
+	printf 'no %ssessions\n' "$([ "$show_all" = 1 ] || printf 'live ')"
+	exit 0
+fi
+
+# Newest activity first.
+mapfile -t rows < <(printf '%s\n' "${rows[@]}" | sort -r)
+
+if [ "$plain" = 1 ]; then
+	printf 'PID\tST\tAGE\tWHERE\tSUBJECT\tPLAN\n'
+	printf '%s\n' "${rows[@]}" | cut -f2-
+	exit 0
+fi
+
+# Truncate SUBJECT to whatever is left of the terminal; the other columns are bounded.
+cols=${COLUMNS:-0}
+[ "$cols" -gt 0 ] || cols=$( { stty size </dev/tty; } 2>/dev/null | awk '{print $2}' || true)
+# 32 is the narrowest the layout can fit (FIXED 29 plus one column each); anything below that is
+# treated as a broken stty rather than a real terminal, and 120 is assumed.
+[ -n "$cols" ] && [ "$cols" -ge 32 ] || cols=120
+w_where=0 w_plan=0
+for r in "${rows[@]}"; do
+	IFS=$'\t' read -r _ _ _ _ w _ p <<<"$r"
+	[ ${#w} -gt $w_where ] && w_where=${#w}
+	[ ${#p} -gt $w_plan ] && w_plan=${#p}
+done
+# Never narrower than the column heading itself, or the header row overflows into the next column.
+[ "$w_where" -ge 5 ] || w_where=5
+[ "$w_plan" -ge 4 ] || w_plan=4
+
+# Fixed cost of a row: pid(9) + ' ' + st(8) + ' ' + age(4) + '  ' + WHERE + '  ' + SUBJECT + '  '
+# + PLAN  =  29 + w_where + w_subj + w_plan. Getting this arithmetic wrong overflows the terminal
+# and the line wraps, which is worse than truncating -- an earlier version was short by exactly 2
+# and every row wrapped.
+FIXED=29
+budget=$((cols - FIXED))
+
+# SUBJECT is the column worth reading, so it is the one protected, not the one sacrificed. Claw
+# space back from PLAN first (the file name is a harness slug and the H1 is what carries meaning),
+# then from WHERE (inferable from the others), and only then let SUBJECT shrink.
+w_subj=$((budget - w_where - w_plan))
+if [ "$w_subj" -lt 24 ]; then
+	need=$((24 - w_subj))
+	for floor_pair in "w_plan 6" "w_where 12"; do
+		set -- $floor_pair
+		var=$1 floor=$2
+		give=$((${!var} - floor))
+		[ "$give" -gt 0 ] || give=0
+		[ "$give" -le "$need" ] || give=$need
+		printf -v "$var" '%d' $((${!var} - give))
+		need=$((need - give))
+		[ "$need" -gt 0 ] || break
+	done
+	w_subj=$((budget - w_where - w_plan))
+fi
+
+# No width may go below 1 before the shrink loop runs. A NEGATIVE width is not merely ugly: it
+# reaches `${s:0:$w}`, where bash reads a negative length as "all but the last N characters" and
+# hands back nearly the whole string -- which overflowed the line by 64 instead of truncating it.
+for var in w_where w_subj w_plan; do
+	if [ "${!var}" -lt 1 ]; then printf -v "$var" '%d' 1; fi
+done
+
+# Final guarantee: whatever the arithmetic above decided, the row must fit. Shrink in the same
+# order until it does. Anything left over is a terminal too narrow for a table at all.
+for _ in 1 2 3; do
+	over=$((FIXED + w_where + w_subj + w_plan - cols))
+	[ "$over" -gt 0 ] || break
+	for var in w_subj w_plan w_where; do
+		give=$((${!var} - 1))
+		[ "$give" -gt 0 ] || continue
+		[ "$give" -le "$over" ] || give=$over
+		printf -v "$var" '%d' $((${!var} - give))
+		over=$((over - give))
+		[ "$over" -gt 0 ] || break
+	done
+done
+
+dim=""; bold=""; off=""
+if [ -t 1 ]; then dim=$'\033[2m'; bold=$'\033[1m'; off=$'\033[0m'; fi
+
+# printf's `%-*s` pads to a BYTE count, but subjects carry multibyte characters (the `—` in an H1,
+# the `…` this adds when truncating), so every such row shifted the columns after it left. Pad on
+# ${#s}, which counts characters in a UTF-8 locale. Still not true display width -- a double-width
+# CJK glyph would under-pad -- but these titles are Latin plus punctuation.
+# Cut to width, no padding. Applied to the header row too -- the literal label "SUBJECT" is 7
+# characters and in a narrow terminal its column can be 1, which overflowed the line by exactly 6.
+fit() {
+	local s=$1 w=$2
+	# Defensive: a non-positive width must yield nothing, never a negative bash slice.
+	if [ "$w" -le 0 ]; then return 0; fi
+	if [ ${#s} -gt "$w" ]; then
+		if [ "$w" -ge 2 ]; then printf '%s…' "${s:0:$((w - 1))}"; else printf '%s' "${s:0:$w}"; fi
+	else
+		printf '%s' "$s"
+	fi
+}
+
+pad() {
+	local s=$1 w=$2 n
+	s=$(fit "$s" "$w")
+	printf '%s' "$s"
+	n=$((w - ${#s}))
+	if [ "$n" -gt 0 ]; then printf '%*s' "$n" ''; fi
+}
+
+row() { # colour pid st age where subject plan
+	printf '%s' "$1"
+	pad "$2" 9; printf ' '
+	pad "$3" 8; printf ' '
+	pad "$4" 4; printf '  '
+	pad "$5" "$w_where"; printf '  '
+	pad "$6" "$w_subj"; printf '  '
+	# Last column: cut, but no trailing padding.
+	fit "$7" "$w_plan"; printf '%s\n' "$off"
+}
+
+row "$dim" PID ST AGE WHERE SUBJECT PLAN
+for r in "${rows[@]}"; do
+	IFS=$'\t' read -r _ pid status age where subject plan <<<"$r"
+	case $status in
+	busy) c=$bold ;;
+	dead) c=$dim ;;
+	*) c="" ;;
+	esac
+	row "$c" "$pid" "$status" "$age" "$where" "$subject" "$plan"
+done

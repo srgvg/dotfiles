@@ -7,16 +7,36 @@
 # Wired to the SessionStart and UserPromptSubmit hooks in ~/.claude/settings.json; reads the hook
 # JSON payload on stdin and prints hookSpecificOutput.sessionTitle. See ~/etc/docs/terminal.md.
 #
-# Why the base label comes from the transcript and not from the payload: a hook-set title is
-# stored as a CUSTOM title, and `session_title` in the UserPromptSubmit payload is that same
-# custom field -- i.e. what this script wrote last time. Reading it back would compound the prefix
-# every turn. The task name lives in the separate `ai-title` transcript record instead. Taking the
-# last of either record type also means a `/rename` (which writes `custom-title`) wins over a
-# stale ai-title, and is picked up on the next prompt.
+# YIELD-THEN-TAKE-OVER (2026-08-02). Writing a title before Claude has named the session
+# PERMANENTLY suppresses its own `ai-title` -- proven by an isolated four-run A/B under a
+# throwaway CLAUDE_CONFIG_DIR (same prompt, same model, same repo, only the hook differing):
+#
+#     A  no hook                          -> {"type":"ai-title","aiTitle":"Understand git rebase operation"}
+#     B  hook writes at SessionStart      -> no ai-title, ever
+#     C  hook writes at first prompt      -> no ai-title, ever
+#     D  hook writes only once one exists -> ai-title survives
+#
+# Confirmed in production: of 13 sessions since 2026-07-29 whose first title record is a
+# custom-title, none ever received an ai-title. The old unconditional version therefore produced
+# `repo:branch · repo:branch` forever, because from turn two it read its own bare prefix back as
+# the "task". So:
+#
+#   * no title record yet, Claude still has a chance  -> emit {} and stay out of the way
+#   * no title record and Claude has had its chance   -> synthesise a subject ourselves
+#   * a title record exists                           -> prefix it, as before
+#
+# "Has had its chance" is measured in assistant turns, not prompts: the ai-title is written at the
+# first prompt, ahead of the first assistant reply (transcript 66159310 has ai-title on line 20 and
+# its first assistant record on line 21). Two turns gives a margin.
 #
 # CONTRACT: print valid JSON, always exit 0. A UserPromptSubmit hook's non-JSON stdout is injected
 # into the conversation as context, and a non-zero exit blocks the prompt outright.
 set -euo pipefail
+
+# How many assistant turns to let pass before giving up on Claude naming the session itself.
+TAKEOVER_AFTER_ASSISTANT_TURNS=2
+# Longest synthesised subject, in characters, before the whole title is capped.
+SYNTH_SUBJECT_MAX=64
 
 # Bounded: the harness always pipes the payload and closes stdin, but a bare `cat` would hang
 # forever if this is ever run by hand, and a stalled UserPromptSubmit hook stalls the prompt.
@@ -26,13 +46,29 @@ jq_field() { printf '%s' "$payload" | jq -r "$1 // empty" 2>/dev/null || true; }
 cwd=$(jq_field '.cwd')
 transcript=$(jq_field '.transcript_path')
 event=$(jq_field '.hook_event_name')
+session=$(jq_field '.session_id')
 [ -n "$event" ] || event=UserPromptSubmit
+# The transcript is named <session-id>.jsonl, so it carries the id even when the payload does not.
+if [ -z "$session" ] && [ -n "$transcript" ]; then
+	session=${transcript##*/}
+	session=${session%.jsonl}
+fi
+
+emit_nothing() {
+	printf '{}\n'
+	exit 0
+}
 
 # --- prefix: which checkout ------------------------------------------------------------------
 # Same derivation as ~/bin/claude-sway-urgent:159-174, kept deliberately in sync.
-prefix=""
-top=$(git -C "${cwd:-/nonexistent}" rev-parse --show-toplevel 2>/dev/null || true)
-if [ -n "$top" ]; then
+# Sets $REPO_LABEL to "repo:branch", or leaves it empty when $1 is not inside a checkout.
+REPO_LABEL=""
+repo_label_for() {
+	local dir=$1 top repo branch gitdir common mainroot
+	REPO_LABEL=""
+	[ -n "$dir" ] || return 0
+	top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null || true)
+	[ -n "$top" ] || return 0
 	repo=${top##*/}
 	branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
 	# In a linked worktree the per-worktree git dir differs from the shared common dir. The
@@ -45,11 +81,34 @@ if [ -n "$top" ]; then
 		mainroot=${common%/.git}
 		repo=${mainroot##*/}
 	fi
-	prefix="${repo}${branch:+:$branch}"
-elif [ -n "$cwd" ]; then
-	# Not a checkout: use the basename. $HOME is special-cased to the word "home" rather than
-	# its basename "serge" (which reads as a person, not a place) -- and rather than "~", which
-	# was tried first and is too small a glyph to register in a titlebar.
+	REPO_LABEL="${repo}${branch:+:$branch}"
+}
+
+# The directory the session was LAUNCHED in, which survives a /cd. ~/.claude/sessions/<pid>.json
+# is keyed by pid, so match on the session id inside. (Its `name` field is a different thing --
+# an agents-view slug like `serge-1c` -- and is deliberately not used as a title source.)
+launch_cwd() {
+	local dir f
+	dir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/sessions
+	[ -n "$session" ] && [ -d "$dir" ] || return 0
+	f=$(grep -F -l -e "\"sessionId\":\"$session\"" "$dir"/*.json 2>/dev/null | head -1 || true)
+	[ -n "$f" ] || return 0
+	jq -r '.cwd // empty' "$f" 2>/dev/null || true
+}
+
+# Prefer the checkout we are standing in; a /cd into a non-repo (a review directory, /tmp) falls
+# back to the one the session started in rather than replacing the repo with a stray basename --
+# transcript 643f3fe8 recorded `peppy-crafting-lemur · opsmaster:master` from exactly that.
+repo_label_for "$cwd"
+prefix=$REPO_LABEL
+if [ -z "$prefix" ]; then
+	repo_label_for "$(launch_cwd)"
+	prefix=$REPO_LABEL
+fi
+if [ -z "$prefix" ] && [ -n "$cwd" ]; then
+	# Not a checkout either way: use the basename. $HOME is special-cased to the word "home"
+	# rather than its basename "serge" (which reads as a person, not a place) -- and rather than
+	# "~", which was tried first and is too small a glyph to register in a titlebar.
 	if [ "$cwd" = "${HOME:-/nonexistent}" ]; then
 		prefix="home"
 	else
@@ -59,13 +118,14 @@ fi
 
 # The strip below recognises a previously-applied prefix by it being a single space-free token, so
 # a prefix containing a space would never be stripped and would accumulate. An empty one has
-# nothing to say anyway. Either way, emit `{}` and leave the title alone.
+# nothing to say anyway. Either way, leave the title alone.
 case $prefix in
-'' | *' '*)
-	printf '{}\n'
-	exit 0
-	;;
+'' | *' '*) emit_nothing ;;
 esac
+
+if [ -z "$transcript" ] || [ ! -f "$transcript" ]; then
+	emit_nothing
+fi
 
 # --- base: what the task is ------------------------------------------------------------------
 # Titles are appended as {"type":"ai-title","aiTitle":...} / {"type":"custom-title",
@@ -76,13 +136,10 @@ esac
 # tool_result from a session that greps its own transcript does exactly that), so jq re-checks
 # the top-level .type before trusting the line. `fromjson?` swallows a torn or oversized line
 # instead of aborting the stream and losing every record after it.
-base=""
-if [ -n "$transcript" ] && [ -f "$transcript" ]; then
-	base=$( { grep -aE '"type": ?"(ai|custom)-title"' "$transcript" 2>/dev/null || true; } |
-		jq -rR 'fromjson? | select(.type == "ai-title" or .type == "custom-title")
-		        | .aiTitle // .customTitle // empty' 2>/dev/null |
-		tail -n 1 || true)
-fi
+base=$( { grep -aE '"type": ?"(ai|custom)-title"' "$transcript" 2>/dev/null || true; } |
+	jq -rR 'fromjson? | select(.type == "ai-title" or .type == "custom-title")
+	        | .aiTitle // .customTitle // empty' 2>/dev/null |
+	tail -n 1 || true)
 
 # Strip our own prefix if this title has been through here before. `${base#* · }` alone is WRONG:
 # its `*` matches spaces too, so an ai-title that genuinely contains " · " (say "foo bar · baz")
@@ -98,6 +155,54 @@ case $base in
 	;;
 esac
 base=$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
+
+# What is left of a title the old unconditional version wrote is the bare prefix, so it carries no
+# subject at all. Treating that as "no subject" rather than as text is what lets a session already
+# stuck on `opsmaster:master · opsmaster:master` recover on its next prompt instead of staying
+# nameless forever.
+[ "$base" != "$prefix" ] || base=""
+
+# --- no subject yet: yield, or take over -------------------------------------------------------
+if [ -z "$base" ]; then
+	turns=$(grep -ac '"type":"assistant"' "$transcript" 2>/dev/null || true)
+	[ -n "$turns" ] || turns=0
+	# Still early -- writing anything here is what kills the ai-title (run C above).
+	[ "$turns" -ge "$TAKEOVER_AFTER_ASSISTANT_TURNS" ] || emit_nothing
+
+	# Claude is not going to name this session. Prefer the plan's own H1: every plan sampled has
+	# a descriptive one, while the file name is a harness slug ("peppy-crafting-lemur").
+	# <plan>.md.lock records `session: <uuid>`, which is the only session->plan mapping outside
+	# the transcript.
+	plandir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plans
+	lock=$(grep -F -l -e "session: $session" "$plandir"/*.md.lock 2>/dev/null | head -1 || true)
+	# `[ -f ] && x=$(...)` would be WRONG under `set -e`: with no plan file the AND-list's own
+	# status is 1 and the script would abort here, emitting nothing at all.
+	plan=${lock%.lock}
+	if [ -n "$lock" ] && [ -f "$plan" ]; then
+		base=$(grep -am1 -e '^# ' "$plan" 2>/dev/null | sed -E 's/^#[[:space:]]*//' || true)
+	fi
+
+	# Otherwise the first thing that was asked. `last-prompt` records are unreliable (the first
+	# one carries no lastPrompt field), so read the first real user message instead. `.content`
+	# is a bare string for a typed prompt but an array of parts for anything richer, so pull the
+	# text parts rather than letting jq -r print a raw JSON array as the title.
+	if [ -z "$base" ]; then
+		base=$( { grep -am1 -e '"type":"user","message":{"role":"user","content":"' "$transcript" 2>/dev/null || true; } |
+			jq -r '.message.content
+			       | if type == "string" then . else ([.[]? | select(.type == "text") | .text] | join(" ")) end
+			       // empty' 2>/dev/null |
+			head -1 || true)
+	fi
+
+	# One line, no leading slash-command, no surrounding blanks, bounded length.
+	base=$(printf '%s' "$base" | tr '\n\t' '  ' |
+		sed -E 's/^\/[a-zA-Z0-9:_-]+ *//; s/^[[:space:]]+//; s/[[:space:]]+$//')
+	if [ "${#base}" -gt "$SYNTH_SUBJECT_MAX" ]; then
+		base=${base:0:$((SYNTH_SUBJECT_MAX - 1))}…
+	fi
+	# A synthesis that collapsed to the prefix (or to nothing) must not reintroduce the defect.
+	[ "$base" != "$prefix" ] || base=""
+fi
 
 title="$prefix${base:+ · $base}"
 

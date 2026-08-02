@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# fzf clipboard-history picker backed by swayclip, bound to $mod+Ctrl+c
+# (~/.config/sway/60-bindings-config).
+#
+# A port of /usr/local/bin/dfzf-clipboard, which is part of the dfzf install, is owned by root
+# and hardcodes cliphist. Ported rather than edited so the original stays as a working fallback:
+# to roll back, restore the dfzf-clipboard binding in 60-bindings-config and re-enable the
+# cliphist watcher in 90-execs-config.
+#
+# Command mapping from the original:
+#   cliphist list                    -> swctl list          (both emit "<id>TAB<preview>")
+#   cliphist decode | wl-copy        -> swctl set --decode  (parses a list line directly)
+#   cliphist delete                  -> swctl delete <ID>   (takes an ID, not a line)
+#   cliphist decode | ...-cat        -> swayclip-preview    (needs the entry's mime type)
+#
+# See ~/etc/docs/sway-setup.md §9.2.
+
+set -o nounset
+set -o pipefail
+
+# Preflight, and KEEP IT PERMANENTLY — this is not a workaround for the segfault noted below.
+# When the daemon is unreachable `swctl list` writes its error to stderr and emits ZERO bytes on
+# stdout (verified with stdbuf, so it is not a buffering artefact), so without this check fzf
+# opens on an empty list and the popup reads as "no history" rather than "no daemon".
+#
+# That failure used to be worse than a nonzero exit: swctl SEGFAULTed with 139 because it tore down
+# an IPC context it never initialised — https://github.com/64-bitman/swayclip/issues/2, fixed
+# upstream in c8bcac0 and verified here on v0.0.2-5-gaf5edab (exit 1 now). Nothing changed here:
+# `! swctl len` caught 139 and a clean 1 alike.
+if ! swctl len >/dev/null 2>&1; then
+    notify-send -u critical "swayclip" \
+        "Clipboard daemon is not running.\nStart the desktop jobs with \$mod+Shift+l." 2>/dev/null
+    exit 1
+fi
+
+# Close any other dfzf popup, as every dfzf-* picker does on entry.
+dfzf-kill-bro >/dev/null
+
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'swayclip-preview {}'"
+
+# awk rather than `cut -f1`: fzf shell-quotes {} for the bound command and does not guarantee the
+# tab survives as a tab, so splitting on generic whitespace is the safe read of the ID.
+swctl list |
+  fzf --prompt "Clipboard > " \
+    --preview-window="up" \
+    --header "enter: paste   ctrl-k: delete   ctrl-p: pin" \
+    --bind="enter:execute-silent(echo {} | swctl set --decode && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
+    --bind="ctrl-k:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl delete)+reload(swctl list)" \
+    --bind="ctrl-p:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl pin --toggle)+reload(swctl list)"

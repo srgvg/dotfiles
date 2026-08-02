@@ -1,0 +1,59 @@
+# swayclip — Wayland clipboard manager
+# Format reference: man 5 swayclip     Paths/flags: man 1 swayclip
+# Installed via: mise --cd ~/etc run desktop:swayclip   (see ~/etc/docs/sway-setup.md §9.1)
+#
+# This file must EXIST — swayclip exits 1 if it cannot open it, even though every option
+# below has a built-in default (common/config_util.c:58).
+
+[daemon]
+# Carried over from the cliphist setup this replaced (`wl-paste --watch cliphist -max-items 1000`).
+# Trimming is a SQL trigger, not daemon logic, and it skips pinned rows: see `trim_entries` in
+# the upstream daemon/db_schema.sql. So a pinned entry is never evicted by this limit.
+max_entries = 1000
+
+# Default is 20 MB. Left at the default deliberately: the whole point of swayclip over
+# cliphist is that it keeps rich mime types (images, HTML), which are large.
+#
+# The cost of that is lower than it looks. The Data table is content-addressed and UNIQUE on
+# Data_id (a sha256 of the payload), so one blob is stored once no matter how many mime types
+# or history entries reference it. A large image re-copied ten times costs one copy on disk.
+
+# Keep history across daemon restarts.
+persist = true
+
+# Regular selection (Ctrl-C/Ctrl-V) only. cliphist did not watch the primary selection either,
+# so this keeps behaviour equivalent; flip to true if you want middle-click history too.
+#
+# Do not flip it casually: with primary = true, one copy lands TWICE, because the regular and
+# primary selections arrive as two separate events whose mime types hash differently, which
+# defeats dedup below. Measured 2026-08-02.
+regular = true
+primary = false
+
+# Restore the most recent entry on startup / when a seat appears.
+set_on_startup = true
+
+# Move an existing identical entry to the front instead of storing it twice.
+dedup = "all"
+
+[daemon.mime_types]
+# Store text and images; ignore everything else (app-private formats, huge blobs).
+#
+# ANCHORED ON PURPOSE. These are POSIX EREs compiled with REG_EXTENDED | REG_NOSUB and run
+# through regexec() with no anchoring flags, so an unanchored pattern matches as a SUBSTRING
+# anywhere in the mime type. Unanchored "text/.+" therefore also matches wrapper types such as
+#   application/x-qt-windows-mime;value="text/html"
+# and pulls in exactly the app-private formats this list exists to keep out.
+allowed = ["^text/.+", "^image/.+"]
+
+# Never record password-manager payloads. The KDE hint is what Bitwarden and friends set
+# to ask managers to skip the entry.
+#
+# Deliberately NOT anchored: these are markers that can appear anywhere in a mime string, and
+# a substring match is what catches them. Note the asymmetry with "allowed" above — a single
+# blocked mime type discards the WHOLE offer, every mime type in it, not just the matching one.
+# That is what you want for passwords, and why a too-broad pattern here silently loses entries.
+blocked = ["x-kde-passwordManagerHint", "x-kde-onlyReplaceEmpty"]
+
+# [daemon.seats] is intentionally omitted: with it absent every seat is synced, which is
+# what you want on a single-seat desktop (man 5 swayclip).
