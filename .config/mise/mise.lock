@@ -1207,7 +1207,7 @@ version = "1.17.0"
 backend = "go:github.com/fatih/gomodifytags"
 
 [[tools."go:github.com/go-delve/delve/cmd/dlv"]]
-version = "1.27.0"
+version = "1.27.1"
 backend = "go:github.com/go-delve/delve/cmd/dlv"
 
 [[tools."go:github.com/google/gops"]]
@@ -1548,34 +1548,34 @@ version = "0.6.4"
 backend = "github:nats-io/nats-top"
 
 [[tools.node]]
-version = "26.5.1"
+version = "26.6.0"
 backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
-checksum = "sha256:21194bbf41c18d9ec277545c4d14cce8597d57a9d9f494c323d8121a25de33e8"
-url = "https://nodejs.org/dist/v26.5.1/node-v26.5.1-linux-arm64.tar.gz"
+checksum = "sha256:51c59de738843677a3c97bccbdbf9895141cb308bf25a95daeafd1aade09f0d5"
+url = "https://nodejs.org/dist/v26.6.0/node-v26.6.0-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-arm64-musl"]
-url = "https://unofficial-builds.nodejs.org/download/release/v26.5.1/node-v26.5.1-linux-arm64-musl.tar.gz"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.6.0/node-v26.6.0-linux-arm64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:2b07f09c218d473a26442bff5a90151f53f7b7c0a23bad244eda2c26303a2ba7"
-url = "https://nodejs.org/dist/v26.5.1/node-v26.5.1-linux-x64.tar.gz"
+checksum = "sha256:714f352a7539c5ce09af15e440cbaadbe935bb23ba23fcee66b066d00a063822"
+url = "https://nodejs.org/dist/v26.6.0/node-v26.6.0-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-musl"]
-url = "https://unofficial-builds.nodejs.org/download/release/v26.5.1/node-v26.5.1-linux-x64-musl.tar.gz"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.6.0/node-v26.6.0-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.macos-arm64"]
-checksum = "sha256:f4387df0b46556516d19abf2f2d6806481ac8368aa7f9d96bafed422a56a1d01"
-url = "https://nodejs.org/dist/v26.5.1/node-v26.5.1-darwin-arm64.tar.gz"
+checksum = "sha256:75480cd43b6fcb35d8e772dd18983fbd9f691b2f03b1c94393206098e9944b5e"
+url = "https://nodejs.org/dist/v26.6.0/node-v26.6.0-darwin-arm64.tar.gz"
 
 [tools.node."platforms.macos-x64"]
-checksum = "sha256:077d5c936868dab19d21f77f1e71ce13697e80b3e86a399dcab238902a2ebf93"
-url = "https://nodejs.org/dist/v26.5.1/node-v26.5.1-darwin-x64.tar.gz"
+checksum = "sha256:de075ffc09f33cc4b44ed38e1e4b2ef71f699b986f6d5952329da4973220726d"
+url = "https://nodejs.org/dist/v26.6.0/node-v26.6.0-darwin-x64.tar.gz"
 
 [tools.node."platforms.windows-x64"]
-checksum = "sha256:c432c996b95cbf7568f13a0fbb37526de84a27e3a5c520c3be15f05a9a168212"
-url = "https://nodejs.org/dist/v26.5.1/node-v26.5.1-win-x64.zip"
+checksum = "sha256:aa81c8552f251ff280134985ccdaf16d336e2961b1e2c3eeb7b7b2221509f723"
+url = "https://nodejs.org/dist/v26.6.0/node-v26.6.0-win-x64.zip"
 
 [[tools.nova]]
 version = "3.12.0"
@@ -1633,7 +1633,7 @@ version = "2.4.0"
 backend = "aqua:google/osv-scanner"
 
 [[tools."pipx:azure-cli"]]
-version = "2.88.0"
+version = "2.89.0"
 backend = "pipx:azure-cli"
 
 [tools."pipx:azure-cli".options]
@@ -2037,36 +2037,36 @@ url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-x86_64-pc-win
 provenance = "github-attestations"
 
 [[tools.vcluster]]
-version = "0.36.0"
+version = "0.36.1"
 backend = "aqua:loft-sh/vcluster"
 
 [tools.vcluster."platforms.linux-arm64"]
-checksum = "sha256:95f15a7e9246426a6816b4ae2702f0766dd72e1d1b9b9c852fee27652305faf7"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-linux-arm64"
+checksum = "sha256:42c977a91b33a9f930107d32bd58d05416a2f09b681d70773ca49c0848dd2152"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-linux-arm64"
 
 [tools.vcluster."platforms.linux-arm64-musl"]
-checksum = "sha256:95f15a7e9246426a6816b4ae2702f0766dd72e1d1b9b9c852fee27652305faf7"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-linux-arm64"
+checksum = "sha256:42c977a91b33a9f930107d32bd58d05416a2f09b681d70773ca49c0848dd2152"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-linux-arm64"
 
 [tools.vcluster."platforms.linux-x64"]
-checksum = "sha256:6abaf120a22c6db62ccf38c0cdd76cd3913b30f7f2b2e68610cfe07d79323a0d"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-linux-amd64"
+checksum = "sha256:3bb32e0aa90ecbc4ae88d8a0db7728263a6c911a488f64c53dc07ef5abd2789e"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-linux-amd64"
 
 [tools.vcluster."platforms.linux-x64-musl"]
-checksum = "sha256:6abaf120a22c6db62ccf38c0cdd76cd3913b30f7f2b2e68610cfe07d79323a0d"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-linux-amd64"
+checksum = "sha256:3bb32e0aa90ecbc4ae88d8a0db7728263a6c911a488f64c53dc07ef5abd2789e"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-linux-amd64"
 
 [tools.vcluster."platforms.macos-arm64"]
-checksum = "sha256:6b9214498d82e5d5b7684b312a2c38104c6e0b448fcf533614b81d99f7a3a4a5"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-darwin-arm64"
+checksum = "sha256:2ddc7979988b38beff3fa11f6f6d1b753e73bcdc276a8f0f9d83b5b4626f2e75"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-darwin-arm64"
 
 [tools.vcluster."platforms.macos-x64"]
-checksum = "sha256:0e0adf11a9be88e3141cc9bff53ca5f91dfa6a75398dac18d97c9e7f2097ed5f"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-darwin-amd64"
+checksum = "sha256:9e7aad7b9e76665aceb73e9d8e99811e8e1ac3ef823250e19919fdec8193e705"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-darwin-amd64"
 
 [tools.vcluster."platforms.windows-x64"]
-checksum = "sha256:f41b12ddad94cfb105f52fec7106ca29937d57ff069d671d9ba6dabf99c348e1"
-url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.0/vcluster-windows-amd64.exe"
+checksum = "sha256:9d79c89657d72dcf77dcbd84dcd33379056a0bb4ece8e016773097b50bf4ebe2"
+url = "https://github.com/loft-sh/vcluster/releases/download/v0.36.1/vcluster-windows-amd64.exe"
 
 [[tools.velero]]
 version = "1.18.2"

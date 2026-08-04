@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+# Tune the delay applied to the desk speakers when they are combined with the
+# soundbar. See ~/etc/docs/audio-outputs.md §4.3.
+#
+# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
+# vi: set shiftwidth=4 tabstop=4 noexpandtab:
+# :indentSize=4:tabSize=4:noTabs=false:
+#
+# The Bluetooth and TV-optical paths both lag the desk speakers, by different
+# amounts, so the desk leg of each combine sink is delayed to match. A single
+# filter-chain sink `desk_delayed` carries that delay; i3-pa-select-output writes
+# the right value into it when you pick a combined output. This tool is how you
+# find those values in the first place.
+#
+# Which path you are tuning is read from the current default sink, so `save` and
+# `apply` normally take no argument -- if you are listening to
+# combine_desk_soundbar_bt, `save` writes DELAY_BT_MS. Name the path explicitly
+# only to override that, or when no combined output is active.
+#
+# Usage:
+#   audio-delay                 show the live delay, the saved values, active path
+#   audio-delay 180             set the live delay to 180 ms
+#   audio-delay +10             nudge the live delay by 10 ms (also -10)
+#   audio-delay save            persist the live delay for the active path
+#   audio-delay save bt|tv      ... or for a named path
+#   audio-delay apply           reload the saved value for the active path
+#   audio-delay apply bt|tv     ... or a named one
+#
+# Workflow: play something with a strong transient (percussion, speech) on a
+# combined output, then nudge until the flam collapses into one sound.
+#
+#   i3-pa-select-output "Desk + Soundbar (Bluetooth)"
+#   audio-delay +20      # repeat until it locks
+#   audio-delay save     # knows it was the Bluetooth path
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# pw-cli parses floats with the C locale but PRINTS them with the ambient one, so
+# under nl_BE a naive round-trip feeds it "0,180" and the value is silently
+# truncated to 0. Pin the numeric locale for the whole script.
+export LC_NUMERIC=C
+
+NODE_NAME='desk_delayed'
+CONF="${HOME}/.config/audio-delays.conf"
+MAX_MS=1000     # matches "max-delay" = 1.0 in 50-combine-sinks.conf
+
+die() { printf '%s: %s\n' "${0##*/}" "$1" >&2; exit 1; }
+
+# PipeWire node id of the delay sink.
+function node_id() {
+	local id
+	id=$(pw-dump 2>/dev/null \
+		| jq -r --arg n "${NODE_NAME}" \
+			'.[] | select(.info.props["node.name"] == $n) | .id' \
+		| head -n1)
+	[ -n "${id}" ] || die "no '${NODE_NAME}' node; is 50-combine-sinks.conf loaded?"
+	printf '%s\n' "${id}"
+}
+
+# Live delay in milliseconds, rounded to the nearest integer.
+function live_ms() {
+	local id=$1 secs
+	secs=$(pw-dump "${id}" 2>/dev/null \
+		| jq -r '.[0].info.params.Props[]? | select((.params|tostring) | test("Delay"))
+				| .params | index("delay_fl:Delay (s)") as $i | .[$i + 1]' \
+		| head -n1)
+	if [ -z "${secs}" ] || [ "${secs}" = 'null' ]; then
+		die 'could not read the delay control'
+	fi
+	awk -v s="${secs}" 'BEGIN { printf "%d\n", (s * 1000) + 0.5 }'
+}
+
+function set_ms() {
+	local id=$1 ms=$2 secs
+	if [ "${ms}" -lt 0 ]; then ms=0; fi
+	if [ "${ms}" -gt "${MAX_MS}" ]; then
+		die "delay ${ms}ms exceeds max-delay (${MAX_MS}ms); raise \"max-delay\" in 50-combine-sinks.conf"
+	fi
+	secs=$(awk -v m="${ms}" 'BEGIN { printf "%.4f\n", m / 1000 }')
+	pw-cli s "${id}" Props \
+		"{ params = [ \"delay_fl:Delay (s)\" ${secs} \"delay_fr:Delay (s)\" ${secs} ] }" \
+		>/dev/null
+	printf 'desk delay: %s ms\n' "${ms}"
+}
+
+# Which combined output is live, as bt|tv. Fails if the default sink is not a
+# combined one -- there is then no path to attribute a delay to, and guessing
+# would silently write the wrong one.
+function active_path() {
+	case "$(pactl get-default-sink 2>/dev/null)" in
+		combine_desk_soundbar_bt) printf 'bt\n' ;;
+		combine_desk_soundbar_tv) printf 'tv\n' ;;
+		*) return 1 ;;
+	esac
+}
+
+function path_label() {
+	case "$1" in
+		bt) printf 'Bluetooth\n' ;;
+		tv) printf 'TV optical\n' ;;
+		*)  printf '%s\n' "$1" ;;
+	esac
+}
+
+# Resolve the path for save/apply: explicit argument wins, else the active one.
+function resolve_path() {
+	local verb=$1 arg=${2:-} key
+	if [ -n "${arg}" ]; then
+		printf '%s\n' "${arg}"
+		return 0
+	fi
+	if key=$(active_path); then
+		printf '%s\n' "${key}"
+		return 0
+	fi
+	die "no combined output is active, so there is nothing to ${verb} for; say: audio-delay ${verb} bt|tv"
+}
+
+function saved() {
+	local key=$1
+	# shellcheck disable=SC1090
+	[ -r "${CONF}" ] && source "${CONF}"
+	case "${key}" in
+		bt) printf '%s\n' "${DELAY_BT_MS:-0}" ;;
+		tv) printf '%s\n' "${DELAY_TV_MS:-0}" ;;
+		*)  die "unknown path '${key}'; use bt or tv" ;;
+	esac
+}
+
+function save() {
+	local key=$1 ms=$2 var
+	case "${key}" in
+		bt) var=DELAY_BT_MS ;;
+		tv) var=DELAY_TV_MS ;;
+		*)  die "unknown path '${key}'; use bt or tv" ;;
+	esac
+	[ -w "${CONF}" ] || die "cannot write ${CONF}"
+	# The assignment always exists in the shipped file, so rewrite it in place
+	# rather than appending -- an appended duplicate would shadow the original
+	# and make the file lie about its own contents.
+	grep -qE "^${var}=" "${CONF}" || die "${CONF} has no ${var} line to update"
+	sed -i -E "s|^${var}=.*|${var}=${ms}|" "${CONF}"
+	printf 'saved %s=%s to %s\n' "${var}" "${ms}" "${CONF}"
+}
+
+id=$(node_id)
+key=''
+
+case "${1:-}" in
+	''|show)
+		printf 'live:   %s ms\n' "$(live_ms "${id}")"
+		printf 'saved:  bt=%s ms  tv=%s ms\n' "$(saved bt)" "$(saved tv)"
+		if key=$(active_path); then
+			printf 'active: %s path -- "audio-delay save" writes the %s value\n' \
+				"$(path_label "${key}")" "${key}"
+		else
+			printf 'active: no combined output -- save/apply need bt|tv\n'
+		fi
+		;;
+	save)
+		key=$(resolve_path save "${2:-}")
+		save "${key}" "$(live_ms "${id}")"
+		;;
+	apply)
+		key=$(resolve_path apply "${2:-}")
+		set_ms "${id}" "$(saved "${key}")"
+		;;
+	+*|-*)
+		set_ms "${id}" "$(( $(live_ms "${id}") + ${1} ))"
+		;;
+	*[!0-9]*)
+		die "not a delay in ms: '$1'"
+		;;
+	*)
+		set_ms "${id}" "$1"
+		;;
+esac

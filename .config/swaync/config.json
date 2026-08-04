@@ -8,23 +8,32 @@
   "notification-icon-size": 64,
   "notification-body-image-height": 100,
   "notification-body-image-width": 200,
-  "timeout": 10,
+  "timeout": 0,
   "timeout-low": 5,
   "timeout-critical": 0,
-  "fit-to-screen": false,
-  "control-center-width": 500,
+  "fit-to-screen": true,
+  "relative-timestamps": false,
+  "control-center-width": 700,
   "control-center-height": 1033,
-  "notification-window-width": 500,
+  "control-center-exclusive-zone": true,
+  "notification-window-width": 700,
   "keyboard-shortcuts": true,
   "image-visibility": "when-available",
   "transition-time": 200,
   "hide-on-clear": false,
   "hide-on-action": true,
   "script-fail-notify": true,
+  "notification-visibility": {
+    "volume-osd": {
+      "state": "transient",
+      "app-name": "pasystray"
+    }
+  },
   "widgets": [
-    "buttons-grid",
-    "volume",
-    "backlight"
+    "title",
+    "dnd",
+    "mpris",
+    "notifications"
   ],
   "widget-config": {
     "title": {
@@ -41,60 +50,8 @@
     },
     "mpris": {
       "image-size": 50,
-      "image-radius": 5
-    },
-    "volume": {
-      "label": "󰕾"
-    },
-    "backlight": {
-      "label": "󰃟"
-    },
-    "buttons-grid": {
-      "actions": [
-        {
-          "label": "󰐥",
-          "command": "systemctl poweroff"
-        },
-        {
-          "label": "󰜉",
-          "command": "systemctl reboot"
-        },
-        {
-          "label": "󰌾",
-          "command": "swaylock-corrupter"
-        },
-        {
-          "label": "󰍃",
-          "command": "swaymsg exit"
-        },
-        {
-          "label": "󰆴",
-          "command": "swaync-client -C"
-        },
-        {
-          "label": "󰕾",
-          "command": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-          "type": "toggle"
-        },
-        {
-          "label": "󰍬",
-          "command": "pactl set-source-mute @DEFAULT_SOURCE@ toggle",
-          "type": "toggle"
-        },
-        {
-          "label": "󰖩",
-          "command": "iwgtk"
-        },
-        {
-          "label": "󰂯",
-          "command": "blueman-manager"
-        },
-        {
-          "label": "",
-          "command": "kooha"
-        }
-      ]
+      "image-radius": 5,
+      "blacklist": ["^org\\.mpris\\.MediaPlayer2\\.(?!playerctld$)"]
     }
   }
 }
-

@@ -8,7 +8,7 @@
 
     "modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad", "sway/window"],
     "modules-center": ["idle_inhibitor", "custom/media"],
-    "modules-right": ["pulseaudio", "bluetooth", "network", "temperature", "cpu", "memory", "disk", "disk#2", "tray", "clock"],
+    "modules-right": ["pulseaudio", "bluetooth", "network", "temperature", "cpu", "memory", "disk", "disk#2", "tray", "custom/notification", "clock"],
 
     "sway/workspaces": {
         "disable-scroll": true,
@@ -49,21 +49,14 @@
     },
     "clock": {
         "timezone": "Europe/Brussels",
-        "format": "<span size='large'><b>󰥔 {:%d/%m/%Y   %H:%M:%S}</b></span>",
-        "format-alt": "<span size='large'><b>󰥔 {:%A %d %B %Y   %H:%M:%S}</b></span>",
-        "tooltip-format": "<tt><small>{calendar}</small></tt>",
-        "calendar": {
-            "mode": "year",
-            "mode-mon-col": 3,
-            "weeks-pos": "right",
-            "format": {
-                "months": "<span color='#ffead3'><b>{}</b></span>",
-                "days": "<span color='#ecc6d9'>{}</span>",
-                "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
-                "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-                "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
-            }
-        },
+        "format": "<span size='large'><b>󰥔 {:%A %d %B %Y   %H:%M:%S}</b></span>",
+        // no format-alt, so left-click is free for the swaync panel.
+        "on-click": "swaync-client -t -sw",
+        // Calendar tooltip disabled 2026-08-03: it pops on hover and covers the swaync
+        // control center, which opens in the same top-right corner. The "calendar" block
+        // and "tooltip-format" are removed rather than left dead -- waybar renders the
+        // calendar whenever "calendar" is present and tooltips are on.
+        "tooltip": false,
         "interval": 1
     },
     "cpu": {
@@ -151,5 +144,27 @@
         "escape": true,
         "exec": "$HOME/bin/i3pystatus-commands now_playing 2> /dev/null | tr '[:lower:]' '[:upper:]'",
         "interval": 5
+    },
+    // swaync unread count + DND state (2026-08-03). `swaync-client -swb` is a long-running
+    // subscription that streams waybar-shaped JSON -- no "interval", waybar keeps the pipe open.
+    // The dot in the icon means unread; the crossed bell means DND is on.
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon} {}",
+        "format-icons": {
+            "notification": "󰂚<span foreground='red'><sup></sup></span>",
+            "none": "󰂚",
+            "dnd-notification": "󰂛<span foreground='red'><sup></sup></span>",
+            "dnd-none": "󰂛",
+            "inhibited-notification": "󰂚<span foreground='red'><sup></sup></span>",
+            "inhibited-none": "󰂚",
+            "dnd-inhibited-notification": "󰂛<span foreground='red'><sup></sup></span>",
+            "dnd-inhibited-none": "󰂛"
+        },
+        "return-type": "json",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
     }
 }

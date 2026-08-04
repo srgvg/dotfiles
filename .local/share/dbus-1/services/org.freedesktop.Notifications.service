@@ -1,0 +1,12 @@
+[D-BUS Service]
+# Shadows /usr/share/dbus-1/services/fr.emersion.mako.service, which claims the same
+# bus name for mako. ~/.local/share/dbus-1/services is earlier in XDG_DATA_DIRS, so this
+# file wins and mako is never D-Bus-activated again.
+#
+# SystemdService= is the point: D-Bus activation and swaync.service resolve to the SAME
+# unit, so there is exactly one owner. Pointing Exec= at the binary while the unit is also
+# enabled is what produced the "Failed to acquire service name: File exists" loop with
+# mako -- see ~/etc/docs/portal-notifications.md.
+Name=org.freedesktop.Notifications
+Exec=/usr/bin/swaync
+SystemdService=swaync.service

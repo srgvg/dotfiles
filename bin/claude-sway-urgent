@@ -238,12 +238,13 @@ summary="${ws:+[$ws] }claude : $subject"
 # header stays one short repo name -- in a worktree the path already carries the branch slug.
 location="${cwd:-unknown path}${wt}${branch:+ @ $branch}"
 
-# Urgency (2026-07-29). `low` is the default and stays the default: mako auto-dismisses it after
-# ~5s, which is right for the ordinary "blocked on you" popup -- you see it or you see the sway
-# urgent border set at line 154.
+# Urgency (2026-07-29; daemon is swaync since 2026-08-03, behaviour preserved). `low` is the default
+# and stays the default: the daemon auto-dismisses it after ~5s, which is right for the ordinary
+# "blocked on you" popup -- you see it or you see the sway urgent border set at line 154.
+# (was mako `[urgency=low] default-timeout=5000`, now swaync `"timeout-low": 5`.)
 #
-# `critical` is reserved for cases that must survive an empty chair: mako does not auto-dismiss it,
-# so it persists until acknowledged. Blanket-critical was tried and reverted the same day -- it
+# `critical` is reserved for cases that must survive an empty chair: the daemon does not auto-dismiss
+# it, so it persists until acknowledged (swaync `"timeout-critical": 0`). Blanket-critical was tried and reverted the same day -- it
 # would make every permission prompt a sticky popup, and this file's whole design is that volume is
 # controlled by the GATES above, not by urgency.
 #

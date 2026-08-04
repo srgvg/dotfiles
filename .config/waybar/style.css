@@ -248,3 +248,22 @@ tooltip label {
     color: #ffffff;
     padding: 8px;
 }
+
+/* swaync notification count (2026-08-03). Colour follows the swaync urgency palette
+   carried over from mako: grey when idle, blue when unread, red while DND is on. */
+#custom-notification {
+    color: #a9a9a9;
+    box-shadow: inset 0 -3px #a9a9a9;
+    padding: 0 16px;
+}
+
+#custom-notification.notification {
+    color: #2a52be;
+    box-shadow: inset 0 -3px #2a52be;
+}
+
+#custom-notification.dnd-none,
+#custom-notification.dnd-notification {
+    color: #b22222;
+    box-shadow: inset 0 -3px #b22222;
+}

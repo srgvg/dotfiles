@@ -79,8 +79,8 @@ OUTPUT_SCALE="1.5"
 
 function pause_notifications() {
 	echo "== pause notifications"
-	echo makoctl mode -a do-not-disturb ||:
-	makoctl mode -a do-not-disturb ||:
+	echo swaync-client --dnd-on --skip-wait ||:
+	swaync-client --dnd-on --skip-wait ||:
 }
 function pause_mouse() {
 	echo "== pause mouse"
@@ -98,8 +98,8 @@ function resume_mouse() {
 }
 function resume_notifications() {
 	echo "== resume notifications"
-	echo makoctl mode -r do-not-disturb ||:
-	makoctl mode -r do-not-disturb ||:
+	echo swaync-client --dnd-off --skip-wait ||:
+	swaync-client --dnd-off --skip-wait ||:
 	sleep 1
 }
 function pause_displays() {

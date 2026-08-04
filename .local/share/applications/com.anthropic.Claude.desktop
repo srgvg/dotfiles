@@ -1,0 +1,29 @@
+[Desktop Entry]
+# User-level override of /usr/share/applications/com.anthropic.Claude.desktop
+# Filename MUST stay com.anthropic.Claude.desktop so it shadows the system entry
+# rather than adding a second launcher item.
+#
+# Wayland flags are explicit here even though claude-desktop 1.24012.9 already
+# self-applies --ozone-platform=wayland when it detects a Wayland session.
+# Pinning them guards against a future build changing that autodetection.
+Name=Claude
+Comment=Desktop application for Claude.ai
+GenericName=AI Assistant
+Keywords=AI;Chat;Assistant;Claude;Code;LLM;
+Exec=claude-desktop --ozone-platform=wayland --enable-features=WaylandWindowDecorations %U
+Icon=claude-desktop
+Type=Application
+StartupNotify=true
+StartupWMClass=com.anthropic.Claude
+SingleMainWindow=true
+Categories=Utility;Development;
+MimeType=x-scheme-handler/claude;
+Actions=NewChat;NewCode;
+
+[Desktop Action NewChat]
+Name=New chat
+Exec=claude-desktop --ozone-platform=wayland --enable-features=WaylandWindowDecorations claude://claude.ai/new
+
+[Desktop Action NewCode]
+Name=New Claude Code session
+Exec=claude-desktop --ozone-platform=wayland --enable-features=WaylandWindowDecorations claude://code/new

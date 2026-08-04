@@ -127,8 +127,10 @@
   margin-right: 10px;
 }
 
+/* Font sizes bumped 2026-08-03 for the 4K/scale-1.5 output. mako ran `font=monospace 16`
+   at its own scaling; these are GTK px at the same effective scale. */
 .summary {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
   background: transparent;
   color: rgba(158, 206, 106, 1);
@@ -136,7 +138,7 @@
 }
 
 .time {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   background: transparent;
   color: @text-color;
@@ -145,7 +147,7 @@
 }
 
 .body {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 400;
   background: transparent;
   color: @text-color;
@@ -257,48 +259,9 @@
   font-size: 1.1rem;
 }
 
-.widget-buttons-grid {
-  font-size: x-large;
-  padding: 5px;
-  margin: 10px 10px 5px 10px;
-  border-radius: 0px;
-  background: @noti-bg-darker;
-}
-
-.widget-buttons-grid > flowbox > flowboxchild > button {
-  margin: 3px;
-  background: @cc-bg;
-  border-radius: 0px;
-  color: @text-color;
-}
-
-.widget-buttons-grid > flowbox > flowboxchild > button:hover {
-  background: rgba(122, 162, 247, 1);
-  color: @cc-bg;
-}
-
-.widget-buttons-grid > flowbox > flowboxchild > button:checked {
-  background: rgb(158, 206, 106);
-  color: @cc-bg;
-}
-
-.widget-menubar > box > .menu-button-bar > button {
-  border: none;
-  background: transparent;
-}
-
 .topbar-buttons > button {
   border: none;
   background: transparent;
-}
-
-.widget-volume {
-  background: @noti-bg-darker;
-  padding: 5px;
-  margin: 5px 10px;
-  border-radius: 0px;
-  font-size: 2rem;
-  color: #7aa2f7;
 }
 
 .widget-backlight {
@@ -308,4 +271,19 @@
   border-radius: 0px;
   font-size: 2rem;
   color: #7aa2f7;
+}
+
+/* --- Per-urgency borders, carried over from the mako config (2026-08-03) ---
+   mako had [urgency=low] grey #a9a9a9, [urgency=normal] blue #2a52be,
+   [urgency=high] red #b22222. That colour IS the signal: Claude Code popups are
+   sent -u low on purpose (~/bin/claude-sway-urgent), and critical must be
+   unmistakable. See ~/etc/docs/portal-notifications.md. */
+.notification-row .notification-background .notification.low {
+  border: 2px solid #a9a9a9;
+}
+.notification-row .notification-background .notification.normal {
+  border: 2px solid #2a52be;
+}
+.notification-row .notification-background .notification.critical {
+  border: 2px solid #b22222;
 }

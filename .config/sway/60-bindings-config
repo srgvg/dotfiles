@@ -268,7 +268,7 @@ bindsym --no-repeat $mod+c				exec gnome-calculator
 bindsym --no-repeat $mod+Control+c		exec $dfzf_term swayclip-picker
 bindsym --no-repeat $mod+Control+d	    exec nautilus --new-window
 bindsym --no-repeat $mod+d		exec nemo
-bindsym --no-repeat $mod+Shift+l	exec foot --app-id=terminal-floating --hold launch-desktop-jobs
+bindsym --no-repeat $mod+Shift+l	exec foot --app-id=terminal-floating launch-desktop-jobs
 
 # start browsers
 bindsym --no-repeat $mod+o			exec firefox
@@ -292,7 +292,7 @@ bindsym --no-repeat $mod+Control+n		exec nm-toggle-wifi
 
 
 
-bindsym --no-repeat $mod+a  exec makoctl dismiss --all
+bindsym --no-repeat $mod+a  exec swaync-client --close-all --skip-wait
 
 
 # custom shit
@@ -311,10 +311,9 @@ bindsym --no-repeat Control+XF86AudioMute		exec i3-volume sonos toggle
 bindsym --no-repeat $mod+XF86AudioMute		exec i3-volume local set 50
 bindsym --no-repeat $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
-# Bluetooth speaker switching. The adapter carries only one A2DP transport at
-# a time, so these disconnect the live speaker before connecting the other.
-bindsym --no-repeat $mod+Shift+b			exec bt-speaker
-bindsym --no-repeat $mod+Shift+XF86AudioMute	exec bt-speaker toggle
+# Audio output selection, including Bluetooth, lives entirely in
+# i3-pa-select-output ($mod+Control+m below). The old bt-speaker bindings on
+# $mod+Shift+b and $mod+Shift+XF86AudioMute were merged into it on 2026-08-03.
 
 # Fn-F2  XF86AudioLowerVolume
 # Fn-F3  XF86AudioRaiseVolume

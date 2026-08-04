@@ -76,4 +76,12 @@ exec --no-startup-id "gsettings set org.gnome.desktop.interface gtk-theme Arc-Da
 # https://askubuntu.com/questions/614387/gksu-gtk-warning-cannot-open-display-0
 exec --no-startup-id "xhost +SI:localuser:root"
 
-exec --no-startup-id "makoctl mode -r do-not-disturb"
+exec --no-startup-id "swaync-client --dnd-off --skip-wait"
+
+# playerctld proxies the most-recently-active MPRIS player under one bus name, and
+# swaync's mpris widget is blacklisted down to just that name. Without it the widget
+# shows whichever player appeared last, not the one playing (swaync mpris.vala
+# prepends on discovery and never looks at PlaybackStatus). See
+# ~/etc/docs/portal-notifications.md. `playerctld daemon` only triggers the D-Bus
+# activation and exits, so it is idempotent across reloads - no flock singleton needed.
+exec_always --no-startup-id "playerctld daemon"

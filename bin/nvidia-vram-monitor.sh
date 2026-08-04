@@ -186,7 +186,7 @@ check_vram_during_display_off() {
             _comm=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
             case "$_comm" in
                 sway|swaylock|Xwayland|alacritty|foot|nvidia-smi|nvidia-vram-m*) ;;
-                bash|sh|tee|wl-paste|swayidle|waybar|mako|lxpolkit|wlr-randr) ;;
+                bash|sh|tee|wl-paste|swayidle|waybar|swaync|lxpolkit|wlr-randr) ;;
                 atuin|gdm-wayland-ses|systemd|claude|codex|node-MainThread|less|git|delta|kubie) ;;
                 "") ;;  # process already gone
                 *) echo "$pid" ;;
