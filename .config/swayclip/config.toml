@@ -7,8 +7,10 @@
 
 [daemon]
 # Carried over from the cliphist setup this replaced (`wl-paste --watch cliphist -max-items 1000`).
-# Trimming is a SQL trigger, not daemon logic, and it skips pinned rows: see `trim_entries` in
-# the upstream daemon/db_schema.sql. So a pinned entry is never evicted by this limit.
+# Trimming skips pinned rows, so a pinned entry is never evicted by this limit. Was a SQL trigger
+# (`trim_entries` in daemon/db_schema.sql); `ea43ca9` (picked up 2026-08-05, v0.1.0-14-g6f22fe9)
+# replaced it with manual daemon-side trimming — same guarantee, verified against the new
+# `trim` statement in daemon/database.c (`DELETE … WHERE Pinned = 0 …`).
 max_entries = 1000
 
 # Default is 20 MB. Left at the default deliberately: the whole point of swayclip over

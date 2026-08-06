@@ -25,7 +25,14 @@ esac
 
 # swctl has no "describe one entry" command, so filter the full JSON list. content_mime_type is
 # the type swctl itself considers the entry's content, picked by precedence in the daemon.
-mime="$(swctl list --json 2>/dev/null | jq -r --argjson i "$id" '.[] | select(.id == $i) | .content_mime_type')"
+#
+# swayclip-list-all, not a bare `swctl list --json`: this runs on every preview render (every
+# arrow-key move in fzf), and an unpaginated `swctl list --json` hits the same 64 KiB IPC cap as
+# the picker's main list once history passes a few hundred entries — see swayclip-list-all for the
+# full writeup. Fetching here is not id-indexed (no such swctl command exists), so this still walks
+# the whole history each time; that cost was already being paid before this fix, just via a call
+# that silently failed instead of one that succeeds.
+mime="$(swayclip-list-all --json 2>/dev/null | jq -r --argjson i "$id" '.[] | select(.id == $i) | .content_mime_type')"
 
 if [ -z "$mime" ] || [ "$mime" = "null" ]; then
     printf 'entry %s: no longer in history\n' "$id"

@@ -127,11 +127,12 @@
       <tr><td><code>$lockscreen</code></td><td><code>loginctl lock-session</code></td><td>Lock screen command</td></tr>
       <tr><td><code>$suspend</code></td><td><code>systemctl suspend</code></td><td>Suspend command</td></tr>
       <tr><td><code>$defaultborder</code></td><td><code>pixel 5</code></td><td>Default border width</td></tr>
+      <tr><td><code>$noborder</code></td><td><code>pixel 5</code></td><td>Border width for windows meant to look borderless</td></tr>
       <tr><td><code>$opacity</code></td><td><code>0.9</code></td><td>Default window opacity</td></tr>
       <tr><td><code>$ws_www</code></td><td><code>1</code></td><td>Web workspace</td></tr>
       <tr><td><code>$ws_chat</code></td><td><code>0</code></td><td>Chat workspace (Signal, Slack, Teams…)</td></tr>
-      <tr><td><code>$ws_util</code></td><td><code>17</code></td><td>Utility workspace (htop, jobs)</td></tr>
-      <tr><td><code>$ws_music</code></td><td><code>18</code></td><td>Music workspace (Spotify, VLC…)</td></tr>
+      <tr><td><code>$ws_util</code></td><td><code>12</code></td><td>Utility workspace (htop, jobs)</td></tr>
+      <tr><td><code>$ws_music</code></td><td><code>11</code></td><td>Music workspace (Spotify, VLC…)</td></tr>
     </tbody>
   </table>
 </section>
@@ -200,9 +201,9 @@
   <table>
     <thead><tr><th>Workspace</th><th>Apps assigned</th></tr></thead>
     <tbody>
-      <tr><td>0 (chat)</td><td>Signal, Slack, Keybase, Teams, WhatsApp, Discord, Telegram, Mattermost, IRC</td></tr>
-      <tr><td>17 (util)</td><td>i3jobs, htop</td></tr>
-      <tr><td>18 (music)</td><td>Spotify, VLC, Rhythmbox, pavucontrol, pwvucontrol</td></tr>
+      <tr><td>0 (chat)</td><td>Signal, Slack, Keybase, Teams, WhatsApp, Discord, Telegram, Mattermost, IRC, zapzap</td></tr>
+      <tr><td>12 (util)</td><td>i3jobs, htop</td></tr>
+      <tr><td>11 (music)</td><td>Spotify, VLC, Rhythmbox, pavucontrol, pwvucontrol</td></tr>
     </tbody>
   </table>
 </section>
@@ -221,12 +222,15 @@
       <tr><td><code>rfkill block bluetooth</code></td><td>Disable Bluetooth on startup</td></tr>
       <tr><td><code>nmcli radio wwan off</code></td><td>Disable mobile data on startup</td></tr>
       <tr><td><code>setsbg redisplay</code></td><td>Restore last wallpaper</td></tr>
+      <tr><td><code>sway-float-firefox-popups</code></td><td>Float Firefox extension pop-outs (Bitwarden) by geometry at map time — flock singleton</td></tr>
       <tr><td><code>swayidle.sh</code></td><td>Idle / lock / DPMS daemon</td></tr>
+      <tr><td><code>foot-server-mask-check</code></td><td>Assert foot didn't fall back to server mode (delayed 15s)</td></tr>
       <tr><td><code>i3-launch-jobs</code></td><td>Launch desktop jobs (delayed 3s)</td></tr>
-      <tr><td><code>dbus-send … setGtkTheme … Breeze-dark-gtk</code></td><td>Set KDE GTK theme — <strong>has trailing quote bug</strong></td></tr>
+      <tr><td><code>dbus-send … setGtkTheme … Breeze-dark-gtk</code></td><td>Set KDE GTK theme</td></tr>
       <tr><td><code>gsettings set … gtk-theme Arc-Dark</code></td><td>Set GNOME GTK theme</td></tr>
       <tr><td><code>xhost +SI:localuser:root</code></td><td>Allow root X11 access (for gksu)</td></tr>
       <tr><td><code>swaync-client --dnd-off --skip-wait</code></td><td>Reset DND mode on startup</td></tr>
+      <tr><td><code>playerctld daemon</code></td><td>Proxy most-recently-active MPRIS player under one bus name, for swaync's mpris widget</td></tr>
     </tbody>
   </table>
 </section>
@@ -266,7 +270,7 @@
 
       <tr>
         <td><span class="badge ok">fixed</span></td>
-        <td><code>90-execs-config:55</code></td>
+        <td><code>90-execs-config:71</code></td>
         <td>
           Trailing double-quote on the <code>dbus-send … setGtkTheme</code> line — was <code>""</code> instead of <code>"</code>. Fixed.
         </td>
@@ -298,9 +302,9 @@
 
       <tr>
         <td><span class="badge design">by design</span></td>
-        <td><code>80-rules-config:114,116</code></td>
+        <td><code>80-rules-config:121,123</code></td>
         <td>
-          Two <code>assign</code> rules for Teams — not duplicates. Line 114 targets <code>window_role="browser-window"</code> (main window), line 116 is a fallback for other Teams windows (excluding notifications via negative-lookahead title). Both assign to <code>$ws_chat</code>.
+          Two <code>assign</code> rules for Teams — not duplicates. Line 121 targets <code>window_role="browser-window"</code> (main window), line 123 is a fallback for other Teams windows (excluding notifications via negative-lookahead title). Both assign to <code>$ws_chat</code>.
         </td>
       </tr>
 
@@ -322,17 +326,9 @@
 
       <tr>
         <td><span class="badge minor">minor</span></td>
-        <td><code>90-execs-config:9-10</code></td>
+        <td><code>90-execs-config:7,9-10</code></td>
         <td>
-          <code>dbus-update-activation-environment</code> is called here and also by <code>/etc/sway/config.d/50-systemd-user.conf</code>. Redundant but harmless.
-        </td>
-      </tr>
-
-      <tr>
-        <td><span class="badge design">by design</span></td>
-        <td><code>82-rules-inhibit:1-2</code></td>
-        <td>
-          <code>for_window [class=".*"] inhibit_idle fullscreen</code> and same for <code>app_id</code> — prevents sleep/lock whenever any window is fullscreen. Intentional.
+          <code>dbus-update-activation-environment</code> is called twice here (line 7 and lines 9-10) and also by <code>/etc/sway/config.d/50-systemd-user.conf</code>. Redundant but harmless.
         </td>
       </tr>
 

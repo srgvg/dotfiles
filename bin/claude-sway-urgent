@@ -162,8 +162,8 @@ if [ -n "$top" ]; then
     repo=${top##*/}
     branch=$(git -C "$top" branch --show-current 2>/dev/null || true)
     # In a linked worktree the per-worktree git dir differs from the shared common dir. The
-    # toplevel is then the worktree dir, whose basename is the branch slug (~/etc/docs puts
-    # them at <parent>/_wt/<repo>/<branch-slug>/) -- so take the repo name from the common dir
+    # toplevel is then the worktree dir, whose basename is the branch slug (native worktrees
+    # live at <repo-root>/.claude/worktrees/<slug>) -- so take the repo name from the common dir
     # instead, or the popup would name the branch twice and never the repo.
     gitdir=$(git -C "$top" rev-parse --absolute-git-dir 2>/dev/null || true)
     common=$(git -C "$top" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)

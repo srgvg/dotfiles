@@ -1,0 +1,778 @@
+#!/usr/bin/env python3
+"""sway-layout — save/restore the split-container arrangement of a sway workspace.
+
+Sway has no i3-style `append_layout` (upstream refuses it permanently, see
+https://github.com/swaywm/sway/issues/1005). This rearranges ALREADY-RUNNING windows by
+building the whole new tree OFF-SCREEN on an ad-hoc temporary workspace, then revealing
+it in one step by renaming that workspace into the target's place.
+
+Mechanism (v2 — replaced an earlier scratchpad-based v1 after live testing showed it
+visibly switched workspaces and shuffled windows one at a time on screen):
+  - `[con_id=N] <command>` (split, layout, mark, move, resize) all operate via criteria,
+    not real seat focus, and do NOT switch the visible workspace — confirmed live.
+  - Every matched window is moved to a throwaway workspace by name (plain `move to
+    workspace <name>`, not scratchpad — arrives tiled, not floating, no display switch).
+  - The tree is rebuilt TOP-DOWN: each container's direct children are positioned as
+    siblings first, each represented by its own not-yet-split leaf window (`mark` on the
+    first child, `move ... to mark` for the rest) — only once a child is correctly placed
+    as a sibling does the code recurse into building THAT child's own internal nesting.
+    Building bottom-up instead (nest first, relocate the finished group after) does not
+    work: `move container to mark` targets a single con_id, and a leaf buried inside an
+    already-built nested group would be ripped out alone, not carried with its siblings.
+  - Sizes are restored afterward with edge-directed `resize grow/shrink`, confirmed live
+    to affect only the two adjacent siblings at a boundary (unlike `resize set ... ppt`,
+    which is unsafe — it redistributes across ALL siblings, clobbering ones already set).
+  - Finally: `rename workspace <temp> to <target>` — reveals the whole result in one
+    step. sway destroys an emptied, non-special workspace almost immediately (confirmed
+    live), so the target name is normally already free by this point.
+
+Windows are matched across save/restore by `app_id` (Wayland) or `window_properties.class`
+(XWayland fallback) — reliable only when each identity appears once on the workspace.
+
+`tile` computes a layout instead of reading a saved one — see LAYOUT_MODES below. It keys
+windows by con_id, not app_id/class, since a generated tree is built and consumed within a
+single invocation and never needs to be matched against a future run: duplicate app_ids (three
+`foot` windows) and pid-having windows with no app_id/class both work under `tile`, unlike
+save/apply. `apply <ws>` with no saved file falls back to a generated layout (mode from
+--fallback, default "evenh") unless --no-fallback is given; bare `apply` (no workspace named)
+only ever iterates saved workspaces, so the fallback cannot fire there.
+
+Storage: ~/.config/sway-layout/ws-<name>.json, one file per workspace.
+
+Failure mode: an apply interrupted mid-build leaves windows sitting on an orphaned
+`_stage-<name>-<hex>` workspace — inspect with `swaymsg -t get_workspaces`, nothing is
+hidden or floating. `apply` warns (but does not auto-clean) if it finds one from a
+previous run.
+"""
+
+import argparse
+import json
+import secrets
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+LAYOUT_DIR = Path.home() / ".config" / "sway-layout"
+PERCENT_TOLERANCE = 0.02
+RESIZE_TOLERANCE_PASSES = 2
+
+
+# --- layout modes: compute a layout tree instead of reading one from a saved file -------
+#
+# A mode is a function `keys -> layout tree`, where `keys` is the ordered list of leaf
+# identities to place (see con_id_key below) and the return value is a tree in the same
+# shape save/apply already use: {"layout", "nodes", "percent"} for a container,
+# {"id", "percent"} for a leaf. Nothing downstream (build_tree, restore_sizes,
+# already_matches) needs to know the tree was generated rather than loaded from disk —
+# apply_to_workspace takes the tree as a plain argument either way. Adding a mode is one
+# generator function plus one LAYOUT_MODES entry; nothing else in this file changes.
+
+
+def _even(layout):
+    """One flat container in the given orientation, all children equally sized."""
+    def gen(keys):
+        n = len(keys)
+        return {"layout": layout, "nodes": [{"id": k, "percent": 1.0 / n} for k in keys]}
+    return gen
+
+
+def _tabbed(keys):
+    return {"layout": "tabbed", "nodes": [{"id": k, "percent": None} for k in keys]}
+
+
+LAYOUT_MODES = {
+    "evenh": (_even("splith"), "one row, equal widths"),
+    "evenv": (_even("splitv"), "one column, equal heights"),
+    "tabbed": (_tabbed, "all windows in a single tabbed container"),
+}
+DEFAULT_MODE = "evenh"
+
+
+def layout_path(ws_name):
+    return LAYOUT_DIR / f"ws-{ws_name}.json"
+
+
+def saved_workspace_names():
+    """Workspace names with a saved layout file, in filename order."""
+    if not LAYOUT_DIR.is_dir():
+        return []
+    names = []
+    for p in sorted(LAYOUT_DIR.glob("ws-*.json")):
+        names.append(p.stem[len("ws-"):])
+    return names
+
+
+def run(*args, dry_run=False, check=True):
+    """Run a swaymsg command. In dry-run mode, print it instead.
+
+    check=False is for best-effort commands (e.g. restoring original focus at the end
+    of apply) where the target may legitimately no longer exist and that must not abort
+    an otherwise-successful run.
+    """
+    if dry_run:
+        print("  $ swaymsg " + " ".join(args))
+        return
+    if check:
+        subprocess.check_call(["swaymsg", *args], stdout=subprocess.DEVNULL)
+    else:
+        subprocess.run(["swaymsg", *args], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def get_tree():
+    out = subprocess.check_output(["swaymsg", "-t", "get_tree"])
+    return json.loads(out)
+
+
+def get_workspace_names():
+    out = subprocess.check_output(["swaymsg", "-t", "get_workspaces"])
+    return {ws["name"] for ws in json.loads(out)}
+
+
+def get_focused_workspace_name():
+    out = subprocess.check_output(["swaymsg", "-t", "get_workspaces"])
+    for ws in json.loads(out):
+        if ws.get("focused"):
+            return ws["name"]
+    return None
+
+
+def find_workspace(tree, name):
+    stack = [tree]
+    while stack:
+        node = stack.pop()
+        if node.get("type") == "workspace" and node.get("name") == name:
+            return node
+        stack.extend(node.get("nodes", []))
+        stack.extend(node.get("floating_nodes", []))
+    return None
+
+
+def get_focused_id(tree):
+    stack = [tree]
+    while stack:
+        node = stack.pop()
+        if node.get("focused"):
+            return node["id"]
+        stack.extend(node.get("nodes", []))
+        stack.extend(node.get("floating_nodes", []))
+    return None
+
+
+def get_identity(node):
+    """Identify a window by app_id (Wayland-native), falling back to X11 class."""
+    app_id = node.get("app_id")
+    if app_id:
+        return app_id
+    cls = (node.get("window_properties") or {}).get("class")
+    if cls:
+        return f"class:{cls}"
+    return None
+
+
+def con_id_key(node):
+    """Alternate identity for generated (`tile`) layouts: keyed on con_id rather than
+    app_id/class. Used only within a single invocation (generate then immediately apply),
+    so it doesn't need cross-session stability — and unlike get_identity it never collides
+    on duplicate app_ids and never drops a window for lacking one. The '#' prefix keeps a
+    generated key visually distinct from a real app_id in --dry-run output."""
+    return f"#{node['id']}"
+
+
+def walk_tiled(node):
+    """Yield leaf window nodes under a tiled subtree (floating_nodes are separate)."""
+    nodes = node.get("nodes", [])
+    if not nodes:
+        if node.get("pid") is not None:
+            yield node
+        return
+    for child in nodes:
+        yield from walk_tiled(child)
+
+
+def get_workspace_windows(ws_name):
+    """Return {identity: con_id} for tiled windows currently on ws_name."""
+    tree = get_tree()
+    ws = find_workspace(tree, ws_name)
+    if ws is None:
+        return {}
+    windows = {}
+    for node in walk_tiled(ws):
+        ident = get_identity(node)
+        if ident:
+            windows[ident] = node["id"]
+    return windows
+
+
+# --- save ---------------------------------------------------------------------------
+
+
+def serialize(node, key=get_identity):
+    """Recursively convert a get_tree node into the saved layout shape.
+
+    Leaves: {"id": <identity>, "percent": <float|null>}.
+    Containers: {"layout": ..., "nodes": [...], "percent": <float|null>}.
+    `percent` is the node's own share of ITS PARENT's main axis (as sway reports it) —
+    absent/null for the workspace root, which has no parent to be a fraction of.
+    A container that collapses to a single identifiable child is flattened (sway itself
+    would collapse it on restore anyway), keeping the CONTAINER's own percent — that is
+    what mattered to its parent, not the percent the child happened to have inside the
+    now-discarded one-child wrapper.
+
+    `key` picks the identity function: get_identity (default, app_id/class) for the
+    save/apply path, or con_id_key when checking a live tree against a *generated*
+    (`tile`) layout — see already_matches.
+    """
+    nodes = node.get("nodes", [])
+    percent = node.get("percent")
+    if not nodes:
+        if node.get("pid") is None:
+            return None
+        ident = key(node)
+        if ident is None:
+            print(
+                f"warning: window with no app_id/class (pid={node.get('pid')}, "
+                f"name={node.get('name')!r}) skipped from save",
+                file=sys.stderr,
+            )
+            return None
+        return {"id": ident, "percent": percent}
+    children = [serialize(child, key) for child in nodes]
+    children = [c for c in children if c]
+    if not children:
+        return None
+    if len(children) == 1:
+        collapsed = dict(children[0])
+        collapsed["percent"] = percent
+        return collapsed
+    return {"layout": node.get("layout", "splith"), "nodes": children, "percent": percent}
+
+
+def save_workspace(ws_name):
+    tree = get_tree()
+    ws = find_workspace(tree, ws_name)
+    if ws is None:
+        print(f"Workspace {ws_name} not found.", file=sys.stderr)
+        return False
+    serialized = serialize(ws)
+    if serialized is None:
+        print(f"Workspace {ws_name}: no identifiable tiled windows, nothing saved.")
+        return False
+    serialized.pop("percent", None)  # meaningless for the root; drop rather than store null
+    path = layout_path(ws_name)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(serialized, indent=2) + "\n")
+    print(f"Saved layout for workspace {ws_name} -> {path}")
+    return True
+
+
+# --- idempotence check ----------------------------------------------------------------
+
+
+def trees_match(saved, live, tol=PERCENT_TOLERANCE):
+    """True if `live` (from serialize(), current state) already matches `saved` closely
+    enough that an apply run would be a no-op — same identities, same nesting/order,
+    same layout types, sizes within tolerance."""
+    if saved is None or live is None:
+        return saved is live
+    if ("id" in saved) != ("id" in live):
+        return False
+    if "id" in saved:
+        if saved["id"] != live["id"]:
+            return False
+    else:
+        if saved.get("layout") != live.get("layout"):
+            return False
+        s_children = saved.get("nodes", [])
+        l_children = live.get("nodes", [])
+        if len(s_children) != len(l_children):
+            return False
+        for s_child, l_child in zip(s_children, l_children):
+            if not trees_match(s_child, l_child, tol):
+                return False
+    s_pct, l_pct = saved.get("percent"), live.get("percent")
+    if s_pct is not None and l_pct is not None and abs(s_pct - l_pct) > tol:
+        return False
+    return True
+
+
+def already_matches(ws_name, layout_tree, key=get_identity):
+    tree = get_tree()
+    ws = find_workspace(tree, ws_name)
+    if ws is None:
+        return False
+    live = serialize(ws, key)
+    if live is None:
+        return False
+    live.pop("percent", None)
+    saved = dict(layout_tree)
+    saved.pop("percent", None)
+    return trees_match(saved, live)
+
+
+# --- tile: generate a layout tree from the workspace's current windows ------------------
+
+
+def generated_layout(ws_name, mode):
+    """Build a layout tree for ws_name using LAYOUT_MODES[mode], from whatever tiled
+    windows are on it right now — the `tile` counterpart to loading a saved JSON file.
+
+    Returns (layout_tree, matched) where matched is {key: con_id}, ready to hand straight
+    to apply_to_workspace (bypassing its usual app_id/class lookup). Returns (None, None)
+    if there is nothing tiled to build from.
+    """
+    tree = get_tree()
+    ws = find_workspace(tree, ws_name)
+    if ws is None:
+        return None, None
+    leaves = list(walk_tiled(ws))
+    if not leaves:
+        return None, None
+    keys = [con_id_key(n) for n in leaves]
+    matched = {con_id_key(n): n["id"] for n in leaves}
+    if len(keys) == 1:
+        # A single window always SERIALIZES to a bare leaf (serialize() flattens
+        # single-child containers), so a generated tree must match that shape too, or
+        # already_matches would never short-circuit and every invocation would rebuild.
+        return {"id": keys[0], "percent": None}, matched
+    generator, _desc = LAYOUT_MODES[mode]
+    return generator(keys), matched
+
+
+# --- apply: structural rebuild ---------------------------------------------------------
+
+
+def collect_ids(node, out):
+    if "id" in node:
+        out.add(node["id"])
+        return
+    for child in node.get("nodes", []):
+        collect_ids(child, out)
+
+
+def representative_leaf(node, matched):
+    """First identifiable descendant leaf's con_id — used to position a child (whether
+    it's a plain leaf or itself a container-to-be-built) as a sibling BEFORE any of its
+    own internal nesting exists. At the moment this leaf is used for placement it is
+    still a plain, unsplit window, which is what `move ... to mark` requires: moving a
+    leaf already wrapped in a built sub-tree would rip it out of that sub-tree instead
+    of carrying the sub-tree along."""
+    if "id" in node:
+        return matched.get(node["id"])
+    for child in node.get("nodes", []):
+        r = representative_leaf(child, matched)
+        if r is not None:
+            return r
+    return None
+
+
+def layout_cmd(layout_type):
+    if layout_type == "tabbed":
+        return ("layout", "tabbed")
+    if layout_type == "stacking":
+        return ("layout", "stacking")
+    if layout_type == "splitv":
+        return ("splitv",)
+    return ("splith",)
+
+
+def live_parent_layout(stage_name, con_id, dry_run):
+    """The `layout` of whatever container con_id currently, actually sits directly
+    inside (or the workspace's own layout if con_id is a direct child of it). `split`/
+    `layout` always wraps its target in a NEW container regardless of the current
+    parent's orientation — confirmed by testing: issuing `splith` on a window that was
+    already alone in a default-splith context (a lone window fresh on a workspace) still
+    creates a redundant extra wrapper. So this must be checked live before deciding
+    whether a split/layout call is actually needed, rather than issued unconditionally."""
+    if dry_run:
+        return None  # nothing real to inspect; caller treats unknown as "issue it anyway"
+    tree = get_tree()
+    ws = find_workspace(tree, stage_name)
+    if ws is None:
+        return None
+
+    def find(node):
+        for child in node.get("nodes", []):
+            if child.get("id") == con_id:
+                return node.get("layout")
+            found = find(child)
+            if found is not None:
+                return found
+        return None
+
+    return find(ws)
+
+
+def build_tree(node, stage_name, matched, dry_run, mark_counter):
+    """Recursively rebuild the saved tree on the (already-staged) workspace.
+
+    Top-down: for a container, first place every direct child as a flat sibling (using
+    each child's still-unsplit representative leaf), THEN recurse into each child to
+    build its own internal nesting now that it's correctly positioned. See module
+    docstring for why this order is mandatory, not just simpler.
+    """
+    if "id" in node:
+        return matched.get(node["id"])
+
+    children = node.get("nodes", [])
+    reprs = [representative_leaf(child, matched) for child in children]
+    present = [(child, r) for child, r in zip(children, reprs) if r is not None]
+    if not present:
+        return None
+
+    anchor = present[0][1]
+    if len(present) > 1:
+        mark_counter[0] += 1
+        mark = f"_sway_layout_{mark_counter[0]}"
+        run(f"[con_id={anchor}]", "mark", mark, dry_run=dry_run)
+        target_layout = node.get("layout", "splith")
+        if target_layout in ("tabbed", "stacking"):
+            # `layout tabbed`/`layout stacking` converts the anchor's CURRENT parent —
+            # absorbing whatever live siblings are already there — unlike `split`, which
+            # always isolates its target into a fresh single-child wrapper. Confirmed by
+            # testing: the anchor for a nested tabbed group was already a sibling inside
+            # the outer splith container, and `layout tabbed` on it merged the ENTIRE
+            # outer container (all its other siblings included) into one tabbed view
+            # instead of creating an isolated nested group. Fix: isolate first with an
+            # ordinary split (orientation is irrelevant, immediately overridden), then
+            # convert that now-isolated wrapper's type.
+            run(f"[con_id={anchor}]", "splith", dry_run=dry_run)
+            run(f"[con_id={anchor}]", *layout_cmd(target_layout), dry_run=dry_run)
+        else:
+            current_layout = live_parent_layout(stage_name, anchor, dry_run)
+            if dry_run or current_layout != target_layout:
+                run(f"[con_id={anchor}]", *layout_cmd(target_layout), dry_run=dry_run)
+        for _child, r in present[1:]:
+            # `move ... to mark` inserts the new sibling immediately NEXT TO the marked
+            # anchor, not appended at the end — confirmed by testing: reusing the same
+            # anchor mark for every sibling built the list in reverse order for the 3rd
+            # one onward (saved [a,b,c] came back as [a,c,b]). Fix: move the mark to the
+            # just-placed sibling after each insertion, so the next one lands after IT.
+            run(f"[con_id={r}]", "move", "container", "to", "mark", mark, dry_run=dry_run)
+            run(f"[con_id={r}]", "mark", mark, dry_run=dry_run)
+
+    for child, _r in present:
+        build_tree(child, stage_name, matched, dry_run, mark_counter)
+
+    return anchor
+
+
+# --- apply: size restore ----------------------------------------------------------------
+
+
+def live_node_at(stage_name, path):
+    """Re-fetch the tree fresh and walk `path` (a list of child indices from the
+    workspace root) to the live node occupying that position. Always re-fetches rather
+    than reusing a cached node reference: earlier findings show a grow/shrink only
+    disturbs its own immediate neighbor, so a sibling's live percent right before its
+    own resize step already reflects the previous step's effect on it and must be read
+    fresh, not assumed from a single upfront snapshot."""
+    tree = get_tree()
+    node = find_workspace(tree, stage_name)
+    if node is None:
+        return None
+    for idx in path:
+        children = node.get("nodes", [])
+        if idx >= len(children):
+            return None
+        node = children[idx]
+    return node
+
+
+def restore_sizes(saved_node, stage_name, path, dry_run):
+    """Walk the saved tree by position (build_tree guarantees the live tree now mirrors
+    it exactly in shape and child order); for each container's children (all but the
+    last — sway forbids resizing the last child directly, it gets the remainder),
+    grow/shrink the boundary with the immediate next sibling to reach the saved target
+    percent, on a fresh live read each step (see live_node_at)."""
+    if dry_run:
+        if path == []:
+            print("  (size restore depends on live intermediate state — skipped in --dry-run)")
+        return
+    if "id" in saved_node:
+        return
+    saved_children = saved_node.get("nodes", [])
+    layout_type = saved_node.get("layout", "splith")
+
+    if layout_type in ("tabbed", "stacking") or len(saved_children) < 2:
+        for i, child in enumerate(saved_children):
+            restore_sizes(child, stage_name, path + [i], dry_run)
+        return
+
+    edge = "right" if layout_type == "splith" else "down"
+    axis_dim = "width" if layout_type == "splith" else "height"
+
+    for i in range(len(saved_children) - 1):
+        target_pct = saved_children[i].get("percent")
+        if target_pct is None:
+            continue
+        for _ in range(RESIZE_TOLERANCE_PASSES):
+            live_node = live_node_at(stage_name, path)
+            if live_node is None:
+                print(f"Workspace {stage_name}: lost track of a container during size "
+                      f"restore, leaving remaining sizes as-is.")
+                return
+            live_children = live_node.get("nodes", [])
+            if i >= len(live_children):
+                break
+            live_child = live_children[i]
+            current_pct = live_child.get("percent") or 0
+            drift = target_pct - current_pct
+            if abs(drift) <= PERCENT_TOLERANCE:
+                break
+            parent_dim = live_node.get("rect", {}).get(axis_dim)
+            if not parent_dim:
+                break
+            delta_px = round(abs(drift) * parent_dim)
+            if delta_px < 1:
+                break
+            verb = "grow" if drift > 0 else "shrink"
+            run(f"[con_id={live_child['id']}]", "resize", verb, edge, f"{delta_px}px", dry_run=dry_run)
+            if dry_run:
+                break  # nothing actually changes between passes without live execution
+
+    for i, child in enumerate(saved_children):
+        restore_sizes(child, stage_name, path + [i], dry_run)
+
+
+# --- apply: orchestration ----------------------------------------------------------------
+
+
+def stage_name_for(ws_name):
+    return f"_stage-{ws_name}-{secrets.token_hex(4)}"
+
+
+def warn_stale_stage_workspaces(ws_name):
+    prefix = f"_stage-{ws_name}-"
+    stale = [w for w in get_workspace_names() if w.startswith(prefix)]
+    for w in stale:
+        print(f"Workspace {ws_name}: found stale staging workspace {w!r} from a previous "
+              f"run (not auto-cleaned) — inspect with `swaymsg -t get_workspaces`.")
+
+
+def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_identity):
+    """matched/key let a caller (cmd_tile, the apply --fallback path) supply a
+    pre-computed {key: con_id} map from generated_layout() instead of the default
+    app_id/class lookup against a saved file — see generated_layout's docstring."""
+    if not dry_run and already_matches(ws_name, layout_tree, key=key):
+        print(f"Workspace {ws_name}: already matches saved layout, skipping.")
+        return
+
+    warn_stale_stage_workspaces(ws_name)
+
+    if matched is None:
+        windows = get_workspace_windows(ws_name)
+        leaf_ids = set()
+        collect_ids(layout_tree, leaf_ids)
+        matched = {ident: windows[ident] for ident in leaf_ids if ident in windows}
+        missing = leaf_ids - matched.keys()
+        if missing:
+            print(f"Workspace {ws_name}: no running window for {sorted(missing)}, skipping them.")
+        if not matched:
+            print(f"Workspace {ws_name}: nothing to place.")
+            return
+
+    # sway keeps an empty workspace alive as long as it's the one currently displayed —
+    # confirmed by testing: a background empty workspace gets GC'd almost immediately
+    # (which is what the final rename normally relies on), but the one the user is
+    # actually looking at does not, even once every window has left it. So the target
+    # name would still be taken when we try to rename the finished stage into place.
+    # Fix: explicitly vacate it first, unconditionally — cheap, and correct in both
+    # cases (whether or not sway would have GC'd it on its own).
+    was_displayed = get_focused_workspace_name() == ws_name
+    if ws_name in get_workspace_names():
+        vacated = f"_vacated-{ws_name}-{secrets.token_hex(4)}"
+        run("rename", "workspace", ws_name, "to", vacated, dry_run=dry_run)
+
+    stage = stage_name_for(ws_name)
+    for con_id in matched.values():
+        run(f"[con_id={con_id}]", "move", "container", "to", "workspace", stage, dry_run=dry_run)
+
+    try:
+        mark_counter = [0]
+        build_tree(layout_tree, stage, matched, dry_run, mark_counter)
+        restore_sizes(layout_tree, stage, [], dry_run)
+    except Exception:
+        print(f"Workspace {ws_name}: apply failed mid-build — windows are on {stage!r}, "
+              f"not lost. Inspect with `swaymsg -t get_workspaces`.")
+        raise
+
+    run("rename", "workspace", stage, "to", ws_name, dry_run=dry_run)
+    if was_displayed:
+        # Renaming doesn't change what's ON SCREEN — the output is still showing the
+        # (now empty, vacated-and-renamed) workspace that used to be ws_name. Without
+        # this, the finished result would sit correctly named but invisible until the
+        # user manually switches to it. One clean switch, not a shuffle.
+        run("workspace", ws_name, dry_run=dry_run)
+
+
+def wait_for_windows(ws_name, layout_tree, timeout):
+    ids_needed = set()
+    collect_ids(layout_tree, ids_needed)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if ids_needed <= get_workspace_windows(ws_name).keys():
+            return
+        time.sleep(1)
+    missing = ids_needed - get_workspace_windows(ws_name).keys()
+    if missing:
+        print(f"Workspace {ws_name}: timed out after {timeout}s waiting for {sorted(missing)}")
+
+
+def notify(message):
+    if shutil.which("notify-send"):
+        subprocess.run(
+            ["notify-send", "-t", "2000", "sway-layout", message],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+
+# --- CLI --------------------------------------------------------------------------------
+
+
+def cmd_save(args):
+    workspaces = args.workspace or [get_focused_workspace_name()]
+    workspaces = [w for w in workspaces if w]
+    if not workspaces:
+        print("No workspace specified and none focused.", file=sys.stderr)
+        return 1
+    ok = True
+    for ws_name in workspaces:
+        if not save_workspace(ws_name):
+            ok = False
+    if ok:
+        notify(f"Saved layout: {', '.join(workspaces)}")
+    return 0 if ok else 1
+
+
+def cmd_apply(args):
+    workspaces = args.workspace or saved_workspace_names()
+    if not workspaces:
+        print("No workspace specified and no saved layouts found in "
+              f"{LAYOUT_DIR}.", file=sys.stderr)
+        return 1
+
+    tree = get_tree()
+    global_focused = get_focused_id(tree)
+    failed = False
+
+    for ws_name in workspaces:
+        path = layout_path(ws_name)
+        if path.exists():
+            layout_tree = json.loads(path.read_text())
+            if args.wait:
+                wait_for_windows(ws_name, layout_tree, args.timeout)
+            try:
+                apply_to_workspace(ws_name, layout_tree, args.dry_run)
+            except Exception as e:
+                # One workspace's build failing must not block the others requested in
+                # the same invocation (e.g. `apply 0 11` — a bug rebuilding ws0 shouldn't
+                # also skip ws11 entirely, observed happening before this was added).
+                print(f"Workspace {ws_name}: apply raised {e!r}, continuing to the next "
+                      f"requested workspace.", file=sys.stderr)
+                failed = True
+            continue
+
+        # No saved file. `workspaces` here is either args.workspace (explicit names) or
+        # saved_workspace_names() (bare `apply`) — the latter can never miss a file by
+        # construction, so this branch, and therefore the fallback, only ever fires for
+        # an explicitly named workspace. Bare `apply` (the startup job) is unaffected.
+        if args.no_fallback or not args.fallback:
+            print(f"No saved layout for workspace {ws_name}, skipping.")
+            continue
+        mode = args.fallback
+        if mode not in LAYOUT_MODES:
+            print(f"Workspace {ws_name}: unknown fallback mode {mode!r}. Available: "
+                  f"{', '.join(sorted(LAYOUT_MODES))}", file=sys.stderr)
+            failed = True
+            continue
+        layout_tree, matched = generated_layout(ws_name, mode)
+        if layout_tree is None:
+            print(f"Workspace {ws_name}: no saved layout and no tiled windows to "
+                  f"generate one from, skipping.")
+            continue
+        try:
+            apply_to_workspace(ws_name, layout_tree, args.dry_run, matched=matched, key=con_id_key)
+        except Exception as e:
+            print(f"Workspace {ws_name}: apply raised {e!r}, continuing to the next "
+                  f"requested workspace.", file=sys.stderr)
+            failed = True
+
+    if global_focused and not args.dry_run:
+        run(f"[con_id={global_focused}]", "focus", check=False)
+    return 1 if failed else 0
+
+
+def cmd_tile(args):
+    mode = args.mode
+    if mode not in LAYOUT_MODES:
+        print(f"Unknown mode {mode!r}. Available: {', '.join(sorted(LAYOUT_MODES))}",
+              file=sys.stderr)
+        return 1
+    workspaces = args.workspace or [get_focused_workspace_name()]
+    workspaces = [w for w in workspaces if w]
+    if not workspaces:
+        print("No workspace specified and none focused.", file=sys.stderr)
+        return 1
+    failed = False
+    for ws_name in workspaces:
+        layout_tree, matched = generated_layout(ws_name, mode)
+        if layout_tree is None:
+            print(f"Workspace {ws_name}: no tiled windows, nothing to tile.")
+            continue
+        try:
+            apply_to_workspace(ws_name, layout_tree, args.dry_run, matched=matched, key=con_id_key)
+        except Exception as e:
+            print(f"Workspace {ws_name}: tile raised {e!r}.", file=sys.stderr)
+            failed = True
+    return 1 if failed else 0
+
+
+def cmd_modes(args):
+    for name in sorted(LAYOUT_MODES):
+        _generator, desc = LAYOUT_MODES[name]
+        marker = " (default)" if name == DEFAULT_MODE else ""
+        print(f"{name}{marker} — {desc}")
+    return 0
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_save = sub.add_parser("save", help="save the current arrangement")
+    p_save.add_argument("workspace", nargs="*", help="workspace name(s); default: focused")
+    p_save.set_defaults(func=cmd_save)
+
+    p_apply = sub.add_parser("apply", help="reapply a saved arrangement")
+    p_apply.add_argument("workspace", nargs="*",
+                          help="workspace name(s) to restore; default: every workspace "
+                               f"with a saved layout in {LAYOUT_DIR}")
+    p_apply.add_argument("--dry-run", action="store_true", help="print swaymsg commands, don't run them")
+    p_apply.add_argument("--wait", action="store_true", help="wait for saved windows to appear first")
+    p_apply.add_argument("--timeout", type=int, default=60, help="max seconds to wait (default 60)")
+    p_apply.add_argument("--fallback", metavar="MODE", default=DEFAULT_MODE,
+                          help="generate a layout (see `sway-layout modes`) for an explicitly "
+                               f"named workspace with no saved file (default: {DEFAULT_MODE})")
+    p_apply.add_argument("--no-fallback", action="store_true",
+                          help="skip instead of generating a fallback layout")
+    p_apply.set_defaults(func=cmd_apply)
+
+    p_tile = sub.add_parser("tile", help="compute and apply an even/tabbed layout")
+    p_tile.add_argument("workspace", nargs="*", help="workspace name(s); default: focused")
+    p_tile.add_argument("--mode", default=DEFAULT_MODE,
+                         help=f"layout mode (default: {DEFAULT_MODE}; see `sway-layout modes`)")
+    p_tile.add_argument("--dry-run", action="store_true", help="print swaymsg commands, don't run them")
+    p_tile.set_defaults(func=cmd_tile)
+
+    p_modes = sub.add_parser("modes", help="list available layout modes")
+    p_modes.set_defaults(func=cmd_modes)
+
+    args = parser.parse_args()
+    sys.exit(args.func(args))
+
+
+if __name__ == "__main__":
+    main()

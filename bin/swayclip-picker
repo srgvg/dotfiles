@@ -9,7 +9,7 @@
 # cliphist watcher in 90-execs-config.
 #
 # Command mapping from the original:
-#   cliphist list                    -> swctl list          (both emit "<id>TAB<preview>")
+#   cliphist list                    -> swayclip-list-all   (paginates swctl list, see below)
 #   cliphist decode | wl-copy        -> swctl set --decode  (parses a list line directly)
 #   cliphist delete                  -> swctl delete <ID>   (takes an ID, not a line)
 #   cliphist decode | ...-cat        -> swayclip-preview    (needs the entry's mime type)
@@ -34,6 +34,20 @@ if ! swctl len >/dev/null 2>&1; then
     exit 1
 fi
 
+# Second guard, one layer past the daemon-reachability check above: `swctl list` with no --number
+# defaults to INT64_MAX and asks the daemon to serialise the WHOLE history into one IPC message,
+# which swayclip caps at 64 KiB (~/bin/swayclip-list-all has the full writeup). Past a few hundred
+# entries that call fails with rc 1 and zero stdout bytes — the exact same "empty popup" symptom
+# as an unreachable daemon, but `swctl len` (a tiny response) does not catch it. So: capture the
+# list into a variable first, and only hand it to fzf if the paginating helper actually succeeded.
+entries="$(swayclip-list-all)"
+rc=$?
+if [ "$rc" -ne 0 ] || { [ -z "$entries" ] && [ "$(swctl len 2>/dev/null)" -gt 0 ]; }; then
+    notify-send -u critical "swayclip" \
+        "Failed to list clipboard history (rc=$rc).\nSee swayclip-list-all on stderr for the cause." 2>/dev/null
+    exit 1
+fi
+
 # Close any other dfzf popup, as every dfzf-* picker does on entry.
 dfzf-kill-bro >/dev/null
 
@@ -42,10 +56,10 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'swayclip-preview {}'"
 
 # awk rather than `cut -f1`: fzf shell-quotes {} for the bound command and does not guarantee the
 # tab survives as a tab, so splitting on generic whitespace is the safe read of the ID.
-swctl list |
+printf '%s\n' "$entries" |
   fzf --prompt "Clipboard > " \
     --preview-window="up" \
     --header "enter: paste   ctrl-k: delete   ctrl-p: pin" \
     --bind="enter:execute-silent(echo {} | swctl set --decode && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
-    --bind="ctrl-k:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl delete)+reload(swctl list)" \
-    --bind="ctrl-p:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl pin --toggle)+reload(swctl list)"
+    --bind="ctrl-k:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl delete)+reload(swayclip-list-all)" \
+    --bind="ctrl-p:execute-silent(echo {} | awk '{print \$1}' | xargs -r swctl pin --toggle)+reload(swayclip-list-all)"

@@ -76,12 +76,8 @@ sway --validate
 journalctl --user -u sway -n 50
 ```
 
-## Known issues (as of 2026-05-20)
+## Known issues
 
-| File | Line | Issue |
-|------|------|-------|
-| `90-execs-config` | 55 | Trailing `""` on dbus-send line — parse error |
-| `70-modes-config` | 77–78 | Uses `i3-msg` — should be `swaymsg`; `shmlog` invalid in sway |
-| `60-bindings-config` | 44 | `exec showbg` — should be `exec setsbg show` |
-| `40-statusbars-config` | 33–36 | References `$secondary` which is commented out |
-| `80-rules-config` | 114,116 | Duplicate Teams window assignment |
+Tracked in `config.html`'s [Issues](config.html#issues) section, not duplicated here —
+keeping the same table in two places is exactly how it went stale before (all 5 issues
+listed here as of 2026-05-20 were fixed long before this note was corrected on 2026-08-04).

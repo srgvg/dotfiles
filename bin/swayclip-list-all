@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#
+# Paginating wrapper around `swctl list`. Exists because swayclip caps any single IPC message at
+# 64 KiB (~/src/upstreams/swayclip/common/ipc_ct.c:177) and `swctl list`'s own default
+# (--number=INT64_MAX) asks the daemon to serialise the ENTIRE history into one message
+# (daemon/main.c get_history handler: one json_object_new_array() for the whole range, no
+# chunking). Once history passes a few hundred entries, that single call fails with rc 1 and zero
+# bytes on stdout — no error text, just an empty result, which upstream in a picker reads as
+# "no history" rather than "call failed". Measured against v0.1.0-14-g6f22fe9: plain format ok at
+# n=280, fails at n=290; --json ok at n=280 (untested above), fails by n=350. See
+# ~/etc/docs/sway-setup.md §9.2.
+#
+# Usage: swayclip-list-all [--json]
+#
+# Plain output is concatenated as-is (each chunk is already newline-delimited "<id>TAB<preview>"
+# lines). --json output is merged with jq: each chunk is a JSON array, and `jq -s add` on an array
+# of arrays concatenates them into one.
+#
+# This is the single place that knows the cap exists. Callers (swayclip-picker, swayclip-preview)
+# just call this instead of `swctl list`.
+#
+# Ordering caveat: daemon/database.c get_entries query is
+# "ORDER BY Sort_index DESC LIMIT ? OFFSET ?" — deterministic, but a copy landing mid-walk shifts
+# every offset after it by one, which can duplicate or skip a row at the chunk boundary. Acceptable
+# for a picker; not acceptable if this script is ever used for anything that must be exact.
+
+set -o nounset
+set -o pipefail
+
+json=0
+[ "${1:-}" = "--json" ] && json=1
+
+# A third of the tightest measured ceiling (280, plain format) — plenty of headroom without
+# needing dozens of round trips. Latency is a non-issue: a full 562-entry walk at this chunk size
+# measured 61ms end-to-end (versus 14ms for one unpaginated call that fits under the cap).
+CHUNK=100
+
+json_flag=()
+[ "$json" -eq 1 ] && json_flag=(--json)
+
+chunks=()
+start=0
+while :; do
+    out="$(swctl list -s "$start" -n "$CHUNK" "${json_flag[@]}")"
+    rc=$?
+
+    # rc 1 is a real IPC/protocol failure (oversized message, daemon gone mid-walk, etc) — surface
+    # it rather than silently truncating the list. Do NOT treat this as "reached the end": that
+    # would hide the exact bug this script exists to work around.
+    if [ "$rc" -ne 0 ]; then
+        printf 'swayclip-list-all: swctl list failed at offset %s (rc=%s)\n' "$start" "$rc" >&2
+        exit 1
+    fi
+
+    if [ "$json" -eq 1 ]; then
+        # An empty/failed json chunk still round-trips as "[]" from swctl on some paths; jq makes
+        # that indistinguishable from "no more entries", which is the correct behaviour here.
+        n="$(printf '%s' "$out" | jq 'length' 2>/dev/null || echo 0)"
+        [ "$n" -eq 0 ] && break
+        chunks+=("$out")
+    else
+        [ -z "$out" ] && break
+        n="$(printf '%s\n' "$out" | wc -l)"
+        printf '%s\n' "$out"
+    fi
+
+    [ "$n" -lt "$CHUNK" ] && break
+    start=$((start + CHUNK))
+done
+
+if [ "$json" -eq 1 ]; then
+    if [ "${#chunks[@]}" -eq 0 ]; then
+        printf '[]\n'
+    else
+        printf '%s\n' "${chunks[@]}" | jq -s 'add'
+    fi
+fi
