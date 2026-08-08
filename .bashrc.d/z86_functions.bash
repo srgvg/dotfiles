@@ -243,6 +243,64 @@ function wcc() {
     echo "${#string}"
 }
 
+function gwt() {
+    local target
+
+    case "${1:-}" in
+        "")
+            target=$(git wt path) || return
+            ;;
+        list|remove|help|-h|--help)
+            git wt "$@"
+            return
+            ;;
+        *)
+            target=$(git wt "$@") || return
+            ;;
+    esac
+
+    [ -n "$target" ] || return 1
+    builtin cd -- "$target"
+}
+
+_gwt_registered_branches() {
+    git worktree list --porcelain 2>/dev/null |
+        sed -n 's|^branch refs/heads/||p'
+}
+
+_gwt_local_branches() {
+    git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null
+}
+
+_gwt_completion() {
+    local current=${COMP_WORDS[COMP_CWORD]} first=${COMP_WORDS[1]:-} candidates
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        candidates="head help list new path remove $(_gwt_registered_branches)"
+    else
+        case "$first" in
+            new) candidates=$(_gwt_local_branches) ;;
+            path|remove) candidates=$(_gwt_registered_branches) ;;
+            *) candidates="" ;;
+        esac
+    fi
+    mapfile -t COMPREPLY < <(compgen -W "$candidates" -- "$current")
+}
+complete -F _gwt_completion gwt
+
+_git_change_worktree() {
+    local first=${words[2]:-} candidates
+    if [ "$cword" -eq 2 ]; then
+        candidates="head help list new path remove $(_gwt_registered_branches)"
+    else
+        case "$first" in
+            new) candidates=$(_gwt_local_branches) ;;
+            path|remove) candidates=$(_gwt_registered_branches) ;;
+            *) candidates="" ;;
+        esac
+    fi
+    __gitcomp "$candidates"
+}
+
 # Shell init cache management functions
 function shell-cache-clear() {
     rm -rf "$HOME/.cache/shell-init"

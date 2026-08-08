@@ -36,6 +36,7 @@ for_window [class="System-config-printer.py" instance="system-config-printer"] f
 for_window [app_id="nm-openconnect-auth-dialog"] floating_enable
 
 for_window [app_id="terminal-floating"] floating enable
+for_window [app_id="keylightd-tray"] floating enable
 # this multiplies with the terminal's own opacity setting
 #for_window [app_id="terminal-floating"] opacity 0.9
 #for_window [app_id="terminal-tiled"] opacity 0.9
@@ -176,4 +177,3 @@ assign	[app_id="spotify"] $ws_music
 assign		[app_id="i3jobs"]				$ws_util
 assign		[app_id="htop"]	     			$ws_util
 #for_window  [app_id="(i3jobs|htop)"]        layout tabbed
-

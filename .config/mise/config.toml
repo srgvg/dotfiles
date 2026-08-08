@@ -16,6 +16,9 @@ show_env = true
 show_tools = true
 missing_tools = "always"
 
+[settings.github]
+credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
+
 [env]
 # for gcloud
 MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
@@ -40,6 +43,7 @@ nats-server    = "github:nats-io/nats-server"
 nats-top       = "github:nats-io/nats-top"
 nsc            = "github:nats-io/nsc"
 snitch         = "github:karol-broda/snitch"
+keylightd-tray = "github:jmylchreest/keylightd"
 ### ALIASES #################################################################
 
 
@@ -183,3 +187,5 @@ gitleaks = "latest"
 "github:openziti/ziti-tunnel-sdk-c" = "latest"
 yamllint = "1.38.0"
 actionlint = "latest"
+keylightd-tray = { version = "latest", matching = "keylightd-tray" }
+"github:jmylchreest/keylightd" = "0.1.8"

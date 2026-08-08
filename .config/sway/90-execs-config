@@ -61,7 +61,9 @@ exec_always --no-startup-id "setsbg redisplay"
 
 # desktop stuff
 #
-exec_always "/home/serge/bin/swayidle.sh"
+# Scope the singleton to this sway IPC socket. A process left behind by an old
+# sway session cannot block the replacement session, whose SWAYSOCK is different.
+exec_always sh -c 'exec flock -n "$XDG_RUNTIME_DIR/swayidle-${SWAYSOCK##*/}.lock" "$HOME/bin/swayidle.sh"'
 # Assert foot did not fall back into server mode (masked units vs the Debian package
 # preset in /etc/systemd/user/…; see ~/etc/docs/foot-migration.md §0f). Silent unless
 # broken; the sleep lets the notification daemon come up first.

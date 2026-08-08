@@ -23,6 +23,8 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     # restores the saved split arrangement for chat (ws0) and music (ws11) once their
     # apps have mapped; idempotent, safe to re-run. See ~/etc/docs/sway-setup.md.
     /home/serge/bin/sway-layout apply --wait
+    keylightd
+    keylightd-tray
 
 EOF
 )

@@ -9,6 +9,21 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+monotonic_ms() {
+	local uptime_seconds seconds fraction
+	read -r uptime_seconds _ < /proc/uptime
+	seconds=${uptime_seconds%%.*}
+	fraction=${uptime_seconds#*.}
+	fraction="${fraction}000"
+	_MONOTONIC_MS=$((10#$seconds * 1000 + 10#${fraction:0:3}))
+}
+
+_SLEEP_HANDLER_START_MS=""
+if [ "${1:-}" = "sleep" ]; then
+	monotonic_ms
+	_SLEEP_HANDLER_START_MS=$_MONOTONIC_MS
+fi
+
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
@@ -27,6 +42,13 @@ VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
 VRAM_RECOVERY_FILE="$SWAYIDLE_STATE_DIR/vram-recovery-active"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
+SLEEP_HANDLER_BUDGET_MS="${SLEEP_HANDLER_BUDGET_MS:-3000}"
+SLEEP_HANDLER_CLEANUP_RESERVE_MS="${SLEEP_HANDLER_CLEANUP_RESERVE_MS:-200}"
+SWAYLOCK_WRAPPER="${SWAYLOCK_WRAPPER:-$HOME/bin/swaylock.sh}"
+SWAYLOCK_LOG="${SWAYLOCK_LOG:-$HOME/logs/swaylock-$HOSTNAME.log}"
+SWAYIDLE_BIN="${SWAYIDLE_BIN:-/usr/bin/swayidle}"
+SWAYIDLE_CONFIG="${SWAYIDLE_CONFIG:-$HOME/.config/swayidle/config}"
+SWAYIDLE_LOG="${SWAYIDLE_LOG:-$HOME/logs/swayidle-$HOSTNAME-$(timestamp).log}"
 
 SNAPSHOT_LOG="$HOME/logs/nvidia-vram-snapshots.log"
 
@@ -53,7 +75,40 @@ _vram_cleanup_trap() {
     fi
     rm -f "$VRAM_RECOVERY_FILE"
 }
-trap _vram_cleanup_trap TERM INT
+
+_supervised_pids=()
+_sleep_ready_fd=""
+_sleep_ready_dir=""
+
+_cleanup_supervised_children() {
+	local pid
+	for pid in "${_supervised_pids[@]}"; do
+		kill "$pid" 2>/dev/null ||:
+	done
+	for pid in "${_supervised_pids[@]}"; do
+		wait "$pid" 2>/dev/null ||:
+	done
+	_supervised_pids=()
+}
+
+_cleanup_sleep_ready() {
+	if [ -n "$_sleep_ready_fd" ]; then
+		exec {_sleep_ready_fd}>&-
+		_sleep_ready_fd=""
+	fi
+	if [ -n "$_sleep_ready_dir" ]; then
+		rm -f "$_sleep_ready_dir/ready"
+		rmdir "$_sleep_ready_dir" 2>/dev/null ||:
+		_sleep_ready_dir=""
+	fi
+}
+
+_swayidle_cleanup_trap() {
+	_cleanup_sleep_ready
+	_cleanup_supervised_children
+	_vram_cleanup_trap
+}
+trap _swayidle_cleanup_trap TERM INT
 
 # Auto-detect SWAYSOCK if not set (needed when called from SSH/TTY rescue context)
 if [ -z "${SWAYSOCK:-}" ]; then
@@ -81,6 +136,19 @@ function pause_notifications() {
 	echo "== pause notifications"
 	echo swaync-client --dnd-on --skip-wait ||:
 	swaync-client --dnd-on --skip-wait ||:
+}
+
+swaylock_running() {
+	pgrep -x swaylock > /dev/null
+}
+
+clear_stale_stopped_clients() {
+	if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
+		echo "== SIGCONTing and clearing stale SIGSTOP'd processes"
+		# shellcheck disable=SC2046
+		kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
+		rm -f "$VRAM_STOPPED_PIDS_FILE"
+	fi
 }
 function pause_mouse() {
 	echo "== pause mouse"
@@ -200,6 +268,81 @@ function resume_displays(){
 #
 #############################################################################
 #
+lock_for_sleep() {
+	local handler_start_ms="$1"
+	local deadline_ms=$((handler_start_ms + SLEEP_HANDLER_BUDGET_MS))
+	local wrapper_pid remaining_ms read_timeout wrapper_state wrapper_rc elapsed_ms
+
+	if swaylock_running; then
+		echo "=== sleep lock (skipped - swaylock already running)"
+		echo "sleeping" > "$SLEEP_STATE_FILE"
+		monotonic_ms
+		elapsed_ms=$((_MONOTONIC_MS - handler_start_ms))
+		log_event "sleep_handler_done" "result=already_locked elapsed_ms=${elapsed_ms}"
+		return 0
+	fi
+
+	echo "preparing" > "$SLEEP_STATE_FILE"
+	echo "=== sleep lock"
+	if ! _sleep_ready_dir=$(mktemp -d "$SWAYIDLE_STATE_DIR/lock-ready.XXXXXX"); then
+		log_event "sleep_lock_failed" "reason=mktemp"
+		return 1
+	fi
+	if ! mkfifo -m 600 "$_sleep_ready_dir/ready"; then
+		_cleanup_sleep_ready
+		log_event "sleep_lock_failed" "reason=mkfifo"
+		return 1
+	fi
+	if ! exec {_sleep_ready_fd}<>"$_sleep_ready_dir/ready"; then
+		_cleanup_sleep_ready
+		log_event "sleep_lock_failed" "reason=open_fifo"
+		return 1
+	fi
+
+	clear_stale_stopped_clients
+	pause_notifications
+	pause_mouse
+
+	"$SWAYLOCK_WRAPPER" --cached-only --ready-fd "$_sleep_ready_fd" >> "$SWAYLOCK_LOG" 2>&1 &
+	wrapper_pid=$!
+
+	# Keep the whole handler inside three seconds, including the event-level VRAM
+	# sample and pre-lock input changes. Reserve time to close and unlink the FIFO.
+	monotonic_ms
+	remaining_ms=$((deadline_ms - _MONOTONIC_MS - SLEEP_HANDLER_CLEANUP_RESERVE_MS))
+	if [ "$remaining_ms" -gt 0 ]; then
+		printf -v read_timeout '%d.%03d' "$((remaining_ms / 1000))" "$((remaining_ms % 1000))"
+		if IFS= read -r -t "$read_timeout" -u "$_sleep_ready_fd"; then
+			_cleanup_sleep_ready
+			echo "sleeping" > "$SLEEP_STATE_FILE"
+			monotonic_ms
+			elapsed_ms=$((_MONOTONIC_MS - handler_start_ms))
+			echo "== sleep_lock_ready elapsed_ms=${elapsed_ms}"
+			log_event "sleep_lock_ready" "elapsed_ms=${elapsed_ms}"
+			log_event "sleep_handler_done" "result=ready elapsed_ms=${elapsed_ms}"
+			return 0
+		fi
+	fi
+
+	_cleanup_sleep_ready
+	wrapper_state="alive"
+	wrapper_rc=""
+	if ! kill -0 "$wrapper_pid" 2>/dev/null; then
+		wrapper_state="exited"
+		if wait "$wrapper_pid"; then
+			wrapper_rc=0
+		else
+			wrapper_rc=$?
+		fi
+	fi
+	monotonic_ms
+	elapsed_ms=$((_MONOTONIC_MS - handler_start_ms))
+	echo "== sleep_lock_timeout elapsed_ms=${elapsed_ms} wrapper=${wrapper_state}${wrapper_rc:+ rc=${wrapper_rc}}" >&2
+	log_event "sleep_lock_timeout" "elapsed_ms=${elapsed_ms} wrapper=${wrapper_state}${wrapper_rc:+ rc=${wrapper_rc}}"
+	log_event "sleep_handler_done" "result=timeout elapsed_ms=${elapsed_ms}"
+	return 1
+}
+
 function lock() {
 	# Debounce: Skip if lock was triggered recently
 	# This prevents "lock signal storms" where an unknown source sends
@@ -217,7 +360,7 @@ function lock() {
 	fi
 
 	# Skip if already locked
-	if pgrep -x swaylock > /dev/null; then
+	if swaylock_running; then
 		echo "=== lock (skipped - swaylock already running)"
 		return 0
 	fi
@@ -234,12 +377,7 @@ function lock() {
 
 	# Clear any stale SIGSTOP state from a previous session that didn't unlock cleanly.
 	# SIGCONT first in case processes survived the session restart (e.g. after sway crash).
-	if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-		echo "== SIGCONTing and clearing stale SIGSTOP'd processes"
-		# shellcheck disable=SC2046
-		kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null ||:
-		rm -f "$VRAM_STOPPED_PIDS_FILE"
-	fi
+	clear_stale_stopped_clients
 
 	# Pre-lock VRAM cleanup: cycle outputs to free leaked Vulkan textures BEFORE swaylock
 	# starts suppressing frame presentation (which is when wlroots GC runs).
@@ -303,7 +441,16 @@ function resume() {
 }
 
 function idlecommand() {
-	command=${1}
+	local command=${1}
+	local handler_start_ms=""
+	if [ "$command" = "sleep" ]; then
+		if [ -n "$_SLEEP_HANDLER_START_MS" ]; then
+			handler_start_ms=$_SLEEP_HANDLER_START_MS
+		else
+			monotonic_ms
+			handler_start_ms=$_MONOTONIC_MS
+		fi
+	fi
 
 	# Log event marker to VRAM snapshot log with current sway VRAM for correlation
 	local _ev_vram
@@ -368,8 +515,7 @@ function idlecommand() {
 			echo "=== sleep (skipped - already in sleep state)"
 			return 0
 		fi
-		echo "sleeping" > "$SLEEP_STATE_FILE"
-		lock
+		lock_for_sleep "$handler_start_ms"
 	elif [ "${command}" = "sleepresume" ]
 	then
 		# Clear sleep state on sleepresume
@@ -382,13 +528,44 @@ function idlecommand() {
 #############################################################################
 #
 
-# default start swayidle
-command=${1:-default}
-if [ "${command}" = "default" ]
-then
-	echo pkill -f "/usr/bin/swayidle"
-	pkill -f "/usr/bin/swayidle" ||:
-	/usr/bin/swayidle -d -C "$HOME/.config/swayidle/config" |& tee --append $HOME/logs/swayidle-$HOSTNAME-$(timestamp).log
-else
-	idlecommand ${command} | ts
+supervise_swayidle() {
+	local main_pid sleep_pid cache_pid watcher_rc
+
+	"$SWAYLOCK_WRAPPER" --prepare-cache >> "$SWAYLOCK_LOG" 2>&1 &
+	cache_pid=$!
+	"$SWAYIDLE_BIN" -d -C "$SWAYIDLE_CONFIG" >> "$SWAYIDLE_LOG" 2>&1 &
+	main_pid=$!
+	"$SWAYIDLE_BIN" -d -w before-sleep "$HOME/bin/swayidle.sh sleep" >> "$SWAYIDLE_LOG" 2>&1 &
+	sleep_pid=$!
+	# Cache preparation is short-lived and atomic. Do not retain its PID for
+	# long-term cleanup: after it exits that PID may be reused by another process.
+	_supervised_pids=("$main_pid" "$sleep_pid")
+
+	echo "== supervising swayidle main=${main_pid} sleep=${sleep_pid} cache=${cache_pid}"
+	if wait -n "$main_pid" "$sleep_pid"; then
+		watcher_rc=1
+	else
+		watcher_rc=$?
+	fi
+	echo "== swayidle watcher exited (status=${watcher_rc}); stopping sibling" >&2
+	_cleanup_supervised_children
+	return "$watcher_rc"
+}
+
+main() {
+	local command=${1:-default}
+	if [ "$command" = "default" ]; then
+		supervise_swayidle
+	elif [ "$command" = "sleep" ]; then
+		# The sleep handler launches the foreground swaylock wrapper in the
+		# background. Keep it out of a pipeline so this process can return to
+		# swayidle as soon as the readiness handshake completes.
+		idlecommand "$command"
+	else
+		idlecommand "$command" | ts
+	fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+	main "$@"
 fi

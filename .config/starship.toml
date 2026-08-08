@@ -30,7 +30,7 @@ format = """
 (($status )($cmd_duration )\n)\
 ([┌$fill](bold green) \n)\
 ([│](bold green) $time $username $hostname $directory \n)\
-([│](bold green) ($git_branch )($git_state )($git_commit )($git_status )($vcsh)\n)\
+([│](bold green) ($git_branch )($git_state )($git_commit )($git_status )($vcsh)(${custom.worktree})\n)\
 ([│](bold green) ($kubernetes )\n)\
 ([│](bold green) ${custom.talosctl} \n)\
 ([│](bold green) ($mise )($direnv )($package )($golang )($nodejs )($python )\n)\
@@ -299,3 +299,11 @@ format = "[$output\u001B\\[K]($style)"
 when = 'test -n "${TALOSCONFIG}"'
 command = "custom-starship-talosctl.sh"
 style = "bold blue"
+
+[custom.worktree]
+command = "git-change-worktree prompt"
+when = true
+require_repo = true
+shell = ["bash", "--noprofile", "--norc"]
+style = "green"
+format = "[$output]($style)"

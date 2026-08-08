@@ -78,13 +78,10 @@ echo "$JOBS" | while read -r line; do
 done
 echo
 
-if ifinteractive; then
-    notify_debug "Check if there is an attached screen"
-    if pgrep -f "screen -D -r i3jobs" >/dev/null; then
-        : #wmctrl -a i3jobs
-    else
-        notify "start a terminal and attach"
-        term-run i3jobs --title i3jobs -- screen -D -r i3jobs &
-        >/dev/null 2>&1
-    fi
+notify_debug "Check if there is an attached screen"
+if pgrep -f "screen -D -r i3jobs" >/dev/null; then
+    : #wmctrl -a i3jobs
+else
+    notify "start a terminal and attach"
+    term-run i3jobs --title i3jobs -- screen -D -r i3jobs &
 fi

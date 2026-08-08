@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+declare -a WT_PATHS=()
+declare -a WT_HEADS=()
+declare -a WT_BRANCHES=()
+declare -a WT_LOCKED=()
+declare -a WT_PRUNABLE=()
+declare -a WT_BARE=()
+
+die() {
+	printf 'git change-worktree: %s\n' "$*" >&2
+	exit 1
+}
+
+usage() {
+	cat <<'EOF'
+usage: git wt [list]
+       git wt [<branch>]
+       git wt path [<branch>]
+       git wt new <branch>
+       git wt head
+       git wt remove [<branch>]
+       git wt help
+
+Human worktrees are created beside the original checkout as
+<repo>-<branch>, with '/' in the branch replaced by '+'.
+
+`head` means the original checkout, not Git HEAD. Use `path` to select a
+branch whose name is also a command, for example: git wt path head.
+EOF
+}
+
+append_worktree() {
+	local path=$1 head=$2 branch=$3 locked=$4 prunable=$5 bare=$6
+	[[ -n "$path" ]] || return 0
+	WT_PATHS+=("$path")
+	WT_HEADS+=("$head")
+	WT_BRANCHES+=("$branch")
+	WT_LOCKED+=("$locked")
+	WT_PRUNABLE+=("$prunable")
+	WT_BARE+=("$bare")
+}
+
+load_worktrees() {
+	local field path="" head="" branch="" locked="" prunable="" bare=""
+	WT_PATHS=()
+	WT_HEADS=()
+	WT_BRANCHES=()
+	WT_LOCKED=()
+	WT_PRUNABLE=()
+	WT_BARE=()
+
+	while IFS= read -r -d '' field; do
+		case $field in
+			"worktree "*) path=${field#worktree } ;;
+			"HEAD "*) head=${field#HEAD } ;;
+			"branch refs/heads/"*) branch=${field#branch refs/heads/} ;;
+			locked*) locked=1 ;;
+			prunable*) prunable=1 ;;
+			bare) bare=1 ;;
+			"")
+				append_worktree "$path" "$head" "$branch" "$locked" "$prunable" "$bare"
+				path="" head="" branch="" locked="" prunable="" bare=""
+				;;
+		esac
+	done < <(git worktree list --porcelain -z 2>/dev/null)
+	append_worktree "$path" "$head" "$branch" "$locked" "$prunable" "$bare"
+}
+
+is_available() {
+	local index=$1
+	[[ -z "${WT_PRUNABLE[$index]}" && -d "${WT_PATHS[$index]}" ]]
+}
+
+worktree_label() {
+	local index=$1
+	if [[ -n "${WT_BRANCHES[$index]}" ]]; then
+		printf '%s' "${WT_BRANCHES[$index]}"
+	else
+		printf '@%.10s' "${WT_HEADS[$index]}"
+	fi
+}
+
+main_index() {
+	[[ ${#WT_PATHS[@]} -gt 0 && -z "${WT_BARE[0]}" ]] || return 1
+	printf '0'
+}
+
+find_branch_index() {
+	local wanted=$1 index
+	for index in "${!WT_PATHS[@]}"; do
+		if is_available "$index" && [[ "${WT_BRANCHES[$index]}" == "$wanted" ]]; then
+			printf '%s' "$index"
+			return
+		fi
+	done
+	return 1
+}
+
+print_list() {
+	local index
+	for index in "${!WT_PATHS[@]}"; do
+		is_available "$index" || continue
+		printf '%s\t%s\n' "$(worktree_label "$index")" "${WT_PATHS[$index]}"
+	done
+}
+
+select_index() {
+	local index selection
+	command -v fzf >/dev/null 2>&1 || die "fzf is required for interactive selection"
+	selection=$(
+		for index in "${!WT_PATHS[@]}"; do
+			is_available "$index" || continue
+			printf '%s\t%s\t%s\n' "$index" "$(worktree_label "$index")" "${WT_PATHS[$index]}"
+		done |
+			fzf --delimiter=$'\t' --with-nth=2,3 --prompt='worktree> '
+	) || return $?
+	printf '%s' "${selection%%$'\t'*}"
+}
+
+resolve_index() {
+	local branch=${1:-} index
+	if [[ -n "$branch" ]]; then
+		index=$(find_branch_index "$branch") || die "branch is not checked out in a worktree: $branch"
+	else
+		index=$(select_index) || exit $?
+	fi
+	printf '%s' "$index"
+}
+
+print_path() {
+	local index
+	index=$(resolve_index "${1:-}")
+	printf '%s\n' "${WT_PATHS[$index]}"
+}
+
+print_head_path() {
+	local index
+	index=$(main_index) || die "repository has no original checkout"
+	is_available "$index" || die "original checkout is unavailable: ${WT_PATHS[$index]}"
+	printf '%s\n' "${WT_PATHS[$index]}"
+}
+
+new_worktree() {
+	local branch=${1:-} index main target base
+	[[ -n "$branch" ]] || die "new requires a branch"
+	git check-ref-format --branch "$branch" >/dev/null 2>&1 || die "invalid branch name: $branch"
+
+	if index=$(find_branch_index "$branch"); then
+		printf '%s\n' "${WT_PATHS[$index]}"
+		return
+	fi
+
+	index=$(main_index) || die "cannot create a sibling worktree for a bare repository"
+	main=${WT_PATHS[$index]}
+	target="$(dirname "$main")/$(basename "$main")-${branch//\//+}"
+	[[ ! -e "$target" ]] || die "target already exists: $target"
+
+	if git show-ref --verify --quiet "refs/heads/$branch"; then
+		git worktree add -- "$target" "$branch" >&2
+	else
+		base=$(git rev-parse --verify HEAD) || die "current checkout has no HEAD commit"
+		git worktree add -b "$branch" -- "$target" "$base" >&2
+	fi
+	printf '%s\n' "$target"
+}
+
+print_prompt() {
+	local git_dir common_dir index main linked=0
+	git_dir=$(git rev-parse --path-format=absolute --git-dir 2>/dev/null) || return 0
+	common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || return 0
+	if [[ "$git_dir" != "$common_dir" ]]; then
+		printf ' | wt\n'
+		return
+	fi
+	main=$(main_index 2>/dev/null) || return 0
+	for index in "${!WT_PATHS[@]}"; do
+		[[ "$index" == "$main" ]] && continue
+		is_available "$index" && linked=$((linked + 1))
+	done
+	if [[ "$linked" -gt 0 ]]; then
+		printf ' | wt:%s\n' "$linked"
+	fi
+	return 0
+}
+
+remove_worktree() {
+	local branch=${1:-} index main_index_value main current expected path answer status
+	index=$(resolve_index "$branch")
+	main_index_value=$(main_index) || die "repository has no original checkout"
+	main=${WT_PATHS[$main_index_value]}
+	path=${WT_PATHS[$index]}
+
+	[[ "$index" != "$main_index_value" ]] || die "refusing to remove the original checkout"
+	[[ -n "${WT_BRANCHES[$index]}" ]] || die "refusing to remove a detached worktree: $path"
+	current=$(git rev-parse --path-format=absolute --show-toplevel)
+	[[ "$path" != "$current" ]] || die "refusing to remove the current worktree"
+	expected="$(dirname "$main")/$(basename "$main")-${WT_BRANCHES[$index]//\//+}"
+	[[ "$path" == "$expected" ]] || die "refusing non-sibling worktree: $path"
+	[[ -z "${WT_LOCKED[$index]}" ]] || die "refusing locked worktree: $path"
+	status=$(git -C "$path" status --porcelain --untracked-files=all) ||
+		die "cannot inspect worktree: $path"
+	[[ -z "$status" ]] || die "refusing dirty worktree: $path"
+
+	printf 'Remove worktree %s (%s) and preserve its branch? [y/N] ' \
+		"$path" "${WT_BRANCHES[$index]}" >&2
+	IFS= read -r answer || answer=""
+	case $answer in
+		y|Y|yes|YES) git worktree remove -- "$path" ;;
+		*) printf 'Not removed.\n' >&2 ;;
+	esac
+}
+
+command_name=${1:-}
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+	[[ "$command_name" == "prompt" ]] && exit 0
+	die "not a Git repository"
+fi
+load_worktrees
+
+case $command_name in
+	"") print_list ;;
+	list) print_list ;;
+	path) shift; [[ $# -le 1 ]] || die "path accepts at most one branch"; print_path "${1:-}" ;;
+	new) shift; [[ $# -eq 1 ]] || die "new requires exactly one branch"; new_worktree "$1" ;;
+	head) [[ $# -eq 1 ]] || die "head accepts no arguments"; print_head_path ;;
+	remove) shift; [[ $# -le 1 ]] || die "remove accepts at most one branch"; remove_worktree "${1:-}" ;;
+	prompt) [[ $# -eq 1 ]] || exit 0; print_prompt ;;
+	help|-h|--help) usage ;;
+	*) [[ $# -eq 1 ]] || die "branch shorthand accepts exactly one branch"; print_path "$command_name" ;;
+esac
