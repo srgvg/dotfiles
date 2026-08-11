@@ -652,6 +652,41 @@ _clusterctl_config()
     noun_aliases=()
 }
 
+_clusterctl_convert()
+{
+    last_command="clusterctl_convert"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--output")
+    local_nonpersistent_flags+=("--output=")
+    local_nonpersistent_flags+=("-o")
+    flags+=("--to-version=")
+    two_word_flags+=("--to-version")
+    local_nonpersistent_flags+=("--to-version")
+    local_nonpersistent_flags+=("--to-version=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--v=")
+    two_word_flags+=("--v")
+    two_word_flags+=("-v")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _clusterctl_delete()
 {
     last_command="clusterctl_delete"
@@ -1498,6 +1533,7 @@ _clusterctl_root_command()
     commands+=("alpha")
     commands+=("completion")
     commands+=("config")
+    commands+=("convert")
     commands+=("delete")
     commands+=("describe")
     commands+=("generate")

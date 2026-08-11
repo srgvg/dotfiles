@@ -189,18 +189,15 @@ print_prompt() {
 }
 
 remove_worktree() {
-	local branch=${1:-} index main_index_value main current expected path answer status
+	local branch=${1:-} index main_index_value current path answer status
 	index=$(resolve_index "$branch")
 	main_index_value=$(main_index) || die "repository has no original checkout"
-	main=${WT_PATHS[$main_index_value]}
 	path=${WT_PATHS[$index]}
 
 	[[ "$index" != "$main_index_value" ]] || die "refusing to remove the original checkout"
 	[[ -n "${WT_BRANCHES[$index]}" ]] || die "refusing to remove a detached worktree: $path"
 	current=$(git rev-parse --path-format=absolute --show-toplevel)
 	[[ "$path" != "$current" ]] || die "refusing to remove the current worktree"
-	expected="$(dirname "$main")/$(basename "$main")-${WT_BRANCHES[$index]//\//+}"
-	[[ "$path" == "$expected" ]] || die "refusing non-sibling worktree: $path"
 	[[ -z "${WT_LOCKED[$index]}" ]] || die "refusing locked worktree: $path"
 	status=$(git -C "$path" status --porcelain --untracked-files=all) ||
 		die "cannot inspect worktree: $path"

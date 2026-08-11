@@ -740,7 +740,7 @@ _codex() {
 
     case "${cmd}" in
         codex)
-            opts="-c -i -m -p -s -C -a -h -V --config --enable --disable --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply a resume archive delete unarchive fork cloud responses-api-proxy stdio-to-uds exec-server features help"
+            opts="-c -i -m -p -s -C -a -h -V --psp --config --enable --disable --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --approve-for-me --ask-for-approval --search --no-alt-screen --help --version [PROMPT] exec e review login logout mcp plugin mcp-server app-server remote-control completion update doctor sandbox debug execpolicy apply a resume archive delete unarchive fork cloud responses-api-proxy stdio-to-uds exec-server features help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -837,7 +837,7 @@ _codex() {
             return 0
             ;;
         codex__app__server)
-            opts="-c -h --code-mode-host --strict-config --listen --stdio --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
+            opts="-c -h --code-mode-host --strict-config --listen --stdio --remote-control --analytics-default-enabled --ws-auth --ws-token-file --ws-token-sha256 --ws-shared-secret-file --ws-issuer --ws-audience --ws-max-clock-skew-seconds --psp --config --enable --disable --help daemon proxy generate-ts generate-json-schema generate-internal-json-schema help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -903,7 +903,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon)
-            opts="-c -h --config --enable --disable --help bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop help"
+            opts="-c -h --psp --config --enable --disable --help bootstrap start restart enable-remote-control disable-remote-control stop version pid-update-loop help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -933,7 +933,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__bootstrap)
-            opts="-c -h --remote-control --config --enable --disable --help"
+            opts="-c -h --remote-control --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -963,7 +963,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__disable__remote__control)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -993,7 +993,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__enable__remote__control)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1163,7 +1163,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__pid__update__loop)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1193,7 +1193,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__restart)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1223,7 +1223,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__start)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1253,7 +1253,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__stop)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1283,7 +1283,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__daemon__version)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1313,7 +1313,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__generate__internal__json__schema)
-            opts="-o -c -h --out --config --enable --disable --help"
+            opts="-o -c -h --out --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1351,7 +1351,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__generate__json__schema)
-            opts="-o -c -h --out --experimental --config --enable --disable --help"
+            opts="-o -c -h --out --experimental --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1389,7 +1389,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__generate__ts)
-            opts="-o -p -c -h --out --prettier --experimental --config --enable --disable --help"
+            opts="-o -p -c -h --out --prettier --experimental --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1645,7 +1645,7 @@ _codex() {
             return 0
             ;;
         codex__app__server__proxy)
-            opts="-c -h --sock --config --enable --disable --help"
+            opts="-c -h --sock --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1679,7 +1679,7 @@ _codex() {
             return 0
             ;;
         codex__apply)
-            opts="-c -h --config --enable --disable --help <TASK_ID>"
+            opts="-c -h --config --psp --enable --disable --help <TASK_ID>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1709,7 +1709,7 @@ _codex() {
             return 0
             ;;
         codex__archive)
-            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --enable --disable --help <SESSION>"
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --approve-for-me --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --psp --enable --disable --help <SESSION>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1798,7 +1798,7 @@ _codex() {
             return 0
             ;;
         codex__cloud)
-            opts="-c -h -V --config --enable --disable --help --version exec status list apply diff help"
+            opts="-c -h -V --psp --config --enable --disable --help --version exec status list apply diff help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1828,7 +1828,7 @@ _codex() {
             return 0
             ;;
         codex__cloud__apply)
-            opts="-c -h --attempt --config --enable --disable --help <TASK_ID>"
+            opts="-c -h --attempt --psp --config --enable --disable --help <TASK_ID>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1862,7 +1862,7 @@ _codex() {
             return 0
             ;;
         codex__cloud__diff)
-            opts="-c -h --attempt --config --enable --disable --help <TASK_ID>"
+            opts="-c -h --attempt --psp --config --enable --disable --help <TASK_ID>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1896,7 +1896,7 @@ _codex() {
             return 0
             ;;
         codex__cloud__exec)
-            opts="-c -h --env --attempts --branch --config --enable --disable --help [QUERY]"
+            opts="-c -h --env --attempts --branch --psp --config --enable --disable --help [QUERY]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2036,7 +2036,7 @@ _codex() {
             return 0
             ;;
         codex__cloud__list)
-            opts="-c -h --env --limit --cursor --json --config --enable --disable --help"
+            opts="-c -h --env --limit --cursor --json --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2078,7 +2078,7 @@ _codex() {
             return 0
             ;;
         codex__cloud__status)
-            opts="-c -h --config --enable --disable --help <TASK_ID>"
+            opts="-c -h --psp --config --enable --disable --help <TASK_ID>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2108,7 +2108,7 @@ _codex() {
             return 0
             ;;
         codex__completion)
-            opts="-c -h --config --enable --disable --help bash elvish fish powershell zsh"
+            opts="-c -h --psp --config --enable --disable --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2138,7 +2138,7 @@ _codex() {
             return 0
             ;;
         codex__debug)
-            opts="-c -h --config --enable --disable --help models app-server prompt-input trace-reduce clear-memories help"
+            opts="-c -h --psp --config --enable --disable --help models app-server prompt-input trace-reduce clear-memories help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2168,7 +2168,7 @@ _codex() {
             return 0
             ;;
         codex__debug__app__server)
-            opts="-c -h --config --enable --disable --help send-message-v2 help"
+            opts="-c -h --psp --config --enable --disable --help send-message-v2 help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2240,7 +2240,7 @@ _codex() {
             return 0
             ;;
         codex__debug__app__server__send__message__v2)
-            opts="-c -h --config --enable --disable --help <USER_MESSAGE>"
+            opts="-c -h --psp --config --enable --disable --help <USER_MESSAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2270,7 +2270,7 @@ _codex() {
             return 0
             ;;
         codex__debug__clear__memories)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2412,7 +2412,7 @@ _codex() {
             return 0
             ;;
         codex__debug__models)
-            opts="-c -h --bundled --config --enable --disable --help"
+            opts="-c -h --bundled --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2442,7 +2442,7 @@ _codex() {
             return 0
             ;;
         codex__debug__prompt__input)
-            opts="-i -c -h --image --config --enable --disable --help [PROMPT]"
+            opts="-i -c -h --image --psp --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2480,7 +2480,7 @@ _codex() {
             return 0
             ;;
         codex__debug__trace__reduce)
-            opts="-o -c -h --output --config --enable --disable --help <TRACE_BUNDLE>"
+            opts="-o -c -h --output --psp --config --enable --disable --help <TRACE_BUNDLE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2518,7 +2518,7 @@ _codex() {
             return 0
             ;;
         codex__delete)
-            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --force --enable --disable --help <SESSION>"
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --approve-for-me --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --force --psp --enable --disable --help <SESSION>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2607,7 +2607,7 @@ _codex() {
             return 0
             ;;
         codex__doctor)
-            opts="-c -h --json --summary --all --no-color --ascii --config --enable --disable --help"
+            opts="-c -h --json --summary --all --no-color --ascii --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2637,7 +2637,7 @@ _codex() {
             return 0
             ;;
         codex__exec)
-            opts="-i -p -s -C -m -o -c -h -V --strict-config --image --oss --local-provider --profile --sandbox --cd --add-dir --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --color --json --output-last-message --config --enable --disable --help --version [PROMPT] resume review help"
+            opts="-i -p -s -C -m -o -c -h -V --strict-config --image --oss --local-provider --profile --sandbox --approve-for-me --cd --add-dir --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --output-schema --color --json --output-last-message --psp --config --enable --disable --help --version [PROMPT] resume review help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2734,12 +2734,16 @@ _codex() {
             return 0
             ;;
         codex__exec__server)
-            opts="-c -h --strict-config --listen --remote --environment-id --name --use-agent-identity-auth --config --enable --disable --help"
+            opts="-c -h --strict-config --concurrent-requests --listen --remote --environment-id --name --use-agent-identity-auth --exit-on-stdin-close --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --concurrent-requests)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --listen)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -2836,7 +2840,7 @@ _codex() {
             return 0
             ;;
         codex__exec__resume)
-            opts="-i -m -o -c -h --last --all --image --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --json --output-last-message --config --enable --disable --help [SESSION_ID] [PROMPT]"
+            opts="-i -m -o -c -h --last --all --image --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --output-schema --json --output-last-message --psp --config --enable --disable --help [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2894,7 +2898,7 @@ _codex() {
             return 0
             ;;
         codex__exec__review)
-            opts="-m -o -c -h --uncommitted --base --commit --title --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --full-auto --output-schema --json --output-last-message --config --enable --disable --help [PROMPT]"
+            opts="-m -o -c -h --uncommitted --base --commit --title --strict-config --model --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --output-schema --json --output-last-message --psp --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2956,7 +2960,7 @@ _codex() {
             return 0
             ;;
         codex__execpolicy)
-            opts="-c -h --config --enable --disable --help check help"
+            opts="-c -h --psp --config --enable --disable --help check help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2986,7 +2990,7 @@ _codex() {
             return 0
             ;;
         codex__execpolicy__check)
-            opts="-r -c -h --rules --pretty --resolve-host-executables --config --enable --disable --help <COMMAND>..."
+            opts="-r -c -h --rules --pretty --resolve-host-executables --psp --config --enable --disable --help <COMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3066,7 +3070,7 @@ _codex() {
             return 0
             ;;
         codex__features)
-            opts="-c -h --config --enable --disable --help list enable disable help"
+            opts="-c -h --psp --config --enable --disable --help list enable disable help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3096,7 +3100,7 @@ _codex() {
             return 0
             ;;
         codex__features__disable)
-            opts="-c -h --config --enable --disable --help <FEATURE>"
+            opts="-c -h --psp --config --enable --disable --help <FEATURE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3126,7 +3130,7 @@ _codex() {
             return 0
             ;;
         codex__features__enable)
-            opts="-c -h --config --enable --disable --help <FEATURE>"
+            opts="-c -h --psp --config --enable --disable --help <FEATURE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3226,7 +3230,7 @@ _codex() {
             return 0
             ;;
         codex__features__list)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3256,7 +3260,7 @@ _codex() {
             return 0
             ;;
         codex__fork)
-            opts="-i -m -p -s -C -a -c -h -V --last --all --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
+            opts="-i -m -p -s -C -a -c -h -V --last --all --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --approve-for-me --ask-for-approval --search --no-alt-screen --psp --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4417,7 +4421,7 @@ _codex() {
             return 0
             ;;
         codex__login)
-            opts="-c -h --with-api-key --with-access-token --api-key --device-auth --experimental_issuer --experimental_client-id --config --enable --disable --help status help"
+            opts="-c -h --with-api-key --with-access-token --api-key --device-auth --experimental_issuer --experimental_client-id --psp --config --enable --disable --help status help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4501,7 +4505,7 @@ _codex() {
             return 0
             ;;
         codex__login__status)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4531,7 +4535,7 @@ _codex() {
             return 0
             ;;
         codex__logout)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4561,7 +4565,7 @@ _codex() {
             return 0
             ;;
         codex__mcp)
-            opts="-c -h --config --enable --disable --help list get add remove login logout help"
+            opts="-c -h --config --psp --enable --disable --help list get add remove login logout help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4591,7 +4595,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__server)
-            opts="-c -h --strict-config --config --enable --disable --help"
+            opts="-c -h --strict-config --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4621,7 +4625,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__add)
-            opts="-c -h --env --url --bearer-token-env-var --oauth-client-id --oauth-resource --config --enable --disable --help <NAME> [COMMAND]..."
+            opts="-c -h --env --url --bearer-token-env-var --oauth-client-id --oauth-resource --config --psp --enable --disable --help <NAME> [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4671,7 +4675,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__get)
-            opts="-c -h --json --config --enable --disable --help <NAME>"
+            opts="-c -h --json --config --psp --enable --disable --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4813,7 +4817,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__list)
-            opts="-c -h --json --config --enable --disable --help"
+            opts="-c -h --json --config --psp --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4843,7 +4847,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__login)
-            opts="-c -h --scopes --config --enable --disable --help <NAME>"
+            opts="-c -h --scopes --config --psp --enable --disable --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4877,7 +4881,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__logout)
-            opts="-c -h --config --enable --disable --help <NAME>"
+            opts="-c -h --config --psp --enable --disable --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4907,7 +4911,7 @@ _codex() {
             return 0
             ;;
         codex__mcp__remove)
-            opts="-c -h --config --enable --disable --help <NAME>"
+            opts="-c -h --config --psp --enable --disable --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4937,7 +4941,7 @@ _codex() {
             return 0
             ;;
         codex__plugin)
-            opts="-c -h --config --enable --disable --help add list marketplace remove help"
+            opts="-c -h --config --psp --enable --disable --help add list marketplace remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4967,7 +4971,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__add)
-            opts="-m -c -h --marketplace --json --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
+            opts="-m -c -h --marketplace --json --config --psp --enable --disable --help <PLUGIN[@MARKETPLACE]>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5145,7 +5149,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__list)
-            opts="-m -c -h --marketplace --json --available --config --enable --disable --help"
+            opts="-m -c -h --marketplace --json --available --config --psp --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5183,7 +5187,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace)
-            opts="-c -h --config --enable --disable --help add list upgrade remove help"
+            opts="-c -h --config --psp --enable --disable --help add list upgrade remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5213,7 +5217,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__add)
-            opts="-c -h --ref --sparse --json --config --enable --disable --help <SOURCE>"
+            opts="-c -h --ref --sparse --json --config --psp --enable --disable --help <SOURCE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5335,7 +5339,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__list)
-            opts="-c -h --json --config --enable --disable --help"
+            opts="-c -h --json --config --psp --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5365,7 +5369,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__remove)
-            opts="-c -h --json --config --enable --disable --help <MARKETPLACE_NAME>"
+            opts="-c -h --json --config --psp --enable --disable --help <MARKETPLACE_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5395,7 +5399,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__marketplace__upgrade)
-            opts="-c -h --json --config --enable --disable --help [MARKETPLACE_NAME]"
+            opts="-c -h --json --config --psp --enable --disable --help [MARKETPLACE_NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5425,7 +5429,7 @@ _codex() {
             return 0
             ;;
         codex__plugin__remove)
-            opts="-m -c -h --marketplace --json --config --enable --disable --help <PLUGIN[@MARKETPLACE]>"
+            opts="-m -c -h --marketplace --json --config --psp --enable --disable --help <PLUGIN[@MARKETPLACE]>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5463,7 +5467,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control)
-            opts="-c -h --json --config --enable --disable --help start stop pair help"
+            opts="-c -h --json --psp --config --enable --disable --help start stop pair help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5563,7 +5567,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control__pair)
-            opts="-c -h --json --config --enable --disable --help"
+            opts="-c -h --json --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5593,7 +5597,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control__start)
-            opts="-c -h --json --config --enable --disable --help"
+            opts="-c -h --json --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5623,7 +5627,7 @@ _codex() {
             return 0
             ;;
         codex__remote__control__stop)
-            opts="-c -h --json --config --enable --disable --help"
+            opts="-c -h --json --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5653,7 +5657,7 @@ _codex() {
             return 0
             ;;
         codex__responses__api__proxy)
-            opts="-c -h --port --server-info --http-shutdown --upstream-url --dump-dir --config --enable --disable --help"
+            opts="-c -h --port --server-info --http-shutdown --upstream-url --dump-dir --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5699,7 +5703,7 @@ _codex() {
             return 0
             ;;
         codex__resume)
-            opts="-i -m -p -s -C -a -c -h -V --last --all --include-non-interactive --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --ask-for-approval --search --no-alt-screen --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
+            opts="-i -m -p -s -C -a -c -h -V --last --all --include-non-interactive --remote --remote-auth-token-env --strict-config --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-hook-trust --cd --add-dir --dangerously-bypass-approvals-and-sandbox --approve-for-me --ask-for-approval --search --no-alt-screen --psp --config --enable --disable --help --version [SESSION_ID] [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5796,7 +5800,7 @@ _codex() {
             return 0
             ;;
         codex__review)
-            opts="-c -h --strict-config --uncommitted --base --commit --title --config --enable --disable --help [PROMPT]"
+            opts="-c -h --strict-config --uncommitted --base --commit --title --psp --config --enable --disable --help [PROMPT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5838,7 +5842,7 @@ _codex() {
             return 0
             ;;
         codex__sandbox)
-            opts="-P -p -C -c -h --sandbox-state-json --sandbox-state-readable-root --sandbox-state-disable-network --permission-profile --profile --cd --include-managed-config --config --enable --disable --help [COMMAND]..."
+            opts="-P -p -C -c -h --sandbox-state-json --sandbox-state-readable-root --sandbox-state-disable-network --permission-profile --profile --cd --include-managed-config --psp --config --enable --disable --help [COMMAND]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5900,7 +5904,7 @@ _codex() {
             return 0
             ;;
         codex__stdio__to__uds)
-            opts="-c -h --config --enable --disable --help <SOCKET_PATH>"
+            opts="-c -h --psp --config --enable --disable --help <SOCKET_PATH>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5930,7 +5934,7 @@ _codex() {
             return 0
             ;;
         codex__unarchive)
-            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --enable --disable --help <SESSION>"
+            opts="-i -m -p -s -C -c -h --remote --remote-auth-token-env --image --model --oss --local-provider --profile --sandbox --approve-for-me --dangerously-bypass-approvals-and-sandbox --dangerously-bypass-hook-trust --cd --add-dir --strict-config --config --psp --enable --disable --help <SESSION>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -6019,7 +6023,7 @@ _codex() {
             return 0
             ;;
         codex__update)
-            opts="-c -h --config --enable --disable --help"
+            opts="-c -h --psp --config --enable --disable --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
