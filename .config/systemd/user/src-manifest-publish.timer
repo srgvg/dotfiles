@@ -1,0 +1,10 @@
+[Unit]
+Description=Run src-manifest-publish daily
+Documentation=file:%h/etc/docs/src-sync.md
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target

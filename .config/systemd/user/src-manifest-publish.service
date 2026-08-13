@@ -1,0 +1,7 @@
+[Unit]
+Description=Regenerate this host's src manifest (~/etc/src/manifest-goldorak.jsonl)
+Documentation=file:%h/etc/docs/src-sync.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/bins/src-manifest --publish

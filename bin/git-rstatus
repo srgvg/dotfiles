@@ -1,0 +1,1103 @@
+#!/usr/bin/env python3
+"""Recursive, worktree-aware multi-repo git status. Read-only by default.
+
+Usage: git-rstatus [PATH ...] [options]
+
+Walks PATH(s) (default: cwd) recursively for git repositories, groups every
+linked worktree (wherever it lives — `<repo>/.claude/worktrees/*`, a legacy
+`_wt/` checkout, or anywhere else) back under its repo by common git-dir, and
+prints one table. By default that's one line per repo (dirty total, branch
+counts, gone-upstream tally, stashes); add detail with:
+  -w, --worktrees   one row per checkout (main + linked worktrees)
+  -b, --branches    one row per local branch that has no checkout
+  -a, --attention   only rows needing action, across repos/checkouts/branches
+
+Does not touch the network or mutate anything unless you ask:
+  --fetch       fetch all remotes first
+  --pull        fast-forward clean, behind checkouts (implies --fetch)
+  -i            interactive checkout / stash / stale-branch review (implies --fetch)
+
+If refs/remotes/<remote>/HEAD is not set, HEAD-branch detection falls back to
+a network call (only reachable via --fetch/-i). To set it locally:
+  git remote set-head <remote> -a
+"""
+
+import argparse
+import fnmatch
+import json
+import os
+import re
+import subprocess
+import sys
+import termios
+import tty
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+
+# --- Colors (set by init_colors after arg parsing) ---
+GREEN = YELLOW = RED = BOLD = RESET = DIM = ""
+
+
+def init_colors(enable: bool) -> None:
+    global GREEN, YELLOW, RED, BOLD, RESET, DIM
+    if enable:
+        GREEN  = "\033[0;32m"
+        YELLOW = "\033[0;33m"
+        RED    = "\033[0;31m"
+        BOLD   = "\033[1m"
+        RESET  = "\033[0m"
+        DIM    = "\033[2m"
+
+
+# --- Git helpers ---
+
+def _git(repo: str, *args) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
+
+
+def _git_out(repo: str, *args) -> str:
+    r = _git(repo, *args)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+# --- Discovery: recursive walk + worktree grouping by common git-dir ---
+
+PRUNE_DIRS = {
+    ".git", "node_modules", "vendor", ".venv", "venv", "target",
+    ".terraform", "__pycache__", "_scratch", "_reviews",
+}
+
+
+def _is_excluded(name: str, excludes: list) -> bool:
+    return any(fnmatch.fnmatch(name, pat) for pat in excludes)
+
+
+def find_candidates(roots: list, excludes: list, max_depth) -> list:
+    """Directories that look like a git worktree (contain .git, dir or file)."""
+    candidates = []
+    for root in roots:
+        root = os.path.abspath(root)
+        root_depth = root.rstrip(os.sep).count(os.sep)
+        for dirpath, dirnames, filenames in os.walk(root):
+            depth = dirpath.rstrip(os.sep).count(os.sep) - root_depth
+            has_git = ".git" in dirnames or ".git" in filenames
+            if max_depth is not None and depth >= max_depth:
+                dirnames[:] = []
+            # prune AFTER the has_git check: ".git" itself is in PRUNE_DIRS
+            # (so we don't descend into it), but pruning first would make the
+            # membership check always false and hide every plain repo root.
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in PRUNE_DIRS and not _is_excluded(d, excludes)
+            ]
+            if has_git:
+                candidates.append(dirpath)
+    return candidates
+
+
+def _common_dir(path: str):
+    r = _git(path, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    if r.returncode != 0:
+        return None
+    return r.stdout.strip()
+
+
+def group_by_repo(candidates: list, jobs: int, include_submodules: bool) -> dict:
+    """Map common-dir -> a representative candidate path, deduped, submodules dropped."""
+    with ThreadPoolExecutor(max_workers=jobs) as ex:
+        common_dirs = list(ex.map(_common_dir, candidates))
+
+    repos = {}
+    for path, common in zip(candidates, common_dirs):
+        if not common:
+            continue
+        if not include_submodules and "/.git/modules/" in common:
+            continue
+        repos.setdefault(common, path)
+    return repos
+
+
+# --- Field parsing ---
+
+SEP = "\x01"
+
+
+def _parse_track(upstream: str, track: str) -> dict:
+    if not upstream:
+        return {"ahead": 0, "behind": 0, "gone": False, "no_upstream": True}
+    if track == "[gone]":
+        return {"ahead": 0, "behind": 0, "gone": True, "no_upstream": False}
+    ahead = behind = 0
+    m = re.search(r"ahead (\d+)", track)
+    if m:
+        ahead = int(m.group(1))
+    m = re.search(r"behind (\d+)", track)
+    if m:
+        behind = int(m.group(1))
+    return {"ahead": ahead, "behind": behind, "gone": False, "no_upstream": False}
+
+
+def _parse_worktree_list(porcelain: str) -> list:
+    entries = []
+    cur = {}
+    for line in porcelain.splitlines():
+        if line == "":
+            if cur:
+                entries.append(cur)
+                cur = {}
+            continue
+        if line.startswith("worktree "):
+            cur["path"] = line[len("worktree "):]
+        elif line.startswith("HEAD "):
+            cur["head"] = line[len("HEAD "):]
+        elif line.startswith("branch "):
+            ref = line[len("branch "):]
+            cur["branch"] = ref[len("refs/heads/"):] if ref.startswith("refs/heads/") else ref
+        elif line == "detached":
+            cur["detached"] = True
+        elif line.startswith("locked"):
+            cur["locked"] = True
+        elif line.startswith("prunable"):
+            cur["prunable"] = True
+        elif line == "bare":
+            cur["bare"] = True
+    if cur:
+        entries.append(cur)
+    return entries
+
+
+def _parse_dirty(porcelain: str) -> dict:
+    staged = unstaged = untracked = 0
+    for line in porcelain.splitlines():
+        if len(line) < 2:
+            continue
+        x, y = line[0], line[1]
+        if x == "?" and y == "?":
+            untracked += 1
+        else:
+            if x not in " ?":
+                staged += 1
+            if y not in " ?":
+                unstaged += 1
+    return {"staged": staged, "unstaged": unstaged, "untracked": untracked}
+
+
+def _dirty_paths(porcelain: str) -> list:
+    """Changed file paths from `status --porcelain` output, repo-root-relative."""
+    paths = []
+    for line in porcelain.splitlines():
+        if len(line) < 4:
+            continue
+        rest = line[3:]
+        if " -> " in rest:  # rename/copy: "old -> new"
+            rest = rest.split(" -> ", 1)[1]
+        paths.append(rest.strip('"'))
+    return paths
+
+
+def _max_mtime(base: str, rel_paths: list):
+    best = None
+    for rel in rel_paths:
+        try:
+            ts = os.path.getmtime(os.path.join(base, rel))
+        except OSError:
+            continue
+        if best is None or ts > best:
+            best = ts
+    return best
+
+
+# --- Stashes (unchanged logic from git-repos) ---
+
+def _stash_already_applied(repo: str, ref: str) -> bool:
+    """Heuristic: true if the stash's changes are already present in HEAD."""
+    r = _git(repo, "stash", "show", "-p", ref)
+    if r.returncode != 0 or not r.stdout.strip():
+        return False
+    return subprocess.run(
+        ["git", "-C", repo, "apply", "--check", "--reverse"],
+        input=r.stdout, capture_output=True, text=True
+    ).returncode == 0
+
+
+def _collect_stashes(repo: str) -> list:
+    raw = _git_out(repo, "stash", "list", "--format=%gd|%aI|%gs")
+    if not raw:
+        return []
+    now = datetime.now(timezone.utc)
+    result = []
+    for line in raw.splitlines():
+        parts = line.split("|", 2)
+        if len(parts) != 3:
+            continue
+        ref, date_str, msg = parts
+        try:
+            dt = datetime.fromisoformat(date_str)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            age = (now - dt).days
+        except (ValueError, OverflowError):
+            age = -1
+
+        stat = _git_out(repo, "stash", "show", "--stat", ref)
+        files = ins = dels = 0
+        for sl in stat.splitlines():
+            m = re.search(r"(\d+) file", sl)
+            if m:
+                files = int(m.group(1))
+            m = re.search(r"(\d+) insertion", sl)
+            if m:
+                ins = int(m.group(1))
+            m = re.search(r"(\d+) deletion", sl)
+            if m:
+                dels = int(m.group(1))
+
+        auto_fmt = bool(re.match(r"^(WIP on|index on) ", msg))
+        named = bool(re.match(r"^On [^:]+: ", msg))
+        probably_safe = _stash_already_applied(repo, ref) or (auto_fmt and age > 14)
+
+        result.append({
+            "ref": ref, "message": msg, "age": age,
+            "files": files, "ins": ins, "dels": dels,
+            "probably_safe": probably_safe, "named": named,
+        })
+    return result
+
+
+# --- Stale branches (unchanged logic from git-repos, minus the "current branch" skip
+#     which is now handled by the caller passing the full checked-out set) ---
+
+def _primary_remote(repo: str, branch: str, remotes: list) -> str:
+    if not remotes:
+        return ""
+    tracking = _git_out(repo, "config", f"branch.{branch}.remote")
+    if tracking in remotes:
+        return tracking
+    for pref in ("upstream", "origin"):
+        if pref in remotes:
+            return pref
+    return remotes[0]
+
+
+def _head_branch(repo: str, remote: str) -> str:
+    """Detect HEAD branch: local symbolic-ref first, ls-remote fallback (caches result)."""
+    ref = _git_out(repo, "symbolic-ref", f"refs/remotes/{remote}/HEAD")
+    prefix = f"refs/remotes/{remote}/"
+    if ref.startswith(prefix):
+        return ref[len(prefix):]
+    r = _git(repo, "ls-remote", "--symref", remote, "HEAD")
+    if r.returncode == 0:
+        for line in r.stdout.splitlines():
+            m = re.match(r"^ref: refs/heads/(\S+)\s+HEAD$", line)
+            if m:
+                branch = m.group(1)
+                _git(repo, "remote", "set-head", remote, branch)
+                return branch
+    return ""
+
+
+def _collect_stale_branches(repo_path: str, base_ref: str, checked_out: set) -> list:
+    """Find local branches fully merged or rebased into base_ref, not checked out anywhere."""
+    raw = _git_out(repo_path, "branch", "--format=%(refname:short)")
+    result = []
+    for name in raw.splitlines():
+        name = name.strip()
+        if not name or name in checked_out:
+            continue
+        if _git(repo_path, "merge-base", "--is-ancestor", name, base_ref).returncode == 0:
+            kind = "merged"
+        else:
+            cherry = _git(repo_path, "cherry", base_ref, name)
+            if cherry.returncode != 0 or any(
+                l.startswith("+") for l in cherry.stdout.splitlines()
+            ):
+                continue
+            kind = "rebased"
+        info = _git_out(repo_path, "log", "-1", "--format=%h|%s|%cr", name)
+        parts = info.split("|", 2)
+        commit = parts[0] if len(parts) > 0 else "?"
+        subject = parts[1] if len(parts) > 1 else ""
+        age = parts[2] if len(parts) > 2 else ""
+        result.append({"name": name, "kind": kind, "commit": commit,
+                        "subject": subject, "age": age})
+    return result
+
+
+# --- Per-repo collection ---
+
+def collect_repo(common_dir: str, main_hint: str):
+    repo = main_hint  # any path in the group works for repo-scoped git calls
+
+    wt_raw = _git_out(repo, "worktree", "list", "--porcelain")
+    worktrees = _parse_worktree_list(wt_raw)
+    if not worktrees:
+        return None  # bare repo with nothing checked out; skip
+
+    main_path = worktrees[0]["path"]
+    name = os.path.basename(main_path.rstrip("/"))
+
+    fmt = SEP.join([
+        "%(refname:short)", "%(objectname:short)", "%(upstream:short)",
+        "%(upstream:track)", "%(worktreepath)", "%(committerdate:relative)",
+        "%(committerdate:unix)",
+    ])
+    raw_branches = _git_out(repo, "for-each-ref", f"--format={fmt}", "refs/heads")
+    branches = {}
+    branch_order = []
+    for line in raw_branches.splitlines():
+        parts = line.split(SEP)
+        if len(parts) != 7:
+            continue
+        bname, sha, upstream, track, wtpath, age, commit_ts = parts
+        branches[bname] = {
+            "name": bname, "sha": sha, "upstream": upstream,
+            "track": _parse_track(upstream, track),
+            "worktreepath": wtpath or None, "age": age,
+            "commit_ts": int(commit_ts) if commit_ts.isdigit() else None,
+        }
+        branch_order.append(bname)
+
+    remotes_raw = _git_out(repo, "remote")
+    all_remotes = remotes_raw.splitlines() if remotes_raw else []
+    remote_ref_count = len(_git_out(repo, "for-each-ref", "refs/remotes").splitlines())
+
+    stashes = _collect_stashes(repo)
+
+    fetch_head = os.path.join(common_dir, "FETCH_HEAD")
+    fetch_age = None
+    if os.path.isfile(fetch_head):
+        fetch_age = _relative_age(os.path.getmtime(fetch_head))
+
+    return {
+        "name": name,
+        "common_dir": common_dir,
+        "main_path": main_path,
+        "remotes": all_remotes,
+        "remote_ref_count": remote_ref_count,
+        "worktrees_raw": worktrees,
+        "branches": branches,
+        "branch_order": branch_order,
+        "stashes": stashes,
+        "fetch_age": fetch_age,
+    }
+
+
+def _relative_age(ts: float, long: bool = False) -> str:
+    """Short form ("4h ago") for the compact NOTES column; long form
+    ("4 hours ago") to match git's own committerdate:relative phrasing
+    where a dirty-file mtime overrides a branch's commit age in AGE."""
+    secs = datetime.now().timestamp() - ts
+    if secs < 90:
+        return "just now"
+    mins = secs / 60
+    if mins < 90:
+        return f"{int(mins)} minute{'s' if int(mins) != 1 else ''} ago" if long else f"{int(mins)}m ago"
+    hours = mins / 60
+    if hours < 36:
+        return f"{int(hours)} hour{'s' if int(hours) != 1 else ''} ago" if long else f"{int(hours)}h ago"
+    days = hours / 24
+    if days < 14:
+        return f"{int(days)} day{'s' if int(days) != 1 else ''} ago" if long else f"{int(days)}d ago"
+    weeks = days / 7
+    return f"{int(weeks)} week{'s' if int(weeks) != 1 else ''} ago" if long else f"{int(weeks)}w ago"
+
+
+def _parse_age_arg(s: str) -> int:
+    """Parse '30m' / '2h' / '3d' into seconds, for --age."""
+    m = re.match(r"^(\d+)(m|h|d)$", s.strip())
+    if not m:
+        raise argparse.ArgumentTypeError(f"invalid age {s!r}; use e.g. 30m, 2h, 3d")
+    n, unit = int(m.group(1)), m.group(2)
+    return n * {"m": 60, "h": 3600, "d": 86400}[unit]
+
+
+def _display_path(path: str, main_path: str) -> str:
+    if path == main_path:
+        return "."
+    if path.startswith(main_path + os.sep):
+        return os.path.relpath(path, main_path)
+    home = os.path.expanduser("~")
+    if path.startswith(home + os.sep):
+        return "~/" + os.path.relpath(path, home)
+    return path
+
+
+def build_checkouts(rd: dict) -> None:
+    """Attach 'checkouts', 'checked_out_branches' and 'loose_branches' to rd."""
+    main_path = rd["main_path"]
+    main_wt_dir = os.path.join(main_path, ".claude", "worktrees") + os.sep
+    checkouts = []
+    for w in rd["worktrees_raw"]:
+        path = w["path"]
+        is_main = path == main_path
+        branch = w.get("branch")
+        detached = w.get("detached", False)
+        legacy = (not is_main) and (not path.startswith(main_wt_dir))
+        co = {
+            "path": path,
+            "display": _display_path(path, main_path),
+            "branch": branch,
+            "detached": detached,
+            "head": w.get("head", ""),
+            "is_main": is_main,
+            "legacy": legacy,
+            "locked": w.get("locked", False),
+            "missing": not os.path.isdir(path),
+            "dirty": None,
+            "age": None,
+            "commit_ts": None,
+            "activity_ts": None,
+        }
+        if branch and branch in rd["branches"]:
+            co["track"] = rd["branches"][branch]["track"]
+            co["age"] = rd["branches"][branch]["age"]
+            co["upstream"] = rd["branches"][branch]["upstream"]
+            co["commit_ts"] = rd["branches"][branch]["commit_ts"]
+        else:
+            co["track"] = None
+            co["upstream"] = None
+        checkouts.append(co)
+    rd["checkouts"] = checkouts
+    checked_out_branches = {c["branch"] for c in checkouts if c["branch"]}
+    rd["checked_out_branches"] = checked_out_branches
+    rd["loose_branches"] = [
+        rd["branches"][b] for b in rd["branch_order"]
+        if b not in checked_out_branches
+    ]
+
+
+def fill_checkout_details(all_checkouts: list, jobs: int) -> None:
+    """Parallel: dirty status + file mtimes, detached-HEAD commit info, activity_ts.
+
+    activity_ts is the newer of (last commit time, newest dirty-file mtime) —
+    "being worked on" covers both a fresh commit and uncommitted edits. When the
+    dirty mtime wins, the displayed AGE is switched to reflect it too, so the
+    column never shows a stale commit date for a checkout with fresher edits.
+    """
+    def work(co):
+        if co["missing"]:
+            return
+        r = _git(co["path"], "status", "--porcelain")
+        dirty_mtime = None
+        if r.returncode == 0:
+            co["dirty"] = _parse_dirty(r.stdout)
+            dirty_mtime = _max_mtime(co["path"], _dirty_paths(r.stdout))
+        if co["detached"] and co["commit_ts"] is None:
+            fmt = SEP.join(["%cr", "%ct"])
+            out = _git_out(co["path"], "log", "-1", f"--format={fmt}")
+            parts = out.split(SEP)
+            if len(parts) == 2:
+                co["age"] = parts[0]
+                co["commit_ts"] = int(parts[1]) if parts[1].isdigit() else None
+
+        candidates = [t for t in (co["commit_ts"], dirty_mtime) if t is not None]
+        co["activity_ts"] = max(candidates) if candidates else None
+        if dirty_mtime is not None and (co["commit_ts"] is None or dirty_mtime > co["commit_ts"]):
+            co["age"] = _relative_age(dirty_mtime, long=True)
+
+    with ThreadPoolExecutor(max_workers=jobs) as ex:
+        list(ex.map(work, all_checkouts))
+
+
+# --- Formatting helpers ---
+
+def _fmt_sync(track) -> str:
+    if track is None:
+        return "—"
+    if track["no_upstream"]:
+        return "no upstream"
+    if track["gone"]:
+        return "[gone]"
+    a, b = track["ahead"], track["behind"]
+    if a == 0 and b == 0:
+        return "ok"
+    s = ""
+    if a:
+        s += f"↑{a}"
+    if b:
+        s += f"↓{b}"
+    return s
+
+
+def _fmt_dirty_co(d) -> str:
+    if d is None:
+        return "—"
+    total = d["staged"] + d["unstaged"] + d["untracked"]
+    if total == 0:
+        return "clean"
+    parts = []
+    if d["unstaged"]:
+        parts.append(f"{d['unstaged']}M")
+    if d["staged"]:
+        parts.append(f"{d['staged']}S")
+    if d["untracked"]:
+        parts.append(f"{d['untracked']}?")
+    return " ".join(parts)
+
+
+def _co_notes(co) -> str:
+    notes = []
+    if co["missing"]:
+        notes.append("missing")
+    if co["detached"]:
+        notes.append("detached")
+    if co["locked"]:
+        notes.append("locked")
+    if co["legacy"]:
+        notes.append("legacy")
+    return " ".join(notes)
+
+
+def _co_needs_attention(co) -> bool:
+    if co["missing"] or co["detached"]:
+        return True
+    d = co["dirty"]
+    if d and (d["staged"] + d["unstaged"] + d["untracked"]) > 0:
+        return True
+    t = co["track"]
+    if t and (t["gone"] or t["ahead"] or t["behind"]):
+        return True
+    return False
+
+
+def _branch_needs_attention(b) -> bool:
+    t = b["track"]
+    return bool(t and (t["gone"] or t["ahead"] or t["behind"]))
+
+
+def _age_ok(ts, cutoff) -> bool:
+    """True when no cutoff is set, or ts is known and newer than cutoff."""
+    return cutoff is None or (ts is not None and ts >= cutoff)
+
+
+# --- Rendering: one table ---
+
+def _repo_matches_filter(rd, args, age_cutoff) -> bool:
+    """True if rd passes the -A/--attention and -a/--age filters (both are
+    AND'd together when both given; a repo with no rows/branches age-tagged
+    never matches an age filter, so it is dropped along with everything else)."""
+    checkouts = rd["checkouts"]
+    loose = rd["loose_branches"]
+    dirty_total = sum(
+        (c["dirty"]["staged"] + c["dirty"]["unstaged"] + c["dirty"]["untracked"])
+        for c in checkouts if c["dirty"]
+    )
+    repo_attention = (
+        dirty_total > 0
+        or any(_co_needs_attention(c) for c in checkouts)
+        or any(_branch_needs_attention(b) for b in loose)
+    )
+    repo_age_match = any(_age_ok(c["activity_ts"], age_cutoff) for c in checkouts) or any(
+        _age_ok(b["commit_ts"], age_cutoff) for b in loose
+    )
+    if args.attention and not repo_attention:
+        return False
+    if age_cutoff is not None and not repo_age_match:
+        return False
+    return True
+
+
+def build_rows(all_rd: list, args, age_cutoff=None) -> tuple:
+    """Returns (rows, totals); rows are (color, [c0..c5], kind) tuples."""
+    rows = []
+    n_worktrees = n_dirty_repos = n_gone_total = 0
+
+    for rd in sorted(all_rd, key=lambda r: r["name"]):
+        checkouts = rd["checkouts"]
+        loose = rd["loose_branches"]
+        n_worktrees += len(checkouts) - 1  # exclude main
+        gone_count = sum(1 for b in rd["branches"].values() if b["track"]["gone"])
+        n_gone_total += gone_count
+        dirty_total = sum(
+            (c["dirty"]["staged"] + c["dirty"]["unstaged"] + c["dirty"]["untracked"])
+            for c in checkouts if c["dirty"]
+        )
+        if dirty_total:
+            n_dirty_repos += 1
+
+        if not _repo_matches_filter(rd, args, age_cutoff):
+            continue
+        repo_attention = (
+            dirty_total > 0
+            or any(_co_needs_attention(c) for c in checkouts)
+            or any(_branch_needs_attention(b) for b in loose)
+        )
+
+        notes = [f"{len(rd['branch_order'])}L/{rd['remote_ref_count']}R"]
+        if gone_count:
+            notes.append(f"{gone_count} gone")
+        if rd["stashes"]:
+            notes.append(f"{len(rd['stashes'])} stash" + ("es" if len(rd["stashes"]) != 1 else ""))
+        if rd["fetch_age"]:
+            notes.append(f"fetched {rd['fetch_age']}")
+
+        header_color = RED if any(c["missing"] for c in checkouts) else (
+            YELLOW if repo_attention else GREEN
+        )
+        rows.append((header_color, [rd["name"], "—",
+                                     str(dirty_total) if dirty_total else "0",
+                                     "—", "—", " ".join(notes)], "repo"))
+
+        show_checkouts = args.worktrees or args.attention or age_cutoff is not None
+        if show_checkouts:
+            for co in sorted(checkouts, key=lambda c: (not c["is_main"], c["display"])):
+                if args.attention and not _co_needs_attention(co):
+                    continue
+                if age_cutoff is not None and not _age_ok(co["activity_ts"], age_cutoff):
+                    continue
+                marker = "⌂" if co["is_main"] else "⊞"
+                branch_disp = co["branch"] or f"(detached {co['head'][:7]})"
+                color = RED if (co["missing"] or (co["track"] and co["track"]["behind"])) else (
+                    YELLOW if _co_needs_attention(co) else GREEN
+                )
+                rows.append((color, [
+                    f"  {marker} {co['display']}", branch_disp,
+                    _fmt_dirty_co(co["dirty"]), _fmt_sync(co["track"]),
+                    co["age"] or "—", _co_notes(co),
+                ], "checkout"))
+
+        show_branches = args.branches or args.attention or age_cutoff is not None
+        if show_branches:
+            for b in sorted(loose, key=lambda x: x["name"]):
+                if args.attention and not _branch_needs_attention(b):
+                    continue
+                if age_cutoff is not None and not _age_ok(b["commit_ts"], age_cutoff):
+                    continue
+                color = RED if b["track"]["behind"] else (
+                    YELLOW if _branch_needs_attention(b) else DIM
+                )
+                rows.append((color, [
+                    "  ·", b["name"], "—",
+                    _fmt_sync(b["track"]), b["age"], "",
+                ], "branch"))
+
+    totals = {
+        "n_repos": len(all_rd),
+        "n_worktrees": n_worktrees,
+        "n_dirty_repos": n_dirty_repos,
+        "n_gone": n_gone_total,
+        "n_stashes": sum(len(rd["stashes"]) for rd in all_rd),
+    }
+    return rows, totals
+
+
+def print_table(workspace: str, rows: list, totals: dict) -> None:
+    header = (f"{BOLD}{workspace}{RESET} — {totals['n_repos']} repos · "
+              f"{totals['n_worktrees']} worktrees · {totals['n_dirty_repos']} dirty")
+    print(header)
+    print()
+
+    if not rows:
+        print("(nothing to show)")
+        return
+
+    headers = ["REPO/CHECKOUT", "BRANCH", "DIRTY", "SYNC", "AGE", "NOTES"]
+    cols = [headers] + [r[1] for r in rows]
+    ws = [max(len(str(row[i])) for row in cols) + 2 for i in range(6)]
+    head_line = "".join(f"{h:<{ws[i]}}" for i, h in enumerate(headers[:-1])) + headers[-1]
+    print(f"{BOLD}{head_line}{RESET}")
+    for i, (color, cells, kind) in enumerate(rows):
+        if kind == "repo" and i > 0:
+            print()
+        # last column (NOTES) is not padded, to avoid trailing whitespace on
+        # rows where it's empty.
+        line = "".join(f"{c:<{ws[i]}}" for i, c in enumerate(cells[:-1])) + cells[-1]
+        if not cells[-1]:
+            line = line.rstrip()
+        print(f"{color}{line}{RESET}")
+
+    print()
+    tail = (f"{totals['n_dirty_repos']} repo(s) with local changes, "
+            f"{totals['n_gone']} gone-upstream branch(es)")
+    if totals["n_stashes"]:
+        tail += f". Run with -i to review {totals['n_stashes']} stash(es)"
+    print(tail + ".")
+
+
+# --- Interactive prompt ---
+
+def ask_ynq(msg: str) -> str:
+    """Read a single keypress y/n/q. Returns 'n' for any other key."""
+    sys.stdout.write(f"{msg} [y/N/q] ")
+    sys.stdout.flush()
+    try:
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        print(ch)
+        return ch.lower() if ch.lower() in "ynq" else "n"
+    except (termios.error, AttributeError, OSError):
+        try:
+            line = input().strip().lower()
+            return line[0] if line and line[0] in "ynq" else "n"
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return "q"
+
+
+# --- Mutating actions (opt-in only: --fetch / --pull / -i) ---
+
+def do_fetch(repo_path: str) -> tuple:
+    r = _git(repo_path, "fetch", "--all", "--prune")
+    if r.returncode == 0:
+        return True, "fetched"
+    err = (r.stderr.strip() or r.stdout.strip()).splitlines()
+    return False, f"error: {err[0] if err else '?'}"
+
+
+def do_pull(co: dict) -> tuple:
+    """Fast-forward a single checkout if clean, tracked, and behind."""
+    path = co["path"]
+    if co["missing"] or co["detached"]:
+        return False, "skipped (detached/missing)"
+    d = co["dirty"]
+    if d and (d["staged"] + d["unstaged"] + d["untracked"]) > 0:
+        return False, "skipped (dirty)"
+    t = co["track"]
+    if not t or t["no_upstream"]:
+        return False, "skipped (no upstream)"
+    if t["gone"]:
+        return False, "skipped (upstream gone)"
+    if t["behind"] == 0:
+        return True, "already up to date"
+    r = _git(path, "pull", "--ff-only")
+    if r.returncode == 0:
+        lines = [l for l in r.stdout.splitlines() if l and not l.startswith("From ")]
+        return True, lines[0] if lines else "pulled"
+    err = r.stderr.strip()
+    if "Not possible to fast-forward" in err or "diverged" in err:
+        return False, "needs manual merge (diverged)"
+    first = err.splitlines()[0] if err else "?"
+    return False, f"failed: {first}"
+
+
+def do_checkout(rd: dict) -> tuple:
+    """Interactive: offer to switch the MAIN checkout to the repo's HEAD branch."""
+    main = next(c for c in rd["checkouts"] if c["is_main"])
+    repo, branch = main["path"], main["branch"]
+    primary = _primary_remote(repo, branch or "", rd["remotes"])
+    head = _head_branch(repo, primary) if primary else ""
+    if not head or branch == head:
+        return False, "up to date", False
+    d = main["dirty"]
+    if d and (d["staged"] + d["unstaged"] + d["untracked"]) > 0:
+        return False, f"skipped (dirty; wanted: {head})", False
+
+    remote_ref = f"{primary}/{head}" if primary else head
+    local_exists = _git(repo, "rev-parse", "--verify", head).returncode == 0
+    cmd = f"git checkout {head}" if local_exists else f"git checkout --track {remote_ref}"
+
+    print(f"\n  {BOLD}{rd['name']}{RESET}: on {YELLOW}{branch}{RESET}, "
+          f"HEAD branch is {GREEN}{head}{RESET}")
+    print(f"  Would run: {cmd}")
+    ans = ask_ynq("  Checkout HEAD branch?")
+    if ans == "q":
+        return False, "quit", True
+    if ans != "y":
+        return False, "skipped by user", False
+
+    r = _git(repo, "checkout", head) if local_exists else \
+        _git(repo, "checkout", "--track", remote_ref)
+    if r.returncode == 0:
+        return True, f"checked out {head}", False
+    err = r.stderr.strip().splitlines()
+    return False, f"failed: {err[0] if err else '?'}", False
+
+
+def do_stash_review(rd: dict) -> tuple:
+    stashes, repo, name = rd["stashes"], rd["main_path"], rd["name"]
+    if not stashes:
+        return 0, False
+
+    dropped = 0
+    quit_flag = False
+
+    for stash in stashes:
+        orig_idx = int(re.search(r"\{(\d+)\}", stash["ref"]).group(1))
+        cur_ref = f"stash@{{{orig_idx - dropped}}}"
+
+        if stash["probably_safe"]:
+            hint = f"  {YELLOW}[probably safe to drop]{RESET}"
+        elif (stash["age"] >= 0 and stash["age"] < 7) or stash["named"]:
+            hint = f"  {GREEN}[possibly important]{RESET}"
+        else:
+            hint = ""
+
+        age_s = f"{stash['age']}d" if stash["age"] >= 0 else "?"
+        print(f"\n  {BOLD}{name}{RESET}  {cur_ref}: {stash['message']}")
+        print(f"    age={age_s}  {stash['files']} file(s)  "
+              f"+{stash['ins']}/-{stash['dels']}{hint}")
+
+        ans = ask_ynq("  Drop this stash?")
+        if ans == "q":
+            quit_flag = True
+            break
+        if ans == "y":
+            r = _git(repo, "stash", "drop", cur_ref)
+            if r.returncode == 0:
+                dropped += 1
+                print(f"  {GREEN}Dropped.{RESET}")
+            else:
+                err = r.stderr.strip().splitlines()
+                print(f"  {RED}Failed: {err[0] if err else '?'}{RESET}")
+
+    return dropped, quit_flag
+
+
+def do_stale_branch_review(rd: dict, stale: list) -> tuple:
+    if not stale:
+        return 0, False
+
+    repo, name = rd["main_path"], rd["name"]
+    w = max(len(b["name"]) for b in stale)
+
+    print(f"\n  {BOLD}{name}{RESET}  {len(stale)} stale branch(es):")
+    for b in stale:
+        color = GREEN if b["kind"] == "merged" else YELLOW
+        info = f'{b["commit"]} "{b["subject"]}" ({b["age"]})'
+        print(f"    {color}{b['name']:<{w}}  {b['kind']}{RESET}  {DIM}{info}{RESET}")
+
+    ans = ask_ynq(f"  Delete all {len(stale)} stale branch(es)?")
+    if ans == "q":
+        return 0, True
+    if ans != "y":
+        return 0, False
+
+    deleted = 0
+    for b in stale:
+        flag = "-d" if b["kind"] == "merged" else "-D"
+        r = _git(repo, "branch", flag, b["name"])
+        if r.returncode == 0:
+            deleted += 1
+            print(f"    {GREEN}deleted {b['name']}{RESET}")
+        else:
+            err = r.stderr.strip().splitlines()
+            print(f"    {RED}failed {b['name']}: {err[0] if err else '?'}{RESET}")
+    return deleted, False
+
+
+# --- JSON output ---
+
+def to_json(all_rd: list) -> dict:
+    out = []
+    for rd in all_rd:
+        out.append({
+            "name": rd["name"],
+            "path": rd["main_path"],
+            "common_dir": rd["common_dir"],
+            "remotes": rd["remotes"],
+            "remote_ref_count": rd["remote_ref_count"],
+            "fetch_age": rd["fetch_age"],
+            "stashes": rd["stashes"],
+            "checkouts": rd["checkouts"],
+            "branches": list(rd["branches"].values()),
+        })
+    return {"repos": out}
+
+
+# --- Main ---
+
+HELP_EPILOG = """
+row markers:
+  (repo header)   always shown: repo name, dirty total, branch/remote-ref
+                  counts, gone tally, stashes
+  ⌂               the main checkout — shown only with -w/--worktrees
+  ⊞               a linked worktree — shown only with -w/--worktrees
+  ·               a local branch with no checkout — shown only with
+                  -b/--branches
+  -A/--attention  overrides -w/-b: shows exactly the checkout/branch rows
+                  that need action (dirty, detached, ahead/behind, missing,
+                  gone), regardless of whether -w/-b were passed
+  -a/--age AGE    overrides -w/-b: shows exactly the checkout/branch rows
+                  active within AGE (e.g. 30m, 2h, 3d) — "active" is the
+                  newer of last commit time and newest uncommitted-file
+                  mtime. Combine with -A to mean "recent AND needs action".
+
+columns:
+  SYNC            ok / ↑<ahead> / ↓<behind> / [gone] (upstream deleted) /
+                  no upstream
+  NOTES           checkout: detached, locked, missing, legacy (worktree
+                  outside <repo>/.claude/worktrees/, kept deliberately)
+                  repo: <n>L/<n>R local/remote-ref counts, gone count, stashes
+
+examples:
+  git rstatus                       repo lines only, no network
+  git rstatus -w                    + every checkout (main + worktrees)
+  git rstatus -w -b                 + every local branch, checked out or not
+  git rstatus -A ~/src              only rows needing attention, workspace-wide
+  git rstatus -a 2h                 what's been actively worked on in the last 2 hours
+  git rstatus --pull -i             fast-forward clean+behind, then review
+  git rstatus --json | jq '.repos[] | select(.stashes != [])'
+"""
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        prog="git-rstatus",
+        description="Recursive, worktree-aware multi-repo git status. Read-only by default.",
+        epilog=HELP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    ap.add_argument("paths", nargs="*", default=["."], metavar="PATH",
+                     help="root(s) to scan recursively (default: cwd)")
+    ap.add_argument("-w", "--worktrees", action="store_true",
+                     help="show checkout rows (main + linked worktrees); default: repo lines only")
+    ap.add_argument("-b", "--branches", action="store_true",
+                     help="show local branches with no checkout; default: hidden")
+    ap.add_argument("-r", "--remote-branches", action="store_true",
+                     help="also list remote-only branches (reserved, not yet implemented)")
+    ap.add_argument("-A", "--attention", action="store_true",
+                     help="only show repos/rows needing action (implies -w -b for those rows)")
+    ap.add_argument("-a", "--age", type=_parse_age_arg, default=None, metavar="AGE",
+                     help="only show repos/rows active within AGE, e.g. 30m, 2h, 3d "
+                          "(implies -w -b for those rows); default: no filter")
+    ap.add_argument("--fetch", action="store_true", help="git fetch --all --prune first")
+    ap.add_argument("--pull", action="store_true",
+                     help="fast-forward clean, behind checkouts (implies --fetch)")
+    ap.add_argument("-i", "--interactive", action="store_true",
+                     help="checkout / stash / stale-branch review (implies --fetch)")
+    ap.add_argument("--submodules", action="store_true", help="include submodules")
+    ap.add_argument("--exclude", action="append", default=[], metavar="GLOB",
+                     help="prune matching directory names (repeatable)")
+    ap.add_argument("--depth", type=int, default=None, metavar="N",
+                     help="max walk depth below each PATH (default: unlimited)")
+    ap.add_argument("-j", type=int, default=None, dest="jobs", metavar="N",
+                     help="parallel jobs (default: min(16, cpu*4))")
+    ap.add_argument("--json", action="store_true", help="machine-readable dump, no table")
+    ap.add_argument("--color", choices=["auto", "always", "never"], default="auto")
+    ap.add_argument("--ci", action="store_true", help="alias for --color=never (no interaction)")
+    ap.add_argument("--exit-code", action="store_true",
+                     help="exit 1 if anything needs attention")
+    args = ap.parse_args()
+
+    if args.ci:
+        args.color = "never"
+    color_on = (args.color == "always") or (
+        args.color == "auto" and sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+    )
+    init_colors(color_on)
+    interactive = args.interactive and not args.ci and sys.stdin.isatty()
+    do_fetch_phase = args.fetch or args.pull or interactive
+
+    jobs = args.jobs or min(16, (os.cpu_count() or 4) * 4)
+
+    candidates = find_candidates(args.paths, args.exclude, args.depth)
+    repo_map = group_by_repo(candidates, jobs, args.submodules)
+    if not repo_map:
+        print(f"No git repos found below: {', '.join(args.paths)}")
+        sys.exit(0)
+
+    def _collect_all():
+        with ThreadPoolExecutor(max_workers=jobs) as ex:
+            collected = list(ex.map(
+                lambda kv: collect_repo(kv[0], kv[1]), repo_map.items()
+            ))
+        rd_list = [rd for rd in collected if rd]
+        for rd in rd_list:
+            build_checkouts(rd)
+        checkouts = [c for rd in rd_list for c in rd["checkouts"]]
+        fill_checkout_details(checkouts, jobs)
+        return rd_list, checkouts
+
+    all_rd, all_checkouts = _collect_all()
+
+    age_cutoff = datetime.now().timestamp() - args.age if args.age is not None else None
+    filter_active = args.attention or age_cutoff is not None
+
+    if do_fetch_phase:
+        # age/attention are purely local (commit times, dirty mtimes) — no
+        # fetch needed to evaluate them, so scope the network calls to the
+        # same repos the filter would keep, instead of hitting every remote
+        # under the scan root (including dead/SSO-gated/unrelated ones).
+        fetch_rd = [rd for rd in all_rd if not filter_active or _repo_matches_filter(rd, args, age_cutoff)]
+        if filter_active and len(fetch_rd) < len(all_rd):
+            print(f"Fetching {len(fetch_rd)} of {len(all_rd)} repos (-A/-a filter skipped {len(all_rd) - len(fetch_rd)})...")
+        else:
+            print("Fetching...")
+        with ThreadPoolExecutor(max_workers=jobs) as ex:
+            fetch_results = list(ex.map(lambda rd: do_fetch(rd["main_path"]), fetch_rd))
+        for rd, (ok, detail) in zip(fetch_rd, fetch_results):
+            if not ok:
+                print(f"  {RED}{rd['name']}: {detail}{RESET}")
+        print()
+        # re-collect so ahead/behind/gone reflect the fetch
+        all_rd, all_checkouts = _collect_all()
+
+    if args.pull:
+        print(f"{BOLD}Pulling...{RESET}")
+        for co in all_checkouts:
+            ok, detail = do_pull(co)
+            if "already" not in detail and "skipped" not in detail:
+                color = GREEN if ok else YELLOW
+                print(f"  {color}{co['path']}: {detail}{RESET}")
+        print()
+        for co in all_checkouts:
+            if not co["missing"]:
+                r = _git(co["path"], "status", "--porcelain")
+                if r.returncode == 0:
+                    co["dirty"] = _parse_dirty(r.stdout)
+
+    if interactive:
+        if filter_active:
+            review_rd = [rd for rd in all_rd if _repo_matches_filter(rd, args, age_cutoff)]
+            skipped = len(all_rd) - len(review_rd)
+            if skipped:
+                print(f"Reviewing {len(review_rd)} of {len(all_rd)} repos "
+                      f"(-A/-a filter skipped {skipped})")
+        else:
+            review_rd = all_rd
+        quit_it = False
+        for rd in review_rd:
+            if quit_it:
+                break
+            _ok, _detail, qflag = do_checkout(rd)
+            if qflag:
+                quit_it = True
+        if not quit_it:
+            for rd in review_rd:
+                if quit_it:
+                    break
+                _n, qflag = do_stash_review(rd)
+                if qflag:
+                    quit_it = True
+        if not quit_it:
+            for rd in review_rd:
+                if quit_it:
+                    break
+                main = next(c for c in rd["checkouts"] if c["is_main"])
+                primary = _primary_remote(main["path"], main["branch"] or "", rd["remotes"])
+                head = _head_branch(main["path"], primary) if primary else ""
+                base_ref = f"{primary}/{head}" if primary and head else ""
+                if not base_ref:
+                    continue
+                stale = _collect_stale_branches(
+                    main["path"], base_ref, rd["checked_out_branches"]
+                )
+                _n, qflag = do_stale_branch_review(rd, stale)
+                if qflag:
+                    quit_it = True
+        print()
+
+    if args.json:
+        print(json.dumps(to_json(all_rd), indent=2, default=str))
+        return
+
+    workspace = os.path.abspath(args.paths[0]) if len(args.paths) == 1 else ", ".join(args.paths)
+    rows, totals = build_rows(all_rd, args, age_cutoff)
+    print_table(workspace, rows, totals)
+
+    if args.exit_code:
+        needs_attention = any(
+            _co_needs_attention(c) for c in all_checkouts
+        ) or any(
+            _branch_needs_attention(b) for rd in all_rd for b in rd["loose_branches"]
+        )
+        sys.exit(1 if needs_attention else 0)
+
+
+if __name__ == "__main__":
+    main()

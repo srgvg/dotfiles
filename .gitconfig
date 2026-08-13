@@ -99,6 +99,12 @@
 	rm-untracked = ! rm -v $(git ls-files --others)
 	rms = rmstalebr
 
+	# Recursive, worktree-aware status across every repo below cwd (~/bin/git-rstatus).
+	# `git rst --help` shows nothing: git intercepts --help on any subcommand/alias
+	# before dispatch, in both plain and "!"-form aliases. Use `git rst -h` (works),
+	# or `git-rstatus --help` directly.
+	rst = rstatus
+
 	# Print absolute path of repo root directory
 	root = rev-parse --show-toplevel
 
@@ -506,3 +512,5 @@
 
 
 ## END
+[credential]
+	helper = !gh auth git-credential
