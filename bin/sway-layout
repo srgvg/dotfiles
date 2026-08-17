@@ -43,6 +43,16 @@ Failure mode: an apply interrupted mid-build leaves windows sitting on an orphan
 `_stage-<name>-<hex>` workspace — inspect with `swaymsg -t get_workspaces`, nothing is
 hidden or floating. `apply` warns (but does not auto-clean) if it finds one from a
 previous run.
+
+A window present on the target workspace but absent from `matched` — a saved
+identity that no longer matches (app changed its app_id/class), a duplicate
+identity, or a floating window (never described by a saved layout) — used to be
+silently abandoned on the renamed `_vacated-<name>-<hex>` workspace, which then
+never got garbage-collected because it wasn't empty. Fixed: any such leftover is
+now reclaimed onto the target workspace at the end of the run (appended after the
+saved arrangement, not repositioned into it), and a `_vacated-*` workspace found
+stale from an earlier crashed or pre-fix run is self-healed at the start of the
+next `apply` for that workspace.
 """
 
 import argparse
@@ -189,6 +199,21 @@ def walk_tiled(node):
         return
     for child in nodes:
         yield from walk_tiled(child)
+
+
+def walk_all(node):
+    """Every leaf window under a subtree, floating included — unlike walk_tiled,
+    which deliberately ignores floating_nodes because a saved layout only ever
+    describes the tiled tree. Used by reclaim_workspace, which must sweep up
+    ANY window left behind (floating or tiled), not just ones a saved layout
+    would know how to place."""
+    children = node.get("nodes", []) + node.get("floating_nodes", [])
+    if not children:
+        if node.get("pid") is not None:
+            yield node
+        return
+    for child in children:
+        yield from walk_all(child)
 
 
 def get_workspace_windows(ws_name):
@@ -543,12 +568,51 @@ def stage_name_for(ws_name):
     return f"_stage-{ws_name}-{secrets.token_hex(4)}"
 
 
+def reclaim_workspace(src, dest, dry_run):
+    """Move every window still on `src` onto `dest` — tiled or floating, matched
+    identity or not. Used both to sweep leftovers off a just-vacated workspace at
+    the end of an apply (see apply_to_workspace) and to self-heal a `_vacated-*`
+    workspace stranded by an earlier run (see reclaim_stale_vacated_workspaces).
+
+    Uses check=False: a window may close between the get_tree read and the move,
+    and that must not abort an otherwise-successful apply (same rationale as the
+    focus restore in cmd_apply)."""
+    if dry_run:
+        print(f"  (reclaim of any leftover windows on {src!r} depends on live "
+              f"state — skipped in --dry-run)")
+        return
+    tree = get_tree()
+    ws = find_workspace(tree, src)
+    if ws is None:
+        return
+    leftover = list(walk_all(ws))
+    if not leftover:
+        return
+    for node in leftover:
+        label = get_identity(node) or f"pid={node.get('pid')}"
+        print(f"Workspace {dest}: reclaiming leftover window ({label}) found on {src!r}.")
+        run(f"[con_id={node['id']}]", "move", "container", "to", "workspace", dest,
+            dry_run=dry_run, check=False)
+
+
 def warn_stale_stage_workspaces(ws_name):
     prefix = f"_stage-{ws_name}-"
     stale = [w for w in get_workspace_names() if w.startswith(prefix)]
     for w in stale:
         print(f"Workspace {ws_name}: found stale staging workspace {w!r} from a previous "
               f"run (not auto-cleaned) — inspect with `swaymsg -t get_workspaces`.")
+
+
+def reclaim_stale_vacated_workspaces(ws_name, dry_run):
+    """Self-heal: a `_vacated-<ws_name>-*` workspace can only ever contain windows
+    that were on ws_name (see apply_to_workspace's vacate step), so any found here
+    is stale from an earlier crashed or pre-fix run — reclaim it unconditionally,
+    before the current apply's own vacate/match, so the reclaimed windows take
+    part in this run's rebuild instead of needing a second invocation."""
+    prefix = f"_vacated-{ws_name}-"
+    stale = [w for w in get_workspace_names() if w.startswith(prefix)]
+    for w in stale:
+        reclaim_workspace(w, ws_name, dry_run)
 
 
 def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_identity):
@@ -560,6 +624,7 @@ def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_iden
         return
 
     warn_stale_stage_workspaces(ws_name)
+    reclaim_stale_vacated_workspaces(ws_name, dry_run)
 
     if matched is None:
         windows = get_workspace_windows(ws_name)
@@ -581,6 +646,7 @@ def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_iden
     # Fix: explicitly vacate it first, unconditionally — cheap, and correct in both
     # cases (whether or not sway would have GC'd it on its own).
     was_displayed = get_focused_workspace_name() == ws_name
+    vacated = None
     if ws_name in get_workspace_names():
         vacated = f"_vacated-{ws_name}-{secrets.token_hex(4)}"
         run("rename", "workspace", ws_name, "to", vacated, dry_run=dry_run)
@@ -599,6 +665,13 @@ def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_iden
         raise
 
     run("rename", "workspace", stage, "to", ws_name, dry_run=dry_run)
+    if vacated is not None:
+        # Anything on the vacated workspace at this point was NOT in `matched` —
+        # unmatched identity, duplicate identity, or a floating window walk_tiled
+        # never sees (see module docstring). Reclaim it onto the now-rebuilt
+        # ws_name instead of leaving it stranded on a workspace sway can't GC
+        # (only empty workspaces get GC'd, and this one no longer is).
+        reclaim_workspace(vacated, ws_name, dry_run)
     if was_displayed:
         # Renaming doesn't change what's ON SCREEN — the output is still showing the
         # (now empty, vacated-and-renamed) workspace that used to be ws_name. Without
