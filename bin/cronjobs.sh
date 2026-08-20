@@ -123,6 +123,12 @@ function execute() {
             -mtime +7 \
             -delete
 
+        # Retire abandoned g*-loop state files so they stop rendering as live/STALLED in the HUD.
+        # The loops are instructed to write phase=done on exit, but a killed or abandoned session
+        # never runs its exit path -- see the header of the script for the F18 history.
+        logtitle sweep abandoned ~/.claude/reviews loop states
+        $HOME/bin/claude-reviews-state-sweep
+
     ###############################################################################
     elif [ "${command}" = "update-tools" ]; then
 

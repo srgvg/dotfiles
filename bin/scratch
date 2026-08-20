@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# scratch — canonical repo-adjacent scratch directories.
+#
+# Rule: ~/.claude/rules/scratch-dirs.md (doctrine ~/etc/docs/memory-oom.md §7).
+# Bulk data (build caches, tarballs, package caches) never goes on /tmp (tmpfs)
+# — it goes in <parent-of-repo>/_scratch/<repo>/. This tool computes that path
+# so nobody hand-derives it, and lists what exists so cleanup stays visible.
+#
+#   scratch dir [repo-path] [--purpose "text"]   create + print the canonical dir
+#   scratch list [--root DIR]                    audit every _scratch under DIR (default ~/src)
+#
+# `dir` prints the path on STDOUT and nothing else there, so it composes:
+#   S=$(scratch dir); GOCACHE=$S/gocache GOTMPDIR=$S/gotmp TMPDIR=$S go build ./...
+# It drops/refreshes a .scratch-meta file (created/refreshed/session/purpose)
+# so `scratch list` can attribute and age entries.
+#
+# Cleanup is deliberately manual (decision 2026-08-19: no sweep, no cron —
+# _scratch may hold warm build caches age cannot judge). Delete with plain
+# `rm -rf` when the task that needed the data is done.
+#
+# NOTE: ~/scratch (no underscore) is Serge's personal directory. It is
+# unrelated to this rule and this tool never touches or reports it — the walk
+# matches directories literally named `_scratch` only.
+
+set -uo pipefail
+
+usage() {
+	sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+	exit "${1:-64}"
+}
+
+cmd_dir() {
+	local repo_path="" purpose="" root parent name dir meta now
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--purpose)
+			[ $# -ge 2 ] || { echo "scratch dir: --purpose needs a value" >&2; exit 64; }
+			purpose="$2"; shift 2 ;;
+		-*) echo "scratch dir: unknown option $1" >&2; exit 64 ;;
+		*)
+			[ -z "$repo_path" ] || { echo "scratch dir: at most one repo path" >&2; exit 64; }
+			repo_path="$1"; shift ;;
+		esac
+	done
+
+	if ! root=$(git -C "${repo_path:-$PWD}" rev-parse --show-toplevel 2>/dev/null); then
+		{
+			printf 'scratch dir: %s is not inside a git repo.\n' "${repo_path:-$PWD}"
+			printf 'Pass the repo explicitly: scratch dir ~/src/<group>/<repo>\n'
+		} >&2
+		exit 1
+	fi
+	parent=$(dirname "$root")
+	name=$(basename "$root")
+	dir="$parent/_scratch/$name"
+	mkdir -p "$dir" || exit 1
+
+	meta="$dir/.scratch-meta"
+	now=$(date +%s)
+	if [ -f "$meta" ]; then
+		# refresh, preserve created= and any recorded purpose unless a new one given
+		local created old_purpose
+		created=$(sed -n 's/^created=//p' "$meta" | head -n1)
+		old_purpose=$(sed -n 's/^purpose=//p' "$meta" | head -n1)
+		[ -n "$purpose" ] || purpose="$old_purpose"
+		[ -n "$created" ] || created="$now"
+	else
+		local created="$now"
+	fi
+	{
+		printf 'created=%s\n' "$created"
+		printf 'refreshed=%s\n' "$now"
+		printf 'session=%s\n' "${CLAUDE_SESSION_ID:-}"
+		printf 'purpose=%s\n' "$purpose"
+	} >"$meta"
+
+	printf '%s\n' "$dir"
+}
+
+cmd_list() {
+	local root="$HOME/src" d child size age_days newest now purpose found=0
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--root)
+			[ $# -ge 2 ] || { echo "scratch list: --root needs a value" >&2; exit 64; }
+			root="$2"; shift 2 ;;
+		*) echo "scratch list: unknown option $1" >&2; exit 64 ;;
+		esac
+	done
+	now=$(date +%s)
+
+	# Dirs literally named _scratch only; ~/scratch (personal) can never match.
+	while IFS= read -r d; do
+		for child in "$d"/*/; do
+			[ -d "$child" ] || continue
+			found=1
+			child="${child%/}"
+			size=$(du -sh "$child" 2>/dev/null | cut -f1)
+			# Age = newest file mtime inside (last actual use), not dir mtime.
+			newest=$(find "$child" -type f -printf '%T@\n' 2>/dev/null | sort -rn | head -n1 | cut -d. -f1)
+			[ -n "$newest" ] || newest=$(stat -c %Y "$child" 2>/dev/null || echo "$now")
+			age_days=$(((now - newest) / 86400))
+			purpose=$(sed -n 's/^purpose=//p' "$child/.scratch-meta" 2>/dev/null | head -n1)
+			printf '%s\t%s\t%sd idle\t%s\n' "$size" "$child" "$age_days" "${purpose:--}"
+		done
+	done < <(find "$root" \( -name .git -o -name node_modules -o -name '.claude' \) -prune \
+		-o -type d -name '_scratch' -print 2>/dev/null | sort)
+
+	if [ "$found" -eq 0 ]; then
+		printf 'no _scratch entries under %s\n' "$root" >&2
+	fi
+}
+
+case "${1:-}" in
+dir)  shift; cmd_dir "$@" ;;
+list) shift; cmd_list "$@" ;;
+-h | --help | help) usage 0 ;;
+*) usage 64 ;;
+esac

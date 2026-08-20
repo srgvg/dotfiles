@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# claude-reviews-state-sweep -- retire abandoned g*-loop state files.
+#
+# Why this exists (F18, 2026-08-18):
+#   ~/.claude/reviews/<slug>/state is liveness decoration for the HUD. Both /gpl and /gmr are
+#   instructed to write the literal `phase=done` on every exit path, but that instruction is
+#   executed BY THE LOOP -- a session that is killed, crashes, or is simply abandoned never runs
+#   its exit path. Those states keep rendering as live (or, past `deadline`, as STALLED) forever.
+#   An audit on 2026-08-18 found 8 such states; three more had accumulated again by 23:25 the same
+#   day, hours after the prose fix landed. A rule the crashed process must execute cannot heal a
+#   crashed process. This sweep can.
+#
+# What it does: for each state file that is (a) not already done, (b) past its deadline by at
+# least the grace period, and (c) not owned by a live pid -- rewrite `phase=` to `done` and stamp
+# `swept=<epoch>`.
+#
+# The `swept=` stamp is deliberate: a swept run is NOT a clean termination, and nothing downstream
+# should be able to mistake one for the other. `ledger.md` remains the authoritative status record
+# (`/gstatus` reads only ledger.md); this touches liveness only.
+#
+# Usage: claude-reviews-state-sweep [-n|--dry-run] [--grace SECONDS] [--root DIR]
+# Exit:  0 always (a sweep failure must never fail the hourly cron job).
+
+set -uo pipefail
+
+root="${HOME}/.claude/reviews"
+grace=3600
+dry=0
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-n | --dry-run) dry=1 ;;
+	--grace)
+		grace="${2:?--grace needs SECONDS}"
+		shift
+		;;
+	--root)
+		root="${2:?--root needs DIR}"
+		shift
+		;;
+	-h | --help)
+		sed -n '2,22p' "$0"
+		exit 0
+		;;
+	*)
+		printf 'unknown argument: %s\n' "$1" >&2
+		exit 0
+		;;
+	esac
+	shift
+done
+
+[ -d "$root" ] || exit 0
+
+now=$(date +%s)
+swept=0
+live=0
+checked=0
+
+# -maxdepth 2: state files live at <root>/<slug>/state, never deeper. Keeps this off the ~950-entry
+# recursive walk that the transcript-corpus search bound warns about.
+while IFS= read -r state; do
+	checked=$((checked + 1))
+
+	phase=$(sed -n 's/.*\bphase=\([^ ]*\).*/\1/p' "$state" 2>/dev/null)
+	deadline=$(sed -n 's/.*\bdeadline=\([0-9]*\).*/\1/p' "$state" 2>/dev/null)
+	pid=$(sed -n 's/.*\bpid=\([0-9]*\).*/\1/p' "$state" 2>/dev/null)
+
+	[ "$phase" = "done" ] && continue
+
+	# No deadline at all: cannot judge staleness without guessing. Report, never rewrite --
+	# guessing here would retire a genuinely running loop.
+	if [ -z "$deadline" ]; then
+		printf 'skip (no deadline): %s [phase=%s]\n' "$state" "${phase:-<unset>}"
+		continue
+	fi
+
+	# Still within its deadline, or inside the grace window past it: leave alone.
+	[ "$now" -le "$((deadline + grace))" ] && {
+		live=$((live + 1))
+		continue
+	}
+
+	# A live pid outranks an expired deadline: the round is overrunning, not abandoned. That is
+	# the watchdog's business (plan-loop/SKILL.md §Liveness), not this sweep's.
+	#
+	# `pid` must be > 0 before it reaches kill: `kill -0 0` signals the CALLER'S OWN process group
+	# and always succeeds, so a `pid=0` field (crane-mr444-run carries one) would read as a live
+	# process forever and make this state permanently unsweepable. Negative pids are process
+	# groups for the same reason -- neither is a loop pid.
+	if [ -n "$pid" ] && [ "$pid" -gt 0 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null; then
+		printf 'skip (pid %s alive, deadline +%ds): %s\n' "$pid" "$((now - deadline))" "$state"
+		live=$((live + 1))
+		continue
+	fi
+
+	over=$((now - deadline))
+	if [ "$dry" -eq 1 ]; then
+		printf 'would sweep (%dh past deadline, phase=%s): %s\n' "$((over / 3600))" "$phase" "$state"
+	else
+		# Rewrite in place: phase -> done, and stamp swept= (replacing any earlier stamp).
+		sed -i -e "s/\bphase=[^ ]*/phase=done/" \
+			-e "s/[[:space:]]*\bswept=[0-9]*//" \
+			-e "s/$/ swept=${now}/" "$state" &&
+			printf 'swept (%dh past deadline, was phase=%s): %s\n' "$((over / 3600))" "$phase" "$state"
+	fi
+	swept=$((swept + 1))
+done < <(find "$root" -mindepth 2 -maxdepth 2 -name state -type f 2>/dev/null)
+
+printf 'claude-reviews-state-sweep: checked=%d swept=%d still-live=%d grace=%ds%s\n' \
+	"$checked" "$swept" "$live" "$grace" "$([ "$dry" -eq 1 ] && echo ' (dry run)')"
+exit 0

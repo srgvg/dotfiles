@@ -333,17 +333,17 @@ bindsym --no-repeat $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
 # Elgato light Office
 # --no-repeat for toggle (but brightness/color adjustment should repeat)
-bindsym --no-repeat $mod+Control+slash			exec elgato.sh toggle
-bindsym --no-repeat $mod+Control+XF86AudioPlay	exec elgato.sh toggle
-bindsym $mod+Control+comma			exec elgato.sh brightness --dimmer 5
-bindsym $mod+Control+period			exec elgato.sh brightness --brighter 5
-bindsym $mod+Shift+Control+comma	exec elgato.sh color --warmer 100
-bindsym $mod+Shift+Control+period	exec elgato.sh color --cooler 100
+bindsym --no-repeat $mod+Control+slash			exec keylight.sh toggle
+bindsym --no-repeat $mod+Control+XF86AudioPlay	exec keylight.sh toggle
+bindsym $mod+Control+comma			exec keylight.sh brightness --dimmer 5
+bindsym $mod+Control+period			exec keylight.sh brightness --brighter 5
+bindsym $mod+Shift+Control+comma	exec keylight.sh color --warmer 100
+bindsym $mod+Shift+Control+period	exec keylight.sh color --cooler 100
 
-bindsym $mod+Control+XF86AudioLowerVolume	    exec elgato.sh brightness --dimmer 5
-bindsym $mod+Control+XF86AudioRaiseVolume	    exec elgato.sh brightness --brighter 5
-bindsym $mod+Control+Shift+XF86AudioLowerVolume	exec elgato.sh color --warmer 100
-bindsym $mod+Control+Shift+XF86AudioRaiseVolume	exec elgato.sh color --cooler 100
+bindsym $mod+Control+XF86AudioLowerVolume	    exec keylight.sh brightness --dimmer 5
+bindsym $mod+Control+XF86AudioRaiseVolume	    exec keylight.sh brightness --brighter 5
+bindsym $mod+Control+Shift+XF86AudioLowerVolume	exec keylight.sh color --warmer 100
+bindsym $mod+Control+Shift+XF86AudioRaiseVolume	exec keylight.sh color --cooler 100
 
 # audio/music
 bindsym XF86AudioLowerVolume		    exec i3-volume local down

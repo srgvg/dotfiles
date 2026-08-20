@@ -162,6 +162,23 @@ base=$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
 # nameless forever.
 [ "$base" != "$prefix" ] || base=""
 
+# Self-heal: a session already stuck (2026-08 defect, fixed below in the synthesis path but not
+# retroactively) has a `custom-title` that is itself a raw harness record -- a wrapper tag pair, a
+# `<local-command-caveat>`/`<local-command-stdout>` block, a `<task-notification>` -- verbatim.
+# Requiring a *complete* closing tag is not enough: two live stuck titles were caught mid-tag by an
+# earlier (since-shortened) prefix pushing the combined title over the 120-char cap, so what is
+# actually stored is e.g. `<command-message>superpowers:brainstorming</command-message` with no
+# final `>` -- the pair-match guard misses these. The opening tag alone is the reliable signal: it
+# is always short enough (18-23 chars) to survive any truncation this script performs, complete or
+# not, for every record type in the table (see ~/etc/docs/terminal.md). Same test as the forward
+# skip logic above: a lowercase XML-ish tag at position 0. A stored title can only ever start this
+# way by having been a raw harness record when written -- no code path, old or new, synthesises a
+# subject that legitimately starts with one, so there is nothing here to false-positive on besides
+# the same documented, accepted residual (a title that itself begins by typing a literal tag).
+case $base in
+'<'[a-z]*'>'*) base="" ;;
+esac
+
 # --- no subject yet: yield, or take over -------------------------------------------------------
 if [ -z "$base" ]; then
 	turns=$(grep -ac '"type":"assistant"' "$transcript" 2>/dev/null || true)
@@ -183,15 +200,60 @@ if [ -z "$base" ]; then
 	fi
 
 	# Otherwise the first thing that was asked. `last-prompt` records are unreliable (the first
-	# one carries no lastPrompt field), so read the first real user message instead. `.content`
-	# is a bare string for a typed prompt but an array of parts for anything richer, so pull the
-	# text parts rather than letting jq -r print a raw JSON array as the title.
+	# one carries no lastPrompt field), so read the first real user message instead -- but the
+	# same transcript slot also carries harness-generated pseudo-messages that are never a real
+	# subject: a command wrapper (<command-message>, custom/skill commands), a *reversed* command
+	# wrapper (<command-name> first -- every built-in: /clear, /compact, /plan, /model),
+	# <local-command-caveat>, <local-command-stdout>, and <task-notification>. All six are
+	# tag-prefixed at position 0; a typed prompt never is. A single `/plan open` alone emits three
+	# of them (caveat, wrapper, stdout) under one prompt, so skipping just one type is not enough.
+	# See ~/etc/docs/terminal.md and the plan this was implemented from for the full record table.
+	#
+	# `jq -c` (compact), not `jq -r`: wrapper content has real embedded newlines, and raw output
+	# would merge separate candidates' text onto one line, breaking the one-line-per-candidate
+	# invariant the selection loop below depends on. Compact JSON keeps each candidate's own
+	# newlines as the harmless two-character escape `\n`.
 	if [ -z "$base" ]; then
-		base=$( { grep -am1 -e '"type":"user","message":{"role":"user","content":"' "$transcript" 2>/dev/null || true; } |
-			jq -r '.message.content
+		winner=""
+		while IFS= read -r enc; do
+			case $enc in
+			# The one wrapper shape worth extracting from -- see below.
+			'"<command-message>'*) winner=$enc; break ;;
+			# Any other tag-shaped record (built-in wrapper, caveat, stdout, task-notification,
+			# or a future harness record type not yet seen) -- skip, keep scanning.
+			'"<'[a-z]*'>'*) continue ;;
+			# A genuine typed prompt.
+			*) winner=$enc; break ;;
+			esac
+		done <<-CANDIDATES
+		$( { grep -a -e '"type":"user","message":{"role":"user","content":"' "$transcript" 2>/dev/null || true; } |
+			jq -c '.message.content
 			       | if type == "string" then . else ([.[]? | select(.type == "text") | .text] | join(" ")) end
-			       // empty' 2>/dev/null |
-			head -1 || true)
+			       // empty' 2>/dev/null)
+		CANDIDATES
+
+		if [ -n "$winner" ]; then
+			text=$(printf '%s\n' "$winner" | jq -r '.' 2>/dev/null | tr '\n' ' ')
+			case $winner in
+			'"<command-message>'*)
+				# Subject is "command name (slash stripped) + args". Anchored with `^` and
+				# `[^<]*` for the two non-user fields (Claude Code's own command slug, never
+				# contains `<`) so that a `<command-args>` value quoting a fake
+				# `<command-name>...</command-name>` -- user-controlled text -- can't be mistaken
+				# for the real structural tag. The args capture stays greedy `.*`: real args can
+				# legitimately contain a literal `<` (comparisons, redirection examples, generic
+				# types), and `[^<]*` would silently truncate at the first one. Greedy is safe
+				# here because args is the last field and everything before it is anchored, so
+				# there is exactly one place it can structurally start.
+				base=$(printf '%s' "$text" |
+					sed -n 's/^<command-message>[^<]*<\/command-message>[[:space:]]*<command-name>\/\?\([^<]*\)<\/command-name>.*/\1/p')
+				cargs=$(printf '%s' "$text" |
+					sed -n 's/^<command-message>[^<]*<\/command-message>[[:space:]]*<command-name>\/\?[^<]*<\/command-name>[[:space:]]*<command-args>\(.*\)<\/command-args>.*/\1/p')
+				[ -z "$cargs" ] || base="$base $cargs"
+				;;
+			*) base=$text ;;
+			esac
+		fi
 	fi
 
 	# One line, no leading slash-command, no surrounding blanks, bounded length.
@@ -202,6 +264,11 @@ if [ -z "$base" ]; then
 	fi
 	# A synthesis that collapsed to the prefix (or to nothing) must not reintroduce the defect.
 	[ "$base" != "$prefix" ] || base=""
+	# Same markup guard as above: with the selection loop in place nothing tag-shaped should reach
+	# here from a fresh synthesis, but keep the backstop -- cheap, and a second line of defence.
+	case $base in
+	'<'[a-z]*'>'*) base="" ;;
+	esac
 fi
 
 title="$prefix${base:+ · $base}"
