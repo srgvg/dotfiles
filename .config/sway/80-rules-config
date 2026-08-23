@@ -140,9 +140,10 @@ assign	[class="discord" instance="discord"] $ws_chat
 assign	[app_id="org.telegram.desktop"] $ws_chat
 #for_window	[app_id="org.telegram.desktop"] layout tabbed
 
-# Mattermost main window has window_role=None (not "browser-window") → don't require it
-assign [class="Mattermost" instance="mattermost"] $ws_chat
-#for_window [class="Mattermost" instance="mattermost" window_role="browser-window"] layout tabbed
+# Mattermost (flatpak, XWayland): WM_CLASS changed from Mattermost/mattermost to
+# com.mattermost.Desktop/com.mattermost.desktop (noticed 2026-08-21, old rule was dead).
+# window_role is "browser-window" nowadays but don't require it — it was None before.
+assign [class="com.mattermost.Desktop" instance="com.mattermost.desktop"] $ws_chat
 
 #######################################################################################################################
 #

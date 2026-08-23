@@ -1,0 +1,433 @@
+#!/usr/bin/env bash
+# rebase-push — the provable half of a history rewrite (gate A2-R).
+#
+# Rule: ~/.claude/rules/agent-gates.md § A2-R (doctrine
+# ~/etc/docs/development/agent-gates.md § A2).
+#
+# A2 halts on every force-push because a rewrite destroys remote state someone
+# may already have acted on. That is the right default, but a rebase-conflict
+# force-push on your own MR branch has an exact, cheap proof of what it
+# destroys — `git range-diff` — and can be made recoverable to the same
+# standard A2 already accepts for a brand-new branch, by pinning the discarded
+# tip to a rescue ref before the push. This tool performs those proofs and
+# refuses if any of them fails; nah classifies the tool, not raw `git push
+# --force`, so the constraint IS the script.
+#
+#   rebase-push [--remote <name>] [--dry-run] [--no-note]
+#
+# It does NOT rebase. Rebase first (that no longer prompts), then run this.
+#
+# There is deliberately no --allow-drop. nah matches by command PREFIX, so once
+# `rebase-push` is allowed, every invocation of it is — a flag waiving the
+# dropped-commit check would be auto-approved by the very classification meant
+# to make this safe. When commits would be dropped, this refuses and prints the
+# raw force-push for a human to run; that still asks, as it should.
+#
+# Refuses, always: the remote's default branch, a forge-protected branch, a
+# branch absent from the remote, a rewrite that drops a commit, and any state
+# where the forge cannot be asked whether the branch is protected.
+
+set -uo pipefail
+
+PROG=${0##*/}
+
+die() { printf '%s: %s\n' "$PROG" "$*" >&2; exit 1; }
+say() { printf '  %-14s %s\n' "$1" "$2"; }
+hdr() { printf '%s\n' "$*"; }
+
+REMOTE_EXPLICIT=""
+DRY_RUN=0
+WANT_NOTE=1
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--remote) shift; [ $# -gt 0 ] || die "--remote needs a value"; REMOTE_EXPLICIT="$1" ;;
+	--dry-run) DRY_RUN=1 ;;
+	--no-note) WANT_NOTE=0 ;;
+	-h | --help)
+		sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'
+		exit 0
+		;;
+	*) die "unknown argument: $1 (try --help)" ;;
+	esac
+	shift
+done
+
+# --- 1. context ------------------------------------------------------------
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) ||
+	die "not inside a git worktree"
+
+BRANCH=$(git -C "$ROOT" symbolic-ref --quiet --short HEAD) ||
+	die "HEAD is detached — check out the branch you mean to push"
+
+# Remote resolution mirrors wt_resolve_remote (~/bin/wt:297-319) deliberately:
+# explicit flag, then the branch's configured remote, then its upstream, then a
+# sole remote. Never a hardcoded "origin" — several repos here have none.
+resolve_remote() {
+	local r up count
+	if [ -n "$REMOTE_EXPLICIT" ]; then printf '%s' "$REMOTE_EXPLICIT"; return 0; fi
+	r=$(git -C "$ROOT" config "branch.$BRANCH.remote" 2>/dev/null)
+	if [ -n "$r" ]; then printf '%s' "$r"; return 0; fi
+	up=$(git -C "$ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
+	if [ -n "$up" ]; then printf '%s' "${up%%/*}"; return 0; fi
+	count=$(git -C "$ROOT" remote | grep -c .)
+	if [ "$count" = "1" ]; then git -C "$ROOT" remote; return 0; fi
+	return 1
+}
+
+REMOTE=$(resolve_remote) || {
+	printf '%s: cannot choose a remote for %s. Remotes found:\n' "$PROG" "$ROOT" >&2
+	git -C "$ROOT" remote | sed 's/^/  /' >&2
+	printf 'Pass --remote <name>.\n' >&2
+	exit 1
+}
+
+# `git config --get`, NOT `git remote get-url`: get-url applies url.*.insteadOf
+# rewriting, so a mirror or transport rewrite would hide the real forge behind a
+# local path and the protection check would have nothing to ask.
+REMOTE_URL=$(git -C "$ROOT" config --get "remote.$REMOTE.url" 2>/dev/null)
+[ -n "$REMOTE_URL" ] ||
+	REMOTE_URL=$(git -C "$ROOT" remote get-url "$REMOTE" 2>/dev/null)
+[ -n "$REMOTE_URL" ] || die "remote '$REMOTE' has no URL"
+
+# Everything below addresses refs/heads/$BRANCH on the remote -- the LOCAL name.
+# If this branch tracks a remote branch under a DIFFERENT name, that is a trap
+# with two bad outcomes and no good one: refs/heads/$BRANCH either does not exist
+# on the remote (a confusing refusal three steps later) or exists as somebody
+# else's branch, which the force-push would then rewrite while every piece of
+# evidence printed here names the branch the operator thought they were on.
+# Refuse and say which pair disagrees; --remote cannot express the difference.
+UPSTREAM=$(git -C "$ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null || true)
+if [ -n "$UPSTREAM" ] && [ "${UPSTREAM#"$REMOTE"/}" != "$BRANCH" ]; then
+	die "refusing: local '$BRANCH' tracks '$UPSTREAM' — the names differ, so a push would target the wrong branch. Rename the local branch to match."
+fi
+
+hdr "rebase-push — proving a history rewrite before it happens"
+say repo "$ROOT"
+say branch "$BRANCH"
+say remote "$REMOTE ($REMOTE_URL)"
+
+# --- 2. refuse unsafe targets ----------------------------------------------
+
+# The remote's own idea of its default branch, not a guess. An unset HEAD is a
+# refusal rather than a fallback: guessing "main" here is exactly the class of
+# assumption this tool exists to remove.
+REMOTE_HEAD=$(git -C "$ROOT" symbolic-ref --quiet --short "refs/remotes/$REMOTE/HEAD" 2>/dev/null)
+REMOTE_HEAD=${REMOTE_HEAD#"$REMOTE/"}
+if [ -z "$REMOTE_HEAD" ]; then
+	printf '%s: remote %s advertises no HEAD, so the default branch is unknown.\n' "$PROG" "$REMOTE" >&2
+	printf 'Fix it with:  git -C %s remote set-head %s -a\n' "$ROOT" "$REMOTE" >&2
+	exit 1
+fi
+say "remote HEAD" "$REMOTE_HEAD"
+
+[ "$BRANCH" = "$REMOTE_HEAD" ] &&
+	die "refusing: $BRANCH is $REMOTE's default branch"
+
+case "$BRANCH" in
+main | master | trunk | develop)
+	die "refusing: '$BRANCH' is a conventional integration branch"
+	;;
+esac
+
+# forge_slug -> "host<TAB>owner/repo", parsed from the remote URL.
+forge_slug() {
+	local u="$1" host path
+	case "$u" in
+	*://*)
+		host=${u#*://}
+		host=${host#*@}
+		path=${host#*/}
+		host=${host%%/*}
+		;;
+	*:*)
+		host=${u%%:*}
+		host=${host#*@}
+		path=${u#*:}
+		;;
+	*) return 1 ;;
+	esac
+	path=${path%.git}
+	path=${path%/}
+	[ -n "$host" ] && [ -n "$path" ] || return 1
+	printf '%s\t%s' "$host" "$path"
+}
+
+SLUG=$(forge_slug "$REMOTE_URL") ||
+	die "cannot parse a forge host/path out of: $REMOTE_URL"
+FORGE_HOST=${SLUG%%	*}
+FORGE_PATH=${SLUG#*	}
+
+# urlencode the project path for GitLab's :id parameter.
+urlenc() { printf '%s' "$1" | sed 's|/|%2F|g'; }
+
+PROTECTED_VERDICT=""
+case "$FORGE_HOST" in
+*gitlab*)
+	PROT=$(glab api "projects/$(urlenc "$FORGE_PATH")/protected_branches" 2>/dev/null) ||
+		die "refusing: could not ask $FORGE_HOST whether '$BRANCH' is protected"
+	# Names may be globs (release/*), so match as patterns, not literals.
+	while IFS= read -r pat; do
+		[ -n "$pat" ] || continue
+		# shellcheck disable=SC2254
+		case "$BRANCH" in
+		$pat) PROTECTED_VERDICT="matches protected pattern '$pat'" ;;
+		esac
+	done <<<"$(printf '%s' "$PROT" | jq -r '.[].name')"
+	;;
+*github*)
+	GH_OUT=$(gh api "repos/$FORGE_PATH/branches/$BRANCH/protection" 2>&1)
+	GH_RC=$?
+	if [ "$GH_RC" -eq 0 ]; then
+		PROTECTED_VERDICT="branch protection is configured"
+	elif printf '%s' "$GH_OUT" | grep -q 'Branch not protected'; then
+		: # the documented 404 body for an unprotected branch
+	elif printf '%s' "$GH_OUT" | grep -q 'Branch not found'; then
+		# GitHub answers a MISSING branch with the same 404 status as an
+		# unprotected one; only the body text tells them apart. Reporting it as
+		# "could not ask whether it is protected" names the wrong cause -- seen
+		# 2026-08-22 on a live repo. Settle it with ls-remote instead of
+		# guessing: genuinely absent is step 3's refusal, worded as such;
+		# present on the remote yet unknown to the API is an inconsistent forge
+		# and still refuses, because protection cannot be established.
+		if [ -z "$(git -C "$ROOT" ls-remote "$REMOTE" "refs/heads/$BRANCH" | cut -f1)" ]; then
+			die "refusing: $BRANCH does not exist on $REMOTE — a first push is already covered by A2, just push it"
+		fi
+		die "refusing: $FORGE_HOST reports no branch '$BRANCH' but $REMOTE has it — protection cannot be established ($GH_OUT)"
+	else
+		die "refusing: could not ask $FORGE_HOST whether '$BRANCH' is protected ($GH_OUT)"
+	fi
+	;;
+*)
+	die "refusing: unknown forge '$FORGE_HOST' — cannot check branch protection"
+	;;
+esac
+
+[ -n "$PROTECTED_VERDICT" ] && die "refusing: $BRANCH $PROTECTED_VERDICT"
+say protection "not protected (checked on $FORGE_HOST)"
+
+# --- 3. assert the remote OID ----------------------------------------------
+
+REMOTE_OID=$(git -C "$ROOT" ls-remote "$REMOTE" "refs/heads/$BRANCH" | cut -f1)
+[ -n "$REMOTE_OID" ] ||
+	die "refusing: $BRANCH does not exist on $REMOTE — a first push is already covered by A2, just push it"
+
+LOCAL_OID=$(git -C "$ROOT" rev-parse HEAD)
+say "remote OID" "$REMOTE_OID"
+say "local HEAD" "$LOCAL_OID"
+
+[ "$REMOTE_OID" = "$LOCAL_OID" ] && { hdr "Already up to date — nothing to push."; exit 0; }
+
+# --- 4. skip force when it is not needed -----------------------------------
+
+git -C "$ROOT" fetch --quiet "$REMOTE" "$BRANCH" 2>/dev/null
+
+if git -C "$ROOT" merge-base --is-ancestor "$REMOTE_OID" "$LOCAL_OID" 2>/dev/null; then
+	hdr ""
+	hdr "Fast-forward: no history is being discarded, so no force is needed."
+	if [ "$DRY_RUN" = 1 ]; then
+		hdr "--dry-run: would run  git push $REMOTE HEAD:refs/heads/$BRANCH"
+		exit 0
+	fi
+	git -C "$ROOT" push "$REMOTE" "HEAD:refs/heads/$BRANCH" || die "push failed"
+	hdr "Pushed $REMOTE_OID -> $LOCAL_OID (fast-forward)."
+	exit 0
+fi
+
+# --- 5. rescue ref, before anything else -----------------------------------
+
+# Written BEFORE the push, not after: this is the entire reason a rewrite here
+# is as recoverable as A2's already-approved "push a new branch, delete it if
+# wrong". If the object is not local the fetch above failed, and we stop --
+# pushing without a recoverable old tip is the thing this tool refuses to do.
+git -C "$ROOT" cat-file -e "${REMOTE_OID}^{commit}" 2>/dev/null ||
+	die "refusing: $REMOTE_OID is not present locally, so no rescue ref can be written"
+
+N=1
+while git -C "$ROOT" show-ref --verify --quiet "refs/rescue/$BRANCH/$N"; do
+	N=$((N + 1))
+done
+RESCUE="refs/rescue/$BRANCH/$N"
+git -C "$ROOT" update-ref "$RESCUE" "$REMOTE_OID" ||
+	die "could not write rescue ref $RESCUE"
+say rescue "$RESCUE -> $REMOTE_OID"
+
+RECOVER="git -C $ROOT push $REMOTE $RESCUE:refs/heads/$BRANCH --force"
+
+# --- 6. prove the rewrite ---------------------------------------------------
+
+BASE=$(git -C "$ROOT" merge-base "$REMOTE_OID" "$LOCAL_OID") ||
+	die "no common ancestor between $REMOTE_OID and HEAD — this is not a rebase"
+say base "$BASE"
+
+RANGE=$(git -C "$ROOT" range-diff --no-color "$BASE..$REMOTE_OID" "$BASE..$LOCAL_OID") ||
+	die "git range-diff failed"
+
+# Top-level range-diff lines are "N:  <sha> <op> M:  <sha> <subject>"; the diff
+# body is indented, so anchoring on a leading digit or "-:" selects exactly the
+# commit-correspondence rows. $3 is the operator in every one of the four forms.
+OPS=$(printf '%s\n' "$RANGE" | awk '/^[0-9]+:|^-:/ {print $3}')
+N_SAME=$(printf '%s\n' "$OPS" | grep -cx '=')
+N_DIFF=$(printf '%s\n' "$OPS" | grep -cx '!')
+N_DROP=$(printf '%s\n' "$OPS" | grep -cx '<')
+N_NEW=$(printf '%s\n' "$OPS" | grep -cx '>')
+
+if [ "$N_DIFF" -eq 0 ] && [ "$N_DROP" -eq 0 ]; then
+	CLASS=clean
+else
+	CLASS=conflicted
+fi
+
+hdr ""
+hdr "range-diff  $BASE..$REMOTE_OID  ->  $BASE..$LOCAL_OID"
+printf '%s\n' "$RANGE" | awk '/^[0-9]+:|^-:/ {print "  " $0}'
+hdr ""
+say classified "$CLASS (= $N_SAME, ! $N_DIFF, < $N_DROP, > $N_NEW)"
+
+# range-diff's "<" is NOT the drop test. Its pairing is a similarity heuristic
+# (--creation-factor, default 60%): a commit whose content was substantially
+# rewritten while resolving a conflict scores as unpaired and shows up as a
+# "<" plus a ">", which is exactly the legitimate case this tool exists to
+# allow. Measured while building the suite -- a two-commit branch whose
+# conflicted commit was resolved to different content produced "> = < >".
+#
+# So reconcile by identity instead, and let range-diff do only what it is good
+# at: showing a human what changed. A commit on the old tip is accounted for if
+# it is still reachable from HEAD (unchanged by the rebase) or if a commit with
+# the same subject exists in the new range (rewritten by it). Anything else is
+# work with no successor, and that is a refusal.
+UNMATCHED=""
+NEW_SUBJECTS=$(git -C "$ROOT" log --format='%s' "$BASE..$LOCAL_OID")
+while IFS= read -r LINE; do
+	[ -n "$LINE" ] || continue
+	C_OID=${LINE%% *}
+	C_SUBJ=${LINE#* }
+	git -C "$ROOT" merge-base --is-ancestor "$C_OID" "$LOCAL_OID" 2>/dev/null && continue
+	printf '%s\n' "$NEW_SUBJECTS" | grep -qxF -- "$C_SUBJ" && continue
+	UNMATCHED="${UNMATCHED}    ${C_OID:0:12}  ${C_SUBJ}"$'\n'
+done <<<"$(git -C "$ROOT" log --format='%H %s' "$BASE..$REMOTE_OID")"
+
+if [ -n "$UNMATCHED" ]; then
+	hdr ""
+	printf '%s: REFUSING — commit(s) on the remote have no successor in HEAD:\n' "$PROG" >&2
+	printf '%s' "$UNMATCHED" >&2
+	printf 'That is work being discarded, not rebased. Nothing was pushed.\n' >&2
+	printf 'The rescue ref is written, so the remote tip is recoverable either way:\n  %s\n' "$RECOVER" >&2
+	printf '\nIf you have decided this is correct, a human runs it directly:\n' >&2
+	printf '  git -C %s push --force-with-lease=refs/heads/%s:%s %s HEAD:refs/heads/%s\n' \
+		"$ROOT" "$BRANCH" "$REMOTE_OID" "$REMOTE" "$BRANCH" >&2
+	exit 1
+fi
+
+# Say so when the two signals disagreed. Without this the operator reads
+# "< 1" in the summary and then watches the tool push anyway, with nothing
+# on screen reconciling the two -- which is how a correct decision still
+# teaches you to distrust the output. Seen live on 2026-08-22: a one-line
+# file rewritten end to end scored below range-diff's pairing threshold.
+if [ "$N_DROP" -gt 0 ]; then
+	say reconciled "range-diff could not pair $N_DROP commit(s); each has a same-subject successor in HEAD, so nothing is dropped"
+fi
+
+# List the files whose content actually changed, for the note and the operator.
+CHANGED_FILES=""
+if [ "$CLASS" = conflicted ]; then
+	CHANGED_FILES=$(git -C "$ROOT" diff --name-only "$REMOTE_OID" "$LOCAL_OID")
+	if [ -n "$CHANGED_FILES" ]; then
+		hdr "  content differs in:"
+		printf '%s\n' "$CHANGED_FILES" | sed 's/^/    /'
+	else
+		hdr "  content is identical; only commit metadata differs"
+	fi
+fi
+
+if [ "$DRY_RUN" = 1 ]; then
+	hdr ""
+	hdr "--dry-run: would run"
+	hdr "  git push --force-with-lease=refs/heads/$BRANCH:$REMOTE_OID $REMOTE HEAD:refs/heads/$BRANCH"
+	exit 0
+fi
+
+# --- 7. push ----------------------------------------------------------------
+
+# Always the explicit ref:oid form. A bare --force-with-lease leases against the
+# remote-tracking ref, which the fetch above just updated -- it would "succeed"
+# against a tip nobody asserted.
+hdr ""
+git -C "$ROOT" push --force-with-lease="refs/heads/$BRANCH:$REMOTE_OID" \
+	"$REMOTE" "HEAD:refs/heads/$BRANCH" || {
+	printf '%s: push rejected. The lease held the remote at %s; if it moved, someone else pushed.\n' \
+		"$PROG" "$REMOTE_OID" >&2
+	printf 'Nothing was rewritten. Rescue ref remains at %s.\n' "$RESCUE" >&2
+	exit 1
+}
+hdr "Pushed $REMOTE_OID -> $LOCAL_OID ($CLASS rewrite)."
+
+# --- 8. evidence note -------------------------------------------------------
+
+# After the push, so the note states the OID that is actually live. Mandatory
+# for a conflicted rewrite: that is the case where judgement was exercised over
+# whose content wins, and the reviewers are entitled to see that it happened.
+if [ "$WANT_NOTE" = 0 ] && [ "$CLASS" = conflicted ]; then
+	printf '%s: --no-note is not honoured for a conflicted rewrite; posting anyway.\n' "$PROG" >&2
+	WANT_NOTE=1
+fi
+
+[ "$WANT_NOTE" = 0 ] && { hdr "Note skipped (--no-note, clean rewrite)."; exit 0; }
+
+NOTE_BODY=$(
+	printf 'Branch history rewritten by a rebase (%s).\n\n' "$CLASS"
+	printf '| | |\n|---|---|\n'
+	printf '| previous tip | `%s` |\n' "$REMOTE_OID"
+	printf '| new tip | `%s` |\n' "$LOCAL_OID"
+	printf '| common base | `%s` |\n' "$BASE"
+	printf '| commits | %s identical, %s changed, %s added |\n' "$N_SAME" "$N_DIFF" "$N_NEW"
+	# These counts are range-diff's, and range-diff pairs by similarity. Left
+	# alone, a reviewer reads "0 identical, 0 changed, 1 added" for a one-commit
+	# rewrite and concludes the old commit was thrown away. Say what actually
+	# accounted for it -- the note is the evidence, so it carries the same
+	# reconciliation the terminal got.
+	if [ "$N_DROP" -gt 0 ]; then
+		printf '\n%s commit(s) scored below `git range-diff`'"'"'s pairing threshold and so appear above as removed-plus-added. Each was matched to a same-subject successor in the new history; no commit was dropped, and this push would have been refused if one had been.\n' "$N_DROP"
+	fi
+	if [ -n "$CHANGED_FILES" ]; then
+		printf '\nContent differs in:\n\n'
+		printf '%s\n' "$CHANGED_FILES" | sed 's/^/- `/;s/$/`/'
+	fi
+	printf '\nReview comments anchored to rewritten lines are dropped by the forge '
+	printf 'and will not reappear.\n'
+	printf '\nThe previous tip is retained locally as `%s`.\n' "$RESCUE"
+)
+
+post_note() {
+	case "$FORGE_HOST" in
+	*gitlab*)
+		local iid
+		iid=$(glab mr list --source-branch "$BRANCH" --output json 2>/dev/null |
+			jq -r '.[0].iid // empty')
+		[ -n "$iid" ] || return 1
+		glab mr note "$iid" --message "$NOTE_BODY" >/dev/null 2>&1 || return 1
+		printf '%s' "!$iid"
+		;;
+	*github*)
+		local num
+		num=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty' 2>/dev/null)
+		[ -n "$num" ] || return 1
+		gh pr comment "$num" --body "$NOTE_BODY" >/dev/null 2>&1 || return 1
+		printf '%s' "#$num"
+		;;
+	*) return 1 ;;
+	esac
+}
+
+if TARGET=$(post_note); then
+	say note "posted to $TARGET"
+else
+	printf '%s: WARNING — the push succeeded but the evidence note did not post.\n' "$PROG" >&2
+	printf 'Post it by hand; the rewrite is already live:\n\n%s\n' "$NOTE_BODY" >&2
+	exit 1
+fi
+
+hdr ""
+hdr "Recovery, if this rewrite was wrong:"
+hdr "  $RECOVER"

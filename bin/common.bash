@@ -251,6 +251,47 @@ function notify_desktop_always() {
 	set_xtrace
 }
 
+function notify_desktop_actions() {
+	# notify_desktop_actions <urgency> <summary> <body> <icon> <app> <expire_ms> [key=Label ...]
+	#
+	# Interactive notification with action buttons. Requires a notification
+	# daemon advertising the "actions" capability (confirmed for swaync via
+	# org.freedesktop.Notifications.GetCapabilities). Prints the clicked
+	# action's key to stdout; prints nothing if dismissed or expired.
+	# Callers under `set -o errexit` must capture as
+	# `action="$(notify_desktop_actions ... || true)"` -- notify-send exits
+	# non-zero on dismiss/expire, which would otherwise abort the script.
+	{ set +x; } 2>/dev/null
+
+	local numparam=6
+	[ $# -ge ${numparam} ] || errexit "function ${FUNCNAME[0]} expects at least ${numparam} parameters, got $#: '$#'"
+
+	local urgency=${1}
+	local summary=${2}
+	local body=${3}
+	local icon=${4:-dialog-info}
+	local app=${5:-$(basename "$0")}
+	local expire_ms=${6:-0}
+	shift 6
+
+	local -a action_flags=()
+	local kv
+	for kv in "$@"
+	do
+		action_flags+=(-A "$kv")
+	done
+
+	notify_debug "notify_desktop_actions: ${summary} (${#action_flags[@]} action flag(s))"
+
+	notify-send --urgency="${urgency}" --icon="${icon}" --app-name="${app}" \
+		--expire-time="${expire_ms}" \
+		-h string:x-canonical-private-synchronous:"${app}" \
+		"${action_flags[@]}" \
+		"${summary}" "${body}" ||:
+
+	set_xtrace
+}
+
 function notify2() {
 	{ set +x; } 2>/dev/null
 	local message="${1:-}"

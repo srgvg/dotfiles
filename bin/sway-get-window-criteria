@@ -9,50 +9,294 @@ set -o pipefail
 
 # sway-get-window-criteria - Get criteria for use with Sway for_window commands
 #
-# Usage: Run this script, then click on a window (3s delay if interactive).
-# Output format: [app_id="..." title="..." shell="..."] ready for Sway config
+# Usage: bind to a key (e.g. $mod+g). Reads the currently focused window from
+# the sway tree and reports regex-escaped, anchored for_window criteria for
+# it -- sway matches criteria values as unanchored PCRE2, so raw values with
+# metacharacters (parens, dots, brackets...) silently fail to match.
 #
-# Copies formatted criteria to clipboard via wl-copy.
+# From a terminal: prints blocks (one value per line, blank-line separated)
+# for manual selection. From a keybinding (non-interactive): shows an
+# interactive desktop notification with buttons that copy one piece
+# (app_id/class, title, pid, cwd) to the clipboard on click. Nothing is
+# copied automatically in either mode. See ~/etc/docs/sway-setup.md #12.
 
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
+NOTIFY_EXPIRE_MS=20000
+BODY_MAXLEN=50
+
+function join_by() {
+	# join_by <separator> [item ...]
+	local sep="$1"; shift
+	local out="" first=1 x
+	for x in "$@"
+	do
+		if [[ $first -eq 1 ]]
+		then
+			out="$x"
+			first=0
+		else
+			out="${out}${sep}${x}"
+		fi
+	done
+	printf '%s' "$out"
+}
+
+function pango_escape() {
+	# Escapes text for safe use in a notify-send body (swaync renders it as
+	# Pango markup).
+	local s="${1:-}"
+	# NB: an unescaped & in the replacement of ${var//pat/repl} is a
+	# back-reference to the matched text (sed-style) -- \& is required for a
+	# literal ampersand, or "&lt;"/"&gt;" corrupt into "<lt;"/">gt;".
+	s="${s//&/\&amp;}"
+	s="${s//</\&lt;}"
+	s="${s//>/\&gt;}"
+	printf '%s' "$s"
+}
+
+function truncate_display() {
+	# truncate_display <maxlen> <text> -- shortens free-form values (window
+	# titles, cwd) for the width-constrained notification body. Display only:
+	# the copied clipboard value always comes from raw_val/esc_val untouched,
+	# never from this. Truncate before pango_escape, not after -- cutting
+	# already-escaped text could split an entity like "&amp;" in half.
+	local maxlen="$1" text="$2"
+	if [[ ${#text} -gt $maxlen ]]
+	then
+		printf '%s…' "${text:0:$((maxlen-1))}"
+	else
+		printf '%s' "$text"
+	fi
+}
+
+function resolve_foreground() {
+	# resolve_foreground <term_pid>
+	# Prints: pid<TAB>comm<TAB>cwd<TAB>chain  for the terminal's foreground
+	# (tty-owning) process -- checks direct children first, then one level of
+	# grandchildren for wrapper setups. Returns 1 if nothing resolves (e.g. a
+	# GUI app with no child processes, such as Firefox). A multiplexer
+	# (screen/tmux) resolves to the client process, not the program inside
+	# the session. See ~/etc/docs/sway-setup.md #12.
+	local term_pid="$1"
+	local pid tpgid found=""
+
+	while read -r pid tpgid
+	do
+		[[ -n "${pid:-}" ]] || continue
+		if [[ "${tpgid:-0}" -gt 0 ]]
+		then
+			found="$tpgid"
+			break
+		fi
+	done < <(ps --ppid "$term_pid" -o pid=,tpgid= 2>/dev/null)
+
+	if [[ -z "$found" ]]
+	then
+		local child
+		while read -r child
+		do
+			[[ -n "${child:-}" ]] || continue
+			while read -r pid tpgid
+			do
+				[[ -n "${pid:-}" ]] || continue
+				if [[ "${tpgid:-0}" -gt 0 ]]
+				then
+					found="$tpgid"
+					break 2
+				fi
+			done < <(ps --ppid "$child" -o pid=,tpgid= 2>/dev/null)
+		done < <(ps --ppid "$term_pid" -o pid= 2>/dev/null)
+	fi
+
+	[[ -n "$found" ]] || return 1
+
+	local comm cwd
+	comm="$(cat "/proc/$found/comm" 2>/dev/null || true)"
+	[[ -n "$comm" ]] || return 1
+	cwd="$(readlink "/proc/$found/cwd" 2>/dev/null || true)"
+
+	# Ancestor chain from the terminal client down to the foreground process,
+	# for display only -- capped at 10 hops as a safety backstop.
+	local -a chain=()
+	local cpid="$found" cname cppid safety=0
+	while [[ -n "$cpid" && $safety -lt 10 ]]
+	do
+		cname="$(cat "/proc/$cpid/comm" 2>/dev/null || true)"
+		[[ -n "$cname" ]] || break
+		chain=("${cname}[${cpid}]" "${chain[@]}")
+		[[ "$cpid" == "$term_pid" ]] && break
+		cppid="$(ps -o ppid= -p "$cpid" 2>/dev/null | tr -d '[:space:]')"
+		[[ -n "$cppid" && "$cppid" != "$cpid" ]] || break
+		cpid="$cppid"
+		safety=$((safety+1))
+	done
+
+	printf '%s\t%s\t%s\t%s\n' "$found" "$comm" "$cwd" "$(join_by ' → ' "${chain[@]}")"
+}
+
 ifinteractive && sleep 3
 
-# Single swaymsg call
 tree_json="$(swaymsg -t get_tree -r)" || {
 	notify_desktop_always critical "Sway Window Properties" "Failed to get window tree"
 	exit 1
 }
 
-# Extract all properties in one jq pass (newline-separated)
-props="$(echo "$tree_json" | jq -r '
-	recurse | select(.focused? == true) |
-	[
-		(if .app_id then "app_id=\"\(.app_id)\"" else empty end),
-		(if .name then "title=\"\(.name)\"" else empty end),
-		(if .shell then "shell=\"\(.shell)\"" else empty end),
-		(.window_properties // {} | to_entries[] |
-			select(.key == "class" or .key == "instance" or .key == "window_role" or .key == "window_type") |
-			"\(.key)=\"\(.value)\""
-		)
-	] | .[]
+# The single focused leaf with a real client -- .pid != null excludes a
+# focused empty workspace or split container, both of which can also carry
+# focused == true.
+node_json="$(printf '%s' "$tree_json" | jq -c '
+	[recurse | select(.focused? == true and .pid != null)] | first // empty
 ')"
 
-# Handle no focused window
-if [[ -z "$props" ]]; then
+if [[ -z "$node_json" ]]
+then
 	notify_desktop_always normal "Sway Window Properties" "No focused window found"
 	exit 0
 fi
 
-# Format for Sway config (space-separated in brackets)
-props_inline="$(echo "$props" | paste -sd ' ')"
-formatted="[$props_inline]"
+term_pid="$(printf '%s' "$node_json" | jq -r '.pid')"
 
-# Output
-echo "$props"
-echo
-echo "$formatted"
-echo
-notify_desktop_always low "Sway Window Properties" "$formatted"
-echo -n "$formatted" | wl-copy
+# Each matchable field as: key <TAB> raw value <TAB> regex-escaped value.
+# Escaping targets sway's PCRE2 criteria matcher (unanchored by default) and
+# folds `"` to the PCRE escape \x22 so it can never break the criteria's own
+# quoting.
+fields_tsv="$(printf '%s' "$node_json" | jq -r '
+	def rxesc:
+		tostring
+		| gsub("(?<c>[\\\\^$.|?*+(){}\\[\\]])"; "\\" + .c)
+		| gsub("\""; "\\x22");
+	[
+		(if .app_id then {k:"app_id", v:.app_id} else empty end),
+		(if .name then {k:"title", v:.name} else empty end),
+		(if .shell then {k:"shell", v:.shell} else empty end),
+		(.window_properties // {} | to_entries[] |
+			select(.key == "class" or .key == "instance" or .key == "window_role" or .key == "window_type") |
+			{k:.key, v:.value}
+		)
+	] | .[] | [.k, (.v|tostring), (.v | rxesc)] | @tsv
+')"
+
+if [[ -z "$fields_tsv" ]]
+then
+	notify_desktop_always normal "Sway Window Properties" "Focused window has no matchable properties"
+	exit 0
+fi
+
+declare -A raw_val=() esc_val=()
+order=()
+while IFS=$'\t' read -r k v e
+do
+	[[ -n "${k:-}" ]] || continue
+	order+=("$k")
+	raw_val["$k"]="$v"
+	esc_val["$k"]="$e"
+done <<< "$fields_tsv"
+
+full_parts=()
+for k in "${order[@]}"
+do
+	full_parts+=("${k}=\"^${esc_val[$k]}\$\"")
+done
+full_block="[${full_parts[*]}]"
+
+# Stable subset: app_id (native Wayland) or class[+instance] (XWayland).
+# Deliberately excludes title, which changes on every prompt update for
+# foot's shell-integrated windows -- see ~/etc/docs/sway-setup.md #9.3.
+stable_parts=()
+if [[ -n "${raw_val[app_id]:-}" ]]
+then
+	stable_parts+=("app_id=\"^${esc_val[app_id]}\$\"")
+elif [[ -n "${raw_val[class]:-}" ]]
+then
+	stable_parts+=("class=\"^${esc_val[class]}\$\"")
+	[[ -n "${raw_val[instance]:-}" ]] && stable_parts+=("instance=\"^${esc_val[instance]}\$\"")
+fi
+stable_block="[${stable_parts[*]}]"
+
+title_block=""
+[[ -n "${raw_val[title]:-}" ]] && title_block="[title=\"^${esc_val[title]}\$\"]"
+
+body_lines=()
+for k in "${order[@]}"
+do
+	body_lines+=("$(pango_escape "${k}=\"$(truncate_display "$BODY_MAXLEN" "${raw_val[$k]}")\"")")
+done
+
+fg_pid="" fg_comm="" fg_cwd="" fg_chain=""
+term_comm="$(cat "/proc/$term_pid/comm" 2>/dev/null || true)"
+# Only attempt this for an actual foot terminal -- a GUI app's client
+# process can share a controlling tty with an unrelated shell purely by
+# accident of how it was launched (e.g. `mattermost-desktop &` from a
+# terminal that is still open), and resolving through that tty's tpgid
+# would report that unrelated shell as if it were "the program running in
+# this window". Gate on the real client comm, not app_id, since a foot
+# window's app_id is user-overridable (--app-id) and not a reliable signal.
+if [[ "$term_comm" == "foot" ]] && fg_line="$(resolve_foreground "$term_pid")"
+then
+	IFS=$'\t' read -r fg_pid fg_comm fg_cwd fg_chain <<< "$fg_line"
+fi
+
+# Foreground-process info -- what the pid/cwd buttons would copy. Formatted
+# as pid=<value> to match the app_id/title/shell lines above and make it
+# unambiguous which number the "pid" button copies -- the ancestor chain
+# (foot -> bash -> claude, say) has more than one pid in it, and showing the
+# whole chain here made it unclear which one this refers to. The chain stays
+# in the terminal-stdout path only, where width isn't constrained.
+if [[ -n "$fg_pid" ]]
+then
+	body_lines+=("$(pango_escape "pid=${fg_pid} (${fg_comm})")")
+	[[ -n "$fg_cwd" ]] && body_lines+=("$(pango_escape "cwd=$(truncate_display "$BODY_MAXLEN" "$fg_cwd")")")
+fi
+
+body="$(join_by $'\n' "${body_lines[@]}")"
+
+if ifinteractive
+then
+	for k in "${order[@]}"
+	do
+		printf '%s="^%s$"\n' "$k" "${esc_val[$k]}"
+	done
+	printf '\n%s\n\n%s\n' "$full_block" "$stable_block"
+
+	if [[ -n "$fg_pid" ]]
+	then
+		printf '\npid    %s  %s\n' "$term_pid" "${term_comm:-?}"
+		printf 'run    %s  %s\n' "$fg_pid" "$fg_comm"
+		[[ -n "$fg_chain" ]] && printf 'chain  %s\n' "$fg_chain"
+		[[ -n "$fg_cwd" ]] && printf 'cwd    %s\n' "$fg_cwd"
+	fi
+
+	notify_desktop_always low "Sway Window Properties" "$body"
+else
+	action_kv=()
+	[[ "$stable_block" != "[]" ]] && action_kv+=("appid=app_id")
+	[[ -n "$title_block" ]] && action_kv+=("title=title")
+	if [[ -n "$fg_pid" ]]
+	then
+		action_kv+=("pid=pid")
+		[[ -n "$fg_cwd" ]] && action_kv+=("cwd=cwd")
+	fi
+
+	action="$(notify_desktop_actions normal "Sway Window Properties" "$body" \
+		dialog-info "sway-get-window-criteria" "$NOTIFY_EXPIRE_MS" \
+		"${action_kv[@]}" || true)"
+
+	case "$action" in
+		appid)
+			printf '%s' "$stable_block" | wl-copy
+			notify_desktop_always low "Sway Window Properties" "copied: $(pango_escape "$stable_block")" ;;
+		title)
+			printf '%s' "$title_block" | wl-copy
+			notify_desktop_always low "Sway Window Properties" "copied: $(pango_escape "$title_block")" ;;
+		pid)
+			printf '%s' "$fg_pid" | wl-copy
+			notify_desktop_always low "Sway Window Properties" "copied pid: ${fg_pid}" ;;
+		cwd)
+			printf '%s' "$fg_cwd" | wl-copy
+			notify_desktop_always low "Sway Window Properties" "copied cwd: $(pango_escape "$fg_cwd")" ;;
+		*)
+			: ;;
+	esac
+fi

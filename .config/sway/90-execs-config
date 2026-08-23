@@ -22,9 +22,11 @@ exec_always pgrep lxpolkit || lxpolkit
 # A "clipboard manager" must be installed to make the clipboard's content shared amongst windows.
 #
 # Retired 2026-08-02 in favour of swayclip, which keeps the mime types the source client offered
-# instead of flattening to text. swayclip is NOT started here: it runs from the i3jobs screen via
-# ~/bin/launch-desktop-jobs-goldorak, so its --debug output is readable. Consequence: unlike this
-# exec_always, nothing is captured until $mod+Shift+l has been pressed once. See ~/etc/docs/sway-setup.md §9.2.
+# instead of flattening to text. swayclip is NOT started by this exec_always directly — it is
+# listed in ~/bin/launch-desktop-jobs-goldorak, which line 71 below (i3-launch-jobs) sources on
+# every session start and swaymsg reload, same as this line, so it IS live from session start.
+# It sits in the job list rather than a bare exec_always so its --debug output lands in the
+# readable i3jobs screen window instead of needing a --logfile. See ~/etc/docs/sway-setup.md §9.2.
 # To roll back: uncomment the line below, and restore the dfzf-clipboard binding in 60-bindings-config.
 #exec_always sh -c 'pkill wl-paste; wl-paste --watch cliphist -max-items 1000 store'  # for dfzf-clipboard
 

@@ -6,6 +6,12 @@
 # below has a built-in default (common/config_util.c:58).
 
 [daemon]
+# `logfile =` is deliberately NOT set here. Per swayclip(1) it REPLACES stderr rather than adding
+# to it, which would silence the --debug stream in the readable i3jobs screen window (the reason
+# this daemon runs from the job list at all — see ~/etc/docs/sway-setup.md §9.2). Persistent
+# logging is done instead via `| tee -a ~/logs/swayclip.log` in
+# ~/bin/launch-desktop-jobs-goldorak, which keeps both.
+
 # Carried over from the cliphist setup this replaced (`wl-paste --watch cliphist -max-items 1000`).
 # Trimming skips pinned rows, so a pinned entry is never evicted by this limit. Was a SQL trigger
 # (`trim_entries` in daemon/db_schema.sql); `ea43ca9` (picked up 2026-08-05, v0.1.0-14-g6f22fe9)

@@ -21,7 +21,9 @@ alias bwl='export BW_SESSION='
 alias claude="claude --enable-auto-mode --autocompact 300000 --effort high"
 alias codex="nah run codex"
 if [ "${MY_WM}" = "sway" ]; then
-    alias copy='wl-copy'
+    # --trim-newline pairs with paste's --no-newline below: without it, `echo foo | copy` stores
+    # a trailing \n that `paste` never added back, so `copy | diff <(paste)` looked lossy.
+    alias copy='wl-copy --trim-newline'
 else
     alias copy='xclip -in -selection clipboard'
 fi

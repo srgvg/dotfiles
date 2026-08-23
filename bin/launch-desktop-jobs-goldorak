@@ -5,9 +5,22 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     # https://github.com/parisni/dfzf
     /usr/local/bin/dfzf-daemon --debug
     # Wayland clipboard manager. Replaced cliphist 2026-08-02, whose watcher used to live in sway
-    # ~/.config/sway/90-execs-config (now commented out). Runs here rather than exec_always so the
-    # --debug stream is readable in the i3jobs screen. See ~/etc/docs/sway-setup.md §9.2.
-    swayclip --config $HOME/.config/swayclip/config.toml --db $HOME/.local/share/swayclip/history.sqlite3 --ready --debug
+    # ~/.config/sway/90-execs-config (now commented out; that exec_always is what actually starts
+    # this job list, on every session start and swaymsg reload — see 90-execs-config's own comment).
+    # Runs here rather than a bare exec_always so the --debug stream is readable in the i3jobs
+    # screen. See ~/etc/docs/sway-setup.md §9.2.
+    #
+    # tee -a added 2026-08-22 for a persistent log surviving screen-scrollback loss/restart.
+    # NOT done via config.toml's logfile setting: per swayclip(1), --logfile/logfile REPLACES
+    # stderr rather than adding to it (if not provided then stderr is used), which would have
+    # silenced this exact screen output. tee keeps both. NB this comment block sits inside an
+    # UNQUOTED heredoc (see the EOF above) -- bash expands backticks and dollar-variables in it
+    # at heredoc-construction time, before the sed comment filter ever runs, so avoid both here.
+    # Editing this line changes what launch-screen's idempotency pgrep matches against
+    # (~/bin/launch-desktop-jobs:52-56) -- the already-running daemon under the OLD command line
+    # stays up and untouched until next natural restart (session restart, the Super+Shift+l
+    # binding, or the daemon bounce D2's upgrade will need anyway).
+    swayclip --config $HOME/.config/swayclip/config.toml --db $HOME/.local/share/swayclip/history.sqlite3 --ready --debug 2>&1 | tee -a $HOME/logs/swayclip.log
     /home/serge/bin/vorta.sh
     runflatpak.sh com.spotify.Client
     runflatpak.sh com.saivert.pwvucontrol

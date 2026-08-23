@@ -1,0 +1,374 @@
+#!/usr/bin/env bash
+# rebase-push-test — behavioural regression suite for ~/bin/rebase-push.
+#
+# Every case builds a throwaway repo with a bare "remote" (a few MiB total, in
+# a mktemp dir that is removed on exit). No network, no real forge.
+#
+# The forge is reached the way the real thing is: the remote URL is a genuine
+# gitlab.com address, rewritten to the local bare repo by url.<x>.insteadOf, so
+# `git remote get-url` returns the gitlab URL and the forge-parsing code path
+# under test runs unmodified. `glab`/`gh` are stubbed on PATH.
+#
+# Run:  bash ~/bin/rebase-push-test          (all cases)
+#       bash ~/bin/rebase-push-test -v       (show tool output for each case)
+
+set -uo pipefail
+
+TOOL="${REBASE_PUSH:-$HOME/bin/rebase-push}"
+[ -x "$TOOL" ] || { echo "no executable at $TOOL" >&2; exit 1; }
+
+VERBOSE=0
+[ "${1:-}" = "-v" ] && VERBOSE=1
+
+PASS=0
+FAIL=0
+WORK=$(mktemp -d "${TMPDIR:-/tmp}/rebase-push-test.XXXXXX") || exit 1
+trap 'rm -rf "$WORK"' EXIT
+
+ok() { PASS=$((PASS + 1)); printf 'PASS  %s\n' "$1"; }
+no() { FAIL=$((FAIL + 1)); printf 'FAIL  %s\n      %s\n' "$1" "$2"; }
+
+# --- stub forge CLIs -------------------------------------------------------
+
+STUB="$WORK/stubbin"
+mkdir -p "$STUB"
+
+cat >"$STUB/glab" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+api)
+  case "$2" in
+  *protected_branches*) cat "${STUB_PROTECTED:-/dev/null}" 2>/dev/null || echo '[]' ;;
+  *) echo '{}' ;;
+  esac
+  [ "${STUB_API_FAIL:-0}" = 1 ] && exit 1
+  exit 0
+  ;;
+mr)
+  case "$2" in
+  list) echo '[{"iid":42}]' ;;
+  note) printf '%s\n' "$*" >>"${STUB_NOTES:-/dev/null}" ;;
+  esac
+  exit 0
+  ;;
+esac
+exit 0
+EOF
+chmod +x "$STUB/glab"
+PATH="$STUB:$PATH"
+export PATH
+
+DEFAULT_PROTECTED="$WORK/protected-empty.json"
+echo '[]' >"$DEFAULT_PROTECTED"
+
+# --- fixture ---------------------------------------------------------------
+
+# new_repo NAME -> prints the work-repo path. Creates a bare remote with a
+# `main` branch and a `feat/x` branch forked from it, then advances main by one
+# commit so a rebase has somewhere to go.
+new_repo() {
+	local name="$1" bare repo
+	bare="$WORK/$name.git"
+	repo="$WORK/$name"
+
+	git init --quiet --bare --initial-branch=main "$bare"
+	git init --quiet --initial-branch=main "$repo"
+	git -C "$repo" config user.email t@example.invalid
+	git -C "$repo" config user.name Test
+	git -C "$repo" config commit.gpgsign false
+	# Isolate from this host's global hooks (pre-commit et al) -- their chatter
+	# is not this suite's output, and a failing one is not this suite's failure.
+	mkdir -p "$WORK/nohooks"
+	git -C "$repo" config core.hooksPath "$WORK/nohooks"
+
+	printf 'base\n' >"$repo/base.txt"
+	git -C "$repo" add -A
+	git -C "$repo" commit --quiet -m "base"
+
+	git -C "$repo" remote add origin "git@gitlab.com:test/$name.git"
+	git -C "$repo" config "url.$bare.insteadOf" "git@gitlab.com:test/$name.git"
+	git -C "$repo" push --quiet origin main
+
+	# feat/x forks from base
+	git -C "$repo" checkout --quiet -b feat/x
+	printf 'feature line\n' >"$repo/feature.txt"
+	git -C "$repo" add -A
+	git -C "$repo" commit --quiet -m "feat: add feature"
+	git -C "$repo" push --quiet origin feat/x
+
+	# main advances independently
+	git -C "$repo" checkout --quiet main
+	printf 'main moved\n' >>"$repo/base.txt"
+	git -C "$repo" add -A
+	git -C "$repo" commit --quiet -m "chore: advance main"
+	git -C "$repo" push --quiet origin main
+
+	# record the remote's default branch, as a real clone would have it
+	git -C "$repo" remote set-head origin main >/dev/null 2>&1
+	git -C "$repo" checkout --quiet feat/x
+	printf '%s' "$repo"
+}
+
+run_tool() { # run_tool REPO [args...] -> captures rc, OUT
+	local repo="$1"
+	shift
+	OUT=$(cd "$repo" && STUB_PROTECTED="${STUB_PROTECTED:-$DEFAULT_PROTECTED}" \
+		STUB_NOTES="${STUB_NOTES:-/dev/null}" "$TOOL" "$@" 2>&1)
+	RC=$?
+	[ "$VERBOSE" = 1 ] && printf -- '--- tool output ---\n%s\n-------------------\n' "$OUT"
+	return 0
+}
+
+remote_oid() { git -C "$1" ls-remote origin refs/heads/feat/x | cut -f1; }
+
+# --- case 1: fast-forward uses no force ------------------------------------
+
+c1() {
+	local r
+	r=$(new_repo ff)
+	printf 'more\n' >>"$r/feature.txt"
+	git -C "$r" add -A && git -C "$r" commit --quiet -m "feat: more"
+	local want
+	want=$(git -C "$r" rev-parse HEAD)
+
+	run_tool "$r"
+	if [ "$RC" -ne 0 ]; then no "1 fast-forward" "rc=$RC"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'Fast-forward'; then
+		no "1 fast-forward" "did not report a fast-forward"; return
+	fi
+	if printf '%s' "$OUT" | grep -q 'force-with-lease'; then
+		no "1 fast-forward" "used a lease on a fast-forward"; return
+	fi
+	[ "$(remote_oid "$r")" = "$want" ] ||
+		{ no "1 fast-forward" "remote not advanced"; return; }
+	ok "1 fast-forward pushes plainly, no force"
+}
+
+# --- case 2: clean rebase --------------------------------------------------
+
+c2() {
+	local r
+	r=$(new_repo clean)
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1 ||
+		{ no "2 clean rebase" "fixture rebase failed"; return; }
+	local want
+	want=$(git -C "$r" rev-parse HEAD)
+
+	STUB_NOTES="$WORK/notes-clean.txt" run_tool "$r"
+	if [ "$RC" -ne 0 ]; then no "2 clean rebase" "rc=$RC"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'classified.*clean'; then
+		no "2 clean rebase" "not classified clean"; return
+	fi
+	[ "$(remote_oid "$r")" = "$want" ] ||
+		{ no "2 clean rebase" "remote tip wrong"; return; }
+	ok "2 clean rebase classifies clean and pushes"
+}
+
+# --- case 3: conflicted rebase, note is mandatory --------------------------
+
+c3() {
+	local r notes
+	r=$(new_repo conflict)
+	notes="$WORK/notes-conflict.txt"
+	: >"$notes"
+
+	# make feat/x and main touch the same file so the rebase conflicts
+	git -C "$r" checkout --quiet feat/x
+	printf 'feature edit\n' >>"$r/base.txt"
+	git -C "$r" add -A && git -C "$r" commit --quiet -m "feat: touch base"
+	git -C "$r" push --quiet origin feat/x
+
+	git -C "$r" rebase origin/main >/dev/null 2>&1
+	if [ -d "$r/.git/rebase-merge" ] || [ -d "$r/.git/rebase-apply" ]; then
+		printf 'resolved\n' >"$r/base.txt"
+		git -C "$r" add -A
+		GIT_EDITOR=true git -C "$r" rebase --continue >/dev/null 2>&1
+	fi
+	local want
+	want=$(git -C "$r" rev-parse HEAD)
+
+	# --no-note must NOT be honoured here
+	STUB_NOTES="$notes" run_tool "$r" --no-note
+	if [ "$RC" -ne 0 ]; then no "3 conflicted rebase" "rc=$RC"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'classified.*conflicted'; then
+		no "3 conflicted rebase" "not classified conflicted"; return
+	fi
+	if ! [ -s "$notes" ]; then
+		no "3 conflicted rebase" "--no-note suppressed a mandatory note"; return
+	fi
+	[ "$(remote_oid "$r")" = "$want" ] ||
+		{ no "3 conflicted rebase" "remote tip wrong"; return; }
+	ok "3 conflicted rebase posts a note even with --no-note"
+}
+
+# --- case 4: a dropped commit is refused -----------------------------------
+
+c4() {
+	local r before
+	r=$(new_repo drop)
+	before=$(remote_oid "$r")
+	# drop the branch's only commit
+	git -C "$r" reset --quiet --hard origin/main
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "4 dropped commit" "tool succeeded"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'REFUSING'; then
+		no "4 dropped commit" "no refusal message"; return
+	fi
+	if ! printf '%s' "$OUT" | grep -q 'force-with-lease'; then
+		no "4 dropped commit" "did not print the raw command for a human"; return
+	fi
+	[ "$(remote_oid "$r")" = "$before" ] ||
+		{ no "4 dropped commit" "remote was modified"; return; }
+	git -C "$r" show-ref --verify --quiet refs/rescue/feat/x/1 ||
+		{ no "4 dropped commit" "no rescue ref written"; return; }
+	ok "4 dropped commit refused, remote untouched, rescue written"
+}
+
+# --- case 5a: the default branch is refused --------------------------------
+
+c5a() {
+	local r
+	r=$(new_repo defbranch)
+	git -C "$r" checkout --quiet main
+	printf 'x\n' >>"$r/base.txt"
+	git -C "$r" add -A && git -C "$r" commit --quiet -m "x"
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "5a default branch" "tool succeeded"; return; fi
+	printf '%s' "$OUT" | grep -q "refusing" ||
+		{ no "5a default branch" "no refusal: $OUT"; return; }
+	ok "5a default branch refused"
+}
+
+# --- case 5b: a forge-protected branch is refused --------------------------
+
+c5b() {
+	local r prot
+	r=$(new_repo protected)
+	prot="$WORK/protected.json"
+	printf '[{"name":"feat/*"}]\n' >"$prot"
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+
+	STUB_PROTECTED="$prot" run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "5b protected branch" "tool succeeded"; return; fi
+	printf '%s' "$OUT" | grep -q 'protected pattern' ||
+		{ no "5b protected branch" "wrong refusal: $OUT"; return; }
+	ok "5b forge-protected branch refused (glob matched)"
+}
+
+# --- case 5c: an unanswerable forge is refused, not assumed safe -----------
+
+c5c() {
+	local r
+	r=$(new_repo forgedown)
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+
+	OUT=$(cd "$r" && STUB_API_FAIL=1 STUB_PROTECTED="$DEFAULT_PROTECTED" "$TOOL" 2>&1)
+	RC=$?
+	[ "$VERBOSE" = 1 ] && printf -- '--- tool output ---\n%s\n-------------------\n' "$OUT"
+	if [ "$RC" -eq 0 ]; then no "5c forge unreachable" "tool succeeded"; return; fi
+	printf '%s' "$OUT" | grep -q 'could not ask' ||
+		{ no "5c forge unreachable" "wrong refusal: $OUT"; return; }
+	ok "5c unreachable forge refused, not assumed unprotected"
+}
+
+# --- case 6: branch absent on the remote is refused ------------------------
+
+c6() {
+	local r
+	r=$(new_repo absent)
+	git -C "$r" push --quiet origin --delete feat/x
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "6 absent branch" "tool succeeded"; return; fi
+	printf '%s' "$OUT" | grep -q 'does not exist on' ||
+		{ no "6 absent branch" "wrong refusal: $OUT"; return; }
+	ok "6 branch absent from remote refused"
+}
+
+# --- case 6b: a branch tracking a differently-named remote branch ----------
+#
+# The hazard is not the refusal, it is what happens without one: every line the
+# tool prints names the LOCAL branch, while the push would address a remote ref
+# of that same name -- which may well be somebody else's branch. Found live on
+# 2026-08-22, on a worktree whose local branch had been given a throwaway name.
+
+c6b() {
+	local r
+	r=$(new_repo mismatch)
+	git -C "$r" branch -m feat/x local-only-name
+	# `branch -m` carries the tracking config across, but the fixture's branch
+	# has none to carry -- set it, or this case silently exercises the
+	# no-upstream path (which refuses for a different, correct reason).
+	git -C "$r" branch --set-upstream-to=origin/feat/x local-only-name >/dev/null
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "6b name mismatch" "tool succeeded"; return; fi
+	printf '%s' "$OUT" | grep -q 'the names differ' ||
+		{ no "6b name mismatch" "wrong refusal: $OUT"; return; }
+	# It must refuse BEFORE any forge query -- the point is that the name is
+	# wrong, not that the wrongly-named branch happens to be unprotected.
+	printf '%s' "$OUT" | grep -q 'protection ' &&
+		{ no "6b name mismatch" "queried the forge before refusing"; return; }
+	ok "6b branch tracking a differently-named remote branch refused"
+}
+
+# --- case 7a: the lease form the tool emits really guards ------------------
+
+c7a() {
+	local r stale
+	r=$(new_repo lease)
+	stale=$(git -C "$r" rev-parse origin/main) # deliberately NOT the branch tip
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+
+	if git -C "$r" push --force-with-lease="refs/heads/feat/x:$stale" \
+		origin HEAD:refs/heads/feat/x >/dev/null 2>&1; then
+		no "7a lease semantics" "a stale lease was accepted"
+		return
+	fi
+	ok "7a stale --force-with-lease=ref:oid is rejected by git"
+}
+
+# --- case 7b: a rejected push leaves the rescue ref intact -----------------
+
+c7b() {
+	local r before
+	r=$(new_repo reject)
+	before=$(remote_oid "$r")
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+	printf '#!/bin/sh\nexit 1\n' >"$WORK/reject.git/hooks/pre-receive"
+	chmod +x "$WORK/reject.git/hooks/pre-receive"
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "7b rejected push" "tool reported success"; return; fi
+	printf '%s' "$OUT" | grep -q 'Rescue ref remains' ||
+		{ no "7b rejected push" "did not report the rescue ref: $OUT"; return; }
+	git -C "$r" show-ref --verify --quiet refs/rescue/feat/x/1 ||
+		{ no "7b rejected push" "rescue ref missing"; return; }
+	[ "$(remote_oid "$r")" = "$before" ] ||
+		{ no "7b rejected push" "remote changed despite rejection"; return; }
+	ok "7b rejected push: rescue ref intact, remote unchanged"
+}
+
+# --- case 8: --dry-run touches nothing -------------------------------------
+
+c8() {
+	local r before
+	r=$(new_repo dryrun)
+	before=$(remote_oid "$r")
+	git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+
+	run_tool "$r" --dry-run
+	if [ "$RC" -ne 0 ]; then no "8 dry run" "rc=$RC"; return; fi
+	printf '%s' "$OUT" | grep -q 'would run' ||
+		{ no "8 dry run" "no 'would run' line"; return; }
+	[ "$(remote_oid "$r")" = "$before" ] ||
+		{ no "8 dry run" "remote changed"; return; }
+	ok "8 --dry-run proves without pushing"
+}
+
+for c in c1 c2 c3 c4 c5a c5b c5c c6 c6b c7a c7b c8; do "$c"; done
+
+printf '\n%s passed, %s failed\n' "$PASS" "$FAIL"
+[ "$FAIL" -eq 0 ]

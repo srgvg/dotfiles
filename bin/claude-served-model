@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# claude-served-model — which model actually served each recent Agent-tool subagent dispatch.
+#
+# The Agent tool's `model` override (sonnet/opus/haiku/fable) is honoured only probabilistically,
+# most of all for `fable` (~37% on this host, 2026-08-22 census) — with NO warning, NO error, and
+# NO marker anywhere when it silently falls back to another model. The only ground truth is the
+# subagent's own transcript (`message.model` on its assistant turns), never its self-report and
+# never the request you made. See ~/etc/docs/development/claude-code-model-routing.md
+# §Temporary model switching, and memory claude-model-switch-temporary.md.
+#
+#   $ claude-served-model
+#   AGE    DESCRIPTION                              REQUESTED  SERVED           STATUS
+#   2m     review-plan-fable 173806152303039         fable      claude-fable-5   ok
+#   9m     review-plan-fable 172153599027293         fable      claude-opus-5    FALLBACK
+#   1h     gmr round: crane!511                      -          claude-sonnet-5  -
+#
+#   -n N          show N most recent dispatches (default 10)
+#   --all         search every project on the host, not just the current one -- SLOWER, and a
+#                 dispatch from a concurrently-running session in another project will appear too
+#   --project DIR use DIR's project (default: current directory's project)
+#   --plain       tab-separated, no colour, no truncation -- for scripts
+#   --json        one JSON object per line, nothing truncated
+#
+# By default this only looks in the CURRENT project's own session directories -- deliberately: a
+# fix shipped 2026-08-22 to the /run-* and /review-plan-fable commands had to replace an `ls -t`
+# scan across every project because it raced with an unrelated concurrently-running session and
+# silently attributed a stranger's subagent to the wrong dispatch. --all reintroduces that same
+# scope on purpose, for a manual host-wide look; treat concurrent-session noise as expected there.
+set -euo pipefail
+
+CFG=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
+PROJECTS=$CFG/projects
+
+count=10
+all=0
+plain=0
+json=0
+target_dir=$PWD
+
+while [ $# -gt 0 ]; do
+	case $1 in
+	-n)
+		count=$2
+		shift 2
+		;;
+	--all) all=1 && shift ;;
+	--project)
+		target_dir=$2
+		shift 2
+		;;
+	--plain) plain=1 && shift ;;
+	--json) json=1 && shift ;;
+	-h | --help)
+		sed -n '2,26p' "$0" | sed -e 's/^# \{0,1\}//'
+		exit 0
+		;;
+	*)
+		printf 'claude-served-model: unknown option %s\n' "$1" >&2
+		exit 2
+		;;
+	esac
+done
+
+# Claude Code's project-directory sanitization: the absolute path with every / turned into -,
+# which for an absolute path (already starting with /) yields a leading -.
+sanitize() { printf '%s' "$1" | sed 's|/|-|g'; }
+
+if [ "$all" -eq 1 ]; then
+	search_root=$PROJECTS
+else
+	proj=$(sanitize "$(cd "$target_dir" && pwd)")
+	search_root=$PROJECTS/$proj
+	if [ ! -d "$search_root" ]; then
+		printf 'claude-served-model: no project directory for %s (expected %s)\n' "$target_dir" "$search_root" >&2
+		exit 1
+	fi
+fi
+
+metas=$(find "$search_root" -path '*/subagents/agent-*.meta.json' -printf '%T@ %p\n' 2>/dev/null |
+	sort -rn | head -n "$count" | cut -d' ' -f2-) || true
+
+if [ -z "$metas" ]; then
+	printf 'claude-served-model: no subagent dispatches found under %s\n' "$search_root" >&2
+	exit 0
+fi
+
+# alias -> the message.model prefix it should have produced, when honoured
+alias_prefix() {
+	case $1 in
+	sonnet) printf 'claude-sonnet' ;;
+	opus) printf 'claude-opus' ;;
+	haiku) printf 'claude-haiku' ;;
+	fable) printf 'claude-fable' ;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
+now=$(date +%s)
+age_str() {
+	local d=$(( now - $1 ))
+	if [ "$d" -lt 60 ]; then printf '%ds' "$d"
+	elif [ "$d" -lt 3600 ]; then printf '%dm' $((d / 60))
+	elif [ "$d" -lt 86400 ]; then printf '%dh' $((d / 3600))
+	else printf '%dd' $((d / 86400)); fi
+}
+
+use_color=0
+[ "$plain" -eq 0 ] && [ "$json" -eq 0 ] && [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && use_color=1
+c_ok=""; c_fb=""; c_dim=""; c_reset=""
+if [ "$use_color" -eq 1 ]; then
+	c_ok=$'\033[32m'; c_fb=$'\033[31m'; c_dim=$'\033[2m'; c_reset=$'\033[0m'
+fi
+
+rows=()
+while IFS= read -r m; do
+	[ -n "$m" ] || continue
+	b=${m%.meta.json}.jsonl
+	req=$(jq -r '.model // "-"' "$m" 2>/dev/null)
+	desc=$(jq -r '.description // "-"' "$m" 2>/dev/null)
+	served=$(jq -r 'select(.type=="assistant") | .message.model // empty' "$b" 2>/dev/null | sort -u | tr '\n' '+' | sed 's/+$//')
+	mtime=$(stat -c %Y "$m" 2>/dev/null || echo "$now")
+	age=$(age_str "$mtime")
+
+	if [ -z "$served" ]; then
+		status="PENDING"
+	elif [ "$req" = "-" ]; then
+		status="-"
+	else
+		prefix=$(alias_prefix "$req")
+		status="ok"
+		case $served in
+		*,* | *+*) status="FALLBACK" ;;
+		"$prefix"*) status="ok" ;;
+		*) status="FALLBACK" ;;
+		esac
+	fi
+
+	if [ "$json" -eq 1 ]; then
+		jq -n --arg desc "$desc" --arg req "$req" --arg served "$served" --arg status "$status" \
+			--arg age "$age" --arg meta "$m" \
+			'{age: $age, description: $desc, requested: $req, served: $served, status: $status, meta: $meta}'
+		continue
+	fi
+
+	if [ "$plain" -eq 1 ]; then
+		printf '%s\t%s\t%s\t%s\t%s\n' "$age" "$desc" "$req" "${served:--}" "$status"
+		continue
+	fi
+
+	rows+=("$age|$desc|$req|${served:--}|$status")
+done <<<"$metas"
+
+[ "$json" -eq 1 ] && exit 0
+[ "$plain" -eq 1 ] && exit 0
+
+# Column widths from the actual data (headers as the floor) -- a fixed SERVED width clips model
+# IDs like claude-haiku-4-5-20251001 (26 chars) while claude-fable-5 (14) wastes space elsewhere.
+w_age=3; w_desc=11; w_req=9; w_served=6  # len("AGE") len("DESCRIPTION") len("REQUESTED") len("SERVED")
+for r in "${rows[@]}"; do
+	IFS='|' read -r age desc req served status <<<"$r"
+	desc_trunc=${desc:0:60}
+	[ ${#age} -gt "$w_age" ] && w_age=${#age}
+	[ ${#desc_trunc} -gt "$w_desc" ] && w_desc=${#desc_trunc}
+	[ ${#req} -gt "$w_req" ] && w_req=${#req}
+	[ ${#served} -gt "$w_served" ] && w_served=${#served}
+done
+
+printf '%-*s  %-*s  %-*s  %-*s  %s\n' "$w_age" "AGE" "$w_desc" "DESCRIPTION" "$w_req" "REQUESTED" "$w_served" "SERVED" "STATUS"
+for r in "${rows[@]}"; do
+	IFS='|' read -r age desc req served status <<<"$r"
+	desc_trunc=${desc:0:60}
+	color=""
+	case $status in
+	FALLBACK) color=$c_fb ;;
+	ok) color=$c_ok ;;
+	-|PENDING) color=$c_dim ;;
+	esac
+	printf '%-*s  %-*s  %-*s  %-*s  %s%s%s\n' "$w_age" "$age" "$w_desc" "$desc_trunc" "$w_req" "$req" "$w_served" "$served" "$color" "$status" "$c_reset"
+done
