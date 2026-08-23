@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
 # claude-served-model — which model actually served each recent Agent-tool subagent dispatch.
 #
-# The Agent tool's `model` override (sonnet/opus/haiku/fable) is honoured only probabilistically,
-# most of all for `fable` (~37% on this host, 2026-08-22 census) — with NO warning, NO error, and
-# NO marker anywhere when it silently falls back to another model. The only ground truth is the
-# subagent's own transcript (`message.model` on its assistant turns), never its self-report and
-# never the request you made. See ~/etc/docs/development/claude-code-model-routing.md
-# §Temporary model switching, and memory claude-model-switch-temporary.md.
+# Verifies that a model pin actually routed. Three mechanisms exist for pinning a subagent's
+# model and only some of them work: command-frontmatter `model:` is a PROVEN NO-OP (2.1.239+ —
+# every command turn runs on the session model regardless of its pin); agent-frontmatter `model:`
+# IS honoured (e.g. `Explore.md` haiku); the Agent-tool `model` param is honoured reliably for
+# sonnet/opus/haiku (98-100% on this host) but is gated for `fable` specifically — a subagent can
+# never pass Fable's usage-credits consent prompt (main-thread-only; see
+# ~/etc/docs/development/claude-code-model-routing.md §Correction 2026-08-23) and silently falls
+# back to Opus, with NO warning, NO error, and NO marker anywhere in the subagent's own
+# transcript. The only ground truth for any of this is the subagent's own transcript
+# (`message.model` on its assistant turns) — never a model's self-report, never the request made.
+# Secondary use: per-dispatch cost attribution (`gmr-round-worker` vs `general-purpose` vs …).
+# See memory claude-model-switch-temporary.md.
 #
 #   $ claude-served-model
 #   AGE    DESCRIPTION                              REQUESTED  SERVED           STATUS
-#   2m     review-plan-fable 173806152303039         fable      claude-fable-5   ok
-#   9m     review-plan-fable 172153599027293         fable      claude-opus-5    FALLBACK
-#   1h     gmr round: crane!511                      -          claude-sonnet-5  -
+#   2m     gmr round: crane!511                      -          claude-sonnet-5  -
+#   9m     run-fable 172153599027293 (disabled cmd)  fable      claude-opus-5    FALLBACK
+#   1h     Explore compliance scan state              -          claude-haiku-4-5 -
 #
 #   -n N          show N most recent dispatches (default 10)
 #   --all         search every project on the host, not just the current one -- SLOWER, and a

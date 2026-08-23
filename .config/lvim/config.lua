@@ -51,7 +51,21 @@ formatters.setup {
     { name = "shfmt", args = { "-i", "4", "-ci" } },
     {
         name = "yamlfmt",
-        args = { "-conf", os.getenv("HOME") .. "/.config/yamlfmt/yamlfmt.yaml", "-" },
+        -- Prefer a project-local .yamlfmt (walked up from the buffer's directory) over the global
+        -- config below -- see ~/etc/docs/neovim.md. Without this, every repo gets reformatted to
+        -- this global config's style on save regardless of what that repo's own lint gate expects.
+        --
+        -- No trailing "-" here (unlike the LazyVim/NvChad conform.nvim version of this same fix):
+        -- null-ls's make_builtin merges this function's return with the yamlfmt builtin's own
+        -- default args ({ "-" }), re-appending "-" itself so it stays last -- adding it here too
+        -- would duplicate it.
+        args = function(params)
+            local project = vim.fs.find(
+                { ".yamlfmt", ".yamlfmt.yaml", ".yamlfmt.yml" },
+                { upward = true, path = vim.fs.dirname(params.bufname) }
+            )[1]
+            return { "-conf", project or (os.getenv("HOME") .. "/.config/yamlfmt/yamlfmt.yaml") }
+        end,
         filetypes = { "yaml" },
     },
 }
