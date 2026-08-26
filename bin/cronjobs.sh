@@ -90,6 +90,16 @@ function execute() {
             fi
         done
 
+        # ~/tmp holds per-invocation Go work dirs (GOTMPDIR); their files are removed
+        # above, leaving depth-1 empties the -mindepth 2 loop above cannot see.
+        logtitle looking for empty go-build dirs directly under ~/tmp
+        nice -n 20 ionice -c 3 find \
+            $HOME/tmp \
+            -mindepth 1 -maxdepth 1 \
+            -type d -empty -mmin ${cleantime} \
+            -print0 | xargs -r -0 rmdir -verbose
+        mkdir -pv $HOME/tmp
+
         logtitle misc stuff
 
         # syncthing needs
@@ -108,7 +118,7 @@ function execute() {
             -mindepth 1 \
             -mmin +11520 \
             -type f \
-            -delete
+            -print0 | xargs -r -0 rm -fv
 
         # cleanupo claude files
         logtitle cleanup ~/.claude files
@@ -116,12 +126,12 @@ function execute() {
         find $HOME/.claude/todos/ \
             -type f -name "*.json" \
             -mtime +30 \
-            -delete
+            -print0 | xargs -r -0 rm -fv
         # Delete shell snapshots older than 7 days
         find $HOME/.claude/shell-snapshots/ \
             -type f -name "snapshot-*.sh" \
             -mtime +7 \
-            -delete
+            -print0 | xargs -r -0 rm -fv
 
         # Retire abandoned g*-loop state files so they stop rendering as live/STALLED in the HUD.
         # The loops are instructed to write phase=done on exit, but a killed or abandoned session

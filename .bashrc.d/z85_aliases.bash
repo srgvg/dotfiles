@@ -18,7 +18,8 @@ alias bi="bash-it"
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'
 alias bwl='export BW_SESSION='
 # c
-alias claude="claude --enable-auto-mode --autocompact 300000 --effort high"
+# claude's default flags (auto-mode, remote-control, ...) live in ~/bin/claude,
+# not here -- see that script. Applies via PATH to any shell, not just this one.
 alias codex="nah run codex"
 if [ "${MY_WM}" = "sway" ]; then
     # --trim-newline pairs with paste's --no-newline below: without it, `echo foo | copy` stores
@@ -68,6 +69,7 @@ alias imgres="identify -format '%f: %wpx x %hpx\n'"
 alias jobs="jobs -l"
 alias jqc="jq -C . | less -r"
 # k
+alias k9s="k9s --all-namespaces"
 alias kb="kustomize build"
 alias kbf="kustomize-build-flux"
 alias kbfad="kustomize-build-flux-apply-dry"
@@ -108,6 +110,7 @@ alias kga="kubectl-get_all --namespace \$(kubie info ns)"
 alias kgaa="kubectl-get_all"
 alias kn='kubie ns'
 alias konfig="kubectl konfig"
+alias kube="kubie exec admin@kube flux-system k9s --all-namespaces"
 # https://fluxcd.io/flux/faq/#what-is-the-behavior-of-kustomize-used-by-flux
 alias kustomize-build-flux="kustomize build --load-restrictor=LoadRestrictionsNone"
 # l

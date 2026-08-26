@@ -225,6 +225,55 @@ c4() {
 	ok "4 dropped commit refused, remote untouched, rescue written"
 }
 
+# --- case 9: reword-only rewrite is accepted (patch-id reconciliation) -----
+
+c9() {
+	local r notes
+	r=$(new_repo reword)
+	notes="$WORK/notes-reword.txt"
+	: >"$notes"
+
+	# reword the tip commit -- identical tree, different subject. This is the
+	# false-positive class fixed 2026-08-26: same content, only the message
+	# changed (e.g. to satisfy a commit-lint rule the original subject broke).
+	git -C "$r" commit --quiet --amend -m "feat: add feature (reworded)"
+	local want
+	want=$(git -C "$r" rev-parse HEAD)
+
+	STUB_NOTES="$notes" run_tool "$r"
+	if [ "$RC" -ne 0 ]; then no "9 reword-only" "rc=$RC"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'content-identical under a new subject'; then
+		no "9 reword-only" "did not report the reword reconciliation"; return
+	fi
+	[ "$(remote_oid "$r")" = "$want" ] ||
+		{ no "9 reword-only" "remote not advanced"; return; }
+	ok "9 reword-only rewrite accepted, reported as content-identical"
+}
+
+# --- case 9b: reworded AND gutted is still refused --------------------------
+
+c9b() {
+	local r before
+	r=$(new_repo rewordgut)
+	before=$(remote_oid "$r")
+
+	# reword AND change the content -- neither patch-id nor subject can match,
+	# so this must still refuse. Without this case, 9 alone cannot show the
+	# drop check still bites once patch-id matching exists.
+	printf 'entirely different content\n' >"$r/feature.txt"
+	git -C "$r" add -A
+	git -C "$r" commit --quiet --amend -m "feat: totally different subject"
+
+	run_tool "$r"
+	if [ "$RC" -eq 0 ]; then no "9b reworded and gutted" "tool succeeded"; return; fi
+	if ! printf '%s' "$OUT" | grep -q 'REFUSING'; then
+		no "9b reworded and gutted" "no refusal message"; return
+	fi
+	[ "$(remote_oid "$r")" = "$before" ] ||
+		{ no "9b reworded and gutted" "remote was modified"; return; }
+	ok "9b reworded-and-gutted commit still refused"
+}
+
 # --- case 5a: the default branch is refused --------------------------------
 
 c5a() {
@@ -368,7 +417,7 @@ c8() {
 	ok "8 --dry-run proves without pushing"
 }
 
-for c in c1 c2 c3 c4 c5a c5b c5c c6 c6b c7a c7b c8; do "$c"; done
+for c in c1 c2 c3 c4 c5a c5b c5c c6 c6b c7a c7b c8 c9 c9b; do "$c"; done
 
 printf '\n%s passed, %s failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

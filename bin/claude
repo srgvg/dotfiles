@@ -14,15 +14,59 @@ set -uo pipefail
 REAL="$HOME/.local/bin/claude"
 
 [[ -x $REAL ]] || {
-	printf 'claude wrapper: %s is missing or not executable\n' "$REAL" >&2
-	exit 127
+    printf 'claude wrapper: %s is missing or not executable\n' "$REAL" >&2
+    exit 127
 }
+
+# Default flags for a genuine top-level interactive launch: --enable-auto-mode,
+# --autocompact, --effort high, and a named --remote-control. Lives here (not a
+# bash alias/function) so it applies via PATH regardless of shell, and so a
+# stale shell that hasn't re-sourced .bashrc.d can never run it stale -- this
+# script is read fresh from disk on every exec. Skipped as a bundle for:
+# nested invocation (CLAUDE_MEM_SCOPE already set -- e.g. `claude` run from a
+# Bash tool call inside an existing session), a non-interactive/scripted call
+# (stdin not a terminal, or -p/--print present), or a caller that already
+# passed --remote-control themselves.
+if [[ -z ${CLAUDE_MEM_SCOPE:-} && -t 0 ]]; then
+    inject=1
+    for a in "$@"; do
+        case "$a" in
+            -p | --print | --remote-control | --remote-control=*)
+                inject=0
+                break
+                ;;
+        esac
+    done
+    if [[ $inject -eq 1 ]]; then
+        # Session name for Remote Control, from the launch directory:
+        #   $HOME itself           -> basename (e.g. "serge")
+        #   under ~/src            -> path relative to ~/src, dash-joined (e.g. autops-wharf)
+        #   elsewhere under $HOME  -> path relative to $HOME, dash-joined (e.g. etc-docs)
+        #   outside $HOME          -> directory basename
+        # then "-<MMDDhhmm>" (launch time) to disambiguate concurrent sessions.
+        case "$PWD" in
+            "$HOME") base=${HOME##*/} ;;
+            "$HOME"/src/*)
+                rel=${PWD#"$HOME"/src/}
+                base=${rel//\//-}
+                ;;
+            "$HOME"/*)
+                rel=${PWD#"$HOME"/}
+                base=${rel//\//-}
+                ;;
+            *) base=${PWD##*/} ;;
+        esac
+        set -- --enable-auto-mode --autocompact 300000 --effort high \
+            "$@"
+        #--remote-control="${base}-$(date +%d%H%M)" "$@"
+    fi
+fi
 
 # Already inside a scope this wrapper created? Exec directly. Without this, a
 # claude that spawns claude via PATH would get a fresh sibling scope with its
 # own full budget instead of counting against its parent's.
 if [[ -n ${CLAUDE_MEM_SCOPE:-} ]]; then
-	exec "$REAL" "$@"
+    exec "$REAL" "$@"
 fi
 
 # No user manager reachable (cron, ssh without lingering): start unwrapped
@@ -35,15 +79,15 @@ fi
 # 2026-07-28. `show -p Version` is one D-Bus round trip, creates no unit, and
 # fails only when the manager genuinely cannot be reached.
 if ! systemctl --user show -p Version --value >/dev/null 2>&1; then
-	exec "$REAL" "$@"
+    exec "$REAL" "$@"
 fi
 
 # MemoryHigh throttles and reclaims (slow session); MemoryMax is the hard stop
 # that invokes the cgroup OOM killer on the scope only. MemorySwapMax keeps a
 # capped session from displacing everything else into the 16 GiB swap.
 exec systemd-run --user --quiet --collect --scope \
-	--setenv=CLAUDE_MEM_SCOPE=1 \
-	-p MemoryHigh=6G \
-	-p MemoryMax=12G \
-	-p MemorySwapMax=4G \
-	-- "$REAL" "$@"
+    --setenv=CLAUDE_MEM_SCOPE=1 \
+    -p MemoryHigh=6G \
+    -p MemoryMax=12G \
+    -p MemorySwapMax=4G \
+    -- "$REAL" "$@"

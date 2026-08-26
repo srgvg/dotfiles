@@ -130,13 +130,13 @@ download_file() {
 
     tmppathname="${TMPPATH}/$(basename ${destpathname})"
 
-    $CURL_COMMAND ${url} --output ${tmppathname}
+    $CURL_COMMAND --fail ${url} --output ${tmppathname}
     rc=$?
     set +o pipefail
-    header="$(strings ${tmppathname} | head --lines 1)"
+    header="$(strings ${tmppathname} | head --lines 10)"
     set -o pipefail
 
-    if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]]; then
+    if [ "${rc}" -ne 0 ] || [[ "${header}" =~ "404" ]] || [[ "${header}" =~ "Not Found" ]] || [[ "${header}" =~ "<!DOCTYPE html" ]]; then
         err failed downloading ${url}
         return
     elif [[ "${url}" =~ tar.gz$ ]] ||
@@ -266,7 +266,7 @@ get_downloads() {
         grep 'linux\.tar.gz')" ${BINPATH}/kdash
 
     title "broot"
-    download_file "https://dystroy.org/broot/download/x86_64-linux/broot" ${BINPATH}/broot
+    download_file "https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot" ${BINPATH}/broot
 
     popd
 }
@@ -634,6 +634,47 @@ get_shell_init_cache() {
 
 ##########################################################################################################
 
+get_mise_tasks() {
+    local rc=0
+    local project="$HOME/etc"
+    local mise_bin="${MISE_BIN:-$HOME/.local/bin/mise}"
+
+    title "mise tasks (source builds)"
+
+    # Discovery failure must NOT look like "nothing marked": capture and check first,
+    # otherwise a broken/missing mise silently turns the whole component into a no-op pass.
+    local json
+    if ! json="$("$mise_bin" --cd "$project" tasks ls --json)" || [ -z "$json" ]; then
+        err "could not list mise tasks in $project"
+        return 1
+    fi
+
+    local -a tasks=()
+    mapfile -t tasks < <(
+        jq -r '.[] | select(.file != null) | "\(.name)\t\(.file)"' <<<"$json" |
+            while IFS=$'\t' read -r name file; do
+                grep -q '^#UPDATE-TOOLS' "$file" && echo "$name"
+            done
+    )
+
+    if [ "${#tasks[@]}" -eq 0 ]; then
+        log "no tasks marked #UPDATE-TOOLS in $project"
+        return 0
+    fi
+
+    log "marked tasks: ${tasks[*]}"
+    for task in "${tasks[@]}"; do
+        title "mise run $task"
+        if ! "$mise_bin" --cd "$project" run "$task"; then
+            err "mise task '$task' failed"
+            rc=1
+        fi
+    done
+    return $rc
+}
+
+##########################################################################################################
+
 get_ai() {
 
     title "ai tools"
@@ -671,6 +712,7 @@ get_ai() {
 update_all() {
 
     run_component "mise" get_mise
+    run_component "mise_tasks" get_mise_tasks
     run_component "uv_tools" get_uv_tools
     run_component "krew" get_krew
     run_component "helm" get_helm
@@ -745,6 +787,10 @@ for command in ${commands}; do
             init
             run_component "mise" get_mise
             ;;
+        mise-tasks | mise_tasks)
+            init
+            run_component "mise_tasks" get_mise_tasks
+            ;;
         uv-tools | uv_tools)
             init
             run_component "uv_tools" get_uv_tools
@@ -802,6 +848,7 @@ possible options are:
     krew
     misc
     mise
+    mise-tasks
     uv-tools
     shell-init
 

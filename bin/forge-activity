@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""Monthly counts of closed PRs/MRs and issues across GitHub (srgvg) + GitLab (svg).
+
+Buckets by Europe/Brussels local month so both forges agree on month boundaries.
+Counts are AUTHOR-scoped: neither forge API can filter "closed by me".
+"""
+
+import argparse
+import datetime
+import json
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from zoneinfo import ZoneInfo
+
+TZ = ZoneInfo("Europe/Brussels")
+GH_USER = "srgvg"
+GH_SLEEP = 2.5      # GitHub search API: 30 req/min
+GH_RETRIES = 6
+GH_BACKOFF = 20
+
+
+def parse_month(s):
+    try:
+        y, m = s.split("-")
+        y, m = int(y), int(m)
+        if not 1 <= m <= 12:
+            raise ValueError
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected YYYY-MM, got {s!r}") from None
+    return y, m
+
+
+def add_months(ym, n):
+    y, m = ym
+    t = y * 12 + (m - 1) + n
+    return t // 12, t % 12 + 1
+
+
+def month_range(first, last):
+    cur = first
+    while cur <= last:
+        yield cur
+        cur = add_months(cur, 1)
+
+
+def bounds(ym):
+    y, m = ym
+    start = datetime.datetime(y, m, 1, tzinfo=TZ)
+    ny, nm = add_months(ym, 1)
+    end = datetime.datetime(ny, nm, 1, tzinfo=TZ) - datetime.timedelta(seconds=1)
+    return start, end
+
+
+def gh_count(q):
+    """Only `gh api search/issues --jq .total_count` yields a total; `gh search --json` does not."""
+    err = ""
+    for _ in range(GH_RETRIES):
+        p = subprocess.run(
+            ["gh", "api", "-X", "GET", "search/issues",
+             "-f", f"q={q}", "-f", "per_page=1", "--jq", ".total_count"],
+            capture_output=True, text=True, check=False)
+        if p.returncode == 0 and p.stdout.strip().isdigit():
+            return int(p.stdout.strip())
+        err = p.stderr.strip()[:300]
+        time.sleep(GH_BACKOFF)
+    sys.exit(f"gh failed for {q!r}: {err}")
+
+
+def glab_all(path):
+    """`glab api --paginate` concatenates one JSON array per page; json.load sees only the first."""
+    p = subprocess.run(["glab", "api", "--paginate", path],
+                       capture_output=True, text=True, check=False)
+    if p.returncode != 0:
+        sys.exit(f"glab failed for {path!r}: {p.stderr.strip()[:300]}")
+    buf = p.stdout.strip()
+    dec = json.JSONDecoder()
+    out, i = [], 0
+    while i < len(buf):
+        while i < len(buf) and buf[i] in " \n\r\t":
+            i += 1
+        if i >= len(buf):
+            break
+        obj, i = dec.raw_decode(buf, i)
+        out.extend(obj)
+    return out
+
+
+def main():
+    now = datetime.datetime.now(TZ)
+    cur_month = (now.year, now.month)
+    ap = argparse.ArgumentParser(
+        description="Monthly closed PR/MR and issue counts across GitHub and GitLab.",
+        epilog="Counts are author-scoped; neither forge API can filter by who closed an item.")
+    ap.add_argument("--from", dest="frm", type=parse_month, metavar="YYYY-MM",
+                    default=add_months(cur_month, -11), help="first month (default: 11 months ago)")
+    ap.add_argument("--to", dest="to", type=parse_month, metavar="YYYY-MM",
+                    default=cur_month, help="last month (default: current month)")
+    ap.add_argument("--json", action="store_true", help="emit JSON rows instead of a table")
+    args = ap.parse_args()
+    if args.frm > args.to:
+        ap.error("--from is after --to")
+
+    months = list(month_range(args.frm, args.to))
+    last_end = bounds(args.to)[1]
+
+    gh = defaultdict(lambda: {"pr": 0, "issue": 0})
+    for ym in months:
+        s, e = bounds(ym)
+        # GitHub date qualifiers accept a UTC offset -> local-month buckets.
+        rng = f"{s.isoformat()}..{e.isoformat()}"
+        for kind, qual in (("pr", "is:pr"), ("issue", "is:issue")):
+            gh[ym][kind] = gh_count(f"author:{GH_USER} {qual} closed:{rng}")
+            time.sleep(GH_SLEEP)
+
+    # GitLab has no closed_after/merged_after filter -- only updated_after; bucket client-side.
+    after = datetime.datetime(*add_months(args.frm, -1), 1, tzinfo=datetime.timezone.utc)
+    after_s = after.strftime("%Y-%m-%dT%H:%M:%SZ")
+    gl = defaultdict(lambda: {"pr": 0, "issue": 0})
+    for kind, path, key in (
+        ("pr", f"merge_requests?scope=created_by_me&state=merged&updated_after={after_s}&per_page=100", "merged_at"),
+        ("pr", f"merge_requests?scope=created_by_me&state=closed&updated_after={after_s}&per_page=100", "closed_at"),
+        ("issue", f"issues?scope=created_by_me&state=closed&updated_after={after_s}&per_page=100", "closed_at"),
+    ):
+        for x in glab_all(path):
+            ts = x.get(key)
+            if not ts:
+                continue
+            d = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(TZ)
+            if not (bounds(args.frm)[0] <= d <= last_end):
+                continue
+            gl[(d.year, d.month)][kind] += 1
+
+    rows = []
+    for ym in months:
+        a, b = gh[ym], gl[ym]
+        rows.append({"month": f"{ym[0]}-{ym[1]:02d}",
+                     "pr": a["pr"] + b["pr"], "issue": a["issue"] + b["issue"],
+                     "gh_pr": a["pr"], "gl_mr": b["pr"],
+                     "gh_issue": a["issue"], "gl_issue": b["issue"]})
+    tp = sum(r["pr"] for r in rows)
+    ti = sum(r["issue"] for r in rows)
+
+    if args.json:
+        json.dump({"rows": rows, "total_pr": tp, "total_issue": ti}, sys.stdout, indent=1)
+        print()
+        return
+
+    print("month    PR+MR  issues | ghPR glMR ghIss glIss")
+    for r in rows:
+        print(f"{r['month']}  {r['pr']:5d}  {r['issue']:6d} | "
+              f"{r['gh_pr']:4d} {r['gl_mr']:4d} {r['gh_issue']:5d} {r['gl_issue']:5d}")
+    print(f"TOTAL    {tp:5d}  {ti:6d}")
+    print(f"\nAuthor-scoped (GitHub {GH_USER}, GitLab svg on gitlab.com only); "
+          "neither API filters by who closed an item.")
+
+
+if __name__ == "__main__":
+    main()

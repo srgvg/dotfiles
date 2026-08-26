@@ -293,18 +293,50 @@ say classified "$CLASS (= $N_SAME, ! $N_DIFF, < $N_DROP, > $N_NEW)"
 # conflicted commit was resolved to different content produced "> = < >".
 #
 # So reconcile by identity instead, and let range-diff do only what it is good
-# at: showing a human what changed. A commit on the old tip is accounted for if
-# it is still reachable from HEAD (unchanged by the rebase) or if a commit with
-# the same subject exists in the new range (rewritten by it). Anything else is
-# work with no successor, and that is a refusal.
+# at: showing a human what changed. A commit on the old tip is accounted for by
+# the first of these that matches:
+#   1. still reachable from HEAD (unchanged by the rebase)
+#   2. same `git patch-id` exists in the new range (a pure reword: the diff is
+#      byte-identical, only the message changed -- e.g. fixing a commit-lint
+#      failure). This is stronger evidence than subject matching, since it
+#      proves the content itself survived rather than merely the label, so it
+#      can only turn refusals into passes, never the reverse.
+#   3. same subject exists in the new range (rewritten while resolving a
+#      conflict -- content may differ, message did not)
+# Anything else is work with no successor, and that is a refusal. A commit
+# with an empty diff, or a merge commit, has no patch-id on either side; that
+# is treated as no match (never let two absent ids match each other), so it
+# falls through to signal 3 exactly as before this signal existed.
+N_UNCHANGED=0
+N_REWORDED=0
+N_INPLACE=0
 UNMATCHED=""
+REWORDED_LIST=""
 NEW_SUBJECTS=$(git -C "$ROOT" log --format='%s' "$BASE..$LOCAL_OID")
+NEW_PIDS=$(git -C "$ROOT" log -p --no-color --no-renames "$BASE..$LOCAL_OID" | git patch-id --stable | cut -d' ' -f1)
+OLD_PID_MAP=$(git -C "$ROOT" log -p --no-color --no-renames "$BASE..$REMOTE_OID" | git patch-id --stable)
 while IFS= read -r LINE; do
 	[ -n "$LINE" ] || continue
 	C_OID=${LINE%% *}
 	C_SUBJ=${LINE#* }
-	git -C "$ROOT" merge-base --is-ancestor "$C_OID" "$LOCAL_OID" 2>/dev/null && continue
-	printf '%s\n' "$NEW_SUBJECTS" | grep -qxF -- "$C_SUBJ" && continue
+
+	if git -C "$ROOT" merge-base --is-ancestor "$C_OID" "$LOCAL_OID" 2>/dev/null; then
+		N_UNCHANGED=$((N_UNCHANGED + 1))
+		continue
+	fi
+
+	C_PID=$(printf '%s\n' "$OLD_PID_MAP" | awk -v c="$C_OID" '$2==c {print $1; exit}')
+	if [ -n "$C_PID" ] && printf '%s\n' "$NEW_PIDS" | grep -qxF -- "$C_PID"; then
+		N_REWORDED=$((N_REWORDED + 1))
+		REWORDED_LIST="${REWORDED_LIST}    ${C_OID:0:12}  ${C_SUBJ}"$'\n'
+		continue
+	fi
+
+	if printf '%s\n' "$NEW_SUBJECTS" | grep -qxF -- "$C_SUBJ"; then
+		N_INPLACE=$((N_INPLACE + 1))
+		continue
+	fi
+
 	UNMATCHED="${UNMATCHED}    ${C_OID:0:12}  ${C_SUBJ}"$'\n'
 done <<<"$(git -C "$ROOT" log --format='%H %s' "$BASE..$REMOTE_OID")"
 
@@ -320,13 +352,14 @@ if [ -n "$UNMATCHED" ]; then
 	exit 1
 fi
 
-# Say so when the two signals disagreed. Without this the operator reads
-# "< 1" in the summary and then watches the tool push anyway, with nothing
-# on screen reconciling the two -- which is how a correct decision still
-# teaches you to distrust the output. Seen live on 2026-08-22: a one-line
-# file rewritten end to end scored below range-diff's pairing threshold.
-if [ "$N_DROP" -gt 0 ]; then
-	say reconciled "range-diff could not pair $N_DROP commit(s); each has a same-subject successor in HEAD, so nothing is dropped"
+# Say so whenever the identity reconciliation did more than confirm plain
+# reachability. Without this the operator reads "< 1" in the range-diff
+# summary and then watches the tool push anyway, with nothing on screen
+# reconciling the two -- which is how a correct decision still teaches you to
+# distrust the output. Seen live on 2026-08-22: a one-line file rewritten end
+# to end scored below range-diff's pairing threshold.
+if [ "$N_REWORDED" -gt 0 ] || [ "$N_INPLACE" -gt 0 ]; then
+	say reconciled "$N_UNCHANGED unchanged, $N_REWORDED content-identical under a new subject, $N_INPLACE rewritten in place -- nothing dropped"
 fi
 
 # List the files whose content actually changed, for the note and the operator.
@@ -388,7 +421,11 @@ NOTE_BODY=$(
 	# accounted for it -- the note is the evidence, so it carries the same
 	# reconciliation the terminal got.
 	if [ "$N_DROP" -gt 0 ]; then
-		printf '\n%s commit(s) scored below `git range-diff`'"'"'s pairing threshold and so appear above as removed-plus-added. Each was matched to a same-subject successor in the new history; no commit was dropped, and this push would have been refused if one had been.\n' "$N_DROP"
+		printf '\n%s commit(s) scored below `git range-diff`'"'"'s pairing threshold and so appear above as removed-plus-added. Each was matched by content (`git patch-id`) or by subject to a successor in the new history; no commit was dropped, and this push would have been refused if one had been.\n' "$N_DROP"
+	fi
+	if [ "$N_REWORDED" -gt 0 ]; then
+		printf '\n%s commit(s) were reworded only -- identical content (`git patch-id` matched), a different commit message:\n\n' "$N_REWORDED"
+		printf '%s' "$REWORDED_LIST" | sed 's/^    /- `/;s/  /` /'
 	fi
 	if [ -n "$CHANGED_FILES" ]; then
 		printf '\nContent differs in:\n\n'
