@@ -12,7 +12,12 @@ set -o pipefail
 
 HOMETMPDIRNAME="scratch"
 HOMETMPDIR="$(readlink --canonicalize-missing --no-newline "$HOME/$HOMETMPDIRNAME")"
-TMPDIR="${HOMETMPDIR}/tmp"
+# TMPDIR off tmpfs, and exported so scripts sourced outside an interactive bash
+# (cron, systemd units) inherit it too. Mirrors ~/.bashrc.d/tmpdir.bash; NOT
+# derived from HOMETMPDIR (~/scratch), which update-tools rm -rf's wholesale.
+# See ~/etc/docs/memory-oom.md §7.
+export TMPDIR="$HOME/tmp"
+mkdir -p "$TMPDIR"
 BACKGROUND_PICTURES="$HOME/Pictures/Wallpapers"
 
 DEBUG="${DEBUG:-0}"
