@@ -613,6 +613,11 @@ def reclaim_stale_vacated_workspaces(ws_name, dry_run):
     stale = [w for w in get_workspace_names() if w.startswith(prefix)]
     for w in stale:
         reclaim_workspace(w, ws_name, dry_run)
+        # reclaim_workspace is a no-op on an empty workspace, and sway never GCs the
+        # workspace currently displayed -- so an empty stranded `_vacated-*` survives
+        # every apply unless we explicitly look away from it.
+        if not dry_run and get_focused_workspace_name() == w:
+            run("workspace", ws_name, dry_run=dry_run)
 
 
 def apply_to_workspace(ws_name, layout_tree, dry_run, matched=None, key=get_identity):

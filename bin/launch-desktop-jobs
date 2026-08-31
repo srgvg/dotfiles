@@ -55,7 +55,9 @@ function i3-launch-job() {
     else
         notify "starting  $*"
         # shellcheck disable=SC2048
-        launch-screen i3jobs add $* | sed -e 's/^/                -   /'
+        if ! launch-screen i3jobs add $* | sed -e 's/^/                -   /'; then
+            notify_error "failed to start: $*"
+        fi
     fi
 }
 
