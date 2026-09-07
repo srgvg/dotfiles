@@ -257,9 +257,6 @@ bindsym $mod+Shift+r			reload
 # by launch-desktop-jobs-goldorak). See ~/etc/docs/sway-setup.md.
 bindsym $mod+Shift+s			exec $HOME/bin/sway-layout save
 
-# set workspaces on default screens
-bindsym --no-repeat $mod+Control+r			exec i3-move-workspaces
-
 # Lock Screen / Suspend / Poweroff
 # --no-repeat prevents multiple triggers if key is held; combined with
 # debouncing in swayidle.sh, this provides defense against lock signal storms

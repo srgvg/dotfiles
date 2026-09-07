@@ -56,6 +56,15 @@ if [[ -z ${CLAUDE_MEM_SCOPE:-} && -t 0 ]]; then
                 ;;
             *) base=${PWD##*/} ;;
         esac
+        # Tree-scoped MCP: Claude Code discovers .mcp.json only in the exact
+        # project root (no ancestor walk), so one file for the whole
+        # teledyne-flir tree has to be passed explicitly. See
+        # ~/etc/docs/mcp-servers.md.
+        tdy_mcp="$HOME/src/teledyne-flir/.mcp.json"
+        case "$PWD" in
+            "$HOME"/src/teledyne-flir | "$HOME"/src/teledyne-flir/*)
+                [[ -r $tdy_mcp ]] && set -- --mcp-config "$tdy_mcp" "$@" ;;
+        esac
         set -- --enable-auto-mode --autocompact 300000 --effort high \
             "$@"
         #--remote-control="${base}-$(date +%d%H%M)" "$@"

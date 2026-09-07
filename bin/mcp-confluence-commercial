@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# stdio MCP server for https://confluencecommercial.flir.com (Confluence Data
+# Center, Personal Access Token auth). Registered in
+# ~/src/teledyne-flir/.mcp.json, which ~/bin/claude passes via --mcp-config only
+# for sessions launched under ~/src/teledyne-flir. See ~/etc/docs/mcp-servers.md.
+#
+# The token stays in ~/etc/keys/tokens.bash: only the one variable is read, in a
+# subshell, so the other secrets in that file never reach the server process.
+set -euo pipefail
+
+TOKENS="$HOME/etc/keys/tokens.bash"
+[[ -r $TOKENS ]] || {
+    printf 'mcp-confluence-commercial: %s missing or unreadable\n' "$TOKENS" >&2
+    exit 1
+}
+
+CONFLUENCE_PERSONAL_TOKEN=$(bash -c "source '$TOKENS'; printf %s \"\${TDY_CONFLUENCE_COMMERCIAL_TOKEN:-}\"")
+[[ -n $CONFLUENCE_PERSONAL_TOKEN ]] || {
+    printf 'mcp-confluence-commercial: TDY_CONFLUENCE_COMMERCIAL_TOKEN not set in %s\n' "$TOKENS" >&2
+    exit 1
+}
+export CONFLUENCE_PERSONAL_TOKEN
+export CONFLUENCE_URL="https://confluencecommercial.flir.com"
+
+# Installed with `uv tool install mcp-atlassian`, tracked in
+# ~/etc/packages/uv-tools.list and upgraded by ~/bin/update-tools. Absolute
+# fallback because Claude's process env may lack ~/.local/bin on PATH.
+BIN=$(command -v mcp-atlassian || echo "$HOME/.local/bin/mcp-atlassian")
+[[ -x $BIN ]] || {
+    printf 'mcp-confluence-commercial: %s missing; run: uv tool install mcp-atlassian\n' "$BIN" >&2
+    exit 1
+}
+
+exec "$BIN" "$@"

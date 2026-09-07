@@ -1,0 +1,295 @@
+#!/usr/bin/env bash
+# undraft — the tool-gated half of "mark the MR/PR ready" (gate A2, undrafting).
+#
+# Rule: ~/.claude/rules/agent-gates.md § Undrafting (doctrine
+# ~/etc/docs/development/agent-gates.md § A2).
+#
+# Undrafting means "ready for a human to look", and A2 grants it only when a
+# review loop has converged with evidence on the MR/PR. The raw forms
+# (`gh pr ready`, `glab mr update --ready`, `glab api -X PUT`) classify
+# `forge_write_gated -> ask` in nah; this tool is the carve-out, so it performs
+# the proofs itself and refuses when any of them fails. nah classifies the
+# tool, not the raw verbs, so the constraint IS the script.
+#
+#   undraft <run-log.md> [--remote <name>] [--dry-run]
+#
+# Refuses, always:
+#   - no run-log at that path, or a run-log with zero table rows
+#   - the run-log never names the converged OID (local HEAD)
+#   - the remote head of this branch is not the local HEAD
+#   - no open MR/PR for this branch, more than one, or one that is not a draft
+#   - the MR/PR head is not the converged OID
+#   - no comment on the MR/PR carrying the literal verdict `MR-READY at <oid>`
+#     (converged OID, backticks optional) and naming the run-log -- the
+#     evidence comment: verdict line, pipeline ID and status, verify result,
+#     findings split, run-log path with row count -- posted BEFORE undrafting
+#
+# Pipeline status for the OID is fetched and printed verbatim, including red
+# and "none". It is a disclosure, never a gate: a red pipeline still blocks
+# merge separately via branch protection.
+#
+# There is deliberately no --force and no --skip-<check>. nah matches by
+# command PREFIX, so once `undraft` is allowed every invocation of it is; a
+# flag waiving a check would be auto-approved by the very classification meant
+# to make this safe. On refusal it prints the raw command for a human.
+
+set -uo pipefail
+
+PROG=${0##*/}
+
+die() { printf '%s: %s\n' "$PROG" "$*" >&2; exit 1; }
+say() { printf '  %-14s %s\n' "$1" "$2"; }
+hdr() { printf '%s\n' "$*"; }
+
+RUN_LOG=""
+REMOTE_EXPLICIT=""
+DRY_RUN=0
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--remote) shift; [ $# -gt 0 ] || die "--remote needs a value"; REMOTE_EXPLICIT="$1" ;;
+	--dry-run) DRY_RUN=1 ;;
+	-h | --help)
+		sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'
+		exit 0
+		;;
+	-*) die "unknown argument: $1 (try --help)" ;;
+	*)
+		[ -z "$RUN_LOG" ] || die "exactly one run-log path, got a second: $1"
+		RUN_LOG="$1"
+		;;
+	esac
+	shift
+done
+
+[ -n "$RUN_LOG" ] || die "usage: $PROG <run-log.md> [--remote <name>] [--dry-run]"
+
+# --- 1. context ------------------------------------------------------------
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) ||
+	die "not inside a git worktree"
+
+BRANCH=$(git -C "$ROOT" symbolic-ref --quiet --short HEAD) ||
+	die "HEAD is detached — check out the branch the MR/PR is for"
+
+# Same remote resolution as rebase-push (~/bin/rebase-push): explicit flag,
+# the branch's configured remote, its upstream, then a sole remote. Never a
+# hardcoded "origin" — several repos here have none.
+resolve_remote() {
+	local r up count
+	if [ -n "$REMOTE_EXPLICIT" ]; then printf '%s' "$REMOTE_EXPLICIT"; return 0; fi
+	r=$(git -C "$ROOT" config "branch.$BRANCH.remote" 2>/dev/null)
+	if [ -n "$r" ]; then printf '%s' "$r"; return 0; fi
+	up=$(git -C "$ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
+	if [ -n "$up" ]; then printf '%s' "${up%%/*}"; return 0; fi
+	count=$(git -C "$ROOT" remote | grep -c .)
+	if [ "$count" = "1" ]; then git -C "$ROOT" remote; return 0; fi
+	return 1
+}
+
+REMOTE=$(resolve_remote) || {
+	printf '%s: cannot choose a remote for %s. Remotes found:\n' "$PROG" "$ROOT" >&2
+	git -C "$ROOT" remote | sed 's/^/  /' >&2
+	printf 'Pass --remote <name>.\n' >&2
+	exit 1
+}
+
+# `git config --get`, NOT `git remote get-url`: get-url applies url.*.insteadOf
+# rewriting and would hide the real forge behind a mirror path.
+REMOTE_URL=$(git -C "$ROOT" config --get "remote.$REMOTE.url" 2>/dev/null)
+[ -n "$REMOTE_URL" ] ||
+	REMOTE_URL=$(git -C "$ROOT" remote get-url "$REMOTE" 2>/dev/null)
+[ -n "$REMOTE_URL" ] || die "remote '$REMOTE' has no URL"
+
+UPSTREAM=$(git -C "$ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null || true)
+if [ -n "$UPSTREAM" ] && [ "${UPSTREAM#"$REMOTE"/}" != "$BRANCH" ]; then
+	die "refusing: local '$BRANCH' tracks '$UPSTREAM' — the names differ, so the MR/PR lookup would name the wrong branch"
+fi
+
+forge_slug() {
+	local u="$1" host path
+	case "$u" in
+	*://*)
+		host=${u#*://}
+		host=${host#*@}
+		path=${host#*/}
+		host=${host%%/*}
+		;;
+	*:*)
+		host=${u%%:*}
+		host=${host#*@}
+		path=${u#*:}
+		;;
+	*) return 1 ;;
+	esac
+	path=${path%.git}
+	path=${path%/}
+	[ -n "$host" ] && [ -n "$path" ] || return 1
+	printf '%s\t%s' "$host" "$path"
+}
+
+SLUG=$(forge_slug "$REMOTE_URL") ||
+	die "cannot parse a forge host/path out of: $REMOTE_URL"
+FORGE_HOST=${SLUG%%	*}
+FORGE_PATH=${SLUG#*	}
+
+case "$FORGE_HOST" in
+*gitlab*) FORGE=gitlab ;;
+*github*) FORGE=github ;;
+*) die "refusing: unknown forge '$FORGE_HOST' — cannot look up the MR/PR" ;;
+esac
+
+urlenc() { printf '%s' "$1" | sed 's|/|%2F|g'; }
+
+hdr "undraft — proving review convergence before marking ready"
+say repo "$ROOT"
+say branch "$BRANCH"
+say remote "$REMOTE ($REMOTE_URL)"
+
+# --- 2. run-log on disk ------------------------------------------------------
+
+[ -f "$RUN_LOG" ] ||
+	die "refusing: no run-log at $RUN_LOG — no run-log on disk means no undraft"
+RUN_LOG=$(realpath "$RUN_LOG")
+
+# Rows are the markdown table's data lines: `| <n> | ...`. Header and
+# separator lines never start with a digit cell, so this counts iterations.
+ROWS=$(grep -cE '^\| *[0-9]+ *\|' "$RUN_LOG")
+[ "$ROWS" -ge 1 ] ||
+	die "refusing: $RUN_LOG has no table rows — a run-log without rows is not a run-log"
+say run-log "$RUN_LOG ($ROWS rows)"
+
+# --- 3. converged OID = local HEAD = remote head -------------------------------
+
+LOCAL_OID=$(git -C "$ROOT" rev-parse HEAD)
+SHORT_OID=${LOCAL_OID:0:8}
+say "local HEAD" "$LOCAL_OID"
+
+# The run-log's last row is required to be at the pushed OID (gmr §Termination);
+# the cheapest proof the loop and this HEAD agree is the OID appearing in it.
+grep -qF -- "$SHORT_OID" "$RUN_LOG" ||
+	die "refusing: $RUN_LOG never names $SHORT_OID — the run-log and HEAD disagree about the converged state"
+
+REMOTE_OID=$(git -C "$ROOT" ls-remote "$REMOTE" "refs/heads/$BRANCH" | cut -f1)
+[ -n "$REMOTE_OID" ] ||
+	die "refusing: $BRANCH does not exist on $REMOTE"
+say "remote OID" "$REMOTE_OID"
+[ "$REMOTE_OID" = "$LOCAL_OID" ] ||
+	die "refusing: remote head $REMOTE_OID is not the converged OID $LOCAL_OID — push (or fetch) first, then re-run"
+
+# --- 4. the MR/PR: exactly one, open, draft, at the converged OID --------------
+
+case "$FORGE" in
+gitlab)
+	ENC=$(urlenc "$FORGE_PATH")
+	MRS=$(glab api "projects/$ENC/merge_requests?source_branch=$BRANCH&state=opened&per_page=10") ||
+		die "refusing: could not list merge requests on $FORGE_HOST for $FORGE_PATH"
+	N_MR=$(printf '%s' "$MRS" | jq 'length')
+	[ "$N_MR" -eq 1 ] ||
+		die "refusing: expected exactly one open MR for $BRANCH on $FORGE_PATH, found $N_MR"
+	MR_NUM=$(printf '%s' "$MRS" | jq -r '.[0].iid')
+	MR_DRAFT=$(printf '%s' "$MRS" | jq -r '.[0].draft')
+	MR_OID=$(printf '%s' "$MRS" | jq -r '.[0].sha')
+	MR_BASE=$(printf '%s' "$MRS" | jq -r '.[0].target_branch')
+	MR_URL=$(printf '%s' "$MRS" | jq -r '.[0].web_url')
+	MR_REF="$FORGE_PATH!$MR_NUM"
+	;;
+github)
+	PRS=$(gh pr list -R "$FORGE_PATH" --head "$BRANCH" --state open \
+		--json number,isDraft,headRefOid,baseRefName,url) ||
+		die "refusing: could not list pull requests on $FORGE_HOST for $FORGE_PATH"
+	N_MR=$(printf '%s' "$PRS" | jq 'length')
+	[ "$N_MR" -eq 1 ] ||
+		die "refusing: expected exactly one open PR for $BRANCH on $FORGE_PATH, found $N_MR"
+	MR_NUM=$(printf '%s' "$PRS" | jq -r '.[0].number')
+	MR_DRAFT=$(printf '%s' "$PRS" | jq -r '.[0].isDraft')
+	MR_OID=$(printf '%s' "$PRS" | jq -r '.[0].headRefOid')
+	MR_BASE=$(printf '%s' "$PRS" | jq -r '.[0].baseRefName')
+	MR_URL=$(printf '%s' "$PRS" | jq -r '.[0].url')
+	MR_REF="$FORGE_PATH#$MR_NUM"
+	;;
+esac
+
+say target "$MR_REF -> $MR_BASE ($MR_URL)"
+[ "$MR_DRAFT" = "true" ] ||
+	die "refusing: $MR_REF is not a draft — nothing to undraft"
+[ "$MR_OID" = "$LOCAL_OID" ] ||
+	die "refusing: $MR_REF head is $MR_OID, not the converged OID $LOCAL_OID"
+
+# --- 5. the evidence comment, already on the MR/PR -----------------------------
+
+# The evidence comment names the converged OID and the run-log (path with row
+# count). Posted BEFORE undrafting, so that a reviewer the undraft itself
+# triggers already sees the evidence; the post-undraft triage is the caller's.
+case "$FORGE" in
+gitlab)
+	NOTES=$(glab api "projects/$ENC/merge_requests/$MR_NUM/notes?per_page=100&order_by=created_at&sort=desc") ||
+		die "refusing: could not read notes on $MR_REF"
+	;;
+github)
+	NOTES=$(gh api "repos/$FORGE_PATH/issues/$MR_NUM/comments?per_page=100") ||
+		die "refusing: could not read comments on $MR_REF"
+	;;
+esac
+
+# The verdict is matched literally: `MR-READY at <oid>` (backticks optional).
+# "OID + run-log" alone is not enough -- a BLOCKED termination comment names
+# both too (crane!568, 2026-09-07: "Not MR-READY", pushed `ffb3321b`, run-log
+# cited), and a substring test on "MR-READY" would match "Not MR-READY".
+EVIDENCE=$(printf '%s' "$NOTES" | jq -r --arg oid "$SHORT_OID" \
+	'[.[] | select((.body // "") | (test("MR-READY at `?" + $oid) and contains("run-log")))] | sort_by(.created_at) | last | select(. != null) | "\(.id) at \(.created_at)"')
+[ -n "$EVIDENCE" ] || {
+	printf '%s: REFUSING — no comment on %s carries the verdict line "MR-READY at %s" and names the run-log.\n' "$PROG" "$MR_REF" "$SHORT_OID" >&2
+	printf 'Post the evidence comment first (that verdict line, pipeline ID and status, verify result,\n' >&2
+	printf 'findings by class with the fixed/rejected/deferred split, run-log path with row count), then re-run.\n' >&2
+	exit 1
+}
+say evidence "comment $EVIDENCE"
+
+# --- 6. pipeline status at the OID — printed as-is, never a gate --------------
+
+case "$FORGE" in
+gitlab)
+	PIPE=$(glab api "projects/$ENC/merge_requests/$MR_NUM/pipelines" 2>/dev/null |
+		jq -r --arg oid "$LOCAL_OID" '[.[] | select(.sha == $oid)] | first | select(. != null) | "\(.id) \(.status) \(.web_url)"')
+	say pipeline "${PIPE:-none for $SHORT_OID}"
+	;;
+github)
+	CHECKS=$(gh api "repos/$FORGE_PATH/commits/$LOCAL_OID/check-runs" 2>/dev/null |
+		jq -r '.check_runs[] | "\(.name): \(.status)/\(.conclusion // "-")"')
+	if [ -n "$CHECKS" ]; then
+		say checks "$(printf '%s' "$CHECKS" | head -1)"
+		printf '%s\n' "$CHECKS" | tail -n +2 | sed 's/^/                 /'
+	else
+		say checks "none for $SHORT_OID"
+	fi
+	;;
+esac
+
+# --- 7. undraft ----------------------------------------------------------------
+
+case "$FORGE" in
+gitlab) CMD="glab mr update $MR_NUM --ready -R $FORGE_PATH" ;;
+github) CMD="gh pr ready $MR_NUM -R $FORGE_PATH" ;;
+esac
+
+if [ "$DRY_RUN" = 1 ]; then
+	hdr ""
+	hdr "--dry-run: every check passed; would run"
+	hdr "  $CMD"
+	exit 0
+fi
+
+hdr ""
+$CMD >/dev/null || die "undraft failed: $CMD"
+
+# Confirm the mutation landed instead of trusting the exit status.
+case "$FORGE" in
+gitlab) NOW_DRAFT=$(glab api "projects/$ENC/merge_requests/$MR_NUM" | jq -r '.draft') ;;
+github) NOW_DRAFT=$(gh pr view "$MR_NUM" -R "$FORGE_PATH" --json isDraft --jq '.isDraft') ;;
+esac
+[ "$NOW_DRAFT" = "false" ] ||
+	die "ran '$CMD' but $MR_REF still reports draft=$NOW_DRAFT — check the forge"
+
+hdr "$MR_REF is ready for review at $LOCAL_OID."
+hdr "Next: re-run the comment triage (the undraft itself can trigger a reviewer), then post the approval comment."

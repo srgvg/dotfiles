@@ -1,0 +1,246 @@
+#!/usr/bin/env python3
+"""nah-stall-report — weekly automation-stall report for the nah tuning loop.
+
+Joins the real permission prompts (Claude's Notification hook log) to the nah
+pre_tool decision that preceded each one in the same session, and summarises
+the nah decision log itself: allow/ask/block ratio per agent, asks by reason,
+every block with its input. One markdown file per ISO week:
+
+    ~/.local/state/nah-stall/<YYYY>-W<ww>.md
+
+usage: nah-stall-report [--since ISO] [--until ISO] [--out PATH] [--stdout]
+
+Defaults to the previous 7 days ending now. Sources:
+    ~/.config/nah/nah.log, nah.log.1, ~/.local/state/nah-log/*   (nah decisions)
+    ~/.local/state/claude-sway-urgent.log                         (prompts)
+
+Targets (plan 2026-09-07): < 10 prompts/day, 0 false blocks, headless Codex
+lanes with 0 unresolved asks. Anything above the line is next week's tuning row.
+Rule: ~/etc/docs/nah.md §Stall report.
+"""
+
+from __future__ import annotations
+
+import argparse
+import bisect
+import collections
+import datetime as dt
+import glob
+import json
+import os
+import sys
+
+HOME = os.path.expanduser("~")
+NAH_LOGS = [f"{HOME}/.config/nah/nah.log.1", f"{HOME}/.config/nah/nah.log"]
+NAH_ARCHIVE = f"{HOME}/.local/state/nah-log"
+PROMPT_LOG = f"{HOME}/.local/state/claude-sway-urgent.log"
+OUT_DIR = f"{HOME}/.local/state/nah-stall"
+PROMPT_TYPES = {"permission_prompt", "worker_permission_prompt"}
+# A prompt follows the nah `ask` that handed the call to the classifier; the
+# classifier round-trip measured p10 33 s / p50 98 s (2026-09-07 evaluation, F2),
+# so the join looks back this far for the nearest preceding non-allow row.
+JOIN_WINDOW_S = 300.0
+
+
+def parse_ts(s: str) -> dt.datetime:
+    d = dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=dt.timezone.utc)
+    return d
+
+
+def read_jsonl(path: str) -> list[dict]:
+    rows: list[dict] = []
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    # A torn line at a rotation boundary is expected; every other
+                    # row still counts, so skip rather than abort the report.
+                    continue
+    except FileNotFoundError:
+        pass
+    return rows
+
+
+def load_nah(since: dt.datetime, until: dt.datetime) -> list[dict]:
+    paths = sorted(glob.glob(f"{NAH_ARCHIVE}/*")) + NAH_LOGS
+    seen: set[tuple] = set()
+    rows: list[dict] = []
+    for p in paths:
+        for r in read_jsonl(p):
+            ts = r.get("ts")
+            if not ts or r.get("runtime", {}).get("phase") != "pre_tool":
+                continue
+            t = parse_ts(ts)
+            if not (since <= t <= until):
+                continue
+            key = (ts, r.get("runtime", {}).get("session_id"), str(r.get("input"))[:200])
+            if key in seen:  # the archive and nah.log.1 can overlap by one rotation
+                continue
+            seen.add(key)
+            r["_t"] = t
+            rows.append(r)
+    return rows
+
+
+def load_prompts(since: dt.datetime, until: dt.datetime) -> list[dict]:
+    out = []
+    for r in read_jsonl(PROMPT_LOG):
+        if r.get("notification_type") not in PROMPT_TYPES or not r.get("ts"):
+            continue
+        t = parse_ts(r["ts"])
+        if since <= t <= until:
+            r["_t"] = t
+            out.append(r)
+    return out
+
+
+def join(prompts: list[dict], nah: list[dict]) -> tuple[list[dict], int, list[float]]:
+    """Nearest preceding non-allow nah row in the same session, within the window.
+
+    Returns (matched rows, unmatched count, lags in seconds)."""
+    by_sess: dict[str, list[tuple[float, dict]]] = collections.defaultdict(list)
+    for r in nah:
+        if r.get("decision") == "allow":
+            continue  # an allowed call never prompts
+        sid = r.get("runtime", {}).get("session_id") or ""
+        by_sess[sid].append((r["_t"].timestamp(), r))
+    for v in by_sess.values():
+        v.sort(key=lambda t: t[0])
+    matched, unmatched, lags = [], 0, []
+    for p in prompts:
+        lst = by_sess.get(p.get("session_id", ""), [])
+        keys = [t for t, _ in lst]
+        pts = p["_t"].timestamp()
+        i = bisect.bisect_right(keys, pts) - 1
+        if i >= 0 and pts - keys[i] <= JOIN_WINDOW_S:
+            matched.append(lst[i][1])
+            lags.append(pts - keys[i])
+        else:
+            unmatched += 1
+    return matched, unmatched, lags
+
+
+def asking_token(r: dict) -> str:
+    cmd = str(r.get("input", "")).strip()
+    stages = r.get("classify", {}).get("stages", []) or []
+    asking = [s for s in stages if s.get("decision") == "ask"]
+    if asking and asking[0].get("tokens"):
+        return str(asking[0]["tokens"][0])
+    return cmd.split()[0] if cmd else "?"
+
+
+def table(counter: collections.Counter, head: tuple[str, str], limit: int = 20) -> list[str]:
+    lines = [f"| {head[0]} | {head[1]} |", "|---|---|"]
+    for k, v in counter.most_common(limit):
+        cell = str(k).replace("|", "\\|")
+        lines.append(f"| {v} | {cell} |")
+    return lines
+
+
+def report(since: dt.datetime, until: dt.datetime) -> str:
+    nah = load_nah(since, until)
+    prompts = load_prompts(since, until)
+    matched, unmatched, lags = join(prompts, nah)
+    days = max(1.0, (until - since).total_seconds() / 86400)
+    lags.sort()
+    lag_line = (
+        f"; lag nah row → prompt p10 {lags[len(lags)//10]:.0f} s, p50 {lags[len(lags)//2]:.0f} s"
+        if lags else ""
+    )
+    local = dt.datetime.now().astimezone().tzinfo
+
+    L: list[str] = []
+    L.append(f"# nah stall report — {since.astimezone(local):%Y-%m-%d %H:%M} → {until.astimezone(local):%Y-%m-%d %H:%M}")
+    L.append("")
+    L.append(f"Generated {dt.datetime.now(local):%Y-%m-%d %H:%M %Z} by `nah-stall-report`. Targets: < 10 prompts/day, 0 false blocks.")
+    L.append("")
+
+    L.append("## Prompts (real, from the Notification hook)")
+    L.append("")
+    L.append(f"- total: **{len(prompts)}** ({len(prompts)/days:.1f}/day over {days:.1f} days)")
+    L.append(f"- attributed to a preceding non-allow nah row within {JOIN_WINDOW_S:.0f} s: {len(matched)}; unattributed: {unmatched}{lag_line}")
+    L.append("")
+    per_day = collections.Counter(p["_t"].astimezone(local).strftime("%Y-%m-%d") for p in prompts)
+    L.extend(table(collections.Counter(dict(sorted(per_day.items()))), ("prompts", "day"), 31))
+    L.append("")
+    per_sess = collections.Counter(p.get("session_id", "?")[:8] for p in prompts)
+    L.extend(table(per_sess, ("prompts", "session"), 10))
+    L.append("")
+
+    L.append("### What the prompted calls were")
+    L.append("")
+    L.extend(table(collections.Counter(r.get("decision") for r in matched), ("n", "nah decision"), 5))
+    L.append("")
+    L.extend(table(collections.Counter(r.get("tool") for r in matched), ("n", "tool")), )
+    L.append("")
+    L.extend(table(collections.Counter(r.get("reason") for r in matched), ("n", "nah reason"), 25))
+    L.append("")
+    L.extend(table(collections.Counter(asking_token(r) for r in matched if r.get("tool") == "Bash"), ("n", "asking stage's first token")), )
+    L.append("")
+
+    L.append("## nah decisions (pre_tool)")
+    L.append("")
+    L.append(f"- rows: **{len(nah)}**")
+    if not any(r.get("decision") == "allow" for r in nah):
+        L.append("- **no `allow` rows — `log.verbosity` is not `all`; the ratio below is meaningless**")
+    L.append("")
+    L.extend(table(collections.Counter(f"{r.get('agent')} / {r.get('decision')}" for r in nah), ("n", "agent / decision"), 12))
+    L.append("")
+    asks = [r for r in nah if r.get("decision") == "ask"]
+    L.append(f"### Asks: {len(asks)}")
+    L.append("")
+    L.extend(table(collections.Counter(r.get("reason") for r in asks), ("n", "reason"), 30))
+    L.append("")
+    L.extend(table(collections.Counter(asking_token(r) for r in asks if r.get("tool") == "Bash"), ("n", "asking stage's first token"), 25))
+    L.append("")
+    headless = [r for r in nah if r.get("agent") == "codex" and r.get("decision") != "allow"]
+    L.append(f"### Codex non-allow rows: {len(headless)}")
+    L.append("")
+    for r in headless[:40]:
+        L.append(f"- `{r.get('ts')}` {r.get('decision')} — {r.get('reason')}")
+        L.append(f"  `{str(r.get('input'))[:200]}`")
+    L.append("")
+    blocks = [r for r in nah if r.get("decision") in ("block", "deny")]
+    L.append(f"### Blocks: {len(blocks)}")
+    L.append("")
+    L.append("Every block is listed: a false positive here is an agent workaround waiting to happen.")
+    L.append("")
+    for r in blocks:
+        L.append(f"- `{r.get('ts')}` [{r.get('agent')}] {r.get('reason')}")
+        L.append(f"  `{str(r.get('input'))[:220]}`")
+    L.append("")
+    return "\n".join(L) + "\n"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--since", help="ISO timestamp (default: now - 7 days)")
+    ap.add_argument("--until", help="ISO timestamp (default: now)")
+    ap.add_argument("--out", help="output path (default: ~/.local/state/nah-stall/<ISO week>.md)")
+    ap.add_argument("--stdout", action="store_true", help="print instead of writing the file")
+    a = ap.parse_args()
+
+    until = parse_ts(a.until) if a.until else dt.datetime.now(dt.timezone.utc)
+    since = parse_ts(a.since) if a.since else until - dt.timedelta(days=7)
+    text = report(since, until)
+    if a.stdout:
+        sys.stdout.write(text)
+        return 0
+    iso = until.astimezone().isocalendar()
+    out = a.out or f"{OUT_DIR}/{iso.year}-W{iso.week:02d}.md"
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    print(out)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

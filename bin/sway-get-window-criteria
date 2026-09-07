@@ -224,7 +224,7 @@ do
 	body_lines+=("$(pango_escape "${k}=\"$(truncate_display "$BODY_MAXLEN" "${raw_val[$k]}")\"")")
 done
 
-fg_pid="" fg_comm="" fg_cwd="" fg_chain=""
+fg_pid="" fg_comm="" fg_cwd="" fg_chain="" fg_tty=""
 term_comm="$(cat "/proc/$term_pid/comm" 2>/dev/null || true)"
 # Only attempt this for an actual foot terminal -- a GUI app's client
 # process can share a controlling tty with an unrelated shell purely by
@@ -236,6 +236,8 @@ term_comm="$(cat "/proc/$term_pid/comm" 2>/dev/null || true)"
 if [[ "$term_comm" == "foot" ]] && fg_line="$(resolve_foreground "$term_pid")"
 then
 	IFS=$'\t' read -r fg_pid fg_comm fg_cwd fg_chain <<< "$fg_line"
+	fg_tty="$(ps -o tty= -p "$fg_pid" 2>/dev/null | tr -d '[:space:]' || true)"
+	[[ "$fg_tty" == "?" ]] && fg_tty=""
 fi
 
 # Foreground-process info -- what the pid/cwd buttons would copy. Formatted
@@ -247,6 +249,7 @@ fi
 if [[ -n "$fg_pid" ]]
 then
 	body_lines+=("$(pango_escape "pid=${fg_pid} (${fg_comm})")")
+	[[ -n "$fg_tty" ]] && body_lines+=("$(pango_escape "tty=${fg_tty}")")
 	[[ -n "$fg_cwd" ]] && body_lines+=("$(pango_escape "cwd=$(truncate_display "$BODY_MAXLEN" "$fg_cwd")")")
 fi
 
@@ -264,6 +267,7 @@ then
 	then
 		printf '\npid    %s  %s\n' "$term_pid" "${term_comm:-?}"
 		printf 'run    %s  %s\n' "$fg_pid" "$fg_comm"
+		[[ -n "$fg_tty" ]] && printf 'tty    %s\n' "$fg_tty"
 		[[ -n "$fg_chain" ]] && printf 'chain  %s\n' "$fg_chain"
 		[[ -n "$fg_cwd" ]] && printf 'cwd    %s\n' "$fg_cwd"
 	fi
@@ -276,6 +280,7 @@ else
 	if [[ -n "$fg_pid" ]]
 	then
 		action_kv+=("pid=pid")
+		[[ -n "$fg_tty" ]] && action_kv+=("tty=tty")
 		[[ -n "$fg_cwd" ]] && action_kv+=("cwd=cwd")
 	fi
 
@@ -293,6 +298,9 @@ else
 		pid)
 			printf '%s' "$fg_pid" | wl-copy
 			notify_desktop_always low "Sway Window Properties" "copied pid: ${fg_pid}" ;;
+		tty)
+			printf '%s' "$fg_tty" | wl-copy
+			notify_desktop_always low "Sway Window Properties" "copied tty: ${fg_tty}" ;;
 		cwd)
 			printf '%s' "$fg_cwd" | wl-copy
 			notify_desktop_always low "Sway Window Properties" "copied cwd: $(pango_escape "$fg_cwd")" ;;

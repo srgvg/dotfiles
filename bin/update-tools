@@ -689,7 +689,17 @@ get_ai() {
 
     log "codex"
     if hash codex >/dev/null 2>&1; then
-        npm update -g @openai/codex
+        # Unpinned 2026-09-04: was pinned to 0.148.0 after 0.149.0+ dropped
+        # approval_policy="untrusted", which nah's old launcher depended on as its sole
+        # approval mechanism. nah's main-local now defaults to on-request +
+        # workspace-write sandbox + widened AUTHORITY_RULE_PREFIXES instead
+        # (~/.claude/plans/codex-partitioned-gizmo.md), live-verified against 0.153.2.
+        # Re-pinned 2026-09-07: nah's Codex integration (authority rules, PermissionRequest
+        # hook, approval reviewer) tracks a moving upstream and broke silently on 0.149 and
+        # 0.153. Upgrade procedure — bump the pin, run nah's Codex test suite, then install:
+        # ~/etc/docs/nah.md §Codex upgrade procedure.
+        CODEX_PIN=0.153.4
+        npm install -g "@openai/codex@${CODEX_PIN}"
     else
         echo "# codex not installed. install with:"
         echo "  npm install -g @openai/codex"
