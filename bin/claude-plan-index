@@ -71,6 +71,17 @@ repo_label_for() {
 # because every row starts with `| YYYY-MM-DD HH:MM`.
 save_row() {
 	local key=$1 row=$2 tmp body
+	# INDEX.md can be mid-merge-conflict (e.g. vcsh cdot rebasing two hosts' plan lists). The
+	# `grep -E '^\| [0-9]{4}-'` body-rebuild below matches every row-shaped line, including ones
+	# inside <<<<<<</=======/>>>>>>> sections, so it silently drops the marker lines and keeps
+	# every row from every side -- exactly the corruption this guard exists to prevent. There's
+	# no portable way to ask git instead: vcsh keeps $HOME's GIT_DIR outside $HOME, so plain `git`
+	# can't discover the repo from a bare hook invocation. Detect the markers directly and leave
+	# the file untouched for a human to resolve.
+	if [ -f "$INDEX" ] && grep -qE '^(<{7}|={7}|>{7}|\|{7})( |$)' -- "$INDEX" 2>/dev/null; then
+		printf 'claude-plan-index: %s has unresolved conflict markers, not touching it\n' "$INDEX" >&2
+		return 0
+	fi
 	tmp=$(mktemp "$PLANDIR/.INDEX.md.XXXXXX")
 	body=""
 	if [ -f "$INDEX" ]; then
