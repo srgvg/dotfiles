@@ -152,9 +152,11 @@ say remote "$REMOTE ($REMOTE_URL)"
 	die "refusing: no run-log at $RUN_LOG — no run-log on disk means no undraft"
 RUN_LOG=$(realpath "$RUN_LOG")
 
-# Rows are the markdown table's data lines: `| <n> | ...`. Header and
-# separator lines never start with a digit cell, so this counts iterations.
-ROWS=$(grep -cE '^\| *[0-9]+ *\|' "$RUN_LOG")
+# Rows are the markdown table's data lines. Two first-cell formats are in use
+# across the lanes: an iteration number (`| 1 | ...`) and an ISO timestamp
+# (`| 2026-09-09T13:45:12Z | ...`). Header and separator lines start with
+# neither, so this counts iterations under both conventions.
+ROWS=$(grep -cE '^\| *([0-9]+|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]+Z?) *\|' "$RUN_LOG")
 [ "$ROWS" -ge 1 ] ||
 	die "refusing: $RUN_LOG has no table rows — a run-log without rows is not a run-log"
 say run-log "$RUN_LOG ($ROWS rows)"
@@ -162,7 +164,10 @@ say run-log "$RUN_LOG ($ROWS rows)"
 # --- 3. converged OID = local HEAD = remote head -------------------------------
 
 LOCAL_OID=$(git -C "$ROOT" rev-parse HEAD)
-SHORT_OID=${LOCAL_OID:0:8}
+# 7, not 8: git's default short OID is 7 chars, so an 8-char needle can never be
+# found in a run-log that recorded the 7-char form. 7 is a prefix of the 8-, 40-
+# and auto-abbreviated forms, so it matches every convention a run-log may use.
+SHORT_OID=${LOCAL_OID:0:7}
 say "local HEAD" "$LOCAL_OID"
 
 # The run-log's last row is required to be at the pushed OID (gmr §Termination);
