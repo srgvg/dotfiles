@@ -1,0 +1,1029 @@
+#!/usr/bin/env python3
+"""Opt-in review account. Live admission and forge writes are deliberately disabled.
+
+Standard library only. See ~/etc/docs/development/agent-workflow-pilot.md.
+The ledger is the only finding/disposition store; execution.json holds operations.
+"""
+import argparse
+import contextlib
+import copy
+import fcntl
+import functools
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+
+AUDIT = Path('/home/serge/tmp/agent-workflow-audit').resolve()
+LIVE_ENABLED = False
+PROFILE = dict(active_seconds=7200, finalization_seconds=600, reviews=6,
+               full_reviews=2, repair_pushes=3, review_deadline=1800,
+               external_seconds=5400, http_requests=400, bookkeeping_attempts=2)
+FINAL = {'finalize', 'reconcile', 'closure', 'handoff', 'stop-report'}
+KINDS = FINAL | {'implement', 'repair', 'verify', 'review-full', 'review-targeted',
+                 'initial-push', 'repair-push', 'request-review'}
+CANDIDATE = ('head', 'base', 'target', 'metadata', 'configuration')
+
+
+class PilotError(Exception):
+    pass
+
+
+def require(ok, message):
+    if not ok:
+        raise PilotError(message)
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def read_json(path):
+    try:
+        return json.loads(Path(path).read_text())
+    except (OSError, ValueError) as exc:
+        raise PilotError(f'ACCOUNTING_UNKNOWN: {path}: {exc}') from exc
+
+
+def fixture_path(path):
+    path = Path(path).resolve()
+    require(path.is_relative_to(AUDIT) and path != AUDIT,
+            'LIVE_PILOT_DISABLED: writes are restricted to the separate audit directory')
+    return path
+
+
+def atomic(path, value):
+    path = Path(path)
+    content = value if isinstance(value, str) else json.dumps(value, indent=2, sort_keys=True)+'\n'
+    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.'+path.name)
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, path)
+        dfd = os.open(path.parent, os.O_DIRECTORY)
+        try:
+            os.fsync(dfd)
+        finally:
+            os.close(dfd)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def route(cwd=None, run=None):
+    """Read-only, sticky adoption detection; absence of a flag is not an opt-out."""
+    cwd = Path(cwd or os.getcwd()).resolve()
+    pointers = []
+    for parent in (cwd, *cwd.parents):
+        marker = parent/'.agent-review-adoption.json'
+        if marker.exists() or marker.is_symlink():
+            pointers.append(read_json(marker)['run'])
+            break
+    # Worktrees share the common Git directory, not their checkout-relative .git.
+    p = subprocess.run(['git', '-C', str(cwd), 'rev-parse', '--path-format=absolute',
+                        '--git-common-dir'], capture_output=True, text=True)
+    if p.returncode == 0:
+        marker = Path(p.stdout.strip())/'agent-review-adoption.json'
+        if marker.exists() or marker.is_symlink():
+            pointers.append(read_json(marker)['run'])
+    if os.environ.get('AGENT_REVIEW_EXECUTION'):
+        pointers.append(os.environ['AGENT_REVIEW_EXECUTION'])
+    if run:
+        run = Path(run)
+        if (run/'adoption.json').exists() or (run/'execution.json').exists():
+            pointers.append(str(run))
+        elif os.environ.get('AGENT_REVIEW_OPERATION'):
+            raise PilotError('ADOPTION_CONTEXT_LOST: operation without execution')
+        else:
+            raise PilotError('ADOPTION_CONTEXT_LOST: explicitly requested execution is missing')
+    require(not os.environ.get('AGENT_REVIEW_OPERATION') or pointers,
+            'ADOPTION_CONTEXT_LOST: operation without execution')
+    if not pointers:
+        return {'mode': 'legacy'}
+    roots = {str(Path(x).resolve()) for x in pointers}
+    require(len(roots) == 1, 'ADOPTION_CONTEXT_CONFLICT')
+    store = Store(Path(next(iter(roots))))
+    state = store.read()
+    return {'mode': state['mode'], 'run': str(store.root), 'execution': state['id'],
+            'owner': state['owner'], 'generation': state['generation']}
+
+
+def bookkeeping(method):
+    """Small synchronous state work shares an enclosing reservation or funds its own."""
+    @functools.wraps(method)
+    def wrapped(self, owner, generation, *args, **kwargs):
+        s = self.read()
+        require(s['owner'] == owner and s['generation'] == generation, 'STALE_OWNER')
+        running = [o for o in s['operations'].values() if o['status'] == 'running']
+        if running:
+            require(all(o['deadline'] > self.clock() for o in running), 'ACTIVE_OPERATION_EXPIRED')
+            return method(self, owner, generation, *args, **kwargs)
+        ident = 'bookkeeping-'+str(uuid.uuid4())
+        self.reserve(owner, generation, ident, 'reconcile', 30)
+        rc = 1
+        try:
+            result = method(self, owner, generation, *args, **kwargs)
+            rc = 0
+            return result
+        finally:
+            self.finish(owner, generation, ident, rc)
+    return wrapped
+
+
+class Store:
+    def __init__(self, root, clock=time.time):
+        self.root = Path(root).resolve()
+        self.clock = clock
+
+    def create(self, changeset, owner, mandate, mode='fixture', profile=None, review_mode='lite'):
+        require(mode in {'fixture', 'shadow'}, 'LIVE_PILOT_DISABLED')
+        require(review_mode in {'lite', 'extra'}, 'REVIEW_POLICY_UNKNOWN')
+        fixture_path(self.root)
+        require(owner and mandate and changeset, 'MISSING_EXECUTION_MANDATE')
+        self.root.mkdir(parents=True, exist_ok=False)
+        ident = str(uuid.uuid4())
+        limits = copy.deepcopy(PROFILE if profile is None else profile)
+        state = dict(version=1, id=ident, mode=mode, changeset=changeset, owner=owner,
+                     generation=1, mandate=mandate, limits=limits, active_spent=0,
+                     created_at=self.clock(), operations={}, expectations={},
+                     candidate=None, snapshot=None, observation_versions={},
+                     objects_assessed={}, closures={}, handoff=None, hold=None,
+                     revoked=False, parked=False, admission_disabled=False,
+                     http_spent=0, external_intervals=[], extension_request=None,
+                     required_sources=['local-codex', 'copilot'] + (['local-code-reviewer'] if review_mode == 'extra' else []), history=[])
+        atomic(self.root/'adoption.json', {'version': 1, 'id': ident, 'run': str(self.root)})
+        atomic(self.root/'ledger.md', '# Pilot finding ledger\n\n')
+        state['ledger_hash'] = hashlib.sha256((self.root/'ledger.md').read_bytes()).hexdigest()
+        atomic(self.root/'execution.json', state)
+        self.read()
+        return state
+
+    def read(self):
+        s = read_json(self.root/'execution.json')
+        a = read_json(self.root/'adoption.json')
+        require(isinstance(s, dict) and s.get('version') == 1 and s.get('id') == a.get('id'),
+                'ACCOUNTING_UNKNOWN: invalid identity/version')
+        require(a.get('run') == str(self.root), 'ACCOUNTING_UNKNOWN: execution moved without recovery')
+        require(s.get('mode') in {'fixture', 'shadow'}, 'LIVE_PILOT_DISABLED')
+        require(set(PROFILE) == set(s.get('limits', {})), 'ACCOUNTING_UNKNOWN: limits')
+        require(all(isinstance(v, (int, float)) and not isinstance(v, bool) and
+                    math.isfinite(v) and v > 0 for v in s['limits'].values()),
+                'ACCOUNTING_UNKNOWN: invalid limits')
+        require(s['limits']['finalization_seconds'] < s['limits']['active_seconds'],
+                'ACCOUNTING_UNKNOWN: finalization reserve')
+        require(isinstance(s.get('active_spent'), (int, float)) and
+                0 <= s['active_spent'] <= s['limits']['active_seconds'],
+                'ACCOUNTING_UNKNOWN: consumed time')
+        for key in ('operations', 'expectations', 'closures', 'objects_assessed', 'observation_versions'):
+            require(isinstance(s.get(key), dict), f'ACCOUNTING_UNKNOWN: {key}')
+        require(isinstance(s.get('http_spent'), int) and 0 <= s['http_spent'] <= s['limits']['http_requests'],
+                'ACCOUNTING_UNKNOWN: HTTP consumption')
+        for ident, op in s['operations'].items():
+            require(op.get('id') == ident and op.get('kind') in KINDS and
+                    op.get('status') in {'running', 'completed', 'unknown', 'recovered'} and
+                    all(isinstance(op.get(k), (int, float)) and math.isfinite(op[k]) for k in ('seconds', 'started', 'deadline')) and
+                    op['seconds'] > 0 and op['deadline'] == op['started']+op['seconds'], 'ACCOUNTING_UNKNOWN: invalid operation')
+        try:
+            current_hash = hashlib.sha256((self.root/'ledger.md').read_bytes()).hexdigest()
+        except OSError as exc:
+            raise PilotError('ACCOUNTING_UNKNOWN: missing ledger') from exc
+        require(current_hash == s.get('ledger_hash'), 'ACCOUNTING_UNKNOWN: ledger changed outside transaction')
+        return s
+
+    @contextlib.contextmanager
+    def change(self, owner=None, generation=None, allow_hold=False):
+        fixture_path(self.root)
+        with (self.root/'account.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            s = self.read()
+            if owner is not None:
+                require(s['owner'] == owner and s['generation'] == generation, 'STALE_OWNER')
+            if not allow_hold:
+                require(not s['hold'] and not s['revoked'], 'AUTHORITY_HOLD')
+            yield s
+            atomic(self.root/'execution.json', s)
+            # Derived, never used as the readiness/accounting authority.
+            atomic(self.root/'state', f"loop=gmr-pilot execution={s['id']} generation={s['generation']} "
+                   f"phase={'parked' if s['parked'] else 'active'} active_spent={s['active_spent']}\n")
+
+    def bind(self, cwd):
+        cwd = fixture_path(cwd)
+        require(cwd.is_dir(), 'BIND_DIRECTORY_MISSING')
+        marker = cwd/'.agent-review-adoption.json'
+        require(not marker.exists(), 'ALREADY_ADOPTED')
+        atomic(marker, {'run': str(self.root), 'execution': self.read()['id']})
+
+    def reserve(self, owner, generation, ident, kind, seconds, parent=None):
+        require(kind in KINDS and ident and seconds > 0 and math.isfinite(seconds), 'INVALID_OPERATION')
+        with self.change(owner, generation, allow_hold=kind in {'reconcile', 'stop-report'}) as s:
+            require(s['mode'] == 'fixture' or (s['mode'] == 'shadow' and kind == 'reconcile'), 'SHADOW_CANNOT_EXECUTE')
+            if ident in s['operations']:
+                prior = s['operations'][ident]
+                require(prior['kind'] == kind and prior['parent'] == parent, 'OPERATION_ID_CONFLICT')
+                raise PilotError(f"OPERATION_EXISTS: {ident} {prior['status']}; reconcile, do not dispatch twice")
+            require(not s['admission_disabled'], 'PILOT_ADMISSION_DISABLED')
+            require(not s['parked'] or kind in FINAL, 'PARKED: no substantive continuation')
+            if kind in {'initial-push', 'repair-push', 'request-review'}:
+                require((s['snapshot'] or {}).get('merge_exposure') == 'safe', 'MERGE_EXPOSURE_ARMED_OR_UNKNOWN')
+                require(any(e['status'] == 'expected' and e.get('trigger_operation') == ident for e in s['expectations'].values()), 'EXPECTATIONS_REQUIRED_BEFORE_TRIGGER')
+            require(not any(x['status'] == 'unknown' for x in s['operations'].values()), 'ACCOUNTING_UNKNOWN: recover operation')
+            live = [x for x in s['operations'].values() if x['status'] == 'running']
+            if parent:
+                require(len(live) == 1 and live[0]['id'] == parent and not live[0]['parent'], 'INVALID_PARENT')
+                require(live[0]['kind'] not in FINAL or kind in FINAL, 'FINALIZATION_CANNOT_FUND_REVIEW')
+                remaining = live[0]['deadline'] - self.clock()
+            else:
+                require(not live, 'OPERATION_RUNNING')
+                ceiling = s['limits']['active_seconds']
+                if kind not in FINAL:
+                    ceiling -= s['limits']['finalization_seconds']
+                remaining = ceiling - s['active_spent']
+            counts = [x['kind'] for x in s['operations'].values()]
+            if kind.startswith('review-'):
+                require(sum(k.startswith('review-') for k in counts) < s['limits']['reviews'], 'REVIEW_ALLOWANCE_EXHAUSTED')
+            if kind == 'review-full':
+                require(counts.count(kind) < s['limits']['full_reviews'], 'FULL_REVIEW_ALLOWANCE_EXHAUSTED')
+            if kind == 'repair-push':
+                require(counts.count(kind) < s['limits']['repair_pushes'], 'PUSH_ALLOWANCE_EXHAUSTED')
+            if kind == 'initial-push':
+                require(not any(k in {'initial-push', 'repair-push'} for k in counts), 'INITIAL_PUSH_ALREADY_CONSUMED')
+            require(remaining > 0, 'ACTIVE_ALLOWANCE_EXHAUSTED')
+            duration = min(seconds, remaining)
+            started = self.clock()
+            op = dict(id=ident, kind=kind, parent=parent, status='running', started=started,
+                      seconds=duration, deadline=started+duration, owner=owner,
+                      generation=generation, rc=None, candidate=copy.deepcopy(s['candidate']))
+            s['operations'][ident] = op
+            return copy.deepcopy(op)
+
+    def finish(self, owner, generation, ident, rc):
+        # Completion bookkeeping survives a hold; it never starts new work.
+        with self.change(owner, generation, allow_hold=True) as s:
+            require(ident in s['operations'], 'UNKNOWN_OPERATION')
+            op = s['operations'][ident]
+            require(op['status'] == 'running', 'OPERATION_ALREADY_FINISHED')
+            require(not any(x['parent'] == ident and x['status'] in {'running', 'unknown'}
+                            for x in s['operations'].values()), 'CHILD_STILL_RUNNING')
+            elapsed = min(op['seconds'], max(0, self.clock()-op['started']))
+            if rc is None:
+                elapsed = op['seconds']
+            for child in s['operations'].values():
+                if child['parent'] == ident:
+                    elapsed = max(elapsed, min(op['seconds'], child['started']+child.get('charged', child['seconds'])-op['started']))
+            if not op['parent']:
+                s['active_spent'] += elapsed
+            op.update(status='unknown' if rc is None else 'completed', rc=rc, finished=self.clock(), charged=elapsed)
+            return copy.deepcopy(op)
+
+    def recover(self, owner, generation, ident, receipt):
+        with self.change(owner, generation, allow_hold=True) as s:
+            op = s['operations'][ident]
+            require(op['status'] in {'unknown', 'running'}, 'NOT_RECOVERABLE')
+            require(receipt.get('operation') == ident and receipt.get('stopped') is True and
+                    isinstance(receipt.get('rc'), int) and receipt.get('evidence'), 'STOP_EVIDENCE_REQUIRED')
+            require(not any(x['parent'] == ident and x['status'] == 'running'
+                            for x in s['operations'].values()), 'CHILD_STILL_RUNNING')
+            if op['status'] == 'running' and not op['parent']:
+                s['active_spent'] += op['seconds']
+            op.update(status='recovered', rc=receipt['rc'], recovery=receipt, charged=op['seconds'])
+            # Conservative reservation charge is retained, not refunded.
+
+    def transfer(self, owner, generation, new_owner, reason):
+        with self.change(owner, generation, allow_hold=True) as s:
+            require(new_owner and reason, 'HANDOFF_REASON_REQUIRED')
+            require(not any(x['status'] in {'running', 'unknown'} for x in s['operations'].values()), 'OLD_WORK_NOT_STOPPED')
+            s['history'].append({'owner': owner, 'generation': generation, 'reason': reason})
+            s['owner'] = new_owner
+            s['generation'] += 1
+
+    def control(self, owner, generation, action, reason):
+        require(action in {'hold', 'revoke', 'disable', 'park'}, 'INVALID_CONTROL')
+        require(reason, 'REASON_REQUIRED')
+        with self.change(owner, generation, allow_hold=True) as s:
+            if action == 'hold':
+                s['hold'] = reason
+            elif action == 'revoke':
+                s['revoked'] = True
+            elif action == 'disable':
+                s['admission_disabled'] = True
+            else:
+                s['parked'] = True
+            s['history'].append({'action': action, 'reason': reason, 'at': self.clock()})
+
+    def run_child(self, owner, generation, ident, kind, seconds, command, parent=None):
+        """Actual bounded execution, including TERM/KILL grace inside reservation."""
+        op = self.reserve(owner, generation, ident, kind, seconds, parent)
+        envelope_end = time.monotonic()+max(0, op['deadline']-self.clock())
+        grace = min(2.0, op['seconds']/4)
+        env = dict(os.environ, AGENT_REVIEW_EXECUTION=str(self.root), AGENT_REVIEW_OPERATION=ident)
+        process = None
+        try:
+            process = subprocess.Popen(command, env=env, start_new_session=True,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            try:
+                stdout, stderr = process.communicate(timeout=max(0, envelope_end-time.monotonic()-grace))
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    stdout, stderr = process.communicate(timeout=max(0, (envelope_end-time.monotonic())/2))
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    stdout, stderr = process.communicate(timeout=max(0, envelope_end-time.monotonic()))
+            return {'operation': ident, 'rc': process.returncode, 'stdout': stdout, 'stderr': stderr,
+                    'timeout_seconds': op['seconds']}
+        except BaseException:
+            if process is not None and process.poll() is None:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait(timeout=max(0, envelope_end-time.monotonic()))
+                except (ProcessLookupError, subprocess.TimeoutExpired):
+                    pass  # Persist unknown if reaping cannot be established within the envelope.
+            raise
+        finally:
+            rc = process.returncode if process is not None else None
+            self.finish(owner, generation, ident, rc)
+
+
+    def ledger(self):
+        return [json.loads(x) for x in re.findall(r'<!-- pilot-finding -->\n```json\n(.*?)\n```',
+                                                (self.root/'ledger.md').read_text(), re.S)]
+
+    def carry(self, owner, generation, ident, evidence, verified=None):
+        """Explicit scoped reuse preserves history; no automatic SHA-only freshness."""
+        current = {f['id']: f for f in self.ledger()}
+        require(ident in current and evidence, 'SCOPED_REUSE_EVIDENCE_REQUIRED')
+        f = copy.deepcopy(current[ident])
+        s = self.read()
+        require(f['object_version'] == s['observation_versions'][f['object']][-1]['version'], 'REVIEW_OBJECT_CHANGED')
+        f['reused_from'] = f['premises']
+        f['premises'] = s['candidate']
+        f['evidence'].append(evidence)
+        if f['disposition'] == 'fixed':
+            require(verified == s['candidate'], 'REVERIFY_AFFECTED_FIX_REQUIRED')
+            f['verified'] = verified
+        self.adjudicate(owner, generation, [f])
+
+    @bookkeeping
+    def expect(self, owner, generation, ident, source, candidate, triggered_at, required, explicit, actor, trigger_operation=None):
+        require(all(candidate.get(k) for k in CANDIDATE), 'CANDIDATE_UNKNOWN')
+        require(ident and source and actor and math.isfinite(triggered_at) and triggered_at <= self.clock(), 'INVALID_EXPECTATION')
+        with self.change(owner, generation) as s:
+            signature = dict(id=ident, source=source, candidate=copy.deepcopy(candidate),
+                             triggered_at=triggered_at, required=required, explicit=explicit, actor=actor,
+                             trigger_operation=trigger_operation or ident)
+            if ident in s['expectations']:
+                old = s['expectations'][ident]
+                require(all(old[k] == v for k, v in signature.items()), 'REQUEST_ID_CONFLICT')
+                return copy.deepcopy(old)
+            item = dict(signature, deadline=triggered_at+s['limits']['review_deadline'],
+                        status='expected', result_ids=[], completed_at=None)
+            s['expectations'][ident] = item
+            return copy.deepcopy(item)
+
+    @bookkeeping
+    def observe(self, owner, generation, snapshot):
+        snap = copy.deepcopy(snapshot)
+        require(isinstance(snap, dict) and isinstance(snap.get('candidate'), dict), 'INVALID_SNAPSHOT')
+        require(all(snap['candidate'].get(k) for k in CANDIDATE), 'CANDIDATE_UNKNOWN')
+        require(all(isinstance(snap.get(k), list) for k in ('reviews', 'objects', 'threads', 'checks')), 'INCOMPLETE_SNAPSHOT')
+        require(isinstance(snap.get('observed_at'), (int, float)) and
+                math.isfinite(snap['observed_at']) and snap['observed_at'] <= self.clock(), 'INVALID_OBSERVATION_TIME')
+        for key in ('objects', 'threads', 'reviews', 'checks'):
+            ids = [o.get('id') for o in snap[key]]
+            require(all(ids) and len(ids) == len(set(ids)), 'DUPLICATE_OR_MISSING_IDS:'+key)
+        with self.change(owner, generation, allow_hold=True) as s:
+            old = s['snapshot']
+            require(not old or snap['observed_at'] >= old['observed_at'], 'STALE_OBSERVATION')
+            if old and s['candidate'] != snap['candidate']:
+                s['history'].append({'candidate': s['candidate'], 'changed_at': self.clock()})
+            s['candidate'] = snap['candidate']
+            for o in snap['objects']:
+                require(o.get('author') and isinstance(o.get('body'), str) and 'updated_at' in o, 'MALFORMED_REVIEW_OBJECT')
+                versions = s['observation_versions'].setdefault(o['id'], [])
+                version = digest(o)
+                if not versions or versions[-1]['version'] != version:
+                    versions.append({'version': version, 'object': o, 'observed_at': snap['observed_at']})
+            for e in s['expectations'].values():
+                for r in snap['reviews']:
+                    if (r.get('request'), r.get('source'), r.get('actor'), r.get('candidate')) != (e['id'], e['source'], e['actor'], e['candidate']):
+                        continue
+                    if e['source'].startswith('local-') and r.get('status') == 'completed':
+                        op = s['operations'].get(r.get('operation'), {})
+                        if not (op.get('status') in {'completed', 'recovered'} and op.get('rc') == 0 and
+                                op.get('kind', '').startswith('review-') and op.get('candidate') == e['candidate']):
+                            continue  # Local output without an accounted candidate receipt is not completion.
+                    if r.get('status') in {'queued', 'running', 'completed', 'failed', 'cancelled', 'skipped', 'degraded'}:
+                        e['status'] = r['status']
+                        if r['id'] not in e['result_ids']:
+                            e['result_ids'].append(r['id'])
+                        if r['status'] == 'completed' and e['completed_at'] is None:
+                            e['completed_at'] = snap['observed_at']
+            s['snapshot'] = snap
+            s.pop('collection_error', None)
+            s['collection_failures'] = 0
+            s['observation_position'] = {k: [o['id'] for o in snap[k]] for k in ('objects', 'reviews', 'threads')}
+            if s['handoff'] and s['handoff']['snapshot'] != digest(snap):
+                s['handoff']['valid'] = False
+
+    @bookkeeping
+    def adjudicate(self, owner, generation, findings):
+        with self.change(owner, generation) as s:
+            require(s['candidate'], 'CANDIDATE_UNKNOWN')
+            text = (self.root/'ledger.md').read_text()
+            for item in findings:
+                f = copy.deepcopy(item)
+                require(all(f.get(k) for k in ('id', 'object', 'consequence', 'relevance', 'evidence',
+                                              'disposition', 'premises', 'rationale', 'authority')), 'ADJUDICATION_EVIDENCE_REQUIRED')
+                require(isinstance(f['evidence'], list) and all(isinstance(x, str) and x for x in f['evidence']), 'EVIDENCE_REQUIRED')
+                require(f['disposition'] in {'open', 'investigate', 'fixed', 'rejected', 'duplicate',
+                                            'obsolete', 'deferred', 'accepted-risk'}, 'INVALID_DISPOSITION')
+                require(f['premises'] == s['candidate'], 'STALE_ADJUDICATION')
+                require(f['object'] in s['observation_versions'], 'UNKNOWN_REVIEW_OBJECT')
+                if f['disposition'] == 'fixed':
+                    require(f.get('verified') == s['candidate'], 'UNVERIFIED_FIX')
+                if f['disposition'] == 'duplicate':
+                    require(f.get('duplicate_of') and f['duplicate_of'] != f['id'], 'DUPLICATE_TARGET_REQUIRED')
+                if f['disposition'] in {'deferred', 'accepted-risk'}:
+                    require(f['authority'] == 'human' and f.get('authority_evidence'), 'HUMAN_AUTHORITY_REQUIRED')
+                f['object_version'] = s['observation_versions'][f['object']][-1]['version']
+                f['at'] = self.clock()
+                text += '<!-- pilot-finding -->\n```json\n'+json.dumps(f, sort_keys=True)+'\n```\n\n'
+            # Interrupted cross-file commit fails closed; never silently discard a ledger write.
+            atomic(self.root/'ledger.md', text)
+            s['ledger_hash'] = hashlib.sha256(text.encode()).hexdigest()
+
+    def terminal(self, f, s, current, seen=None):
+        seen = set() if seen is None else seen
+        if f['id'] in seen:
+            return False
+        seen.add(f['id'])
+        versions = s['observation_versions'].get(f['object'], [])
+        if not versions or f['object_version'] != versions[-1]['version'] or f['premises'] != s['candidate']:
+            return False
+        disposition = f['disposition']
+        if disposition == 'duplicate':
+            target = current.get(f.get('duplicate_of'))
+            return bool(target and self.terminal(target, s, current, seen))
+        if disposition == 'fixed':
+            return f.get('verified') == s['candidate']
+        if disposition in {'rejected', 'obsolete'}:
+            return True
+        if disposition in {'deferred', 'accepted-risk'}:
+            return f.get('authority') == 'human' and bool(f.get('authority_evidence')) and f.get('current_blocker_discharged') is True
+        return False
+
+    def external_spent(self, s):
+        intervals = sorted((e['triggered_at'], min(self.clock(), e['completed_at'] or e['deadline'], e['deadline']))
+                           for e in s['expectations'].values() if not e['source'].startswith('local-'))
+        total, end = 0, -math.inf
+        for start, stop in intervals:
+            total += max(0, stop-max(start, end))
+            end = max(end, stop)
+        return total
+
+    def evaluate(self):
+        s = self.read()
+        snap = s['snapshot'] or {}
+        blockers = []
+        if snap and self.clock() > snap.get('expires_at', snap.get('observed_at', 0)+s['limits']['review_deadline']):
+            blockers.append('OBSERVATION_EXPIRED')
+        last_work = max((o.get('finished', o['started']) for o in s['operations'].values() if o['kind'] not in FINAL), default=0)
+        if snap.get('observed_at', -1) < last_work:
+            blockers.append('FINAL_COLLECTION_REQUIRED')
+        if s.get('collection_error'):
+            blockers.append('COLLECTION_FAILED_OR_UNKNOWN')
+        if not snap.get('complete'):
+            blockers.append('REVIEW_INVENTORY_UNKNOWN')
+        if snap.get('policy_known') is not True:
+            blockers.append('REVIEW_POLICY_UNKNOWN')
+        if snap.get('draft') is True:
+            blockers.extend('REVIEW_ACTIVATION_REQUIRED:'+source for source in snap.get('draft_gated_sources', []))
+        for source in s['required_sources']:
+            if not any(e['source'] == source and e['candidate'] == s['candidate'] and e['required'] for e in s['expectations'].values()):
+                blockers.append('REVIEW_EXPECTATION_MISSING:'+source)
+        for e in s['expectations'].values():
+            if e['status'] != 'completed':
+                code = 'REVIEW_DEADLINE_UNKNOWN' if self.clock() >= e['deadline'] else 'REVIEW_PENDING'
+                if e['status'] in {'failed', 'cancelled', 'skipped', 'degraded'}:
+                    code = 'REVIEW_'+e['status'].upper()
+                blockers.append(code+':'+e['id'])
+        current = {f['id']: f for f in self.ledger()}
+        own_ids = {c.get('reply_id') for c in s['closures'].values()
+                   if c.get('reply_version') and c.get('reply_version') ==
+                   (s['observation_versions'].get(c.get('reply_id')) or [{}])[-1].get('version')}
+        for oid, versions in s['observation_versions'].items():
+            if not any(f['object'] == oid and f['object_version'] == versions[-1]['version'] for f in current.values()) and oid not in own_ids:
+                blockers.append('OBJECT_UNASSESSED:'+oid)
+        for f in current.values():
+            if not self.terminal(f, s, current):
+                blockers.append('FINDING_OPEN:'+f['id'])
+        for t in snap.get('threads', []):
+            if t.get('resolvable') is True and t.get('required') is True and t.get('resolved') is not True:
+                blockers.append('THREAD_UNRESOLVED:'+t['id'])
+            if any(type(t.get(k)) is not bool for k in ('resolvable', 'resolved', 'required')) or not isinstance(t.get('objects'), list):
+                blockers.append('THREAD_STATE_UNKNOWN:'+t['id'])
+        for check in snap.get('checks', []):
+            if type(check.get('required')) is not bool:
+                blockers.append('CHECK_REQUIREMENT_UNKNOWN:'+check['id'])
+            if check.get('required') is True and (check.get('head') != (s['candidate'] or {}).get('head') or check.get('conclusion') != 'success'):
+                blockers.append('CHECK_STALE_OR_FAILED:'+check['id'])
+        if not snap.get('checks'):
+            blockers.append('CHECKS_UNKNOWN')
+        verification = snap.get('verification', {})
+        if verification.get('passed') is not True or verification.get('candidate') != s['candidate']:
+            blockers.append('VERIFICATION_MISSING_OR_STALE')
+        if snap.get('conflicts') is not False:
+            blockers.append('CONFLICTS_OR_UNKNOWN')
+        if snap.get('dependencies') != []:
+            blockers.append('DEPENDENCIES_OR_UNKNOWN')
+        if snap.get('formal_changes_requested') is not False:
+            blockers.append('FORMAL_REVIEW_BLOCKED_OR_UNKNOWN')
+        if s['hold'] or s['revoked']:
+            blockers.append('AUTHORITY_HOLD')
+        if any(x['status'] in {'running', 'unknown'} for x in s['operations'].values()):
+            blockers.append('OPERATION_RUNNING_OR_UNKNOWN')
+        kinds = [o['kind'] for o in s['operations'].values()]
+        remaining = dict(active=max(0, s['limits']['active_seconds']-s['active_spent']),
+                         substantive_active=max(0, s['limits']['active_seconds']-s['limits']['finalization_seconds']-s['active_spent']),
+                         reviews=s['limits']['reviews']-sum(k.startswith('review-') for k in kinds),
+                         full_reviews=s['limits']['full_reviews']-kinds.count('review-full'),
+                         repair_pushes=s['limits']['repair_pushes']-kinds.count('repair-push'),
+                         http=s['limits']['http_requests']-s['http_spent'],
+                         external=max(0, s['limits']['external_seconds']-self.external_spent(s)))
+        return dict(execution=s['id'], mode=s['mode'], candidate=s['candidate'], blockers=sorted(set(blockers)),
+                    handoff_ready=not blockers, draft=snap.get('draft'), merge_authority=False,
+                    forge_merge_eligible=(not blockers and snap.get('draft') is False and snap.get('approvals_satisfied') is True),
+                    merge_exposure=snap.get('merge_exposure', 'unknown'), remaining=remaining,
+                    admission_disabled=s['admission_disabled'], parked=s['parked'],
+                    handoff_current=bool(s['handoff'] and s['handoff']['valid'] and not blockers), extension_request=s['extension_request'])
+
+    def handoff(self, owner, generation):
+        result = self.evaluate()
+        require(result['handoff_ready'], 'HANDOFF_BLOCKED: '+', '.join(result['blockers']))
+        snapshot_hash = digest(self.read()['snapshot'])
+        if self.read()['handoff'] and self.read()['handoff']['valid'] and self.read()['handoff']['snapshot'] == snapshot_hash:
+            require(self.read()['owner'] == owner and self.read()['generation'] == generation, 'STALE_OWNER')
+            return result
+        ident = 'handoff-'+snapshot_hash[:16]
+        self.reserve(owner, generation, ident, 'handoff', 30)
+        try:
+            with self.change(owner, generation) as s:
+                require(digest(s['snapshot']) == snapshot_hash, 'HANDOFF_OBSERVATION_CHANGED')
+                s['handoff'] = {'snapshot': digest(s['snapshot']), 'valid': True, 'at': self.clock()}
+                atomic(self.root/'run-log.md', '# Pilot handoff (local fixture only)\n\n'
+                       f"Candidate `{s['candidate']['head']}`: automated evidence complete; native draft={s['snapshot']['draft']}. "
+                       'No merge or undraft authority. Point-in-time observation, not continuous monitoring.\n')
+        finally:
+            self.finish(owner, generation, ident, 0)
+        return self.evaluate()
+
+    def park(self, owner, generation, reason, next_action):
+        require(reason and next_action, 'SCOPED_EXTENSION_REQUIRED')
+        with self.change(owner, generation, allow_hold=True) as s:
+            s['parked'] = True
+            if s['extension_request'] is None:
+                s['extension_request'] = dict(to='Serge', reason=reason, next_action=next_action, at=self.clock(), allowance_unchanged=True)
+            return copy.deepcopy(s['extension_request'])
+
+    def charge_http(self, owner, generation):
+        with self.change(owner, generation, allow_hold=True) as s:
+            require(s['http_spent'] < s['limits']['http_requests'], 'HTTP_ALLOWANCE_EXHAUSTED')
+            s['http_spent'] += 1
+
+    def collect(self, owner, generation, fetch, sleep=time.sleep):
+        fixture_path(self.root)
+        with (self.root/'collector.lock').open('a') as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise PilotError('COLLECTOR_ALREADY_OWNED') from exc
+            while True:
+                s = self.read()
+                require(s['owner'] == owner and s['generation'] == generation, 'STALE_OWNER')
+                pending = [e for e in s['expectations'].values() if e['status'] != 'completed']
+                if not pending or s['hold'] or s['revoked'] or s['parked']:
+                    return self.evaluate()
+                if s.get('collection_failures', 0) >= s['limits']['bookkeeping_attempts']:
+                    return self.evaluate()
+                deadline = min(e['deadline'] for e in pending)
+                if self.clock() >= deadline or self.external_spent(s) >= s['limits']['external_seconds']:
+                    return self.evaluate()
+                try:
+                    snap = fetch(lambda: self.charge_http(owner, generation))
+                    self.observe(owner, generation, snap)
+                except (PilotError, OSError, subprocess.TimeoutExpired) as exc:
+                    with self.change(owner, generation, allow_hold=True) as state:
+                        state['collection_failures'] = state.get('collection_failures', 0)+1
+                        state['collection_error'] = str(exc)
+                        if 'PERMISSION' in str(exc):
+                            state['collection_failures'] = state['limits']['bookkeeping_attempts']
+                    if self.read()['collection_failures'] >= s['limits']['bookkeeping_attempts']:
+                        return dict(self.evaluate(), collection_error=str(exc))
+                now = self.clock()
+                if all(e['status'] == 'completed' for e in self.read()['expectations'].values()):
+                    return self.evaluate()
+                cadence = 30 if now-min(e['triggered_at'] for e in pending) < 120 else 60
+                sleep(max(0, min(cadence, deadline-now, s['limits']['external_seconds']-self.external_spent(self.read()))))
+
+    def close_thread(self, owner, generation, ident, tid, forge):
+        require(isinstance(forge, FixtureForge), 'LIVE_FORGE_MUTATIONS_DISABLED')
+        require(self.read()['mode'] == 'fixture', 'SHADOW_CANNOT_RESOLVE')
+        with (self.root/'closure.lock').open('a') as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise PilotError('CLOSURE_ALREADY_OWNED') from exc
+            prior = self.read()['closures'].get(ident)
+            require(not prior or prior['thread'] == tid, 'CLOSURE_ID_CONFLICT')
+            if prior and prior['phase'] == 'confirmed':
+                snap = forge.fetch()
+                self.observe(owner, generation, snap)
+                if prior.get('reply_id'):
+                    own = next((o for o in snap['objects'] if o['id'] == prior['reply_id']), None)
+                    require(own and digest(own) == prior.get('reply_version'), 'OWN_REPLY_RECEIPT_UNKNOWN_OR_EDITED')
+                require(prior['content'] == self.thread_signature(snap, tid, prior.get('reply_id')), 'THREAD_CHANGED_AFTER_CLOSURE')
+                require(next(t for t in snap['threads'] if t['id'] == tid)['resolved'], 'THREAD_REOPENED')
+                return prior
+            if prior:
+                require(not prior.get('permission_failed') and prior['attempts'] < self.read()['limits']['bookkeeping_attempts'], 'CLOSURE_RETRY_EXHAUSTED')
+            operation = ident+'-attempt-'+str((prior or {}).get('attempts', 0)+1)
+            self.reserve(owner, generation, operation, 'closure', 60)
+            try:
+                snap = forge.fetch()
+                self.observe(owner, generation, snap)
+                s = self.read()
+                require(snap.get('complete') is True, 'INCOMPLETE_DISCUSSION')
+                require(snap.get('merge_exposure') == 'safe', 'MERGE_EXPOSURE_ARMED_OR_UNKNOWN')
+                thread = next(t for t in snap['threads'] if t['id'] == tid)
+                require(thread.get('resolvable') is True, 'NATIVE_RESOLUTION_NOT_APPLICABLE')
+                # Already-resolved threads can report viewerCanResolve=false.
+                # Receipt recovery only confirms observed state; it does not mutate again.
+                require(thread.get('resolved') is True or thread.get('can_resolve') is True, 'PERMISSION_RESOLVE_REQUIRED')
+                current = {f['id']: f for f in self.ledger()}
+                reply_id = (prior or {}).get('reply_id')
+                if prior and not reply_id:
+                    reply_id = forge.find_reply(ident)
+                if reply_id:
+                    own = next((x for x in snap['objects'] if x['id'] == reply_id), None)
+                    require(own and prior and own['body'] == prior.get('rationale'), 'OWN_REPLY_RECEIPT_UNKNOWN_OR_EDITED')
+                    require(not prior.get('reply_version') or digest(own) == prior['reply_version'], 'OWN_REPLY_RECEIPT_UNKNOWN_OR_EDITED')
+                    with self.change(owner, generation) as state:
+                        state['closures'][ident].update(reply_id=reply_id, reply_version=digest(own))
+                for oid in thread['objects']:
+                    if oid == reply_id:
+                        continue
+                    obj = next((x for x in snap['objects'] if x['id'] == oid), None)
+                    known_bots = {'copilot-pull-request-reviewer', 'copilot-pull-request-reviewer[bot]', 'copilot-bot'}
+                    require(obj is not None and obj['author'] in known_bots and
+                            obj['author'] in {e['actor'] for e in s['expectations'].values()}, 'HUMAN_OR_UNKNOWN_CONTENT_REQUIRES_DECISION')
+                    fs = [f for f in current.values() if f['object'] == oid]
+                    require(fs and all(self.terminal(f, s, current) for f in fs), 'THREAD_FINDINGS_NOT_TERMINAL')
+                signature = self.thread_signature(snap, tid, reply_id)
+                require(not any(c['thread'] == tid and key != ident and c.get('content') == signature
+                                for key, c in s['closures'].items()), 'EXISTING_CLOSURE_OPERATION_MUST_RESUME')
+                if prior:
+                    require(signature == prior['content'], 'THREAD_CHANGED_REQUIRES_REASSESSMENT')
+                with self.change(owner, generation) as state:
+                    c = state['closures'].setdefault(ident, dict(thread=tid, phase='prepared', attempts=0, content=signature, reply_id=None,
+                        rationale='Findings adjudicated; accepted fixes verified on '+s['candidate']['head']+' [operation '+ident+']'))
+                    c['attempts'] += 1
+                if not thread['resolved']:
+                    if not reply_id:
+                        reply_id = forge.find_reply(ident)
+                        if reply_id is None:
+                            reply_id = forge.reply(tid, ident, self.read()['closures'][ident]['rationale'])
+                        with self.change(owner, generation) as state:
+                            own = next(x for x in forge.fetch()['objects'] if x['id'] == reply_id)
+                            state['closures'][ident].update(reply_id=reply_id, reply_version=digest(own), phase='rationale-recorded')
+                    fresh = forge.fetch()
+                    require(self.thread_signature(fresh, tid, reply_id) == signature and fresh['candidate'] == s['candidate'] and
+                            fresh.get('merge_exposure') == 'safe', 'CLOSURE_PRECONDITION_CHANGED')
+                    with self.change(owner, generation) as state:
+                        state['closures'][ident]['phase'] = 'resolution-requested'
+                    forge.resolve(tid)
+                after = forge.fetch()
+                self.observe(owner, generation, after)
+                require(after['candidate'] == s['candidate'] and self.thread_signature(after, tid, reply_id) == signature, 'CONCURRENT_CONTENT_CHANGE')
+                require(next(t for t in after['threads'] if t['id'] == tid)['resolved'] is True, 'RESOLUTION_NOT_CONFIRMED')
+                with self.change(owner, generation) as state:
+                    state['closures'][ident].update(phase='confirmed', reply_id=reply_id, at=self.clock())
+                return self.read()['closures'][ident]
+            except (PilotError, OSError) as exc:
+                with self.change(owner, generation, allow_hold=True) as state:
+                    c = state['closures'].setdefault(ident, dict(thread=tid, attempts=1, content=None, reply_id=None))
+                    c.update(phase='failed-or-unknown', error=str(exc), permission_failed='PERMISSION' in str(exc))
+                raise
+            finally:
+                self.finish(owner, generation, operation, 0 if self.read()['closures'].get(ident, {}).get('phase') == 'confirmed' else 1)
+
+    @staticmethod
+    def thread_signature(snap, tid, own_reply=None):
+        t = next(t for t in snap['threads'] if t['id'] == tid)
+        ids = [x for x in t['objects'] if x != own_reply]
+        return digest({'objects': [x for x in snap['objects'] if x['id'] in ids], 'ids': ids,
+                       'candidate': snap['candidate'], 'resolvable': t.get('resolvable')})
+
+
+class FixtureForge:
+    """Isolated in-memory forge. No network or production write capability."""
+    def __init__(self, snap):
+        self.snap = copy.deepcopy(snap)
+        self.resolutions = 0
+        self.replies = 0
+        self.reply_operations = {}
+
+    def fetch(self):
+        return copy.deepcopy(self.snap)
+
+    def find_reply(self, operation):
+        return self.reply_operations.get(operation)
+
+    def reply(self, tid, operation, body):
+        self.replies += 1
+        ident = 'pilot-reply-'+operation
+        self.reply_operations[operation] = ident
+        self.snap['objects'].append(dict(id=ident, author='shared-human-login', body=body, updated_at=self.snap['observed_at']))
+        next(t for t in self.snap['threads'] if t['id'] == tid)['objects'].append(ident)
+        return ident
+
+    def resolve(self, tid):
+        self.resolutions += 1
+        next(t for t in self.snap['threads'] if t['id'] == tid)['resolved'] = True
+
+
+def validate_response(value):
+    require(isinstance(value, dict) and not value.get('errors'), 'FORGE_API_ERRORS_OR_MALFORMED')
+    def visit(node):
+        if isinstance(node, dict):
+            if 'pageInfo' in node or 'nodes' in node:
+                require(isinstance(node.get('nodes'), list) and isinstance(node.get('pageInfo'), dict), 'PAGINATION_STRUCTURE_UNKNOWN')
+                info = node['pageInfo']
+                require(type(info.get('hasNextPage')) is bool, 'PAGINATION_COMPLETION_UNKNOWN')
+                require(not info['hasNextPage'] or bool(info.get('endCursor')), 'PAGINATION_CURSOR_MISSING')
+                ids = [x.get('id') for x in node['nodes'] if isinstance(x, dict)]
+                require(len(ids) == len(node['nodes']) and all(ids) and len(set(ids)) == len(ids), 'PAGINATION_NODE_IDS_INVALID')
+            for k, v in node.items():
+                if k in {'repository', 'pullRequest', 'project', 'mergeRequest', 'node', 'comments', 'reviews', 'reviewThreads', 'discussions', 'notes'}:
+                    require(v is not None, 'FORGE_REQUIRED_FIELD_NULL:'+k)
+                visit(v)
+        elif isinstance(node, list):
+            for x in node:
+                visit(x)
+    visit(value)
+    return value
+
+
+def api_proxy(store, owner, generation, command):
+    """Charge each CLI HTTP invocation; allow GraphQL queries and REST GET only."""
+    require(command and command[0] in {'gh', 'glab'} and command[1:2] == ['api'], 'READ_ONLY_API_REQUIRED')
+    args = command[2:]
+    require(not any(x in {'--paginate', '--include', '-i'} for x in args), 'EXPLICIT_PAGINATION_REQUIRED')
+    if args[:1] == ['graphql']:
+        query = next((x[6:] for x in args if x.startswith('query=')), '')
+        require(re.match(r'^\s*query\b', query) is not None and not re.search(r'\bmutation\b', query), 'READ_ONLY_QUERY_REQUIRED')
+        # Extend the existing inventory queries without changing their legacy form.
+        query = query.replace('body createdAt', 'body createdAt updatedAt')
+        query = query.replace('state submittedAt body', 'state submittedAt body updatedAt commit { oid }')
+        if command[0] == 'gh':
+            reactions = 'reactions(first: 100) { totalCount pageInfo { hasNextPage endCursor } nodes { id content createdAt user { login } } }'
+            query = query.replace('body createdAt updatedAt', 'body createdAt updatedAt '+reactions)
+            query = query.replace('body updatedAt commit', 'body updatedAt '+reactions+' commit')
+        query = query.replace('isOutdated\n', 'isOutdated\n                viewerCanResolve\n')
+        query = query.replace('id resolvable resolved', 'id resolvable resolved')
+        args = ['query='+query if x.startswith('query=') else x for x in args]
+        # Inspect the unfiltered response before applying the legacy page2 selector.
+        selector = None
+        if '--jq' in args:
+            at = args.index('--jq')
+            selector = args[at+1]
+            args = args[:at]+args[at+2:]
+    else:
+        require(len(args) == 1 and not args[0].startswith('-'), 'READ_ONLY_REST_GET_REQUIRED')
+        args += ['--method', 'GET']
+        selector = None
+    seconds = 30
+    if os.environ.get('AGENT_REVIEW_COLLECTION') == '1':
+        s = store.read()
+        pending = [e['deadline'] for e in s['expectations'].values() if e['status'] != 'completed']
+        if pending:
+            seconds = min(seconds, min(pending)-store.clock(), s['limits']['external_seconds']-store.external_spent(s))
+        require(seconds > 0, 'COLLECTION_ALLOWANCE_EXHAUSTED')
+    store.charge_http(owner, generation)
+    result = store.run_child(owner, generation, 'http-'+str(store.read()['http_spent']),
+                             'reconcile', seconds, [command[0], 'api', *args])
+    require(result['rc'] == 0, 'FORGE_API_FAILED:'+str(result['rc']))
+    value = json.loads(result['stdout'])
+    if isinstance(value, list):
+        require(command[0] == 'glab', 'MALFORMED_RESPONSE')
+    else:
+        validate_response(value)
+    if selector:
+        require(selector == '.data.node.comments', 'UNKNOWN_RESPONSE_SELECTOR')
+        value = value['data']['node']['comments']
+    return value
+
+
+def entrypoint(name, cwd=None, run=None):
+    context = route(cwd, run)
+    if context['mode'] == 'legacy':
+        return context
+    store = Store(context['run'])
+    if name in {'status', 'pr-ready', 'triage'}:
+        return store.evaluate()
+    require(name != 'undraft', 'LIVE_UNDRAFT_DISABLED: draft review activation and human handoff are separate')
+    ident = os.environ.get('AGENT_REVIEW_OPERATION')
+    s = store.read()
+    require(ident in s['operations'], 'ADOPTED_OPERATION_ID_REQUIRED')
+    op = s['operations'][ident]
+    require(op['status'] == 'running' and op['deadline'] > store.clock(), 'ADOPTED_OPERATION_NOT_ACTIVE')
+    require(op['owner'] == s['owner'] and op['generation'] == s['generation'], 'STALE_OWNER')
+    if name == 'codex-run':
+        require(op['kind'].startswith('review-'), 'REVIEW_RESERVATION_REQUIRED')
+    require(not s['hold'] and not s['revoked'], 'AUTHORITY_HOLD')
+    return dict(context, operation=ident, seconds_remaining=op['deadline']-store.clock())
+
+
+def normalize_inventory(inventory, context):
+    """Normalize outputs; completion needs an explicit evidenced request association.
+
+    Context is implementer-supplied candidate/check/policy evidence, not inferred
+    from green jobs or prose. Missing integration association stays unknown.
+    """
+    snap = copy.deepcopy(context)
+    snap.setdefault('reviews', [])
+    snap.setdefault('checks', [])
+    snap['objects'], snap['threads'] = [], []
+    snap['complete'] = context.get('complete') is True
+    associations = snap.pop('associations', {})
+    objects = {}
+    def add(obj, thread=None):
+        ident = obj.get('id')
+        author = obj.get('author') or {}
+        item = dict(id=ident, author=author.get('login') or author.get('username') or 'unknown',
+                    body=obj.get('body', ''), updated_at=obj.get('updatedAt') or obj.get('createdAt') or obj.get('submittedAt'),
+                    thread=thread)
+        if not item['updated_at']:
+            snap['complete'] = False
+        if ident in objects and objects[ident] != item:
+            snap['complete'] = False
+        objects[ident] = item
+        reactions = obj.get('reactions')
+        if reactions:
+            if reactions.get('pageInfo', {}).get('hasNextPage') is not False:
+                snap['complete'] = False
+            for r in reactions.get('nodes', []):
+                objects[r['id']] = dict(id=r['id'], author=(r.get('user') or {}).get('login', 'unknown'),
+                                       body='reaction:'+r.get('content', 'unknown'), updated_at=r.get('createdAt'), parent=ident)
+        return ident
+    if inventory.get('forge') == 'github':
+        for c in inventory['comments']['nodes']:
+            add(c)
+        for r in inventory['reviews']['nodes']:
+            add(r)
+            association = associations.get(r['id'])
+            if association and association.get('evidence'):
+                actor = (r.get('author') or {}).get('login')
+                if (actor == association.get('actor') and (r.get('commit') or {}).get('oid') == association.get('candidate', {}).get('head')
+                        and r.get('state') in {'COMMENTED', 'APPROVED', 'CHANGES_REQUESTED'}):
+                    snap['reviews'].append(dict(association, id=r['id'], status='completed'))
+        for t in inventory['threads']:
+            ids = [add(c, t['id']) for c in t['comments']['nodes']]
+            snap['threads'].append(dict(id=t['id'], objects=ids, resolvable=True, resolved=t.get('isResolved'),
+                                        can_resolve=t.get('viewerCanResolve'), required=context.get('threads_required')))
+    elif inventory.get('forge') == 'gitlab':
+        for t in inventory['discussions']:
+            ids = [add(c, t['id']) for c in t['notes']['nodes']]
+            snap['threads'].append(dict(id=t['id'], objects=ids, resolvable=t.get('resolvable'), resolved=t.get('resolved'),
+                                        can_resolve=None, required=context.get('threads_required')))
+    else:
+        raise PilotError('UNKNOWN_INVENTORY_FORMAT')
+    require(None not in objects, 'REVIEW_OBJECT_ID_MISSING')
+    snap['objects'] = list(objects.values())
+    return snap
+
+
+def inventory_fetch(store, owner, generation, forge, target, context_path):
+    """Read-only hosted collection, using the existing inventory script and per-page account."""
+    require(forge in {'github', 'gitlab'} and len(target) == (3 if forge == 'github' else 2), 'INVALID_FORGE_TARGET')
+    s = store.read()
+    require(s['owner'] == owner and s['generation'] == generation, 'STALE_OWNER')
+    pending = [e['deadline'] for e in s['expectations'].values() if e['status'] != 'completed']
+    remaining = min(s['limits']['active_seconds']-s['active_spent'],
+                    s['limits']['external_seconds']-store.external_spent(s),
+                    min(pending)-store.clock() if pending else 30)
+    require(remaining > 0, 'COLLECTION_ALLOWANCE_EXHAUSTED')
+    env = dict(os.environ, AGENT_REVIEW_COLLECTION='1')
+    result = subprocess.run(['/home/serge/bin/forge-review-thread-triage.sh', '--pilot-json', str(store.root), forge, *target],
+                            capture_output=True, text=True, timeout=remaining, env=env)
+    require(result.returncode == 0, 'INVENTORY_FETCH_FAILED: '+result.stderr[-500:])
+    context = read_json(context_path)
+    context['observed_at'] = store.clock()
+    return normalize_inventory(json.loads(result.stdout), context)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['profile', 'route', 'init', 'status', 'bind', 'reserve', 'finish', 'run', 'entrypoint', 'expect', 'observe', 'adjudicate', 'handoff', 'park', 'api', 'http', 'validate-response', 'control', 'recover', 'transfer', 'normalize', 'collect', 'carry'])
+    parser.add_argument('--context')
+    parser.add_argument('--forge', choices=['github', 'gitlab'])
+    parser.add_argument('--target', nargs='+')
+    parser.add_argument('--input')
+    parser.add_argument('--entrypoint', default='status')
+    parser.add_argument('--reason')
+    parser.add_argument('--next-action')
+    parser.add_argument('--run')
+    parser.add_argument('--cwd')
+    parser.add_argument('--owner', default='fixture-owner')
+    parser.add_argument('--generation', type=int, default=1)
+    parser.add_argument('--operation')
+    parser.add_argument('--parent')
+    parser.add_argument('--kind', default='verify')
+    parser.add_argument('--seconds', type=float, default=60)
+    parser.add_argument('--rc', type=int)
+    parser.add_argument('--changeset')
+    parser.add_argument('--mandate')
+    parser.add_argument('--mode', default='fixture')
+    parser.add_argument('--review-mode', choices=['lite', 'extra'], default='lite')
+    argv = sys.argv[1:]
+    split = argv.index('--') if '--' in argv else len(argv)
+    command = argv[split+1:]
+    args = parser.parse_args(argv[:split])
+    if args.action == 'profile':
+        result = {'live_enabled': LIVE_ENABLED, 'limits': PROFILE, 'finalization_operations': sorted(FINAL)}
+    elif args.action == 'route':
+        result = route(args.cwd, args.run)
+    elif args.action == 'entrypoint':
+        result = entrypoint(args.entrypoint, args.cwd, args.run)
+    elif args.action == 'normalize':
+        result = normalize_inventory(read_json(args.input), read_json(args.context))
+    elif args.action == 'validate-response':
+        result = validate_response(json.load(sys.stdin))
+    else:
+        require(args.run, '--run is required')
+        store = Store(args.run)
+        if args.action == 'init':
+            result = store.create(args.changeset, args.owner, args.mandate, args.mode, review_mode=args.review_mode)
+        elif args.action == 'bind':
+            store.bind(args.cwd)
+            result = {'bound': args.cwd}
+        elif args.action == 'status':
+            result = store.evaluate()
+        elif args.action == 'expect':
+            result = store.expect(args.owner, args.generation, **read_json(args.input))
+        elif args.action == 'observe':
+            result = store.observe(args.owner, args.generation, read_json(args.input))
+        elif args.action == 'carry':
+            result = store.carry(args.owner, args.generation, **read_json(args.input))
+        elif args.action == 'adjudicate':
+            result = store.adjudicate(args.owner, args.generation, read_json(args.input))
+        elif args.action == 'collect':
+            if args.forge:
+                require(args.context and args.target, '--context and --target required')
+                result = store.collect(args.owner, args.generation, lambda charge:
+                    inventory_fetch(store, args.owner, args.generation, args.forge, args.target, args.context))
+            else:
+                fixture_path(args.input)
+                result = store.collect(args.owner, args.generation, lambda charge: read_json(args.input))
+        elif args.action == 'handoff':
+            result = store.handoff(args.owner, args.generation)
+        elif args.action == 'park':
+            result = store.park(args.owner, args.generation, args.reason, args.next_action)
+        elif args.action == 'control':
+            result = store.control(args.owner, args.generation, args.kind, args.reason)
+        elif args.action == 'recover':
+            result = store.recover(args.owner, args.generation, args.operation, read_json(args.input))
+        elif args.action == 'transfer':
+            result = store.transfer(args.owner, args.generation, args.next_action, args.reason)
+        elif args.action == 'api':
+            result = api_proxy(store, args.owner, args.generation, command)
+        elif args.action == 'http':
+            result = store.charge_http(args.owner, args.generation)
+        elif args.action == 'reserve':
+            result = store.reserve(args.owner, args.generation, args.operation, args.kind, args.seconds, args.parent)
+        elif args.action == 'finish':
+            result = store.finish(args.owner, args.generation, args.operation, args.rc)
+        else:
+            require(command, 'command required after --')
+            fixture_path(command[0])
+            result = store.run_child(args.owner, args.generation, args.operation, args.kind, args.seconds, command, args.parent)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if args.action == 'run' and result['rc']:
+        sys.exit(result['rc'] if result['rc'] > 0 else 128-result['rc'])
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (PilotError, KeyError, TypeError, ValueError, OSError, subprocess.TimeoutExpired) as exc:
+        print(json.dumps({'error': str(exc)}), file=sys.stderr)
+        sys.exit(2)

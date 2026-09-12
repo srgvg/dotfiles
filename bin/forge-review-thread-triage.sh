@@ -385,6 +385,10 @@ fetch_all_nodes() {
         merged=$(jq -c -s '.[0] + .[1]' <(printf '%s' "$merged") <(jq -c '.nodes' <<<"$block"))
         has_next=$(jq -r '.pageInfo.hasNextPage' <<<"$block")
         [[ "$has_next" == "true" ]] || break
+        if [[ -n "${PILOT_RUN:-}" ]]; then
+            next_cursor=$(jq -r '.pageInfo.endCursor' <<<"$block")
+            [[ -n "$next_cursor" && "$next_cursor" != null && "$next_cursor" != "$cursor" ]] || { echo 'PAGINATION_CURSOR_STALLED' >&2; return 2; }
+        fi
         cursor=$(jq -r '.pageInfo.endCursor' <<<"$block")
     done
     jq -n --argjson total "$total" --slurpfile nodes <(printf '%s' "$merged") \
@@ -525,9 +529,20 @@ resolve_thread() {
     # $id below is a GraphQL variable, not bash -- keep single-quoted.
     # shellcheck disable=SC2016
     result=$(gh api graphql -f query='mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { thread { id isResolved } } }' -F id="$thread_id")
+    if [[ "${PILOT_RESOLVER:-0}" == 1 ]]; then
+        printf '%s' "$result" | "$PILOT_HELPER" validate-response >/dev/null || return 2
+    fi
     echo "$result"
     resolved=$(jq -r '.data.resolveReviewThread.thread.isResolved' <<<"$result")
     [[ "$resolved" == "true" ]] || { echo "ERROR: mutation did not report isResolved=true (got: $resolved)" >&2; return 1; }
+    if [[ "${PILOT_RESOLVER:-0}" == 1 ]]; then
+        [[ $(jq -r '.data.resolveReviewThread.thread.id' <<<"$result") == "$thread_id" ]] || return 2
+        # GraphQL variables must reach gh literally.
+        # shellcheck disable=SC2016
+        result=$(gh api graphql -f 'query=query($id: ID!) { node(id: $id) { ... on PullRequestReviewThread { id isResolved } } }' -F id="$thread_id") || return 2
+        printf '%s' "$result" | "$PILOT_HELPER" validate-response >/dev/null || return 2
+        jq -e --arg id "$thread_id" '.data.node.id == $id and .data.node.isResolved == true' <<<"$result" >/dev/null || return 2
+    fi
 }
 
 # ---------------------------------------------------------------- GitLab --
@@ -586,6 +601,10 @@ gl_fetch_all_discussions() {
         merged=$(jq -c -s '.[0] + .[1]' <(printf '%s' "$merged") <(jq -c '.nodes' <<<"$block"))
         has_next=$(jq -r '.pageInfo.hasNextPage' <<<"$block")
         [[ "$has_next" == "true" ]] || break
+        if [[ -n "${PILOT_RUN:-}" ]]; then
+            next_cursor=$(jq -r '.pageInfo.endCursor' <<<"$block")
+            [[ -n "$next_cursor" && "$next_cursor" != null && "$next_cursor" != "$cursor" ]] || { echo 'PAGINATION_CURSOR_STALLED' >&2; return 2; }
+        fi
         cursor=$(jq -r '.pageInfo.endCursor' <<<"$block")
     done
     jq -n --slurpfile nodes <(printf '%s' "$merged") \
@@ -693,14 +712,106 @@ gl_resolve_discussion() {
     # $id below is a GraphQL variable, not bash -- keep single-quoted.
     # shellcheck disable=SC2016
     result=$(glab api graphql -f query='mutation($id: DiscussionID!) { discussionToggleResolve(input: {id: $id, resolve: true}) { errors discussion { id resolved } } }' -f id="$discussion_id")
+    if [[ "${PILOT_RESOLVER:-0}" == 1 ]]; then
+        printf '%s' "$result" | "$PILOT_HELPER" validate-response >/dev/null || return 2
+    fi
     echo "$result"
     resolved=$(jq -r '.data.discussionToggleResolve.discussion.resolved' <<<"$result")
     [[ "$resolved" == "true" ]] || { echo "ERROR: mutation did not report resolved=true (got: $resolved)" >&2; return 1; }
+    if [[ "${PILOT_RESOLVER:-0}" == 1 ]]; then
+        jq -e --arg id "$discussion_id" '(.data.discussionToggleResolve.errors | type == "array") and (.data.discussionToggleResolve.errors | length == 0) and .data.discussionToggleResolve.discussion.id == $id' <<<"$result" >/dev/null || return 2
+        # GitLab has no root discussion/node lookup; the fixture receives the
+        # complete discussion reread through the existing discussions query shape.
+        result=$(gl_run_query fixture/project 1) || return 2
+        printf '%s' "$result" | "$PILOT_HELPER" validate-response >/dev/null || return 2
+        jq -e --arg id "$discussion_id" '.data.project.mergeRequest.discussions | .pageInfo.hasNextPage == false and any(.nodes[]; .id == $id and .resolved == true)' <<<"$result" >/dev/null || return 2
+    fi
 }
 
 # --------------------------------------------------------------- dispatch --
 
 require_jq
+
+# Pilot lane: dormant for live executions; existing dispatch remains below.
+# The helper validates sticky adoption even when a caller forgets a pilot flag.
+PILOT_HELPER=/home/serge/bin/agent-review-state
+if [[ "${1:-}" == --pilot-json ]]; then
+    [[ $# -ge 4 ]] || { echo 'usage: --pilot-json <audit-run> github <owner> <repo> <number> | gitlab <project> <iid>' >&2; exit 64; }
+    PILOT_RUN=$2
+    PILOT_CONTEXT=$("$PILOT_HELPER" route --run "$PILOT_RUN") || exit 2
+    PILOT_OWNER=$(jq -r .owner <<<"$PILOT_CONTEXT")
+    PILOT_GENERATION=$(jq -r .generation <<<"$PILOT_CONTEXT")
+    shift 2
+    # These wrappers charge and validate each actual page, including nested fetches.
+    gh() { "$PILOT_HELPER" api --run "$PILOT_RUN" --owner "$PILOT_OWNER" --generation "$PILOT_GENERATION" -- gh "$@"; }
+    glab() { "$PILOT_HELPER" api --run "$PILOT_RUN" --owner "$PILOT_OWNER" --generation "$PILOT_GENERATION" -- glab "$@"; }
+    case "$1" in
+      github)
+        [[ $# -eq 4 ]] || exit 64
+        pc=$(fetch_all_nodes comments "$2" "$3" "$4") || exit 2
+        pr=$(fetch_all_nodes reviews "$2" "$3" "$4") || exit 2
+        pt=$(fetch_all_nodes reviewThreads "$2" "$3" "$4") || exit 2
+        for inventory_connection in "$pc" "$pr" "$pt"; do
+            printf '%s' "$inventory_connection" | "$PILOT_HELPER" validate-response >/dev/null || exit 2
+            check_connection_truncation inventory "$inventory_connection" >&2 || exit 2
+        done
+        updated='[]'
+        while IFS= read -r thread; do
+            tid=$(jq -r .id <<<"$thread")
+            notes=$(fetch_full_thread_comments "$tid" "$(jq -c .comments <<<"$thread")") || exit 2
+            thread=$(jq --slurpfile notes <(printf '%s' "$notes") '.comments=$notes[0]' <<<"$thread")
+            updated=$(jq -sc '.[0]+[.[1]]' <(printf '%s' "$updated") <(printf '%s' "$thread"))
+        done < <(jq -c '.nodes[]' <<<"$pt")
+        jq -n --slurpfile c <(printf '%s' "$pc") --slurpfile r <(printf '%s' "$pr") --slurpfile t <(printf '%s' "$updated") \
+          '{forge:"github",comments:$c[0],reviews:$r[0],threads:$t[0],readiness:"not evaluated: inventory only"}'
+        ;;
+      gitlab)
+        [[ $# -eq 3 ]] || exit 64
+        pd=$(gl_fetch_all_discussions "$2" "$3") || exit 2
+        printf '%s' "$pd" | "$PILOT_HELPER" validate-response >/dev/null || exit 2
+        updated='[]'
+        while IFS= read -r thread; do
+            tid=$(jq -r .id <<<"$thread")
+            notes=$(gl_fetch_full_discussion_notes "$2" "$3" "$tid" "$(jq -c .notes <<<"$thread")") || exit 2
+            printf '%s' "$notes" | "$PILOT_HELPER" validate-response >/dev/null || exit 2
+            thread=$(jq --slurpfile notes <(printf '%s' "$notes") '.notes=$notes[0] | .nativeState=(if .resolvable then (if .resolved then "resolved" else "unresolved" end) else "not-applicable" end)' <<<"$thread")
+            updated=$(jq -sc '.[0]+[.[1]]' <(printf '%s' "$updated") <(printf '%s' "$thread"))
+        done < <(jq -c '.nodes[]' <<<"$pd")
+        jq -n --slurpfile d <(printf '%s' "$updated") '{forge:"gitlab",discussions:$d[0],readiness:"not evaluated: inventory only"}'
+        ;;
+      *) exit 64 ;;
+    esac
+    exit
+fi
+if [[ "${1:-}" == --pilot-resolver-fixture ]]; then
+    # Test the EXISTING native resolver functions, with executable paths confined
+    # to disposable fixtures. This lane cannot select the installed forge CLIs.
+    [[ $# -eq 5 ]] || exit 64
+    "$PILOT_HELPER" route --run "$2" >/dev/null || exit 2
+    [[ $(jq -r .mode "$2/execution.json") == fixture ]] || exit 2
+    fixture_bin=$(realpath "$3") || exit 2
+    case "$fixture_bin" in /home/serge/tmp/agent-workflow-audit/*) ;; *) exit 2 ;; esac
+    [[ -x "$fixture_bin/gh" && -x "$fixture_bin/glab" ]] || exit 2
+    for fixture_cli in gh glab; do
+        case "$(realpath "$fixture_bin/$fixture_cli")" in /home/serge/tmp/agent-workflow-audit/*) ;; *) exit 2 ;; esac
+    done
+    gh() { "$fixture_bin/gh" "$@"; }
+    glab() { "$fixture_bin/glab" "$@"; }
+    PILOT_RESOLVER=1
+    case "$4" in github) resolve_thread "$5" ;; gitlab) gl_resolve_discussion "$5" ;; *) exit 64 ;; esac
+    exit
+fi
+if [[ "${1:-}" != --self-test ]]; then
+    PILOT_CONTEXT=$("$PILOT_HELPER" route) || exit 2
+    if [[ $(jq -r .mode <<<"$PILOT_CONTEXT") != legacy ]]; then
+        # Adopted unflagged calls may only read the shared status, never legacy resolve.
+        if [[ " $* " == *' --resolve '* ]]; then
+            echo 'LIVE_FORGE_MUTATIONS_DISABLED: adopted resolution requires the verified pilot path' >&2
+            exit 2
+        fi
+        exec "$PILOT_HELPER" entrypoint --entrypoint triage
+    fi
+fi
 
 case "${1:-}" in
     --self-test)

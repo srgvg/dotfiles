@@ -64,6 +64,20 @@ done
 
 [ -n "$RUN_LOG" ] || die "usage: $PROG <run-log.md> [--remote <name>] [--dry-run]"
 
+# Adopted executions use the shared read-only predicate. Native undraft remains
+# disabled even when handoff is ready; it is a separate protected transition.
+PILOT_ROUTE_ARGS=()
+PILOT_LOG_DIR=$(dirname "$RUN_LOG")
+if [ -e "$PILOT_LOG_DIR/adoption.json" ] || [ -e "$PILOT_LOG_DIR/execution.json" ]; then
+    PILOT_ROUTE_ARGS=(--run "$PILOT_LOG_DIR")
+fi
+PILOT_CONTEXT=$(/home/serge/bin/agent-review-state route "${PILOT_ROUTE_ARGS[@]}") || die "pilot adoption state unknown"
+if [ "$(jq -r .mode <<<"$PILOT_CONTEXT")" != legacy ]; then
+    /home/serge/bin/agent-review-state entrypoint --entrypoint status "${PILOT_ROUTE_ARGS[@]}" || exit 2
+    /home/serge/bin/agent-review-state entrypoint --entrypoint undraft "${PILOT_ROUTE_ARGS[@]}"
+    exit 2
+fi
+
 # --- 1. context ------------------------------------------------------------
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) ||

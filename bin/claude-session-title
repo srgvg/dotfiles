@@ -2,10 +2,17 @@
 # Prefix the Claude Code session title with the checkout it belongs to, so a sway titlebar says
 # WHICH repo is asking and not only what the task is:
 #
-#     ⠂ meta:fix/39-render-matrix-validate-input · Understand MR READY concept
+#     ⠂ wharf-lead · meta:fix/39-render-matrix-validate-input · Understand MR READY concept [b0db83]
 #
 # Wired to the SessionStart and UserPromptSubmit hooks in ~/.claude/settings.json; reads the hook
 # JSON payload on stdin and prints hookSpecificOutput.sessionTitle. See ~/etc/docs/terminal.md.
+#
+# Title shape: "<manual> · <repo:branch> · <subject> [<shortid>]", with <manual> and <subject> each
+# dropped when there is none. <manual> is a human-set name -- see "pin: an explicit rename" below.
+# <shortid> is the first 6 chars of the session uuid: cheap, always available, matches the .jsonl
+# filename directly. It is NOT the [ref] `ListAgents` shows -- that ref lives only in the running
+# CLI process's own memory (confirmed absent from every on-disk session field under every hash
+# tried) -- so the two ids necessarily differ and both show up side by side in ListAgents output.
 #
 # YIELD-THEN-TAKE-OVER (2026-08-02). Writing a title before Claude has named the session
 # PERMANENTLY suppresses its own `ai-title` -- proven by an isolated four-run A/B under a
@@ -122,46 +129,148 @@ fi
 case $prefix in
 '' | *' '*) emit_nothing ;;
 esac
+# Used below both to null a degenerate subject (":main"-less repo name alone) and to filter a bare
+# custom-title candidate that is just our own prefix echoed back with no manual name attached.
+repo_only=${prefix%%:*}
 
 if [ -z "$transcript" ] || [ ! -f "$transcript" ]; then
 	emit_nothing
 fi
 
+# First 6 chars of the session uuid -- see the header comment for why this exists and how it
+# differs from ListAgents' own [ref].
+shortid=${session:0:6}
+
+# An XML-ish opening tag at position 0 -- see the record table in ~/etc/docs/terminal.md. The
+# class is the XML name-start production (letters and underscore, no leading digit), not an
+# enumeration of record types seen so far: a future record type introduced with an uppercase
+# first letter must still be caught by the self-heal below and the candidate-loop skip, or it
+# would slip through as a raw record verbatim.
+tag_shaped() {
+	case $1 in '<'[a-zA-Z_]*'>'*) return 0 ;; esac
+	return 1
+}
+
+# Strips the trailing " [xxxxxx]" this hook itself appends (6 lowercase hex chars from $shortid).
+# Applied to every custom-title value read back from the transcript before anything else touches
+# it -- without this, the hook's own last output is read back with the suffix still attached, and
+# re-appending it every round grows the title by one bracket pair per prompt until the 120-char
+# cap. Anchored to end-of-string and to exactly this shape, so a subject that itself happens to
+# end in brackets is left alone.
+strip_shortid_suffix() {
+	local v=$1
+	case $v in
+	*' ['[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]']')
+		v=${v% \[*}
+		;;
+	esac
+	printf '%s' "$v"
+}
+
+# --- pin: an explicit rename overrules the derived subject -------------------------------------
+# A rename lands in the transcript through either of two channels, and the newest of the two (by
+# transcript line number) wins:
+#
+#   1. `/rename <name>` typed at the prompt writes a `system`/`local_command` record
+#      (`<command-name>/rename</command-name>` + `<command-args>`) alongside a bare `custom-title`.
+#      Unambiguous -- read it directly.
+#   2. A rename that reaches the harness some other way (measured: a session with
+#      `/remote-control` active, whose renames -- typed in the terminal or from the phone --
+#      write NONE of that `local_command` block; b0db83f3-… holds exactly one `local_command`
+#      record across 78513 lines against 275 bare `custom-title` records reading the same manual
+#      name) leaves only the bare `custom-title` itself. A `custom-title` containing no " · " can
+#      never be this hook's own echo -- the title-building logic at the bottom only ever emits one
+#      alongside `prefix`, so a bare value is unconditionally human intent. Filtered against the
+#      degenerate cases ($prefix, $repo_only) and tag-shaped raw records, or a session whose only
+#      bare value is its own stuck prefix (measured: 7c066ec6 = "launcher", 2345f183 = "kure" ×82
+#      after an earlier genuine rename) would adopt that as if it were a chosen name.
+#
+# Both loops are prefiltered with grep -- a tool_result quoting the matched text would also match
+# -- so jq re-checks .type/.subtype (or .type alone for the bare scan) before trusting a line.
+# `fromjson?` swallows a torn or oversized line instead of aborting the stream and losing every
+# record after it. The LAST matching record in each channel wins; an empty `/rename` argument is
+# not a rename and is skipped.
+rename_pin=""
+rename_pin_line=0
+while IFS=: read -r lineno content; do
+	[ -n "$lineno" ] || continue
+	rec=$(printf '%s' "$content" |
+		jq -rR 'fromjson? | select(.type == "system" and .subtype == "local_command") | .content // empty' \
+			2>/dev/null)
+	[ -n "$rec" ] || continue
+	flat=$(printf '%s' "$rec" | tr '\n\t' '  ')
+	# Anchored extraction: <command-args> is user-controlled text that can legitimately contain
+	# `<`, so it stays the last, greedy field with everything before it anchored -- same technique
+	# as the <command-message> extraction further down.
+	args=$(printf '%s' "$flat" |
+		sed -n 's/^<command-name>\/rename<\/command-name>[[:space:]]*<command-message>[^<]*<\/command-message>[[:space:]]*<command-args>\(.*\)<\/command-args>.*/\1/p')
+	args=$(printf '%s' "$args" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
+	[ -n "$args" ] || continue
+	rename_pin=$args
+	rename_pin_line=$lineno
+done < <(grep -naF '<command-name>/rename</command-name>' "$transcript" 2>/dev/null || true)
+
+bare_pin=""
+bare_pin_line=0
+while IFS=: read -r lineno content; do
+	[ -n "$lineno" ] || continue
+	v=$(printf '%s' "$content" |
+		jq -rR 'fromjson? | select(.type == "custom-title") | .customTitle // empty' 2>/dev/null)
+	[ -n "$v" ] || continue
+	v=$(strip_shortid_suffix "$v")
+	case $v in
+	*' · '*) continue ;; # prefixed -- read by the main walk below, not a manual-name candidate here
+	esac
+	[ "$v" != "$prefix" ] || continue
+	[ "$v" != "$repo_only" ] || continue
+	tag_shaped "$v" && continue
+	bare_pin=$v
+	bare_pin_line=$lineno
+done < <(grep -naE '"type": ?"custom-title"' "$transcript" 2>/dev/null || true)
+
+manual=""
+if [ -n "$rename_pin" ] && [ -n "$bare_pin" ]; then
+	if [ "$rename_pin_line" -ge "$bare_pin_line" ]; then manual=$rename_pin; else manual=$bare_pin; fi
+elif [ -n "$rename_pin" ]; then
+	manual=$rename_pin
+elif [ -n "$bare_pin" ]; then
+	manual=$bare_pin
+fi
+
 # --- base: what the task is ------------------------------------------------------------------
 # Titles are appended as {"type":"ai-title","aiTitle":...} / {"type":"custom-title",
 # "customTitle":...}. Every prompt appends a snapshot block writing custom-title (the harness's
-# current title -- this hook's own last output, or a /rename) and then ai-title (the generated
+# current title -- this hook's own last output, or a rename) and then ai-title (the generated
 # subject, re-emitted verbatim; generated ONCE per session and never regenerated -- measured
 # 2026-08-26: 259 records / 1 distinct value across a 7704-line session, 681/1 across a 19703-line
 # one). Because custom-title precedes ai-title inside a block, `tail -n 1` of the merged stream
-# always resolved to the stale ai-title, so a /rename displayed until the next prompt and was then
+# always resolved to the stale ai-title, so a rename displayed until the next prompt and was then
 # overwritten (defect C3, fixed 2026-08-26). Walk ALL records in file order instead, telling our
 # own echo apart from human intent:
 #   * an ai-title value CHANGING is intent -- the first generation, or a Remote Control retitle;
-#   * a custom-title that, stripped of our own prefix, differs from the current ai-title is a
-#     human /rename;
-#   * a custom-title equal to the current ai-title, but ONLY once stripped of our own prefix, is
-#     this hook's own echo -- ignored, or the echo would clobber an earlier rename on the very next
-#     prompt and reopen C3. A custom-title with no " · " at all can never be this hook's echo --
-#     the title-building line below shows the hook only ever emits one alongside a subject -- so a
-#     bare value is always human intent, even when it happens to equal the ai-title (renaming back
-#     to the generated subject; fixed 2026-08-26, was previously indistinguishable from the echo
-#     and silently dropped).
+#   * a custom-title that, stripped of the manual pin and our own prefix, differs from the current
+#     ai-title is a human rename;
+#   * a custom-title equal to the current ai-title, but ONLY once stripped, is this hook's own
+#     echo -- ignored, or the echo would clobber an earlier rename on the very next prompt and
+#     reopen C3. A custom-title with no " · " at all can never be this hook's echo -- the
+#     title-building line below shows the hook only ever emits one alongside `prefix` -- so a bare
+#     value is always human intent, even when it happens to equal the ai-title (renaming back to
+#     the generated subject; fixed 2026-08-26, was previously indistinguishable from the echo and
+#     silently dropped).
 # Scan the whole file rather than a tail window: ai-title records are written early and rarely, so
 # a fixed tail would miss them in any long session.
 #
 # grep is only a prefilter -- it also matches lines that merely *quote* those strings (a
 # tool_result from a session that greps its own transcript does exactly that), so jq re-checks
-# the top-level .type before trusting the line. `fromjson?` swallows a torn or oversized line
-# instead of aborting the stream and losing every record after it.
+# the top-level .type before trusting the line.
 #
 # The strip below recognises a previously-applied prefix by it being a single space-free token
 # before the first " · ". `${v#* · }` alone would be WRONG: its `*` matches spaces too, so a value
 # genuinely containing " · " (say "foo bar · baz") would be cut down to "baz". Applied only to
 # custom-title values -- never to an ai-title, which never passed through this script. The
-# heuristic cannot tell our own prefix from a human /rename shaped the same way
-# (`/rename urgent · fix bug` -> "fix bug", losing "urgent"): accepted residual, equally present in
-# the pre-walk code, unfixable without metadata the records do not carry.
+# heuristic cannot tell our own prefix from a human rename shaped the same way
+# (`/rename urgent · fix bug` -> "fix bug", losing "urgent"): accepted residual, equally present
+# before this pin existed, unfixable without metadata the records do not carry.
 strip_prefix() {
 	local v=$1 lead
 	case $v in
@@ -176,28 +285,24 @@ strip_prefix() {
 	printf '%s' "$v"
 }
 
-# An XML-ish opening tag at position 0 -- see the record table in ~/etc/docs/terminal.md. The
-# class is the XML name-start production (letters and underscore, no leading digit), not an
-# enumeration of record types seen so far: a future record type introduced with an uppercase
-# first letter must still be caught by the self-heal (:below) and the candidate-loop skip, or it
-# would slip through as a raw record verbatim.
-tag_shaped() {
-	case $1 in '<'[a-zA-Z_]*'>'*) return 0 ;; esac
-	return 1
-}
-
 # One line, no leading slash-command, backticks stripped (plan H1s often carry inline code), no
-# surrounding blanks, bounded length, rejected if it collapsed to the bare prefix or to something
-# tag-shaped. Shared by the takeover-synthesis path and the plan-H1 adoption path below so both
-# stay subject to the same caps and the same tag-shaped backstop instead of drifting apart.
+# surrounding blanks, bounded length, rejected if it collapsed to the bare prefix, the manual pin,
+# or something tag-shaped. Shared by the takeover-synthesis path and the plan-H1 adoption path
+# below so both stay subject to the same caps and the same backstops instead of drifting apart.
 normalize_subject() {
 	local s
-	s=$(printf '%s' "$1" | tr '\n\t' '  ' |
+	# First non-empty line only, not the whole flattened blob -- a worker-session prompt
+	# ("crane-schema\n\nYou are a worker session in a coordinated wharf effort...") previously
+	# flattened to "crane-schema  You are a worker session in a..." (the double space from the
+	# blank line is the tell). The first line alone is almost always the intended name.
+	s=$(printf '%s' "$1" | awk 'NF{print; exit}')
+	s=$(printf '%s' "$s" | tr '\n\t' '  ' |
 		sed -E 's/^\/[a-zA-Z0-9:_-]+ *//; s/`//g; s/^[[:space:]]+//; s/[[:space:]]+$//')
 	if [ "${#s}" -gt "$SYNTH_SUBJECT_MAX" ]; then
 		s=${s:0:$((SYNTH_SUBJECT_MAX - 1))}…
 	fi
 	if [ "$s" = "$prefix" ]; then s=""; fi
+	if [ -n "$manual" ] && [ "$s" = "$manual" ]; then s=""; fi
 	if tag_shaped "$s"; then s=""; fi
 	printf '%s' "$s"
 }
@@ -208,10 +313,17 @@ normalize_subject() {
 # content containing further colons lands whole in `content`.
 #
 # winner_from_ai tracks whether the CURRENT winner was last set by the ai-title branch (Claude's
-# own generated subject, untouched) or a custom-title branch (a human /rename, or -- once adopted
+# own generated subject, untouched) or a custom-title branch (a human rename, or -- once adopted
 # -- the plan-H1 echo, which the walk cannot tell apart from a rename and correctly treats the same
 # way). Used below to decide whether a plan's H1 is still eligible to override the subject.
-first_user_line=$(grep -anm1 '"type":"user"' "$transcript" 2>/dev/null | cut -d: -f1 || true)
+first_user_line=""
+while IFS=: read -r lineno content; do
+	[ -n "$lineno" ] || continue
+	if printf '%s' "$content" | jq -Re 'fromjson? | .type == "user"' >/dev/null 2>&1; then
+		first_user_line=$lineno
+		break
+	fi
+done < <(grep -an '"type":"user"' "$transcript" 2>/dev/null || true)
 [ -n "$first_user_line" ] || first_user_line=999999999
 cur_ai=""
 winner=""
@@ -233,6 +345,15 @@ while IFS=: read -r lineno content; do
 			winner_from_ai=1
 		fi
 	else
+		v=$(strip_shortid_suffix "$v")
+		# Strip a leading manual-pin echo literally, not by heuristic -- $manual is already known
+		# independently and can legitimately contain a space (`opsmaster CI renovate`), which the
+		# single-token strip_prefix below cannot handle.
+		if [ -n "$manual" ]; then
+			case $v in
+			"$manual"' · '*) v=${v#"$manual"' · '} ;;
+			esac
+		fi
 		case $v in
 		*' · '*)
 			sv=$(strip_prefix "$v")
@@ -242,8 +363,9 @@ while IFS=: read -r lineno content; do
 			fi
 			;;
 		*)
-			# No " · " in the raw value -- can only be a human /rename (see the comment
-			# block above), so it is always intent, even when it happens to equal cur_ai.
+			# No " · " left after stripping -- can only be a human rename or a degenerate echo
+			# of $prefix (handled below), so it is always intent, even when it happens to equal
+			# cur_ai.
 			sv=$v
 			if [ -n "$v" ]; then
 				winner=$v
@@ -264,7 +386,10 @@ base=$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
 # still all `base` resolves to (no ai-title has ever been generated in THIS transcript to say
 # otherwise), null it so the yield/takeover logic below gets a clean shot at naming the cleared
 # session, instead of a stale title cycling forever (measured 2026-08-26: a 17488-line session
-# never got past `close-mr-review-threads-issue`, inherited from three repos/branches back).
+# never got past `close-mr-review-threads-issue`, inherited from three repos/branches back). This
+# only ever compares the SUBJECT (the manual pin is computed and applied separately, and is never
+# subject to this null) -- so a manual name inherited across /clear now survives, where the
+# subject correctly keeps being nulled.
 #
 # Text, not position: TRIED position instead ("did the winning record precede the first user
 # line") on 2026-08-26 and reverted it the same day -- replaying `670868b0` (the exact session this
@@ -272,7 +397,7 @@ base=$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
 # uncorrected inherited text every round for the session's full 17488 lines, at lines far past the
 # first user record, so a position test never fires past the very first round. Text comparison
 # fires on every one of those rounds because the value genuinely never changes. The known cost is
-# the mirror case -- a human /rename typed to exactly the inherited title's own words is
+# the mirror case -- a human rename typed to exactly the inherited subject's own words is
 # indistinguishable from the echo and is silently dropped -- and it is provably not fixable from
 # what the transcript records: both cases produce byte-identical records. `inherited` is fixed at
 # the last title record at or before the FIRST user record ever -- not "all titles seen so far" --
@@ -292,8 +417,12 @@ fi
 # recover that instead of discarding it along with the degenerate winner -- but only a real
 # subject: a legacy ai-title equal to the bare prefix would round-trip straight back to
 # `prefix · prefix`, undoing this very check.
-if [ "$base" = "$prefix" ]; then
-	if [ -n "$cur_ai" ] && [ "$cur_ai" != "$prefix" ]; then
+#
+# Also checked against the bare repo name ($repo_only), not only the full `repo:branch` prefix:
+# `kure:feat/725-docs-identity · kure` was live and stuck this way, unaffected by the $prefix-only
+# test above it -- the subject was a stale echo of just the repo half.
+if [ "$base" = "$prefix" ] || [ "$base" = "$repo_only" ]; then
+	if [ -n "$cur_ai" ] && [ "$cur_ai" != "$prefix" ] && [ "$cur_ai" != "$repo_only" ]; then
 		base=$cur_ai
 	else
 		base=""
@@ -320,9 +449,9 @@ if tag_shaped "$base"; then base=""; fi
 # block above), so it is often the harness's guess rather than the plan's own -- usually more
 # descriptive -- heading. Adopt the H1 only while $base is still literally the untouched ai-title
 # ($winner_from_ai): once adopted, the emitted title is echoed back next round as a custom-title
-# the walk above already treats as a /rename ($winner_from_ai becomes 0), so this block naturally
+# the walk above already treats as a rename ($winner_from_ai becomes 0), so this block naturally
 # stops firing without needing a state file to remember "already adopted". A later edit to the
-# plan's H1 therefore does not refresh an already-adopted title -- `/rename` remains the correction
+# plan's H1 therefore does not refresh an already-adopted title -- a rename remains the correction
 # path, same as everywhere else in this script.
 if [ -n "$base" ] && [ "$winner_from_ai" = 1 ]; then
 	plandir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plans
@@ -340,7 +469,13 @@ fi
 
 # --- no subject yet: yield, or take over -------------------------------------------------------
 if [ -z "$base" ]; then
-	turns=$(grep -ac '"type":"assistant"' "$transcript" 2>/dev/null || true)
+	# A raw substring count, like the grep above, would inflate on a tool_result quoting this
+	# exact string -- but a per-line jq recheck (the pattern used elsewhere in this script) would
+	# mean one subprocess per assistant turn, and this path only runs while $base is still empty
+	# (session bootstrap, or right after the /clear-inheritance null above) so the transcript can
+	# already be large. One jq process streaming the whole file is the cheap way to get the same
+	# re-check without per-line subprocess cost.
+	turns=$(jq -Rr 'fromjson? | select(.type == "assistant") | 1' "$transcript" 2>/dev/null | wc -l | tr -d '[:space:]')
 	[ -n "$turns" ] || turns=0
 	# Still early -- writing anything here is what kills the ai-title (run C above).
 	[ "$turns" -ge "$TAKEOVER_AFTER_ASSISTANT_TURNS" ] || emit_nothing
@@ -359,14 +494,56 @@ if [ -z "$base" ]; then
 	fi
 
 	# Otherwise the first thing that was asked. `last-prompt` records are unreliable (the first
-	# one carries no lastPrompt field), so read the first real user message instead -- but the
-	# same transcript slot also carries harness-generated pseudo-messages that are never a real
-	# subject: a command wrapper (<command-message>, custom/skill commands), a *reversed* command
-	# wrapper (<command-name> first -- every built-in: /clear, /compact, /plan, /model),
-	# <local-command-caveat>, <local-command-stdout>, and <task-notification>. All six are
-	# tag-prefixed at position 0; a typed prompt never is. A single `/plan open` alone emits three
-	# of them (caveat, wrapper, stdout) under one prompt, so skipping just one type is not enough.
-	# See ~/etc/docs/terminal.md and the plan this was implemented from for the full record table.
+	# one carries no lastPrompt field), so read the first real user message instead.
+	#
+	# Pass 1 -- select structurally, by provenance, not by shape. A typed/queued prompt is
+	# exactly `.type == "user"`, not `isMeta`, not `isSidechain`, `.promptSource` one of
+	# "typed"/"queued" -- measured across 40 recent transcripts, zero counter-examples either way
+	# (see the plan this was implemented from). This is what a shape test cannot be: a
+	# cross-session message shares this exact transcript slot with a real prompt and leads with
+	# prose, not a tag (`Another Claude session sent a message:\n<cross-session-message ...>`),
+	# so `tag_shaped` alone let it through and it ended up as a session's stored name. It also
+	# closes a second, latent gap the old shape test had no way to catch: a post-compaction
+	# continuation blob (`This session is being continued from a previous conversation...`) is
+	# untagged and unflagged as meta, so it passed the old test too -- it carries no
+	# `promptSource` at all and is excluded here on that basis alone.
+	if [ -z "$base" ]; then
+		pass1=$(grep -a -e '"type":"user"' "$transcript" 2>/dev/null |
+			jq -c 'select(.type == "user" and .message.role == "user")
+			       | select((.isMeta // false) == false)
+			       | select((.isSidechain // false) == false)
+			       | select(.promptSource == "typed" or .promptSource == "queued")
+			       | .message.content
+			       | if type == "string" then . else ([.[]? | select(.type == "text") | .text] | join(" ")) end
+			       // empty' 2>/dev/null | head -1 || true)
+		if [ -n "$pass1" ]; then
+			# Not flattened here -- kept multi-line so normalize_subject's first-line rule
+			# (below) sees real line breaks instead of a pre-joined blob. tag_shaped only
+			# examines position 0, so it works the same on multi-line input.
+			decoded=$(printf '%s' "$pass1" | jq -r '.' 2>/dev/null)
+			# Cheap backstop, not the selection mechanism -- promptSource already did the real
+			# work above. Kept in case a future harness record type reuses this same slot.
+			tag_shaped "$decoded" || base=$decoded
+		fi
+	fi
+
+	# Pass 2 -- a typed slash command never carries `promptSource:typed` (measured: zero in 40
+	# transcripts): it lands only as the harness's own reversed-order wrapper expansion in this
+	# same transcript slot, so pass 1 above never sees a slash-command-first session. Recover it
+	# here by shape, same as before this pass split existed. The same transcript slot also
+	# carries other harness-generated pseudo-messages that are never a real subject:
+	# <local-command-caveat>, <local-command-stdout>, <task-notification>. All are tag-prefixed
+	# at position 0; the reversed command wrapper is the one worth extracting from. A single
+	# `/plan open` alone emits three of them (caveat, wrapper, stdout) under one prompt, so
+	# skipping just one type is not enough. See ~/etc/docs/terminal.md for the full record table.
+	#
+	# The `isMeta`/`isSidechain` excludes carry over from pass 1 -- without them this shape-based
+	# scan's own default branch ("not tag-shaped -> genuine typed prompt") re-admits exactly what
+	# pass 1 was built to keep out. Live case: a wharf orchestration session whose only inbound
+	# record is ever a relayed cross-session message -- prose-led, not tag-shaped
+	# (`Another Claude session sent a message:\n<cross-session-message ...>`), `isMeta:true` --
+	# had nothing else in the transcript for pass 1 to find, so this pass picked it up by default
+	# until the exclude was added here too.
 	#
 	# `jq -c` (compact), not `jq -r`: wrapper content has real embedded newlines, and raw output
 	# would merge separate candidates' text onto one line, breaking the one-line-per-candidate
@@ -392,13 +569,19 @@ if [ -z "$base" ]; then
 			esac
 		done <<-CANDIDATES
 		$( { grep -a -e '"type":"user","message":{"role":"user","content":"' "$transcript" 2>/dev/null || true; } |
-			jq -c '.message.content
+			jq -c 'select((.isMeta // false) == false)
+			       | select((.isSidechain // false) == false)
+			       | .message.content
 			       | if type == "string" then . else ([.[]? | select(.type == "text") | .text] | join(" ")) end
 			       // empty' 2>/dev/null)
 		CANDIDATES
 
 		if [ -n "$winner" ]; then
-			text=$(printf '%s\n' "$winner" | jq -r '.' 2>/dev/null | tr '\n' ' ')
+			# Kept multi-line for the same reason as pass 1 -- normalize_subject takes the
+			# first line itself. The <command-message> extraction below needs its own flattened
+			# copy: it anchors across what are, in the raw wrapper, separate indented lines, and
+			# sed matches a pattern within one line at a time.
+			text=$(printf '%s\n' "$winner" | jq -r '.' 2>/dev/null)
 			case $winner in
 			'"<command-message>'*)
 				# Subject is "command name (slash stripped) + args". Anchored with `^` and
@@ -410,9 +593,10 @@ if [ -z "$base" ]; then
 				# types), and `[^<]*` would silently truncate at the first one. Greedy is safe
 				# here because args is the last field and everything before it is anchored, so
 				# there is exactly one place it can structurally start.
-				base=$(printf '%s' "$text" |
+				flat=$(printf '%s' "$text" | tr '\n\t' '  ')
+				base=$(printf '%s' "$flat" |
 					sed -n 's/^<command-message>[^<]*<\/command-message>[[:space:]]*<command-name>\/\?\([^<]*\)<\/command-name>.*/\1/p')
-				cargs=$(printf '%s' "$text" |
+				cargs=$(printf '%s' "$flat" |
 					sed -n 's/^<command-message>[^<]*<\/command-message>[[:space:]]*<command-name>\/\?[^<]*<\/command-name>[[:space:]]*<command-args>\(.*\)<\/command-args>.*/\1/p')
 				[ -z "$cargs" ] || base="$base $cargs"
 				;;
@@ -424,13 +608,43 @@ if [ -z "$base" ]; then
 	base=$(normalize_subject "$base")
 fi
 
-title="$prefix${base:+ · $base}"
+# The manual pin never doubles as the subject -- if every path above still landed on it (an
+# ai-title or a degenerate-recovery fallback happening to equal it verbatim), drop it here rather
+# than let the title read "manual · prefix · manual".
+[ -n "$manual" ] && [ "$base" = "$manual" ] && base=""
 
-# Cap: a sway titlebar is finite and Claude Code truncates long titles itself. Cut on characters,
-# not bytes -- `·` and any non-ASCII in the task name are multibyte.
-if [ "${#title}" -gt 120 ]; then
-	title=${title:0:119}…
+# --- assemble: <manual> · <repo:branch> · <subject>, then append [<shortid>] --------------------
+# The subject is truncated first, not the whole title, so a long task description can never eat
+# into the manual name or the repo:branch prefix -- both of those are short and meaningful in full;
+# the subject is the one field that is fine to lose the tail of. The suffix is reserved out of the
+# 120-char budget up front and appended only at the very end, after every truncation -- appending
+# it before a final blind cut let an earlier version chop the shortid itself off a title with a
+# very long manual name, which defeats the one field in this title that is never supposed to
+# truncate (measured with a 93-char synthetic manual name: the naive cut landed mid-suffix and
+# dropped `[shortid]` entirely).
+suffix=""
+[ -n "$shortid" ] && suffix=" [$shortid]"
+max_no_suffix=$((120 - ${#suffix}))
+
+head="$prefix"
+[ -n "$manual" ] && head="$manual · $head"
+
+budget=$((max_no_suffix - ${#head} - 3)) # 3 for the " · " joining subject to head
+if [ -n "$base" ] && [ "$budget" -gt 0 ] && [ "${#base}" -gt "$budget" ]; then
+	base=${base:0:$((budget - 1))}…
 fi
+
+core="$head"
+[ -n "$base" ] && [ "$budget" -gt 0 ] && core="$core · $base"
+
+# Backstop for the case $head alone already exceeds max_no_suffix (a very long manual name or
+# worktree branch slug): cut $core, not the assembled title, so $suffix is unaffected. Cut on
+# characters, not bytes -- `·` and any non-ASCII in the task name or manual name are multibyte.
+if [ "${#core}" -gt "$max_no_suffix" ]; then
+	core=${core:0:$((max_no_suffix - 1))}…
+fi
+
+title="$core$suffix"
 
 jq -cn --arg e "$event" --arg t "$title" \
 	'{hookSpecificOutput: {hookEventName: $e, sessionTitle: $t}}' 2>/dev/null ||
