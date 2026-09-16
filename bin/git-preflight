@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""Narrow local Git preflight. Raw configuration and child diagnostics stay internal."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+from urllib.parse import urlsplit
+
+
+class Refusal(ValueError):
+    pass
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise Refusal('INVALID_ARGUMENTS')
+
+
+def environment():
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS='0', GIT_NO_REPLACE_OBJECTS='1')
+    context = {'GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE',
+               'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+               'GIT_NAMESPACE', 'GIT_SHALLOW_FILE', 'GIT_GRAFT_FILE',
+               'GIT_REPLACE_REF_BASE', 'GIT_REFERENCE_BACKEND', 'GIT_CONFIG',
+               'GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT'}
+    if any(k in context or k.startswith(('GIT_CONFIG_KEY_', 'GIT_CONFIG_VALUE_')) for k in env):
+        raise Refusal('GIT_CONTEXT_OVERRIDE: ' + ', '.join(sorted(k if k in context or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', k) else 'GIT_CONFIG_ENTRY' for k in env if k in context or k.startswith(('GIT_CONFIG_KEY_', 'GIT_CONFIG_VALUE_')))))
+    # Refuse diagnostics before Git/forge startup, including trace-to-file. Do
+    # not disable auth, hooks or legitimate configuration to obtain a green run.
+    if any((k.startswith('GIT_TRACE') or k in {'GIT_CURL_VERBOSE', 'GH_DEBUG',
+              'GLAB_DEBUG', 'BASH_ENV', 'ENV'}) and v not in ('', '0', 'false')
+           for k, v in env.items()):
+        raise Refusal('DIAGNOSTIC_ENVIRONMENT_REFUSED')
+    return env
+
+
+def atom(value):
+    if not value or not re.fullmatch(r'[A-Za-z0-9_.+/-]+', value) or value.startswith('-'):
+        raise Refusal('UNSUPPORTED_IDENTITY')
+    return value
+
+
+def oid(value):
+    if not re.fullmatch(r'(?:[0-9a-f]{40}|[0-9a-f]{64})', value):
+        raise Refusal('INVALID_OBJECT_IDENTITY')
+    return value
+
+
+def destination(raw):
+    # Query/fragment/userinfo never appear in the output. Unsupported encodings
+    # refuse rather than guess the project or print the troublesome URL.
+    if not raw or any(ord(c) < 32 or ord(c) == 127 for c in raw):
+        raise Refusal('MALFORMED_REMOTE')
+    try:
+        if '://' in raw:
+            u = urlsplit(raw)
+            if u.scheme == 'file':
+                if u.netloc not in ('', 'localhost') or u.query or u.fragment:
+                    raise Refusal('MALFORMED_REMOTE')
+                return dict(kind='local', path=atom(u.path))
+            if u.scheme not in ('https', 'http', 'ssh', 'git') or not u.hostname:
+                raise Refusal('UNSUPPORTED_REMOTE')
+            host = u.hostname.lower()
+            if not re.fullmatch(r'[a-z0-9.-]+', host):
+                raise Refusal('MALFORMED_REMOTE')
+            project = atom(u.path.strip('/').removesuffix('.git'))
+            return dict(kind='network', scheme=u.scheme, host=host, port=u.port,
+                        project=project)
+        if ':' in raw:
+            host, project = raw.split(':', 1)
+            host = host.rsplit('@', 1)[-1].lower()
+            if not re.fullmatch(r'[a-z0-9.-]+', host):
+                raise Refusal('MALFORMED_REMOTE')
+            return dict(kind='network', scheme='ssh', host=host, port=None,
+                        project=atom(project.strip('/').removesuffix('.git')))
+        return dict(kind='local', path=atom(raw))
+    except (ValueError, TypeError):
+        raise Refusal('MALFORMED_REMOTE') from None
+
+
+class Git:
+    def __init__(self, repo):
+        self.env = environment()
+        self.repo = Path(repo).resolve(strict=True)
+
+    def read(self, *args, optional=False):
+        p = subprocess.run(['git', '-C', str(self.repo), *args], env=self.env,
+                           capture_output=True, text=True, timeout=30)
+        if optional and p.returncode == 1:
+            return None
+        if p.returncode:
+            raise Refusal('GIT_QUERY_FAILED')
+        return p.stdout.removesuffix('\n')
+
+    def structural(self, target=None):
+        root = self.read('rev-parse', '--show-toplevel')
+        if Path(root).resolve() != self.repo:
+            raise Refusal('REPOSITORY_MISMATCH')
+        branch = self.read('symbolic-ref', '--quiet', '--short', 'HEAD', optional=True)
+        branch = atom(branch) if branch else 'HEAD'
+        result = dict(root=root, git_dir=self.read('rev-parse', '--absolute-git-dir'),
+                      common_dir=self.read('rev-parse', '--path-format=absolute', '--git-common-dir'),
+                      branch=branch, head=oid(self.read('rev-parse', '--verify', 'HEAD^{commit}')),
+                      dirty=bool(self.read('status', '--porcelain', '--untracked-files=normal')),
+                      pending=[])
+        for state in ('rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD'):
+            path = Path(self.read('rev-parse', '--git-path', state))
+            if not path.is_absolute(): path = self.repo / path
+            if path.exists(): result['pending'].append(state)
+        if target:
+            atom(target)
+            result['target'] = oid(self.read('rev-parse', '--verify', '--end-of-options', target+'^{commit}'))
+        return result
+
+    def remote(self, name, branch):
+        if name is None:
+            name = self.read('config', '--get', 'branch.'+branch+'.remote', optional=True)
+            if not name:
+                names = self.read('remote').splitlines()
+                if len(names) != 1: raise Refusal('REMOTE_SELECTION_REQUIRED')
+                name = names[0]
+        atom(name)
+        configured = self.read('config', '--get-all', 'remote.'+name+'.url')
+        push = self.read('config', '--get-all', 'remote.'+name+'.pushurl', optional=True)
+        fetch = self.read('remote', 'get-url', '--all', name)
+        effective_push = self.read('remote', 'get-url', '--push', '--all', name)
+        values = (configured, push if push is not None else configured, fetch, effective_push)
+        if any(len(v.splitlines()) != 1 for v in values):
+            raise Refusal('MULTIPLE_OR_MULTILINE_REMOTE_URLS')
+        identities = [destination(v) for v in values]
+        result = dict(name=name, configured_fetch=identities[0], configured_push=identities[1],
+                      effective_fetch=identities[2], effective_push=identities[3],
+                      exact_fetch_push_equal=fetch == effective_push,
+                      fetch_rewritten=configured != fetch,
+                      push_rewritten=values[1] != effective_push)
+        return result, values  # raw values only for in-process exact consistency
+
+
+def inspect(repo, remote=None, target=None, maintenance=False):
+    git = Git(repo)
+    start = git.structural(target)
+    if maintenance and start['pending']: raise Refusal('GIT_OPERATION_PENDING')
+    selected, raw = git.remote(remote, start['branch'])
+    setting = 'not-queried'
+    if maintenance:
+        setting = git.read('config', '--get', '--bool', 'rebase.autoStash', optional=True)
+        if setting not in (None, 'true', 'false'): raise Refusal('INVALID_TYPED_SETTING')
+    end = git.structural(target)
+    end_remote, end_raw = git.remote(remote, end['branch'])
+    if start != end or raw != end_raw or selected != end_remote:
+        raise Refusal('CONTEXT_MOVED')
+    if maintenance and setting != git.read('config', '--get', '--bool', 'rebase.autoStash', optional=True):
+        raise Refusal('CONTEXT_MOVED')
+    return dict(**start, remote=selected, rebase_auto_stash=setting,
+                authority=False, readiness='not evaluated', local_only=True)
+
+
+def error(exc):
+    # Never serialize arbitrary exception repr, argv, config parser values or stderr.
+    return str(exc) if isinstance(exc, Refusal) else 'PREFLIGHT_FAILED'
+
+
+def main():
+    try:
+        parser = Parser(description=__doc__)
+        parser.add_argument('--repo', required=True)
+        parser.add_argument('--remote')
+        parser.add_argument('--target')
+        parser.add_argument('--maintenance', action='store_true')
+        args = parser.parse_args()
+        print(json.dumps(inspect(args.repo, args.remote, args.target, args.maintenance), sort_keys=True))
+        return 0
+    except (ValueError, OSError, subprocess.SubprocessError) as exc:
+        print(json.dumps(dict(error=error(exc), authority=False, readiness='unknown')), file=sys.stderr)
+        return 2
+
+
+if __name__ == '__main__':
+    sys.exit(main())

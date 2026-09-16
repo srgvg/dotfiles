@@ -7,6 +7,7 @@ The ledger is the only finding/disposition store; execution.json holds operation
 import argparse
 import contextlib
 import copy
+import errno
 import fcntl
 import functools
 import hashlib
@@ -16,6 +17,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -33,6 +35,18 @@ KINDS = FINAL | {'implement', 'repair', 'verify', 'review-full', 'review-targete
 CANDIDATE = ('head', 'base', 'target', 'metadata', 'configuration')
 
 
+def github_module():
+    sys.path.insert(0, '/home/serge/etc/agent-workflow-pilot')
+    import github_binding
+    return github_binding
+
+
+def this_module():
+    # SourceFileLoader fixtures do not necessarily register this module in sys.modules.
+    import types
+    return types.SimpleNamespace(**globals())
+
+
 class PilotError(Exception):
     pass
 
@@ -44,6 +58,30 @@ def require(ok, message):
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+NO_START_ERRNOS = {errno.ENOENT, errno.ENOTDIR, errno.ENOEXEC, errno.EACCES, errno.EPERM}
+
+
+def executable_preflight(command, cwd=None, env=None):
+    """Local prerequisite only; the actual exec can still fail after this read."""
+    require(command and isinstance(command[0], str), 'EXECUTABLE_REQUIRED')
+    env = os.environ if env is None else env
+    root = Path(cwd or os.getcwd())
+    require(root.is_dir(), 'LAUNCH_CWD_UNAVAILABLE')
+    name = command[0]
+    if '/' in name:
+        target = Path(name) if Path(name).is_absolute() else root/name
+        found = str(target) if target.is_file() and os.access(target, os.X_OK) else None
+        if target.exists() and not found:
+            raise PilotError('EXECUTABLE_PERMISSION_DENIED: '+name)
+    else:
+        # PATH entries can be relative to the child's working directory.
+        search = os.pathsep.join(str(root/x) if not Path(x).is_absolute() else x
+                                 for x in env.get('PATH', os.defpath).split(os.pathsep))
+        found = shutil.which(name, path=search)
+    require(found, 'EXECUTABLE_UNAVAILABLE: '+name)
+    return found
 
 
 def read_json(path):
@@ -114,6 +152,9 @@ def route(cwd=None, run=None):
     require(len(roots) == 1, 'ADOPTION_CONTEXT_CONFLICT')
     store = Store(Path(next(iter(roots))))
     state = store.read()
+    if state['mode'] == 'github':
+        # Discovery is read-only. Operational entrypoints separately enforce expiry.
+        github_module().validate_account(this_module(), state, cwd, check_time=False)
     return {'mode': state['mode'], 'run': str(store.root), 'execution': state['id'],
             'owner': state['owner'], 'generation': state['generation']}
 
@@ -168,13 +209,16 @@ class Store:
         self.read()
         return state
 
-    def read(self):
+    def read(self, *, check_sources=True):
         s = read_json(self.root/'execution.json')
         a = read_json(self.root/'adoption.json')
         require(isinstance(s, dict) and s.get('version') == 1 and s.get('id') == a.get('id'),
                 'ACCOUNTING_UNKNOWN: invalid identity/version')
         require(a.get('run') == str(self.root), 'ACCOUNTING_UNKNOWN: execution moved without recovery')
-        require(s.get('mode') in {'fixture', 'shadow'}, 'LIVE_PILOT_DISABLED')
+        require(s.get('mode') in {'fixture', 'shadow', 'github'}, 'LIVE_PILOT_DISABLED')
+        if s.get('mode') == 'github':
+            # An expired grant blocks new work, not recording an already-running child.
+            github_module().validate_account(this_module(), s, check_checkout=False, check_time=False, check_sources=check_sources)
         require(set(PROFILE) == set(s.get('limits', {})), 'ACCOUNTING_UNKNOWN: limits')
         require(all(isinstance(v, (int, float)) and not isinstance(v, bool) and
                     math.isfinite(v) and v > 0 for v in s['limits'].values()),
@@ -190,9 +234,18 @@ class Store:
                 'ACCOUNTING_UNKNOWN: HTTP consumption')
         for ident, op in s['operations'].items():
             require(op.get('id') == ident and op.get('kind') in KINDS and
-                    op.get('status') in {'running', 'completed', 'unknown', 'recovered'} and
+                    op.get('status') in {'running', 'completed', 'unknown', 'recovered', 'not-started'} and
                     all(isinstance(op.get(k), (int, float)) and math.isfinite(op[k]) for k in ('seconds', 'started', 'deadline')) and
                     op['seconds'] > 0 and op['deadline'] == op['started']+op['seconds'], 'ACCOUNTING_UNKNOWN: invalid operation')
+            if op['status'] == 'not-started':
+                if op.get('launch_failure'):
+                    self.validate_no_start(s, op, op['launch_failure'])
+                else:
+                    records = s.get('binding', {}).get('launch_settlements', [])
+                    receipt = next((v for v in records if v['request']['id'] == op.get('launch_settlement')), None)
+                    require(receipt and receipt['sha256'] == digest(receipt['request']) and
+                            dict(receipt['original_operation'], status='not-started', launch_settlement=op['launch_settlement']) == op,
+                            'ACCOUNTING_UNKNOWN: launch settlement evidence')
         try:
             current_hash = hashlib.sha256((self.root/'ledger.md').read_bytes()).hexdigest()
         except OSError as exc:
@@ -217,25 +270,32 @@ class Store:
                    f"phase={'parked' if s['parked'] else 'active'} active_spent={s['active_spent']}\n")
 
     def bind(self, cwd):
-        cwd = fixture_path(cwd)
+        if self.read()['mode'] == 'github':
+            github_module().validate_account(this_module(), self.read(), cwd)
+            cwd = Path(cwd).resolve()
+        else:
+            cwd = fixture_path(cwd)
         require(cwd.is_dir(), 'BIND_DIRECTORY_MISSING')
         marker = cwd/'.agent-review-adoption.json'
         require(not marker.exists(), 'ALREADY_ADOPTED')
         atomic(marker, {'run': str(self.root), 'execution': self.read()['id']})
 
-    def reserve(self, owner, generation, ident, kind, seconds, parent=None):
+    def reserve(self, owner, generation, ident, kind, seconds, parent=None, review=None, worker_receipt=None, launch=None):
         require(kind in KINDS and ident and seconds > 0 and math.isfinite(seconds), 'INVALID_OPERATION')
         with self.change(owner, generation, allow_hold=kind in {'reconcile', 'stop-report'}) as s:
-            require(s['mode'] == 'fixture' or (s['mode'] == 'shadow' and kind == 'reconcile'), 'SHADOW_CANNOT_EXECUTE')
+            require(s['mode'] in {'fixture', 'github'} or (s['mode'] == 'shadow' and kind == 'reconcile'), 'SHADOW_CANNOT_EXECUTE')
             if ident in s['operations']:
                 prior = s['operations'][ident]
                 require(prior['kind'] == kind and prior['parent'] == parent, 'OPERATION_ID_CONFLICT')
                 raise PilotError(f"OPERATION_EXISTS: {ident} {prior['status']}; reconcile, do not dispatch twice")
+            if s['mode'] == 'github' and kind not in {'reconcile', 'stop-report'}:
+                github_module().worker_admission(this_module(), s)
             require(not s['admission_disabled'], 'PILOT_ADMISSION_DISABLED')
             require(not s['parked'] or kind in FINAL, 'PARKED: no substantive continuation')
             if kind in {'initial-push', 'repair-push', 'request-review'}:
                 require((s['snapshot'] or {}).get('merge_exposure') == 'safe', 'MERGE_EXPOSURE_ARMED_OR_UNKNOWN')
-                require(any(e['status'] == 'expected' and e.get('trigger_operation') == ident for e in s['expectations'].values()), 'EXPECTATIONS_REQUIRED_BEFORE_TRIGGER')
+                pre_pr_push = s['mode'] == 'github' and kind == 'initial-push' and s['binding']['pr'] is None
+                require(pre_pr_push or any(e['status'] == 'expected' and e.get('trigger_operation') == ident for e in s['expectations'].values()), 'EXPECTATIONS_REQUIRED_BEFORE_TRIGGER')
             require(not any(x['status'] == 'unknown' for x in s['operations'].values()), 'ACCOUNTING_UNKNOWN: recover operation')
             live = [x for x in s['operations'].values() if x['status'] == 'running']
             if parent:
@@ -258,15 +318,36 @@ class Store:
             if kind == 'initial-push':
                 require(not any(k in {'initial-push', 'repair-push'} for k in counts), 'INITIAL_PUSH_ALREADY_CONSUMED')
             require(remaining > 0, 'ACTIVE_ALLOWANCE_EXHAUSTED')
+            if s['mode'] == 'github':
+                grant = github_module().validate_account(this_module(), s)
+                remaining = min(remaining, grant['expires_at']-self.clock())
+                require(remaining > 0, 'EXECUTION_GRANT_EXPIRED')
             duration = min(seconds, remaining)
             started = self.clock()
             op = dict(id=ident, kind=kind, parent=parent, status='running', started=started,
                       seconds=duration, deadline=started+duration, owner=owner,
                       generation=generation, rc=None, candidate=copy.deepcopy(s['candidate']))
+            if review is not None:
+                e = s['expectations'].get(review.get('request'), {})
+                require(kind.startswith('review-') and e.get('source', '').startswith('local-') and
+                        e.get('status') == 'expected' and e.get('candidate') == s['candidate'] and
+                        all(review.get(k) == e.get(k) for k in ('source', 'actor')), 'REVIEW_BINDING_INVALID')
+                require(not any(x.get('review', {}).get('request') == e['id'] for x in s['operations'].values()),
+                        'REVIEW_REQUEST_ALREADY_DISPATCHED')
+                inp = review.get('input', {})
+                path = fixture_path(inp.get('path', ''))
+                require(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == inp.get('sha256'),
+                        'REVIEW_INPUT_MISSING_OR_CHANGED')
+                op['review'] = copy.deepcopy(review)
+            if worker_receipt is not None:
+                require(kind in {'implement','repair'} and not parent, 'WORKER_RECEIPT_SCOPE_INVALID')
+                op['worker_receipt'] = dict(copy.deepcopy(worker_receipt), resume_epoch=github_module().worker_epoch(s))
+            if launch is not None:
+                op['launch'] = copy.deepcopy(launch)
             s['operations'][ident] = op
             return copy.deepcopy(op)
 
-    def finish(self, owner, generation, ident, rc):
+    def finish(self, owner, generation, ident, rc, outcome=None, result=None, worker_result=None, launch_failure=None):
         # Completion bookkeeping survives a hold; it never starts new work.
         with self.change(owner, generation, allow_hold=True) as s:
             require(ident in s['operations'], 'UNKNOWN_OPERATION')
@@ -282,7 +363,36 @@ class Store:
                     elapsed = max(elapsed, min(op['seconds'], child['started']+child.get('charged', child['seconds'])-op['started']))
             if not op['parent']:
                 s['active_spent'] += elapsed
-            op.update(status='unknown' if rc is None else 'completed', rc=rc, finished=self.clock(), charged=elapsed)
+            outcome = outcome or ('unknown' if rc is None else 'normal')
+            require(outcome in {'normal', 'timeout', 'cancelled', 'launch-failed', 'unknown'}, 'INVALID_OUTCOME')
+            op.update(status='unknown' if rc is None else 'completed', rc=rc, outcome=outcome,
+                      finished=self.clock(), charged=elapsed)
+            if launch_failure is not None:
+                self.validate_no_start(s, op, launch_failure)
+                op.update(status='not-started', launch_failure=copy.deepcopy(launch_failure))
+            if op.get('review') and outcome == 'normal' and rc == 0:
+                try:
+                    artifact = read_json(fixture_path(result)) if isinstance(result, (str, Path)) else result
+                    binding = op['review']
+                    require(isinstance(artifact, dict) and
+                            all(artifact.get(k) == binding[k] for k in ('request', 'source', 'actor')) and
+                            artifact.get('candidate') == op['candidate'] and
+                            artifact.get('input_sha256') == binding['input']['sha256'] and
+                            artifact.get('status') == 'completed' and isinstance(artifact.get('findings'), list) and
+                            all(isinstance(f, dict) and f.get('id') and f.get('body') for f in artifact['findings']),
+                            'REVIEW_RESULT_MISSING_OR_INVALID')
+                    require(hashlib.sha256(Path(binding['input']['path']).read_bytes()).hexdigest() ==
+                            binding['input']['sha256'], 'REVIEW_INPUT_CHANGED')
+                    destination = self.root/('review-result-'+digest(ident)+'.json')
+                    atomic(destination, artifact)
+                    op['result'] = dict(path=str(destination), sha256=hashlib.sha256(destination.read_bytes()).hexdigest())
+                except (PilotError, OSError, TypeError, ValueError) as exc:
+                    op['result_error'] = str(exc)
+            if worker_result is not None:
+                require(op['kind'] in {'implement','repair'} and worker_result['operation'] == ident and
+                        worker_result['rc'] == rc and worker_result['outcome'] == outcome,
+                        'WORKER_RESULT_IDENTITY_INVALID')
+                op['worker_result'] = copy.deepcopy(worker_result)
             return copy.deepcopy(op)
 
     def recover(self, owner, generation, ident, receipt):
@@ -295,8 +405,60 @@ class Store:
                             for x in s['operations'].values()), 'CHILD_STILL_RUNNING')
             if op['status'] == 'running' and not op['parent']:
                 s['active_spent'] += op['seconds']
-            op.update(status='recovered', rc=receipt['rc'], recovery=receipt, charged=op['seconds'])
+            # A stop receipt establishes accounting, not successful review output.
+            op.update(status='recovered', rc=receipt['rc'], outcome=op.get('outcome', 'unknown'),
+                      recovery=receipt, charged=op['seconds'])
             # Conservative reservation charge is retained, not refunded.
+
+    @staticmethod
+    def validate_no_start(state, op, proof):
+        require(isinstance(proof, dict) and proof.get('kind') == 'exec-not-started' and
+                type(proof.get('errno')) is int and proof['errno'] in NO_START_ERRNOS and
+                isinstance(proof.get('error'), str) and proof['error'] and
+                type(proof.get('observed_at')) in (int,float) and math.isfinite(proof['observed_at']) and
+                proof['observed_at'] >= op['started'] and
+                isinstance(op.get('launch'),dict) and proof.get('identity') == op['launch'] and
+                proof.get('started_at') == op['started'] and
+                proof['identity'].get('execution') == state['id'] and
+                proof['identity'].get('operation') == op['id'] and
+                proof['identity'].get('owner') == op['owner'] and
+                proof['identity'].get('generation') == op['generation'] and
+                not op.get('worker_receipt') and op.get('rc') is None and
+                op.get('outcome', 'launch-failed') == 'launch-failed', 'NO_START_EVIDENCE_REQUIRED')
+
+    def settle_launch(self, owner, generation, ident):
+        """Local runner-proof settlement; never launches, resumes or refunds."""
+        require(not os.environ.get('AGENT_REVIEW_OPERATION'), 'HUMAN_DRIVER_TRANSITION_REQUIRED')
+        initial = self.read()
+        require(initial['owner'] == owner and initial['generation'] == generation, 'STALE_OWNER')
+        with self.worker_lock(ident):
+            try:
+                with self.change(owner, generation, allow_hold=True) as s:
+                    op = s['operations'].get(ident)
+                    require(op is not None, 'UNKNOWN_OPERATION')
+                    require(op['status'] == 'not-started' or op.get('launch_recovery_failures',0) < s['limits']['bookkeeping_attempts'], 'LAUNCH_RECOVERY_EXHAUSTED')
+                    proof = op.get('launch_failure') or read_json(self.root/('launch-'+digest(ident)+'.json'))
+                    self.validate_no_start(s, op, proof)
+                    if op['status'] == 'not-started':
+                        return dict(operation=ident, already_settled=True, parked=s['parked'])
+                    require(op['status'] in {'running','unknown'} and
+                            not any(x.get('parent') == ident for x in s['operations'].values()), 'LAUNCH_SETTLEMENT_CONFLICT')
+                    if op['status'] == 'running' and not op['parent']:
+                        s['active_spent'] += op['seconds']
+                    op.update(status='not-started', rc=None, outcome='launch-failed', charged=op['seconds'],
+                              launch_failure=copy.deepcopy(proof), settled_at=self.clock())
+                    s['history'].append(dict(action='settle-launch', operation=ident, evidence=digest(proof), at=self.clock()))
+                    return dict(operation=ident, already_settled=False, parked=s['parked'])
+            except (PilotError, OSError) as exc:
+                with self.change(owner, generation, allow_hold=True) as current:
+                    op = current['operations'].get(ident)
+                    if op and op.get('launch') and op['status'] in {'running','unknown'}:
+                        cap = current['limits']['bookkeeping_attempts']
+                        denied = isinstance(exc, PermissionError) or isinstance(exc.__cause__, PermissionError)
+                        op['launch_recovery_failures'] = (cap if denied else
+                                                         min(cap, op.get('launch_recovery_failures',0)+1))
+                        op['launch_recovery_error'] = str(exc)
+                raise
 
     def transfer(self, owner, generation, new_owner, reason):
         with self.change(owner, generation, allow_hold=True) as s:
@@ -306,42 +468,115 @@ class Store:
             s['owner'] = new_owner
             s['generation'] += 1
 
-    def control(self, owner, generation, action, reason):
+    def control(self, owner, generation, action, reason, next_action=None):
         require(action in {'hold', 'revoke', 'disable', 'park'}, 'INVALID_CONTROL')
         require(reason, 'REASON_REQUIRED')
+        if action == 'park':
+            return self.park(owner, generation, reason, next_action or
+                             'Assess this stop reason; resume only under explicit human authorization.')
         with self.change(owner, generation, allow_hold=True) as s:
             if action == 'hold':
                 s['hold'] = reason
             elif action == 'revoke':
                 s['revoked'] = True
-            elif action == 'disable':
-                s['admission_disabled'] = True
             else:
-                s['parked'] = True
+                s['admission_disabled'] = True
             s['history'].append({'action': action, 'reason': reason, 'at': self.clock()})
 
-    def run_child(self, owner, generation, ident, kind, seconds, command, parent=None):
+    @contextlib.contextmanager
+    def worker_lock(self, ident):
+        fixture_path(self.root)
+        with (self.root/('worker-'+digest(ident)+'.lock')).open('a') as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise PilotError('WORKER_RESULT_RECOVERY_BUSY') from exc
+            yield
+
+    def child_environment(self, ident, path_prefix=None):
+        env = dict(os.environ, AGENT_REVIEW_EXECUTION=str(self.root), AGENT_REVIEW_OPERATION=ident)
+        if path_prefix is not None:
+            prefix = Path(path_prefix).resolve()
+            require(prefix == self.root/'tools' and prefix.is_dir(), 'TOOL_DIRECTORY_OUT_OF_SCOPE')
+            env['PATH'] = str(prefix)+os.pathsep+env.get('PATH', os.defpath)
+        return env
+
+    def run_child(self, owner, generation, ident, kind, seconds, command, parent=None, review=None,
+                  cwd=None, input_text=None, result_mapper=None, output_receipt=None, path_prefix=None):
+        # The receipt is written only after reaping. Recovery cannot race its writer.
+        with self.worker_lock(ident):
+            return self._run_child(owner, generation, ident, kind, seconds, command, parent, review,
+                                   cwd, input_text, result_mapper, output_receipt, path_prefix)
+
+    def _run_child(self, owner, generation, ident, kind, seconds, command, parent=None, review=None,
+                   cwd=None, input_text=None, result_mapper=None, output_receipt=None, path_prefix=None):
         """Actual bounded execution, including TERM/KILL grace inside reservation."""
-        op = self.reserve(owner, generation, ident, kind, seconds, parent)
+        receipt_identity = None
+        env = self.child_environment(ident, path_prefix)
+        launch = None
+        if output_receipt is None:
+            resolved = executable_preflight(command, cwd, env)
+            state = self.read()
+            launch = dict(execution=state['id'], operation=ident, owner=owner, generation=generation,
+                          command=list(command), resolved=resolved, cwd=str(Path(cwd or os.getcwd()).resolve()),
+                          path_sha256=digest(env.get('PATH')), resume_epoch=github_module().worker_epoch(state))
+        if output_receipt is not None:
+            require(Path(output_receipt).parent == self.root and Path(output_receipt) == self.root/(ident+'.worker.json') and not Path(output_receipt).exists(),
+                    'WORKER_RECEIPT_SCOPE_INVALID')
+            state = self.read()
+            receipt_identity = dict(path=str(output_receipt), execution=state['id'], owner=owner, generation=generation,
+                launch=list(command), input_sha256=hashlib.sha256((input_text or '').encode()).hexdigest(),
+                resume_epoch=github_module().worker_epoch(state))
+        op = self.reserve(owner, generation, ident, kind, seconds, parent, review, receipt_identity, launch)
+        receipt_identity = op.get('worker_receipt')
         envelope_end = time.monotonic()+max(0, op['deadline']-self.clock())
         grace = min(2.0, op['seconds']/4)
-        env = dict(os.environ, AGENT_REVIEW_EXECUTION=str(self.root), AGENT_REVIEW_OPERATION=ident)
         process = None
+        outcome, artifact, worker, launch_failure = 'launch-failed', None, None, None
         try:
-            process = subprocess.Popen(command, env=env, start_new_session=True,
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             try:
-                stdout, stderr = process.communicate(timeout=max(0, envelope_end-time.monotonic()-grace))
+                process = subprocess.Popen(command, env=env, start_new_session=True, cwd=cwd,
+                                           stdin=subprocess.PIPE if input_text is not None else None,
+                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            except OSError as exc:
+                if launch is not None and exc.errno in NO_START_ERRNOS:
+                    launch_failure = dict(kind='exec-not-started', identity=launch, started_at=op['started'],
+                                          errno=exc.errno, error=str(exc), observed_at=self.clock())
+                    atomic(self.root/('launch-'+digest(ident)+'.json'), launch_failure)
+                    return dict(operation=ident, rc=None, outcome='launch-failed', stdout='', stderr=str(exc),
+                                timeout_seconds=op['seconds'], not_started=True, launch_errno=exc.errno)
+                raise
+            outcome = 'normal'
+            try:
+                stdout, stderr = process.communicate(input=input_text, timeout=max(0, envelope_end-time.monotonic()-grace))
             except subprocess.TimeoutExpired:
+                outcome = 'timeout'
                 os.killpg(process.pid, signal.SIGTERM)
                 try:
                     stdout, stderr = process.communicate(timeout=max(0, (envelope_end-time.monotonic())/2))
                 except subprocess.TimeoutExpired:
                     os.killpg(process.pid, signal.SIGKILL)
                     stdout, stderr = process.communicate(timeout=max(0, envelope_end-time.monotonic()))
-            return {'operation': ident, 'rc': process.returncode, 'stdout': stdout, 'stderr': stderr,
-                    'timeout_seconds': op['seconds']}
+            if review is not None and outcome == 'normal' and process.returncode == 0:
+                try:
+                    artifact = result_mapper(stdout) if result_mapper else json.loads(stdout)
+                except (PilotError, OSError, ValueError):
+                    pass  # Zero exit with unusable output is not a completed review.
+            result = {'operation': ident, 'rc': process.returncode, 'outcome': outcome, 'stdout': stdout, 'stderr': stderr,
+                      'timeout_seconds': op['seconds']}
+            if output_receipt is not None:
+                result.update({k:v for k,v in receipt_identity.items() if k != 'path'})
+                result.update(started=op['started'], finished=self.clock(), stopped=True)
+                worker = github_module().worker_result(result)
+                worker.update(receipt=str(output_receipt), receipt_sha256=hashlib.sha256((json.dumps(result,indent=2,sort_keys=True)+'\n').encode()).hexdigest(), receipt_verified=False)
+                atomic(output_receipt, result)
+                require(read_json(output_receipt) == result, 'WORKER_RECEIPT_CHANGED')
+                worker['receipt_verified'] = True
+            return result
         except BaseException:
+            # Saving output does not change the already observed process outcome.
+            if outcome == 'normal' and (process is None or process.poll() is None):
+                outcome = 'cancelled'
             if process is not None and process.poll() is None:
                 try:
                     os.killpg(process.pid, signal.SIGKILL)
@@ -351,7 +586,90 @@ class Store:
             raise
         finally:
             rc = process.returncode if process is not None else None
-            self.finish(owner, generation, ident, rc)
+            if worker is not None and (worker['outcome'] != outcome or worker['rc'] != rc):
+                worker.update(outcome=outcome, rc=rc, task_status='permission-denied' if worker['permission_denials'] else 'interrupted', task_complete=False)
+            if worker is None:
+                self.finish(owner, generation, ident, rc, outcome, artifact, launch_failure=launch_failure)
+            else:
+                self.finish(owner, generation, ident, rc, outcome, artifact, worker_result=worker)
+
+
+    def recover_worker(self, owner, generation, ident):
+        """Attach actual saved output under its original identity; never relaunch.
+
+        No hosted reads or writes. Receipt reconciliation remains available under
+        stops/expiry; it cannot clear them. Failed local recovery stays bounded.
+        """
+        require(not os.environ.get('AGENT_REVIEW_OPERATION'), 'HUMAN_DRIVER_TRANSITION_REQUIRED')
+        with self.worker_lock(ident):
+            state = self.read()
+            require(state['owner'] == owner and state['generation'] == generation, 'STALE_OWNER')
+            require(ident in state['operations'] and state['operations'][ident].get('worker_receipt'), 'WORKER_RECEIPT_REQUIRED')
+            op = state['operations'][ident]
+            require(op.get('worker_recovery_failures',0) < state['limits']['bookkeeping_attempts'], 'WORKER_RESULT_RECOVERY_EXHAUSTED')
+            try:
+                return self._recover_worker_locked(owner, generation, ident)
+            except (PilotError, OSError) as exc:
+                with self.change(owner,generation,allow_hold=True) as current:
+                    item = current['operations'][ident]
+                    # A lost return after valid attachment is already committed.
+                    if not item.get('worker_result',{}).get('receipt_verified'):
+                        count = item.get('worker_recovery_failures',0)+1
+                        item['worker_recovery_failures'] = current['limits']['bookkeeping_attempts'] if isinstance(exc,PermissionError) else count
+                        item['worker_recovery_error'] = str(exc)
+                raise
+
+    def _recover_worker_locked(self, owner, generation, ident):
+        with self.change(owner, generation, allow_hold=True) as s:
+            require(ident in s['operations'], 'UNKNOWN_OPERATION')
+            op = s['operations'][ident]; expected = op.get('worker_receipt')
+            require(expected is not None and op['kind'] in {'implement','repair'}, 'WORKER_RECEIPT_REQUIRED')
+            path = Path(expected['path'])
+            require(path.parent == self.root and path == self.root/(ident+'.worker.json') and not path.is_symlink(), 'WORKER_RECEIPT_SCOPE_INVALID')
+            previous = op.get('worker_result')
+            if not path.is_file() and previous:
+                # The first file write failed but account completion retained the
+                # actual runner output. Restore only those exact hash-bound bytes.
+                require(all(k in previous for k in github_module().WORKER_RAW_FIELDS), 'WORKER_RESULT_UNRESOLVED')
+                raw = {k:previous[k] for k in github_module().WORKER_RAW_FIELDS}
+                encoded = json.dumps(raw,indent=2,sort_keys=True)+'\n'
+                require(hashlib.sha256(encoded.encode()).hexdigest() == previous['receipt_sha256'], 'WORKER_RECEIPT_CHANGED')
+                atomic(path, raw)
+            require(path.is_file(), 'WORKER_RESULT_UNRESOLVED: raw receipt missing')
+            raw_bytes = path.read_bytes()
+            try: raw = json.loads(raw_bytes)
+            except (ValueError, UnicodeError) as exc: raise PilotError('WORKER_RECEIPT_INVALID_JSON') from exc
+            require(isinstance(raw, dict) and set(raw) == set(github_module().WORKER_RAW_FIELDS) and all(raw.get(k) == v for k,v in expected.items() if k != 'path') and
+                    raw.get('operation') == ident and raw.get('started') == op['started'] and
+                    raw.get('timeout_seconds') == op['seconds'] and raw.get('stopped') is True and
+                    type(raw.get('rc')) is int and raw.get('outcome') in {'normal','timeout','cancelled'} and
+                    all(isinstance(raw.get(k),str) for k in ('stdout','stderr')) and
+                    type(raw.get('finished')) in (int,float) and math.isfinite(raw['finished']) and
+                    op['started'] <= raw['finished'] <= self.clock(), 'WORKER_RECEIPT_IDENTITY_INVALID')
+            previous = op.get('worker_result')
+            require(not previous or previous['receipt_sha256'] == hashlib.sha256(raw_bytes).hexdigest(), 'WORKER_RECEIPT_CHANGED')
+            result = github_module().worker_result(raw)
+            result.update(receipt=str(path),receipt_sha256=hashlib.sha256(raw_bytes).hexdigest(),receipt_verified=True)
+            if previous and previous.get('receipt_verified'):
+                require(previous == result, 'WORKER_RECEIPT_CHANGED')
+            else:
+                require(not any(x['parent'] == ident and x['status'] in {'running','unknown'}
+                                for x in s['operations'].values()), 'CHILD_STILL_RUNNING')
+                if op['status'] == 'running':
+                    if not op['parent']: s['active_spent'] += op['seconds']
+                    op.update(status='completed',rc=raw['rc'],outcome=raw['outcome'],
+                              finished=raw['finished'],charged=op['seconds'])
+                else:
+                    require(op.get('rc') == raw['rc'] and op.get('outcome') == raw['outcome'],
+                            'WORKER_RECEIPT_OUTCOME_MISMATCH')
+                op['worker_result'] = result
+        # Currentness is checked by park under its commit lock, not here:
+        # a newer human resume may interleave after attachment completes.
+        if result['task_status'] == 'permission-denied':
+            result = dict(result, stop=self.park(owner,generation,'WORKER_PERMISSION_DENIED:'+ident,
+                'Inspect the denying layer; resume only under separate explicit human authority.',
+                worker_operation=ident))
+        return result
 
 
     def ledger(self):
@@ -390,6 +708,23 @@ class Store:
             s['expectations'][ident] = item
             return copy.deepcopy(item)
 
+    @staticmethod
+    def local_result(op, expectation):
+        binding = op.get('review', {})
+        receipt = op.get('result', {})
+        if not (op.get('status') == 'completed' and op.get('rc') == 0 and op.get('outcome') == 'normal' and
+                op.get('kind', '').startswith('review-') and op.get('candidate') == expectation['candidate'] and
+                binding.get('request') == expectation['id'] and
+                all(binding.get(k) == expectation[k] for k in ('source', 'actor'))):
+            return None
+        try:
+            data = fixture_path(receipt['path']).read_bytes()
+            if hashlib.sha256(data).hexdigest() == receipt['sha256']:
+                return json.loads(data)
+        except (PilotError, OSError, KeyError, ValueError, TypeError):
+            pass
+        return None
+
     @bookkeeping
     def observe(self, owner, generation, snapshot):
         snap = copy.deepcopy(snapshot)
@@ -398,6 +733,19 @@ class Store:
         require(all(isinstance(snap.get(k), list) for k in ('reviews', 'objects', 'threads', 'checks')), 'INCOMPLETE_SNAPSHOT')
         require(isinstance(snap.get('observed_at'), (int, float)) and
                 math.isfinite(snap['observed_at']) and snap['observed_at'] <= self.clock(), 'INVALID_OBSERVATION_TIME')
+        state = self.read()
+        for r in snap['reviews']:
+            e = state['expectations'].get(r.get('request'))
+            if e and e['source'].startswith('local-'):
+                artifact = self.local_result(state['operations'].get(r.get('operation'), {}), e)
+                if artifact:
+                    for finding in artifact['findings']:
+                        obj = dict(id='local:'+r['operation']+':'+finding['id'], author=e['actor'],
+                                   body=finding['body'], updated_at=digest(artifact))
+                        present = next((o for o in snap['objects'] if o.get('id') == obj['id']), None)
+                        require(present is None or present == obj, 'LOCAL_FINDING_CONTENT_CONFLICT')
+                        if present is None:
+                            snap['objects'].append(obj)
         for key in ('objects', 'threads', 'reviews', 'checks'):
             ids = [o.get('id') for o in snap[key]]
             require(all(ids) and len(ids) == len(set(ids)), 'DUPLICATE_OR_MISSING_IDS:'+key)
@@ -419,8 +767,7 @@ class Store:
                         continue
                     if e['source'].startswith('local-') and r.get('status') == 'completed':
                         op = s['operations'].get(r.get('operation'), {})
-                        if not (op.get('status') in {'completed', 'recovered'} and op.get('rc') == 0 and
-                                op.get('kind', '').startswith('review-') and op.get('candidate') == e['candidate']):
+                        if self.local_result(op, e) is None:
                             continue  # Local output without an accounted candidate receipt is not completion.
                     if r.get('status') in {'queued', 'running', 'completed', 'failed', 'cancelled', 'skipped', 'degraded'}:
                         e['status'] = r['status']
@@ -446,7 +793,7 @@ class Store:
                                               'disposition', 'premises', 'rationale', 'authority')), 'ADJUDICATION_EVIDENCE_REQUIRED')
                 require(isinstance(f['evidence'], list) and all(isinstance(x, str) and x for x in f['evidence']), 'EVIDENCE_REQUIRED')
                 require(f['disposition'] in {'open', 'investigate', 'fixed', 'rejected', 'duplicate',
-                                            'obsolete', 'deferred', 'accepted-risk'}, 'INVALID_DISPOSITION')
+                                            'obsolete', 'deferred', 'accepted-risk', 'optional-followup'}, 'INVALID_DISPOSITION')
                 require(f['premises'] == s['candidate'], 'STALE_ADJUDICATION')
                 require(f['object'] in s['observation_versions'], 'UNKNOWN_REVIEW_OBJECT')
                 if f['disposition'] == 'fixed':
@@ -455,12 +802,23 @@ class Store:
                     require(f.get('duplicate_of') and f['duplicate_of'] != f['id'], 'DUPLICATE_TARGET_REQUIRED')
                 if f['disposition'] in {'deferred', 'accepted-risk'}:
                     require(f['authority'] == 'human' and f.get('authority_evidence'), 'HUMAN_AUTHORITY_REQUIRED')
+                if f['disposition'] == 'optional-followup':
+                    require(self.optional_followup(f), 'NONBLOCKING_EVIDENCE_REQUIRED')
                 f['object_version'] = s['observation_versions'][f['object']][-1]['version']
                 f['at'] = self.clock()
                 text += '<!-- pilot-finding -->\n```json\n'+json.dumps(f, sort_keys=True)+'\n```\n\n'
             # Interrupted cross-file commit fails closed; never silently discard a ledger write.
             atomic(self.root/'ledger.md', text)
             s['ledger_hash'] = hashlib.sha256(text.encode()).hexdigest()
+
+    @staticmethod
+    def optional_followup(f):
+        scope = f.get('nonblocking', {})
+        return (f.get('authority') == 'delegated' and f.get('blocker') is False and bool(f.get('followup')) and
+                scope.get('category') == 'optional-improvement' and
+                all(scope.get(k+'_effect') == 'none' for k in ('requirement', 'security', 'correctness', 'contract')) and
+                isinstance(scope.get('scope_evidence'), list) and bool(scope['scope_evidence']) and
+                all(isinstance(x, str) and x for x in scope['scope_evidence']))
 
     def terminal(self, f, s, current, seen=None):
         seen = set() if seen is None else seen
@@ -480,6 +838,8 @@ class Store:
             return True
         if disposition in {'deferred', 'accepted-risk'}:
             return f.get('authority') == 'human' and bool(f.get('authority_evidence')) and f.get('current_blocker_discharged') is True
+        if disposition == 'optional-followup':
+            return self.optional_followup(f)
         return False
 
     def external_spent(self, s):
@@ -495,13 +855,27 @@ class Store:
         s = self.read()
         snap = s['snapshot'] or {}
         blockers = []
+        if s['mode'] == 'github':
+            blockers.extend('WORKER_PERMISSION_REFUSAL_UNRESOLVED:'+i for i in github_module().worker_permission_stops(s))
+            blockers.extend('WORKER_RESULT_UNRESOLVED:'+i for i in github_module().worker_result_pending(s))
+            blockers.extend('WORKER_RESULT_RECOVERY_EXHAUSTED:'+i for i in github_module().worker_result_pending(s)
+                            if s['operations'][i].get('worker_recovery_failures',0) >= s['limits']['bookkeeping_attempts'])
+        if s['mode'] == 'github' and github_module().validate_account(this_module(), s, check_checkout=False, check_time=False)['expires_at'] <= self.clock():
+            blockers.append('EXECUTION_GRANT_EXPIRED')
         if snap and self.clock() > snap.get('expires_at', snap.get('observed_at', 0)+s['limits']['review_deadline']):
             blockers.append('OBSERVATION_EXPIRED')
+        if 'context_observed_at' in snap:
+            at = snap['context_observed_at']
+            if not isinstance(at, (int, float)) or not math.isfinite(at) or at > self.clock() or self.clock()-at > s['limits']['review_deadline']:
+                blockers.append('CONTEXT_EXPIRED_OR_UNKNOWN')
         last_work = max((o.get('finished', o['started']) for o in s['operations'].values() if o['kind'] not in FINAL), default=0)
         if snap.get('observed_at', -1) < last_work:
             blockers.append('FINAL_COLLECTION_REQUIRED')
         if s.get('collection_error'):
             blockers.append('COLLECTION_FAILED_OR_UNKNOWN')
+        for ident, operation in s.get('binding', {}).get('transactions', {}).items():
+            if operation.get('phase') != 'confirmed':
+                blockers.append('BINDING_MUTATION_UNKNOWN:'+ident)
         if not snap.get('complete'):
             blockers.append('REVIEW_INVENTORY_UNKNOWN')
         if snap.get('policy_known') is not True:
@@ -512,6 +886,9 @@ class Store:
             if not any(e['source'] == source and e['candidate'] == s['candidate'] and e['required'] for e in s['expectations'].values()):
                 blockers.append('REVIEW_EXPECTATION_MISSING:'+source)
         for e in s['expectations'].values():
+            if e['source'].startswith('local-') and e['status'] == 'completed':
+                if not any(self.local_result(op, e) is not None for op in s['operations'].values()):
+                    blockers.append('LOCAL_REVIEW_EVIDENCE_INVALID:'+e['id'])
             if e['status'] != 'completed':
                 code = 'REVIEW_DEADLINE_UNKNOWN' if self.clock() >= e['deadline'] else 'REVIEW_PENDING'
                 if e['status'] in {'failed', 'cancelled', 'skipped', 'degraded'}:
@@ -535,13 +912,20 @@ class Store:
         for check in snap.get('checks', []):
             if type(check.get('required')) is not bool:
                 blockers.append('CHECK_REQUIREMENT_UNKNOWN:'+check['id'])
-            if check.get('required') is True and (check.get('head') != (s['candidate'] or {}).get('head') or check.get('conclusion') != 'success'):
+            # GitHub required checks accept completed neutral/skipped runs; reviews do not.
+            accepted = {'success', 'neutral', 'skipped'} if s['mode'] == 'github' else {'success'}
+            if check.get('required') is True and (check.get('head') != (s['candidate'] or {}).get('head') or check.get('conclusion') not in accepted):
                 blockers.append('CHECK_STALE_OR_FAILED:'+check['id'])
         if not snap.get('checks'):
             blockers.append('CHECKS_UNKNOWN')
         verification = snap.get('verification', {})
         if verification.get('passed') is not True or verification.get('candidate') != s['candidate']:
             blockers.append('VERIFICATION_MISSING_OR_STALE')
+        if verification.get('operation'):
+            op = s['operations'].get(verification['operation'], {})
+            if not (op.get('kind') == 'verify' and op.get('status') == 'completed' and
+                    op.get('outcome') == 'normal' and op.get('rc') == 0 and op.get('candidate') == s['candidate']):
+                blockers.append('VERIFICATION_EXECUTION_INVALID')
         if snap.get('conflicts') is not False:
             blockers.append('CONFLICTS_OR_UNKNOWN')
         if snap.get('dependencies') != []:
@@ -567,8 +951,11 @@ class Store:
                     admission_disabled=s['admission_disabled'], parked=s['parked'],
                     handoff_current=bool(s['handoff'] and s['handoff']['valid'] and not blockers), extension_request=s['extension_request'])
 
-    def handoff(self, owner, generation):
-        result = self.evaluate()
+    def handoff(self, owner, generation, fetch=None):
+        require(callable(fetch), 'FINAL_FETCH_REQUIRED')
+        result = self.collect(owner, generation, fetch)
+        # Parking intentionally skips collection; saved readiness is not revalidation.
+        require(not result['parked'], 'HANDOFF_BLOCKED: FINAL_COLLECTION_SKIPPED_PARKED')
         require(result['handoff_ready'], 'HANDOFF_BLOCKED: '+', '.join(result['blockers']))
         snapshot_hash = digest(self.read()['snapshot'])
         if self.read()['handoff'] and self.read()['handoff']['valid'] and self.read()['handoff']['snapshot'] == snapshot_hash:
@@ -587,12 +974,29 @@ class Store:
             self.finish(owner, generation, ident, 0)
         return self.evaluate()
 
-    def park(self, owner, generation, reason, next_action):
+    def park(self, owner, generation, reason, next_action, *, worker_operation=None):
         require(reason and next_action, 'SCOPED_EXTENSION_REQUIRED')
         with self.change(owner, generation, allow_hold=True) as s:
+            # Automatic callbacks cannot park a later authority episode. This
+            # condition and the stop/history write share the same account lock.
+            # Explicit ordinary/control parking remains unconditional.
+            if worker_operation is not None and worker_operation not in github_module().worker_permission_stops(s):
+                return None
+            prior = s['extension_request']
+            if s['parked'] and prior is not None:
+                # Same park, including lost-response/obsolete caller retries.
+                # Only a separately authorized resume opens a new stop episode.
+                return copy.deepcopy(prior)
+            stops = [h for h in s['history'] if h.get('action') == 'park']
+            if prior is not None and not any(h.get('request') == prior for h in stops):
+                # Preserve an older account's stop without rewriting its receipt.
+                s['history'].append(dict(action='park', request=copy.deepcopy(prior)))
+                stops.append(s['history'][-1])
+            request = dict(to='Serge', reason=reason, next_action=next_action,
+                           at=self.clock(), allowance_unchanged=True, id='stop-'+str(len(stops)+1))
+            s['history'].append(dict(action='park', request=copy.deepcopy(request)))
+            s['extension_request'] = request
             s['parked'] = True
-            if s['extension_request'] is None:
-                s['extension_request'] = dict(to='Serge', reason=reason, next_action=next_action, at=self.clock(), allowance_unchanged=True)
             return copy.deepcopy(s['extension_request'])
 
     def charge_http(self, owner, generation):
@@ -611,12 +1015,15 @@ class Store:
                 s = self.read()
                 require(s['owner'] == owner and s['generation'] == generation, 'STALE_OWNER')
                 pending = [e for e in s['expectations'].values() if e['status'] != 'completed']
-                if not pending or s['hold'] or s['revoked'] or s['parked']:
+                if s['mode'] == 'github' and (github_module().worker_permission_stops(s) or github_module().worker_result_pending(s)):
+                    return self.evaluate()
+                if s['hold'] or s['revoked'] or s['parked']:
                     return self.evaluate()
                 if s.get('collection_failures', 0) >= s['limits']['bookkeeping_attempts']:
                     return self.evaluate()
-                deadline = min(e['deadline'] for e in pending)
-                if self.clock() >= deadline or self.external_spent(s) >= s['limits']['external_seconds']:
+                # No outstanding requests still needs one fresh, bounded reconciliation.
+                deadline = min(e['deadline'] for e in pending) if pending else self.clock()+30
+                if pending and (self.clock() >= deadline or self.external_spent(s) >= s['limits']['external_seconds']):
                     return self.evaluate()
                 try:
                     snap = fetch(lambda: self.charge_http(owner, generation))
@@ -630,14 +1037,18 @@ class Store:
                     if self.read()['collection_failures'] >= s['limits']['bookkeeping_attempts']:
                         return dict(self.evaluate(), collection_error=str(exc))
                 now = self.clock()
-                if all(e['status'] == 'completed' for e in self.read()['expectations'].values()):
+                if not self.read().get('collection_error') and all(e['status'] == 'completed' for e in self.read()['expectations'].values()):
                     return self.evaluate()
-                cadence = 30 if now-min(e['triggered_at'] for e in pending) < 120 else 60
+                cadence = (30 if now-min(e['triggered_at'] for e in pending) < 120 else 60) if pending else 0
                 sleep(max(0, min(cadence, deadline-now, s['limits']['external_seconds']-self.external_spent(self.read()))))
 
     def close_thread(self, owner, generation, ident, tid, forge):
-        require(isinstance(forge, FixtureForge), 'LIVE_FORGE_MUTATIONS_DISABLED')
-        require(self.read()['mode'] == 'fixture', 'SHADOW_CANNOT_RESOLVE')
+        if self.read()['mode'] == 'github':
+            require(isinstance(forge, github_module().GitHubForge) and forge.binding.store.root == self.root, 'BOUND_FORGE_REQUIRED')
+            forge.binding.authority('close-thread', driver=True)
+        else:
+            require(isinstance(forge, FixtureForge), 'LIVE_FORGE_MUTATIONS_DISABLED')
+            require(self.read()['mode'] == 'fixture', 'SHADOW_CANNOT_RESOLVE')
         with (self.root/'closure.lock').open('a') as lock:
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -645,6 +1056,8 @@ class Store:
                 raise PilotError('CLOSURE_ALREADY_OWNED') from exc
             prior = self.read()['closures'].get(ident)
             require(not prior or prior['thread'] == tid, 'CLOSURE_ID_CONFLICT')
+            require(not any(c['thread'] == tid and key != ident for key, c in self.read()['closures'].items()),
+                    'EXISTING_CLOSURE_OPERATION_MUST_RESUME')
             if prior and prior['phase'] == 'confirmed':
                 snap = forge.fetch()
                 self.observe(owner, generation, snap)
@@ -659,12 +1072,17 @@ class Store:
             operation = ident+'-attempt-'+str((prior or {}).get('attempts', 0)+1)
             self.reserve(owner, generation, operation, 'closure', 60)
             try:
+                with self.change(owner, generation) as state:
+                    c = state['closures'].setdefault(ident, dict(thread=tid, phase='preflight', attempts=0,
+                                                               content=None, reply_id=None, history=[]))
+                    c['attempts'] += 1
                 snap = forge.fetch()
                 self.observe(owner, generation, snap)
                 s = self.read()
                 require(snap.get('complete') is True, 'INCOMPLETE_DISCUSSION')
                 require(snap.get('merge_exposure') == 'safe', 'MERGE_EXPOSURE_ARMED_OR_UNKNOWN')
-                thread = next(t for t in snap['threads'] if t['id'] == tid)
+                thread = next((t for t in snap['threads'] if t['id'] == tid), None)
+                require(thread is not None, 'THREAD_NOT_IN_CURRENT_INVENTORY')
                 require(thread.get('resolvable') is True, 'NATIVE_RESOLUTION_NOT_APPLICABLE')
                 # Already-resolved threads can report viewerCanResolve=false.
                 # Receipt recovery only confirms observed state; it does not mutate again.
@@ -691,21 +1109,32 @@ class Store:
                 signature = self.thread_signature(snap, tid, reply_id)
                 require(not any(c['thread'] == tid and key != ident and c.get('content') == signature
                                 for key, c in s['closures'].items()), 'EXISTING_CLOSURE_OPERATION_MUST_RESUME')
-                if prior:
+                if prior and prior.get('content') is not None:
                     require(signature == prior['content'], 'THREAD_CHANGED_REQUIRES_REASSESSMENT')
                 with self.change(owner, generation) as state:
-                    c = state['closures'].setdefault(ident, dict(thread=tid, phase='prepared', attempts=0, content=signature, reply_id=None,
-                        rationale='Findings adjudicated; accepted fixes verified on '+s['candidate']['head']+' [operation '+ident+']'))
-                    c['attempts'] += 1
+                    c = state['closures'][ident]
+                    if c.get('content') is None:
+                        c.update(phase='prepared', content=signature,
+                            rationale='Findings adjudicated; accepted fixes verified on '+s['candidate']['head']+' [operation '+ident+']')
                 if not thread['resolved']:
                     if not reply_id:
                         reply_id = forge.find_reply(ident)
                         if reply_id is None:
                             reply_id = forge.reply(tid, ident, self.read()['closures'][ident]['rationale'])
-                        with self.change(owner, generation) as state:
-                            own = next(x for x in forge.fetch()['objects'] if x['id'] == reply_id)
-                            state['closures'][ident].update(reply_id=reply_id, reply_version=digest(own), phase='rationale-recorded')
                     fresh = forge.fetch()
+                    # One complete fresh read both verifies our reply and assesses
+                    # the conversation immediately before native resolution.
+                    own = next((x for x in fresh['objects'] if x['id'] == reply_id), None)
+                    require(own and own['body'] == self.read()['closures'][ident]['rationale'],
+                            'OWN_REPLY_RECEIPT_UNKNOWN_OR_EDITED')
+                    if self.read()['closures'][ident].get('reply_version'):
+                        require(digest(own) == self.read()['closures'][ident]['reply_version'],
+                                'OWN_REPLY_RECEIPT_UNKNOWN_OR_EDITED')
+                    with self.change(owner, generation) as state:
+                        state['closures'][ident].update(reply_id=reply_id, reply_version=digest(own), phase='rationale-recorded')
+                    current_thread = next(t for t in fresh['threads'] if t['id'] == tid)
+                    require(fresh.get('complete') is True and current_thread.get('can_resolve') is True,
+                            'PERMISSION_OR_COMPLETE_DISCUSSION_REQUIRED')
                     require(self.thread_signature(fresh, tid, reply_id) == signature and fresh['candidate'] == s['candidate'] and
                             fresh.get('merge_exposure') == 'safe', 'CLOSURE_PRECONDITION_CHANGED')
                     with self.change(owner, generation) as state:
@@ -721,7 +1150,9 @@ class Store:
             except (PilotError, OSError) as exc:
                 with self.change(owner, generation, allow_hold=True) as state:
                     c = state['closures'].setdefault(ident, dict(thread=tid, attempts=1, content=None, reply_id=None))
-                    c.update(phase='failed-or-unknown', error=str(exc), permission_failed='PERMISSION' in str(exc))
+                    c.setdefault('history', []).append(dict(operation=operation, phase=c.get('phase'), error=str(exc), at=self.clock()))
+                    c.update(phase='preflight-rejected' if c.get('content') is None else 'failed-or-unknown',
+                             error=str(exc), permission_failed='PERMISSION' in str(exc))
                 raise
             finally:
                 self.finish(owner, generation, operation, 0 if self.read()['closures'].get(ident, {}).get('phase') == 'confirmed' else 1)
@@ -818,10 +1249,17 @@ def api_proxy(store, owner, generation, command):
         if pending:
             seconds = min(seconds, min(pending)-store.clock(), s['limits']['external_seconds']-store.external_spent(s))
         require(seconds > 0, 'COLLECTION_ALLOWANCE_EXHAUSTED')
+    require(not any(o['status']=='unknown' for o in store.read()['operations'].values()),
+            'ACCOUNTING_UNKNOWN: recover operation')
+    executable_preflight([command[0], 'api', *args])
     store.charge_http(owner, generation)
+    running = [o for o in store.read()['operations'].values() if o['status'] == 'running']
     result = store.run_child(owner, generation, 'http-'+str(store.read()['http_spent']),
-                             'reconcile', seconds, [command[0], 'api', *args])
-    require(result['rc'] == 0, 'FORGE_API_FAILED:'+str(result['rc']))
+                             'reconcile', seconds, [command[0], 'api', *args],
+                             parent=running[0]['id'] if running else None)
+    require(result['rc'] == 0 and result['outcome'] == 'normal',
+            'PERMISSION_DENIED' if result.get('launch_errno') in {errno.EACCES,errno.EPERM}
+            else 'FORGE_API_FAILED:'+str(result['rc']))
     value = json.loads(result['stdout'])
     if isinstance(value, list):
         require(command[0] == 'glab', 'MALFORMED_RESPONSE')
@@ -838,6 +1276,22 @@ def entrypoint(name, cwd=None, run=None):
     if context['mode'] == 'legacy':
         return context
     store = Store(context['run'])
+    if context['mode'] == 'github' and name in {'gmr', 'codex-run'} and not os.environ.get('AGENT_REVIEW_OPERATION'):
+        state = store.read()
+        status = store.evaluate()
+        unsettled = [k for k,o in state['operations'].items() if o['status'] in {'running','unknown'}]
+        transactions = [k for k,t in state['binding'].get('transactions',{}).items() if t.get('phase') != 'confirmed']
+        stopped = state['parked'] or state['hold'] or state['revoked'] or state['admission_disabled']
+        expired = 'EXECUTION_GRANT_EXPIRED' in status['blockers']
+        worker_stops = github_module().worker_permission_stops(state)
+        pending_results = github_module().worker_result_pending(state)
+        if stopped or expired or unsettled or transactions or worker_stops or pending_results:
+            return dict(context, driver=False, status=status, outstanding_operations=unsettled,
+                        outstanding_transactions=transactions, worker_permission_stops=worker_stops,
+                        outstanding_worker_results=pending_results,
+                        next_action='Read current stop/receipts; do not dispatch or replay an old resume')
+        github_module().Binding(this_module(), store).authority('review' if name == 'codex-run' else 'implement', driver=True)
+        return dict(context, driver=True, status=status, recipe='github refresh/review/verify/push/draft/close/handoff')
     if name in {'status', 'pr-ready', 'triage'}:
         return store.evaluate()
     require(name != 'undraft', 'LIVE_UNDRAFT_DISABLED: draft review activation and human handoff are separate')
@@ -849,7 +1303,12 @@ def entrypoint(name, cwd=None, run=None):
     require(op['owner'] == s['owner'] and op['generation'] == s['generation'], 'STALE_OWNER')
     if name == 'codex-run':
         require(op['kind'].startswith('review-'), 'REVIEW_RESERVATION_REQUIRED')
-    require(not s['hold'] and not s['revoked'], 'AUTHORITY_HOLD')
+    if name == 'gmr-round-worker':
+        require(op['kind'] in {'implement','repair'}, 'WORKER_RESERVATION_REQUIRED')
+    if context['mode'] == 'github':
+        github_module().validate_account(this_module(), s, cwd)
+    require(not s['parked'], 'PARKED_EXECUTION')
+    require(not s['hold'] and not s['revoked'] and not s['admission_disabled'], 'AUTHORITY_HOLD')
     return dict(context, operation=ident, seconds_remaining=op['deadline']-store.clock())
 
 
@@ -927,13 +1386,17 @@ def inventory_fetch(store, owner, generation, forge, target, context_path):
                             capture_output=True, text=True, timeout=remaining, env=env)
     require(result.returncode == 0, 'INVENTORY_FETCH_FAILED: '+result.stderr[-500:])
     context = read_json(context_path)
+    # Fetching discussions cannot renew checks, candidate or policy evidence.
+    context['context_observed_at'] = context.get('context_observed_at', context.get('observed_at'))
     context['observed_at'] = store.clock()
     return normalize_inventory(json.loads(result.stdout), context)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['profile', 'route', 'init', 'status', 'bind', 'reserve', 'finish', 'run', 'entrypoint', 'expect', 'observe', 'adjudicate', 'handoff', 'park', 'api', 'http', 'validate-response', 'control', 'recover', 'transfer', 'normalize', 'collect', 'carry'])
+    parser.add_argument('action', choices=['github', 'profile', 'route', 'init', 'status', 'bind', 'reserve', 'finish', 'run', 'entrypoint', 'expect', 'observe', 'adjudicate', 'handoff', 'park', 'api', 'http', 'validate-response', 'control', 'recover', 'transfer', 'normalize', 'collect', 'carry'])
+    parser.add_argument('--grant')
+    parser.add_argument('--tool-dir', help='Verification-only run/tools prefix; preserve inherited PATH')
     parser.add_argument('--context')
     parser.add_argument('--forge', choices=['github', 'gitlab'])
     parser.add_argument('--target', nargs='+')
@@ -950,6 +1413,9 @@ def main():
     parser.add_argument('--kind', default='verify')
     parser.add_argument('--seconds', type=float, default=60)
     parser.add_argument('--rc', type=int)
+    parser.add_argument('--outcome', choices=['normal', 'timeout', 'cancelled', 'launch-failed', 'unknown'])
+    parser.add_argument('--review', help='JSON dispatch binding: request, source, actor, input path/hash')
+    parser.add_argument('--result', help='JSON completed local review artifact (fixture finish only)')
     parser.add_argument('--changeset')
     parser.add_argument('--mandate')
     parser.add_argument('--mode', default='fixture')
@@ -958,7 +1424,9 @@ def main():
     split = argv.index('--') if '--' in argv else len(argv)
     command = argv[split+1:]
     args = parser.parse_args(argv[:split])
-    if args.action == 'profile':
+    if args.action == 'github':
+        result = github_module().cli(this_module(), args, command)
+    elif args.action == 'profile':
         result = {'live_enabled': LIVE_ENABLED, 'limits': PROFILE, 'finalization_operations': sorted(FINAL)}
     elif args.action == 'route':
         result = route(args.cwd, args.run)
@@ -971,6 +1439,10 @@ def main():
     else:
         require(args.run, '--run is required')
         store = Store(args.run)
+        if args.action != 'init' and store.read()['mode'] == 'github':
+            require(args.action not in {'observe', 'expect', 'reserve', 'finish', 'run', 'normalize', 'bind', 'recover', 'transfer'} or
+                    (args.action == 'recover' and args.kind == 'launch' and not args.input),
+                    'GITHUB_BINDING_REQUIRED: use accounted github command')
         if args.action == 'init':
             result = store.create(args.changeset, args.owner, args.mandate, args.mode, review_mode=args.review_mode)
         elif args.action == 'bind':
@@ -986,22 +1458,26 @@ def main():
             result = store.carry(args.owner, args.generation, **read_json(args.input))
         elif args.action == 'adjudicate':
             result = store.adjudicate(args.owner, args.generation, read_json(args.input))
-        elif args.action == 'collect':
-            if args.forge:
+        elif args.action in {'collect', 'handoff'}:
+            collect = store.handoff if args.action == 'handoff' else store.collect
+            if store.read()['mode'] == 'github':
+                binding = github_module().Binding(this_module(), store)
+                result = binding.publish() if args.action == 'handoff' else store.collect(args.owner,args.generation,lambda charge:binding.refresh())
+            elif args.forge:
                 require(args.context and args.target, '--context and --target required')
-                result = store.collect(args.owner, args.generation, lambda charge:
+                result = collect(args.owner, args.generation, lambda charge:
                     inventory_fetch(store, args.owner, args.generation, args.forge, args.target, args.context))
             else:
+                require(args.input, 'FINAL_FETCH_REQUIRED: --input or --forge context')
                 fixture_path(args.input)
-                result = store.collect(args.owner, args.generation, lambda charge: read_json(args.input))
-        elif args.action == 'handoff':
-            result = store.handoff(args.owner, args.generation)
+                result = collect(args.owner, args.generation, lambda charge: read_json(args.input))
         elif args.action == 'park':
             result = store.park(args.owner, args.generation, args.reason, args.next_action)
         elif args.action == 'control':
-            result = store.control(args.owner, args.generation, args.kind, args.reason)
+            result = store.control(args.owner, args.generation, args.kind, args.reason, args.next_action)
         elif args.action == 'recover':
-            result = store.recover(args.owner, args.generation, args.operation, read_json(args.input))
+            result = (store.settle_launch(args.owner, args.generation, args.operation) if args.kind == 'launch' and not args.input
+                      else store.recover(args.owner, args.generation, args.operation, read_json(args.input)))
         elif args.action == 'transfer':
             result = store.transfer(args.owner, args.generation, args.next_action, args.reason)
         elif args.action == 'api':
@@ -1009,14 +1485,25 @@ def main():
         elif args.action == 'http':
             result = store.charge_http(args.owner, args.generation)
         elif args.action == 'reserve':
-            result = store.reserve(args.owner, args.generation, args.operation, args.kind, args.seconds, args.parent)
+            result = store.reserve(args.owner, args.generation, args.operation, args.kind, args.seconds, args.parent,
+                                   read_json(args.review) if args.review else None)
         elif args.action == 'finish':
-            result = store.finish(args.owner, args.generation, args.operation, args.rc)
+            result = store.finish(args.owner, args.generation, args.operation, args.rc, args.outcome, args.result)
         else:
             require(command, 'command required after --')
             fixture_path(command[0])
-            result = store.run_child(args.owner, args.generation, args.operation, args.kind, args.seconds, command, args.parent)
+            result = store.run_child(args.owner, args.generation, args.operation, args.kind, args.seconds, command, args.parent,
+                                     read_json(args.review) if args.review else None)
     print(json.dumps(result, indent=2, sort_keys=True))
+    if args.action == 'github' and isinstance(result, dict) and 'outcome' in result:
+        if result['outcome'] != 'normal':
+            sys.exit(124 if result['outcome'] == 'timeout' else 125)
+        if result.get('rc'):
+            sys.exit(result['rc'] if result['rc'] > 0 else 128-result['rc'])
+        if result.get('task_status') and result['task_status'] != 'adjudication-required':
+            sys.exit(3)  # Preserve native rc/outcome above; the task did not complete.
+    if args.action == 'run' and result['outcome'] != 'normal':
+        sys.exit(124 if result['outcome'] == 'timeout' else 125)
     if args.action == 'run' and result['rc']:
         sys.exit(result['rc'] if result['rc'] > 0 else 128-result['rc'])
 

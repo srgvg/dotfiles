@@ -15,6 +15,7 @@ source "$HOME/bin/common.bash"
 SETBG_DEFAULT_BACKGROUND="${SETBG_DEFAULT_BACKGROUND:-$BACKGROUND_PICTURES/default}" # no trailing slash!
 SETBG_LOOP_DELAY="${SETBG_LOOP_DELAY:-900}"
 LOCK_SCREEN_IMAGE="${LOCK_SCREEN_IMAGE:-$HOME/.lockscreen.png}"
+SETBG_NOTIFY_EXPIRE_MS="${SETBG_NOTIFY_EXPIRE_MS:-15000}"
 p1="${1:-}"
 p2="${2:-}"
 
@@ -120,10 +121,21 @@ showpath() {
 }
 
 notifypath() {
-    local _path
+    local _path action
     _path="$(showpath)"
-    # show and notify which picture is used
-    notify_desktop low "${BASH_SOURCE[1]}" "${_path}" video-display setbg
+    if ifinteractive; then
+        # show and notify which picture is used
+        notify_desktop low "${BASH_SOURCE[1]}" "${_path}" video-display setbg
+        return
+    fi
+    action="$(notify_desktop_actions low "${BASH_SOURCE[1]}" "${_path}" video-display setbg \
+        "${SETBG_NOTIFY_EXPIRE_MS}" "copy=Copy path" || true)"
+    case "${action}" in
+        copy)
+            printf '%s' "${_path}" | wl-copy
+            ;;
+        *) : ;;
+    esac
 }
 
 showbg() {

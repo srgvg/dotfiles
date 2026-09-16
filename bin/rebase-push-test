@@ -417,7 +417,115 @@ c8() {
 	ok "8 --dry-run proves without pushing"
 }
 
-for c in c1 c2 c3 c4 c5a c5b c5c c6 c6b c7a c7b c8 c9 c9b; do "$c"; done
+# --- scoped maintenance guards; authority remains with the calling driver ---
+c10() {
+ local r before want
+ r=$(new_repo expected)
+ before=$(remote_oid "$r")
+ git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+ want=$(git -C "$r" rev-parse HEAD)
+ run_tool "$r" --expect-remote "$before" --no-note
+ [ "$RC" -eq 0 ] && [ "$(remote_oid "$r")" = "$want" ] || {
+  no "10 approved expected-tip rewrite" "$OUT"; return; }
+ run_tool "$r" --expect-remote "$want" --no-note
+ [ "$RC" -eq 0 ] && [ "$(remote_oid "$r")" = "$want" ] || {
+  no "10 repeated entry" "$OUT"; return; }
+ ok "10 expected-tip rewrite and reconciled repeated entry"
+}
+c11() {
+ local r expected actual
+ r=$(new_repo movement)
+ expected=$(remote_oid "$r")
+ printf 'other writer\n' >>"$r/feature.txt"
+ git -C "$r" add feature.txt && git -C "$r" commit --quiet -m 'feat: another writer'
+ git -C "$r" push --quiet origin feat/x
+ actual=$(remote_oid "$r")
+ git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+ run_tool "$r" --expect-remote "$expected"
+ if [ "$RC" -eq 0 ] || ! printf '%s' "$OUT" | grep -q 'REMOTE_CHANGED'; then
+  no "11 unexpected remote" "$OUT"; return; fi
+ [ "$(remote_oid "$r")" = "$actual" ] || { no "11 unexpected remote" "remote changed"; return; }
+ git -C "$r" show-ref | grep -q refs/rescue && { no "11 unexpected remote" "rescue written before refusal"; return; }
+ ok "11 unexpected remote work refused even when preserved in local history"
+}
+c12() {
+ local r minimal before t
+ r=$(new_repo prerequisite)
+ before=$(remote_oid "$r")
+ git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+ minimal="$WORK/minimal";mkdir "$minimal"
+ # Real shell/git/text tools, deliberately no forge executable. No network.
+ for t in bash git jq sed grep cut cat sort awk tr wc date python3; do
+  ln -s "$(command -v "$t")" "$minimal/$t"
+ done
+ OUT=$(cd "$r" && PATH="$minimal" "$TOOL" --expect-remote "$before" 2>&1);RC=$?
+ if [ "$RC" -eq 0 ] || ! printf '%s' "$OUT" | grep -q 'PREREQUISITE_MISSING: glab'; then
+  no "12 missing executable is not permission" "$OUT"; return; fi
+ [ "$(remote_oid "$r")" = "$before" ] || { no "12 prerequisite" "remote changed"; return; }
+ # Repair process-local PATH under the same authority and expected remote.
+ run_tool "$r" --expect-remote "$before" --no-note
+ [ "$RC" -eq 0 ] || { no "12 corrected executable" "$OUT"; return; }
+ ok "12 corrected executable resumes same allowed operation; no new authority"
+}
+c13() {
+ local r before
+ r=$(new_repo dirty)
+ before=$(remote_oid "$r")
+ printf 'unrelated\n' >>"$r/feature.txt"
+ run_tool "$r" --expect-remote "$before"
+ if [ "$RC" -eq 0 ] || ! printf '%s' "$OUT" | grep -q 'WORKTREE_NOT_CLEAN'; then
+  no "13 dirty bytes" "$OUT"; return; fi
+ [ "$(remote_oid "$r")" = "$before" ] || { no "13 dirty bytes" "remote changed"; return; }
+ ok "13 dirty checkout refused before evidence or mutation"
+}
+c14() {
+ local r before
+ r=$(new_repo interrupted)
+ before=$(remote_oid "$r")
+ printf 'feature conflicts\n' >>"$r/base.txt"
+ git -C "$r" add base.txt && git -C "$r" commit --quiet -m 'fix: overlapping scope'
+ git -C "$r" rebase origin/main >/dev/null 2>&1
+ run_tool "$r" --expect-remote "$before"
+ if [ "$RC" -eq 0 ] || ! printf '%s' "$OUT" | grep -Eq 'WORKTREE_NOT_CLEAN|GIT_OPERATION_PENDING'; then
+  no "14 interrupted conflict" "$OUT"; return; fi
+ [ "$(remote_oid "$r")" = "$before" ] || { no "14 interrupted conflict" "remote changed"; return; }
+ [ -d "$r/.git/rebase-merge" ] || { no "14 interrupted conflict" "conflict state erased"; return; }
+ # Synthetic task refuses material resolution; explicit local abort restores prior work.
+ git -C "$r" rebase --abort
+ [ "$(remote_oid "$r")" = "$before" ] || { no "14 abort" "remote changed"; return; }
+ ok "14 interrupted/material conflict stays local; no automatic publication"
+}
+c15() {
+ local r before other proxy realgit
+ r=$(new_repo justbefore)
+ before=$(remote_oid "$r")
+ git -C "$r" rebase --quiet origin/main >/dev/null 2>&1
+ other=$(printf 'another writer\n' | git -C "$r" commit-tree "${before}^{tree}" -p "$before")
+ git -C "$r" push --quiet origin "$other:refs/heads/race-object"
+ proxy="$WORK/racebin";mkdir "$proxy"
+ realgit=$(command -v git)
+ cat >"$proxy/git" <<'RACE'
+#!/usr/bin/env bash
+case " $* " in
+ *' ls-remote '*)
+  count=$(cat "$RACE_COUNTER" 2>/dev/null || echo 0)
+  count=$((count+1));echo "$count" >"$RACE_COUNTER"
+  if [ "$count" -eq 2 ]; then
+   "$RACE_GIT" --git-dir="$RACE_BARE" update-ref refs/heads/feat/x "$RACE_NEXT"
+  fi
+ ;;
+esac
+exec "$RACE_GIT" "$@"
+RACE
+ chmod +x "$proxy/git"
+ OUT=$(cd "$r" && PATH="$proxy:$PATH" RACE_COUNTER="$WORK/race-count" RACE_GIT="$realgit" RACE_BARE="$WORK/justbefore.git" RACE_NEXT="$other" STUB_PROTECTED="$DEFAULT_PROTECTED" "$TOOL" --expect-remote "$before" --no-note 2>&1);RC=$?
+ if [ "$RC" -eq 0 ] || ! printf '%s' "$OUT" | grep -q 'REMOTE_CHANGED before push'; then
+  no "15 pre-write remote race" "$OUT"; return; fi
+ [ "$(remote_oid "$r")" = "$other" ] || { no "15 pre-write remote race" "other work overwritten"; return; }
+ git -C "$r" show-ref --verify --quiet refs/rescue/feat/x/1 || { no "15 pre-write remote race" "rescue lost"; return; }
+ ok "15 movement at final remote read stops; other work and rescue retained"
+}
+for c in c1 c2 c3 c4 c5a c5b c5c c6 c6b c7a c7b c8 c9 c9b c10 c11 c12 c13 c14 c15; do "$c"; done
 
 printf '\n%s passed, %s failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

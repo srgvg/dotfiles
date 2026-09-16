@@ -749,11 +749,11 @@ init() {
 
 post() {
 
-    title "add dotfiles"
-    if ! $HOME/bins/dotfiles add; then
-        FAILED_COMPONENTS+=("dotfiles")
-        err "dotfiles add failed"
-    fi
+    #title "add dotfiles"
+    #if ! $HOME/bins/dotfiles add; then
+    #    FAILED_COMPONENTS+=("dotfiles")
+    #    err "dotfiles add failed"
+    #fi
 
 }
 
@@ -778,7 +778,7 @@ for command in ${commands}; do
         all)
             init
             update_all
-            post
+            #post
             ;;
         quick)
             init
@@ -791,7 +791,7 @@ for command in ${commands}; do
             get_uv_tools &
             get_bash_completions &
             wait
-            post
+            #post
             ;;
         mise)
             init

@@ -13,9 +13,12 @@
 # refuses if any of them fails; nah classifies the tool, not raw `git push
 # --force`, so the constraint IS the script.
 #
-#   rebase-push [--remote <name>] [--dry-run] [--no-note]
+#   rebase-push [--remote <name>] [--expect-remote <oid>] [--dry-run] [--no-note]
 #
-# It does NOT rebase. Rebase first (that no longer prompts), then run this.
+# It does NOT authorize or perform a rebase. The driver must establish scope,
+# ownership and applicable permission before maintenance. --expect-remote pins
+# the previously observed remote tip; it is not an approval or a bypass.
+# --dry-run may fetch and create a local rescue ref; it only avoids the push/note.
 #
 # There is deliberately no --allow-drop. nah matches by command PREFIX, so once
 # `rebase-push` is allowed, every invocation of it is — a flag waiving the
@@ -27,7 +30,30 @@
 # branch absent from the remote, a rewrite that drops a commit, and any state
 # where the forge cannot be asked whether the branch is protected.
 
+# Do not let inherited shell tracing expose captured transport diagnostics.
+set +xv
 set -uo pipefail
+# Child stderr can contain URLs, config values and trace headers. Only this
+# script's explicit diagnostics are model-visible; Git stdout stays internal
+# except scoped repository evidence (range-diff/subjects/file names).
+git() { command git "$@" 2>/dev/null; }
+jq() { command jq "$@" 2>/dev/null; }
+for prerequisite in git jq sed grep cut cat sort awk tr wc python3; do
+ type -P "$prerequisite" >/dev/null 2>&1 || { printf '%s\n' "PREREQUISITE_MISSING: $prerequisite" >&2; exit 1; }
+done
+SAFE_PREFLIGHT="${BASH_SOURCE[0]%/*}/git-preflight"
+# The shared helper validates context/diagnostic environment before any Git call.
+if [ "$#" -eq 1 ] && { [ "$1" = --help ] || [ "$1" = -h ]; }; then
+ sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0
+fi
+PREFLIGHT_ARGS=(--repo "$PWD")
+for ((i=1; i<=$#; i++)); do
+ if [ "${!i}" = --remote ]; then
+  j=$((i+1)); [ "$j" -le "$#" ] && PREFLIGHT_ARGS+=(--remote "${!j}")
+ fi
+done
+PREFLIGHT=$("$SAFE_PREFLIGHT" "${PREFLIGHT_ARGS[@]}") || exit 1
+
 
 PROG=${0##*/}
 
@@ -38,59 +64,47 @@ hdr() { printf '%s\n' "$*"; }
 REMOTE_EXPLICIT=""
 DRY_RUN=0
 WANT_NOTE=1
+EXPECTED_REMOTE=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--remote) shift; [ $# -gt 0 ] || die "--remote needs a value"; REMOTE_EXPLICIT="$1" ;;
+	--expect-remote) shift; [ $# -gt 0 ] && [ -n "$1" ] || die "--expect-remote needs a full OID"; EXPECTED_REMOTE="$1" ;;
 	--dry-run) DRY_RUN=1 ;;
 	--no-note) WANT_NOTE=0 ;;
 	-h | --help)
-		sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'
+		sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
 		exit 0
 		;;
-	*) die "unknown argument: $1 (try --help)" ;;
+	*) die "unknown argument (try --help)" ;;
 	esac
 	shift
 done
+
+# Fail before any mutation; correcting PATH is not a new authorization.
+require_cmd() { command -v "$1" >/dev/null 2>&1 || die "PREREQUISITE_MISSING: $1 — correct the executable environment, then recheck existing authority"; }
+if [ -n "$EXPECTED_REMOTE" ] && ! [[ "$EXPECTED_REMOTE" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then
+ die "--expect-remote needs a full lowercase commit OID"
+fi
 
 # --- 1. context ------------------------------------------------------------
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) ||
 	die "not inside a git worktree"
 
+CLEAN=$(git -C "$ROOT" status --porcelain --untracked-files=normal) || die "cannot inspect checkout"
+[ -z "$CLEAN" ] || die "WORKTREE_NOT_CLEAN — preserve and reconcile changes before pushing an identified candidate"
+for state in rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD; do
+ STATE_PATH=$(git -C "$ROOT" rev-parse --git-path "$state") || die "cannot inspect operation state"
+ [ ! -e "$STATE_PATH" ] || die "GIT_OPERATION_PENDING: $state"
+done
+
 BRANCH=$(git -C "$ROOT" symbolic-ref --quiet --short HEAD) ||
 	die "HEAD is detached — check out the branch you mean to push"
 
-# Remote resolution mirrors wt_resolve_remote (~/bin/wt:297-319) deliberately:
-# explicit flag, then the branch's configured remote, then its upstream, then a
-# sole remote. Never a hardcoded "origin" — several repos here have none.
-resolve_remote() {
-	local r up count
-	if [ -n "$REMOTE_EXPLICIT" ]; then printf '%s' "$REMOTE_EXPLICIT"; return 0; fi
-	r=$(git -C "$ROOT" config "branch.$BRANCH.remote" 2>/dev/null)
-	if [ -n "$r" ]; then printf '%s' "$r"; return 0; fi
-	up=$(git -C "$ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
-	if [ -n "$up" ]; then printf '%s' "${up%%/*}"; return 0; fi
-	count=$(git -C "$ROOT" remote | grep -c .)
-	if [ "$count" = "1" ]; then git -C "$ROOT" remote; return 0; fi
-	return 1
-}
-
-REMOTE=$(resolve_remote) || {
-	printf '%s: cannot choose a remote for %s. Remotes found:\n' "$PROG" "$ROOT" >&2
-	git -C "$ROOT" remote | sed 's/^/  /' >&2
-	printf 'Pass --remote <name>.\n' >&2
-	exit 1
-}
-
-# `git config --get`, NOT `git remote get-url`: get-url applies url.*.insteadOf
-# rewriting, so a mirror or transport rewrite would hide the real forge behind a
-# local path and the protection check would have nothing to ask.
-REMOTE_URL=$(git -C "$ROOT" config --get "remote.$REMOTE.url" 2>/dev/null)
-[ -n "$REMOTE_URL" ] ||
-	REMOTE_URL=$(git -C "$ROOT" remote get-url "$REMOTE" 2>/dev/null)
-[ -n "$REMOTE_URL" ] || die "remote '$REMOTE' has no URL"
-
+# Selection and configured/effective URL comparison happen inside the shared
+# output boundary. Raw URLs never enter shell variables or forge error messages.
+REMOTE=$(printf '%s' "$PREFLIGHT" | jq -r '.remote.name') || die "invalid preflight"
 # Everything below addresses refs/heads/$BRANCH on the remote -- the LOCAL name.
 # If this branch tracks a remote branch under a DIFFERENT name, that is a trap
 # with two bad outcomes and no good one: refs/heads/$BRANCH either does not exist
@@ -106,7 +120,7 @@ fi
 hdr "rebase-push — proving a history rewrite before it happens"
 say repo "$ROOT"
 say branch "$BRANCH"
-say remote "$REMOTE ($REMOTE_URL)"
+say remote "$REMOTE (configured/effective identity checked; credentials omitted)"
 
 # --- 2. refuse unsafe targets ----------------------------------------------
 
@@ -131,52 +145,77 @@ main | master | trunk | develop)
 	;;
 esac
 
-# forge_slug -> "host<TAB>owner/repo", parsed from the remote URL.
-forge_slug() {
-	local u="$1" host path
-	case "$u" in
-	*://*)
-		host=${u#*://}
-		host=${host#*@}
-		path=${host#*/}
-		host=${host%%/*}
-		;;
-	*:*)
-		host=${u%%:*}
-		host=${host#*@}
-		path=${u#*:}
-		;;
-	*) return 1 ;;
-	esac
-	path=${path%.git}
-	path=${path%/}
-	[ -n "$host" ] && [ -n "$path" ] || return 1
-	printf '%s\t%s' "$host" "$path"
-}
-
-SLUG=$(forge_slug "$REMOTE_URL") ||
-	die "cannot parse a forge host/path out of: $REMOTE_URL"
-FORGE_HOST=${SLUG%%	*}
-FORGE_PATH=${SLUG#*	}
+# A different effective network destination cannot borrow the configured
+# forge's protection verdict. Local mirror fixtures retain their explicit
+# configured-forge association; preflight reports the separate transport.
+printf '%s' "$PREFLIGHT" | jq -e '
+ .remote.exact_fetch_push_equal and
+ (.remote.configured_fetch == .remote.configured_push) and
+ (.remote.configured_fetch.kind == "network") and
+ ((.remote.effective_fetch.kind == "local") or
+  ((.remote.effective_fetch.host == .remote.configured_fetch.host) and
+   (.remote.effective_fetch.project == .remote.configured_fetch.project) and
+   (.remote.effective_fetch.port == .remote.configured_fetch.port)))
+' >/dev/null || die "REMOTE_DESTINATION_MISMATCH_OR_UNSUPPORTED"
+FORGE_HOST=$(printf '%s' "$PREFLIGHT" | jq -r '.remote.configured_fetch.host')
+FORGE_PATH=$(printf '%s' "$PREFLIGHT" | jq -r '.remote.configured_fetch.project')
 
 # urlencode the project path for GitLab's :id parameter.
 urlenc() { printf '%s' "$1" | sed 's|/|%2F|g'; }
 
+# One remote-ref boundary for initial observation, forge reconciliation and
+# final pre-push recheck. Binary capture preserves malformed/NUL/extra records
+# that shell substitution or cut could otherwise erase. Only a successful empty
+# response (absence) or one exact requested-ref record can reach the callers.
+read_remote_ref() {
+ python3 - "$ROOT" "$REMOTE" "$BRANCH" <<'PY_REMOTE_REF'
+import re
+import subprocess
+import sys
+
+root, remote, branch = sys.argv[1:]
+ref = 'refs/heads/' + branch
+try:
+    result = subprocess.run(['git', '-C', root, 'ls-remote', remote, ref],
+                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                            timeout=30)
+except (OSError, subprocess.SubprocessError):
+    print('REMOTE_READ_UNAVAILABLE: no successful remote observation', file=sys.stderr)
+    sys.exit(2)
+if result.returncode != 0:
+    print('REMOTE_READ_FAILED: client exit ' + str(result.returncode) +
+          '; no successful remote observation', file=sys.stderr)
+    sys.exit(2)
+if result.stdout == b'':
+    sys.exit(0)  # Successfully observed absence, never failure by silence.
+match = re.fullmatch(rb'([0-9a-f]{40}|[0-9a-f]{64})\t' +
+                     re.escape(ref.encode()) + rb'\n?', result.stdout)
+if match is None or set(match[1]) == {ord('0')}:
+    print('REMOTE_READ_MALFORMED: expected one exact branch/ref record', file=sys.stderr)
+    sys.exit(2)
+print(match[1].decode('ascii'))
+PY_REMOTE_REF
+}
+
 PROTECTED_VERDICT=""
 case "$FORGE_HOST" in
 *gitlab*)
+	require_cmd glab
 	PROT=$(glab api "projects/$(urlenc "$FORGE_PATH")/protected_branches" 2>/dev/null) ||
 		die "refusing: could not ask $FORGE_HOST whether '$BRANCH' is protected"
 	# Names may be globs (release/*), so match as patterns, not literals.
-	while IFS= read -r pat; do
+	printf '%s' "$PROT" | jq -e 'type == "array" and all(.[]; (.name | type) == "string")' >/dev/null || die "PROTECTION_RESPONSE_INVALID"
+ PATTERNS=$(printf '%s' "$PROT" | jq -r '.[].name') || die "PROTECTION_RESPONSE_INVALID"
+ while IFS= read -r pat; do
 		[ -n "$pat" ] || continue
 		# shellcheck disable=SC2254
 		case "$BRANCH" in
-		$pat) PROTECTED_VERDICT="matches protected pattern '$pat'" ;;
+		$pat) PROTECTED_VERDICT="matches a protected pattern" ;;
 		esac
-	done <<<"$(printf '%s' "$PROT" | jq -r '.[].name')"
+	done <<<"$PATTERNS"
 	;;
 *github*)
+	require_cmd gh
 	GH_OUT=$(gh api "repos/$FORGE_PATH/branches/$BRANCH/protection" 2>&1)
 	GH_RC=$?
 	if [ "$GH_RC" -eq 0 ]; then
@@ -191,12 +230,13 @@ case "$FORGE_HOST" in
 		# guessing: genuinely absent is step 3's refusal, worded as such;
 		# present on the remote yet unknown to the API is an inconsistent forge
 		# and still refuses, because protection cannot be established.
-		if [ -z "$(git -C "$ROOT" ls-remote "$REMOTE" "refs/heads/$BRANCH" | cut -f1)" ]; then
+		reconciled=$(read_remote_ref) || exit 1
+		if [ -z "$reconciled" ]; then
 			die "refusing: $BRANCH does not exist on $REMOTE — a first push is already covered by A2, just push it"
 		fi
-		die "refusing: $FORGE_HOST reports no branch '$BRANCH' but $REMOTE has it — protection cannot be established ($GH_OUT)"
+		die "refusing: $FORGE_HOST reports no branch '$BRANCH' but $REMOTE has it — protection cannot be established (forge response withheld)"
 	else
-		die "refusing: could not ask $FORGE_HOST whether '$BRANCH' is protected ($GH_OUT)"
+		die "refusing: could not ask $FORGE_HOST whether '$BRANCH' is protected (forge response withheld)"
 	fi
 	;;
 *)
@@ -209,28 +249,46 @@ say protection "not protected (checked on $FORGE_HOST)"
 
 # --- 3. assert the remote OID ----------------------------------------------
 
-REMOTE_OID=$(git -C "$ROOT" ls-remote "$REMOTE" "refs/heads/$BRANCH" | cut -f1)
+REMOTE_OID=$(read_remote_ref) || exit 1
 [ -n "$REMOTE_OID" ] ||
 	die "refusing: $BRANCH does not exist on $REMOTE — a first push is already covered by A2, just push it"
 
+if [ -n "$EXPECTED_REMOTE" ] && [ "$REMOTE_OID" != "$EXPECTED_REMOTE" ]; then
+ die "REMOTE_CHANGED: expected $EXPECTED_REMOTE, observed $REMOTE_OID — reconcile ownership and existing operation; do not replace the expected OID to retry"
+fi
 LOCAL_OID=$(git -C "$ROOT" rev-parse HEAD)
 say "remote OID" "$REMOTE_OID"
 say "local HEAD" "$LOCAL_OID"
 
 [ "$REMOTE_OID" = "$LOCAL_OID" ] && { hdr "Already up to date — nothing to push."; exit 0; }
 
+# The destination check/lease cannot pin a moving source ref. Both push paths
+# publish LOCAL_OID even if HEAD advances after the last checkout check.
+check_before_push() {
+ local observed current_status
+ current_status=$(git -C "$ROOT" status --porcelain --untracked-files=normal) || die "cannot recheck checkout"
+ [ "$(git -C "$ROOT" rev-parse HEAD)" = "$LOCAL_OID" ] &&
+ [ "$(git -C "$ROOT" symbolic-ref --quiet --short HEAD)" = "$BRANCH" ] &&
+ [ -z "$current_status" ] ||
+  die "CHECKOUT_CHANGED — candidate no longer matches the inspected checkout"
+ observed=$(read_remote_ref) || exit 1
+ [ -n "$observed" ] || die "REMOTE_ABSENT before push — branch disappeared; no push attempted"
+ [ "$observed" = "$REMOTE_OID" ] || die "REMOTE_CHANGED before push — reconcile, do not automatically retry"
+}
+
 # --- 4. skip force when it is not needed -----------------------------------
 
-git -C "$ROOT" fetch --quiet "$REMOTE" "$BRANCH" 2>/dev/null
+git -C "$ROOT" fetch --quiet "$REMOTE" "$BRANCH" >/dev/null 2>&1
 
 if git -C "$ROOT" merge-base --is-ancestor "$REMOTE_OID" "$LOCAL_OID" 2>/dev/null; then
 	hdr ""
 	hdr "Fast-forward: no history is being discarded, so no force is needed."
 	if [ "$DRY_RUN" = 1 ]; then
-		hdr "--dry-run: would run  git push $REMOTE HEAD:refs/heads/$BRANCH"
+		hdr "--dry-run: would run  git push $REMOTE ${LOCAL_OID}:refs/heads/$BRANCH"
 		exit 0
 	fi
-	git -C "$ROOT" push "$REMOTE" "HEAD:refs/heads/$BRANCH" || die "push failed"
+	check_before_push
+	git -C "$ROOT" push "$REMOTE" "${LOCAL_OID}:refs/heads/$BRANCH" >/dev/null || die "push failed"
 	hdr "Pushed $REMOTE_OID -> $LOCAL_OID (fast-forward)."
 	exit 0
 fi
@@ -347,8 +405,8 @@ if [ -n "$UNMATCHED" ]; then
 	printf 'That is work being discarded, not rebased. Nothing was pushed.\n' >&2
 	printf 'The rescue ref is written, so the remote tip is recoverable either way:\n  %s\n' "$RECOVER" >&2
 	printf '\nIf you have decided this is correct, a human runs it directly:\n' >&2
-	printf '  git -C %s push --force-with-lease=refs/heads/%s:%s %s HEAD:refs/heads/%s\n' \
-		"$ROOT" "$BRANCH" "$REMOTE_OID" "$REMOTE" "$BRANCH" >&2
+	printf '  git -C %s push --force-with-lease=refs/heads/%s:%s %s %s:refs/heads/%s\n' \
+		"$ROOT" "$BRANCH" "$REMOTE_OID" "$REMOTE" "$LOCAL_OID" "$BRANCH" >&2
 	exit 1
 fi
 
@@ -377,7 +435,7 @@ fi
 if [ "$DRY_RUN" = 1 ]; then
 	hdr ""
 	hdr "--dry-run: would run"
-	hdr "  git push --force-with-lease=refs/heads/$BRANCH:$REMOTE_OID $REMOTE HEAD:refs/heads/$BRANCH"
+	hdr "  git push --force-with-lease=refs/heads/$BRANCH:$REMOTE_OID $REMOTE ${LOCAL_OID}:refs/heads/$BRANCH"
 	exit 0
 fi
 
@@ -387,8 +445,9 @@ fi
 # remote-tracking ref, which the fetch above just updated -- it would "succeed"
 # against a tip nobody asserted.
 hdr ""
+check_before_push
 git -C "$ROOT" push --force-with-lease="refs/heads/$BRANCH:$REMOTE_OID" \
-	"$REMOTE" "HEAD:refs/heads/$BRANCH" || {
+	"$REMOTE" "${LOCAL_OID}:refs/heads/$BRANCH" >/dev/null || {
 	printf '%s: push rejected. The lease held the remote at %s; if it moved, someone else pushed.\n' \
 		"$PROG" "$REMOTE_OID" >&2
 	printf 'Nothing was rewritten. Rescue ref remains at %s.\n' "$RESCUE" >&2
@@ -431,8 +490,7 @@ NOTE_BODY=$(
 		printf '\nContent differs in:\n\n'
 		printf '%s\n' "$CHANGED_FILES" | sed 's/^/- `/;s/$/`/'
 	fi
-	printf '\nReview comments anchored to rewritten lines are dropped by the forge '
-	printf 'and will not reappear.\n'
+	printf '\nReview evidence remains associated with its original candidate. Reassess findings and anchored discussions after this rewrite; outdated positions do not close findings.\n'
 	printf '\nThe previous tip is retained locally as `%s`.\n' "$RESCUE"
 )
 
@@ -442,14 +500,14 @@ post_note() {
 		local iid
 		iid=$(glab mr list --source-branch "$BRANCH" --output json 2>/dev/null |
 			jq -r '.[0].iid // empty')
-		[ -n "$iid" ] || return 1
+		[[ "$iid" =~ ^[0-9]+$ ]] || return 1
 		glab mr note "$iid" --message "$NOTE_BODY" >/dev/null 2>&1 || return 1
 		printf '%s' "!$iid"
 		;;
 	*github*)
 		local num
 		num=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty' 2>/dev/null)
-		[ -n "$num" ] || return 1
+		[[ "$num" =~ ^[0-9]+$ ]] || return 1
 		gh pr comment "$num" --body "$NOTE_BODY" >/dev/null 2>&1 || return 1
 		printf '%s' "#$num"
 		;;
