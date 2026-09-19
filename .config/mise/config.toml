@@ -9,7 +9,12 @@ lockfile = true
 log_level = "error"
 disable_backends = ["asdf"]
 # Trust ~/etc so its task runner (mise-tasks/etc/*) runs non-interactively, incl. cron.
-trusted_config_paths = ["~/etc"]
+# Second entry: kubernetes-platform's agent worktrees, so a fresh one runs `mise run` without a
+# per-worktree `mise trust` first (each is a checkout of the already-trusted main repo).
+trusted_config_paths = [
+  "~/etc",
+  "~/src/teledyne-flir/TDY-MAR-CASC/kubernetes-platform/.claude/worktrees",
+]
 
 [settings.status]
 show_env = true
