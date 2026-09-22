@@ -13,6 +13,31 @@ set -o errexit
 source "$HOME/bin/common.bash"
 
 #######################################################################################################################
+#
+# Single dispatcher: one action name in $1, one action runs, output goes to
+# ~/logs/cronjobs/<host>-<action>-<YYMMDDHH>.log. Under cron the run stays silent unless it
+# fails (see the on_exit trap at the tail of this file) -- a healthy run must produce no stdout.
+#
+# Schedules live OUTSIDE this file -- this script only implements what each action does, not
+# when. Sources, one row per action:
+#
+#   action              trigger              schedule                      defined in
+#   ------------------  -------------------  ----------------------------  --------------------------------------------
+#   picwide             user crontab         daily 12:30                  crontab -l (mirrored to ~/etc/config/crontab
+#                                                                          by the hostname=goldorak block at the tail
+#                                                                          of this file)
+#   cleanup             user crontab         hourly at :00                crontab -l
+#   backup              user crontab         every 2 h at :30             crontab -l (branch below is a no-op)
+#   nah-stall-report    user crontab         Mondays 07:00                crontab -l
+#   update-tools        systemd user timer   01,05,09,13,17,21:15         ~/.config/systemd/user/update-tools.timer
+#   firefoxpwa-relink   systemd user timer   02,06,10,14,18,22:35         ~/.config/systemd/user/firefoxpwa-relink.timer
+#   etc-drift           none                 manual only -- not currently scheduled (see the
+#                                             branch below and ~/etc/docs/etc-config-mirror.md)
+#
+# Both systemd units run `%h/bin/cronjobs.sh <action>`, so their timers route through this file
+# too, not just crontab.
+#
+#######################################################################################################################
 
 command=${1:-default}
 
@@ -70,13 +95,49 @@ function execute() {
     command=${1:-default}
 
     ###############################################################################
+    # Trigger: user crontab, hourly at :00.
+    #
+    # ${tempfolders} = ~/scratch/{clips,temp,tmp,t}  ~/tmp  ~/logs  ~/logs/cronjobs
+    #
+    # Full retention policy, one row per sweep below (locations, what each removes, the age
+    # threshold, and the find/rm action taken):
+    #
+    #   location                              what                          older than   action
+    #   -------------------------------------  ----------------------------  -----------  ------------
+    #   ~/scratch, ~/tmp        (top level)    files + symlinks                 48 h       rm
+    #   ${tempfolders}          (recursive)    files + symlinks                 48 h       rm
+    #   ${tempfolders}          (depth >= 2)   empty dirs                       -          rmdir
+    #   ~/tmp                   (depth 1)      empty go-build work dirs         48 h       rmdir
+    #   ~/scratch/.stfolder                    syncthing marker dir             -          recreate
+    #   ~/core.*                               Edge crash dumps                 -          rm
+    #   ~/logs                  (recursive)    log files                        8 d        rm
+    #   ~/.claude/todos                        *.json                          30 d        rm
+    #   ~/.claude/shell-snapshots              snapshot-*.sh                    7 d        rm
+    #   ~/.claude/reviews                      *.md.log                        30 d        rm
+    #   ~/.claude/file-history  (depth 1)      per-session dirs                30 d        rm -r
+    #   ~/.claude/jobs          (depth 1)      g*-loop job dirs                30 d        rm -r
+    #   ~/.claude/gates-state                  dryrun-* witness markers         2 h        rm
+    #   ~/.claude/debug         (depth 1)      debug dumps                     30 d        rm -r
+    #   ~/.claude                              settings*.json.bak*             90 d        rm
+    #   ~/.local/share/claude/versions         superseded binaries (not the    30 d        rm
+    #                                          ~/.local/bin/claude target)
+    #   ~/.config/nah/nah.log.1                rotated nah decision log         -          archive (copy)
+    #   ~/.local/state/nah-log                 archived nah logs               60 d        rm
+    #   ~/.claude/reviews/*/state              abandoned g*-loop states       1 h past      mark done
+    #                                                                         deadline
+    #
+    # note: ~/logs and ~/logs/cronjobs are also members of ${tempfolders}, so the 48 h sweep
+    # already removes log files -- the dedicated 8-day ~/logs prune further below is subsumed
+    # by it. Likewise ~/tmp is swept both by the top-level block and by the ${tempfolders} loop.
+    # Both are pre-existing overlaps, documented here, not changed.
     if [ "${command}" = "cleanup" ]; then
 
         cleantime="+2880" # 48 hours
         tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/ $HOME/logs $HOME/logs/cronjobs"
 
         # cleanup files:
-        # files in ~/scratch/ itself
+        # ~/scratch and ~/tmp, top level only (maxdepth 1): files and symlinks idle > 48 h.
+        # (subdirectories of these two are handled by the ${tempfolders} loop below)
         logtitle Looking for files in ~/scratch itself
         scan \
             $HOME/scratch/ \
@@ -87,7 +148,7 @@ function execute() {
             -mmin ${cleantime} \( -type f -o -type l \) \
             -print0 | xargs -r -0 rm -fv
 
-        # files in ~/scratch/clips/ and other temp folders
+        # ${tempfolders} recursively: files and symlinks idle > 48 h.
         logtitle looking for files in temp folders
         for folder in ${tempfolders}; do
             if [ -d ${folder} ]; then
@@ -100,7 +161,8 @@ function execute() {
             fi
         done
 
-        # cleanup empty directories
+        # ${tempfolders} at depth >= 2: any now-empty directory left behind by the file sweep
+        # above, regardless of age.
         logtitle looking for empty dirs in temp folders
         for folder in ${tempfolders}; do
             if [ -d ${folder} ]; then
@@ -115,6 +177,7 @@ function execute() {
 
         # ~/tmp holds per-invocation Go work dirs (GOTMPDIR); their files are removed
         # above, leaving depth-1 empties the -mindepth 2 loop above cannot see.
+        # ~/tmp, depth 1 only: empty directories idle > 48 h.
         logtitle looking for empty go-build dirs directly under ~/tmp
         scan \
             $HOME/tmp \
@@ -125,17 +188,20 @@ function execute() {
 
         logtitle misc stuff
 
-        # syncthing needs
+        # ~/scratch/.stfolder: recreate if missing -- syncthing needs this marker dir to sync
+        # ~/scratch at all; belt-and-braces rm first in case it exists as a stray file.
         if ! test -d /home/serge/scratch/.stfolder; then
             logline fix syncthing folder
             rm -rfv /home/serge/scratch/.stfolder
             mkdir -pv /home/serge/scratch/.stfolder
         fi
 
-        # ms edge crap
+        # ~/core.* : unconditional rm, any age -- Edge/Chromium crash dumps.
         rm -fv $HOME/core.*
 
-        # cleanup logs
+        # ~/logs, recursive: files older than 8 days (11520 min). Redundant with the
+        # ${tempfolders} sweep above (~/logs is a member, swept there at 48 h) -- see the note
+        # above the retention table. Kept as-is; not changed by this pass.
         logtitle cleanup my logs
         scan $HOME/logs \
             -mindepth 1 \
@@ -146,6 +212,7 @@ function execute() {
         # cleanupo claude files
         logtitle cleanup ~/.claude files
         ## Archive todos older than 30 days - Run daily at 2:30 AM
+        # ~/.claude/todos: *.json files older than 30 days.
         # Guarded with -d: the harness has since moved todos elsewhere and this
         # directory no longer exists (2026-09-05) -- an unguarded find on a missing
         # path aborts the whole run under errexit.
@@ -155,7 +222,7 @@ function execute() {
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -fv
         fi
-        # Delete shell snapshots older than 7 days
+        # ~/.claude/shell-snapshots: snapshot-*.sh files older than 7 days.
         if [ -d "$HOME/.claude/shell-snapshots" ]; then
             scan $HOME/.claude/shell-snapshots/ \
                 -type f -name "snapshot-*.sh" \
@@ -166,41 +233,49 @@ function execute() {
         # review-loop transcripts, per-session file-history, g*-loop job dirs, witnessed
         # dry-run markers (30-min TTL, never pruned), debug dumps, settings backups and
         # superseded native-install binaries. Only ~/.claude/projects is pruned by the binary.
+        # ~/.claude/reviews: *.md.log review-loop transcripts older than 30 days.
         if [ -d "$HOME/.claude/reviews" ]; then
             scan $HOME/.claude/reviews/ \
                 -type f -name "*.md.log" \
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -fv
         fi
+        # ~/.claude/file-history, depth 1: per-session dirs older than 30 days, removed recursively.
         if [ -d "$HOME/.claude/file-history" ]; then
             scan $HOME/.claude/file-history/ \
                 -mindepth 1 -maxdepth 1 -type d \
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -rfv
         fi
+        # ~/.claude/jobs, depth 1: g*-loop job dirs older than 30 days, removed recursively.
         if [ -d "$HOME/.claude/jobs" ]; then
             scan $HOME/.claude/jobs/ \
                 -mindepth 1 -maxdepth 1 -type d \
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -rfv
         fi
+        # ~/.claude/gates-state: dryrun-* witness markers older than 2 h (their TTL is 30 min,
+        # so this just clears out already-expired markers).
         if [ -d "$HOME/.claude/gates-state" ]; then
             scan $HOME/.claude/gates-state/ \
                 -maxdepth 1 -type f -name "dryrun-*" \
                 -mmin +120 \
                 -print0 | xargs -r -0 rm -fv
         fi
+        # ~/.claude/debug, depth 1: debug dumps older than 30 days, removed recursively.
         if [ -d "$HOME/.claude/debug" ]; then
             scan $HOME/.claude/debug/ \
                 -mindepth 1 -maxdepth 1 \
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -rfv
         fi
+        # ~/.claude, top level: settings*.json.bak* backup files older than 90 days.
         scan $HOME/.claude/ \
             -maxdepth 1 -type f -name "settings*.json.bak*" \
             -mtime +90 \
             -print0 | xargs -r -0 rm -fv
-        # Native-install binaries: keep the ~/.local/bin/claude target and anything < 30 d.
+        # ~/.local/share/claude/versions, depth 1: superseded native-install binaries older than
+        # 30 days. Keep the ~/.local/bin/claude target and anything < 30 d.
         # A running session keeps its deleted binary's inode, so this never breaks a live one.
         if [ -d "$HOME/.local/share/claude/versions" ]; then
             local current
@@ -235,16 +310,22 @@ function execute() {
         # The loops are instructed to write phase=done on exit, but a killed or abandoned session
         # never runs its exit path -- see the header of the script for the F18 history.
         logtitle sweep abandoned ~/.claude/reviews loop states
-        $HOME/bin/claude-reviews-state-sweep
+        $HOME/binc/claude-reviews-state-sweep
 
     ###############################################################################
     elif [ "${command}" = "update-tools" ]; then
 
+        # Trigger: systemd user timer update-tools.timer, 01/05/09/13/17/21:15.
+        # Delegates to ~/bin/update-tools, which runs 12 independent components (mise, mise_tasks,
+        # uv_tools, krew, helm, flatpak, misc, downloads, github, ai, bash_completions,
+        # shell_init) -- see update-tools:724-735 for the full list and per-component detail.
         $HOME/bin/update-tools
 
     ###############################################################################
     elif [ "${command}" = "etc-drift" ]; then
 
+        # Trigger: none -- manual only, not currently scheduled anywhere
+        # (~/etc/docs/etc-config-mirror.md §Cron).
         # Report drift between the curated /etc mirror (~/etc/r) and live /etc via the
         # `etc:status` mise task (~/etc/mise-tasks/etc/status; see ~/etc/docs/etc-config-mirror.md).
         # It uses `sudo -n`, so root-only files show NEEDS-SUDO in cron; exit 2 means a readable,
@@ -254,24 +335,35 @@ function execute() {
     ###############################################################################
     elif [ "${command}" = "firefoxpwa-relink" ]; then
 
+        # Trigger: systemd user timer firefoxpwa-relink.timer, 02/06/10/14/18/22:35.
+        # Delegates to ~/bin/firefoxpwa-relink: re-links the firefoxpwa runtime to the local
+        # manual-tarball Firefox after that Firefox auto-updates itself in place. BuildID-guarded
+        # (marker file), so this is a no-op on every run except right after a Firefox update.
         $HOME/bin/firefoxpwa-relink
 
     ###############################################################################
     elif [ "${command}" = "nah-stall-report" ]; then
 
+        # Trigger: user crontab, Mondays 07:00.
         # Weekly automation-stall report: real permission prompts joined to the nah
         # decision that preceded them, ask/allow/block ratios, blocks with inputs.
         # Writes ~/.local/state/nah-stall/<ISO week>.md; the tuning loop reads it
         # (~/etc/docs/nah.md §Stall report).
-        "$HOME/bin/nah-stall-report"
+        "$HOME/binc/nah-stall-report"
 
     ###############################################################################
     elif [ "${command}" = "backup" ]; then
 
+        # Trigger: user crontab, every 2 h at :30. Deliberate no-op -- kept as a placeholder
+        # slot in the schedule; nothing runs here today.
         : # no-op
 
     ###############################################################################
     elif [ "${command}" = "picwide" ]; then
+
+        # Trigger: user crontab, daily 12:30. Four tiers, each filtering the same source tree
+        # (~/Documents/Pictures/Wallpapers, via ~/bin/picwide's PICWIDE_ROOT default) by min
+        # width/aspect-ratio into its own symlink dir under ~/Wallpapers (defaults: picwide:13-15).
 
         # Job 1 — strict tier: true ultrawide images for the 7680x2160 (32:9) display.
         # min_width=2560 (default): 2.5K+ ensures clean scaling to 7680px wide (3x upscale max).
@@ -284,14 +376,21 @@ function execute() {
         #   acceptable for a background at normal viewing distance from a 57" display.
         # min_ratio=2.0 (default): kept identical to job 1 — dropping it further would add 16:9 images
         #   that stretch too aggressively on a 32:9 display with fill mode.
-        # Output: ~/Wallpapers/ultrawide-wide
+        # Output: ~/Wallpapers/ultrawide2
         PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide2 PICWIDE_MIN_WIDTH="1920" $HOME/bin/picwide --verbose --update
 
+        # Job 3 — narrower source pool, stricter ratio: min_width=1920, min_ratio=3 (30:9+).
+        # Output: ~/Wallpapers/ultrawide3
         PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide3 PICWIDE_MIN_WIDTH="1920" PICWIDE_MIN_RATIO="3" $HOME/bin/picwide --verbose --update
+        # Job 4 — highest-resolution, strictest ratio: min_width=3840 (4K+), min_ratio=3.5.
+        # Output: ~/Wallpapers/ultrawide35
         PICWIDE_OUTPUT=$HOME/Wallpapers/ultrawide35 PICWIDE_MIN_WIDTH="3840" PICWIDE_MIN_RATIO="3.5" $HOME/bin/picwide --verbose --update
 
     ###############################################################################
     elif [ "${command}" = "default" ]; then
+        # No action given (or an unrecognized one, see the `else` below). Self-lists every
+        # supported action by grepping this file's own `elif ... "${command}" = "<name>"` lines --
+        # so this list always matches the branches above without needing separate upkeep.
         echo "supported options:"
         grep 'if .* "${command}" = ' ~/bin/cronjobs.sh | grep -v grep | cut -d\" -f4 | sed s/'^/  - /'
 
@@ -302,6 +401,9 @@ function execute() {
     fi
 
     ###############################################################################
+    # Snapshot the live crontab into the vcsh-tracked mirror (repo `sdot`) on every run, on
+    # goldorak only -- this is what keeps the action/trigger/schedule table above reviewable
+    # from source control instead of only from `crontab -l` on the live host.
     if [ "$(hostname)" = "goldorak" ]; then
         crontab -l >$HOME/etc/config/crontab
     fi

@@ -18,7 +18,7 @@ alias bi="bash-it"
 alias bwu='export BW_SESSION="$(bw unlock --raw)"'
 alias bwl='export BW_SESSION='
 # c
-# claude's default flags (auto-mode, remote-control, ...) live in ~/bin/claude,
+# claude's default flags (auto-mode, remote-control, ...) live in ~/binc/claude,
 # not here -- see that script. Applies via PATH to any shell, not just this one.
 alias codex="nah run codex"
 if [ "${MY_WM}" = "sway" ]; then

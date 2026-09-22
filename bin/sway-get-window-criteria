@@ -238,7 +238,7 @@ then
 	IFS=$'\t' read -r fg_pid fg_comm fg_cwd fg_chain <<< "$fg_line"
 	fg_tty="$(ps -o tty= -p "$fg_pid" 2>/dev/null | tr -d '[:space:]' || true)"
 	[[ "$fg_tty" == "?" ]] && fg_tty=""
-	# Same session-lookup shape ~/bin/claude-session-title's launch_cwd() and
+	# Same session-lookup shape ~/binc/claude-session-title's launch_cwd() and
 	# claude-hud-wrapper.sh's authoritative_name() use, but keyed on pid --
 	# this script already resolves fg_pid, not the session id. Gated on comm
 	# so unrelated windows don't cause a stat() of ~/.claude/sessions/*.json
