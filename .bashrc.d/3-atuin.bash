@@ -7,7 +7,7 @@ source "$HOME/.atuin/bin/env"
 # https://docs.atuin.sh/configuration/key-binding/#bash
 export ATUIN_NOBIND="true"
 
-# Use pre-generated cache (regenerated hourly via update-tools)
+# Use pre-generated cache (regenerated every 4h via update-tools)
 # To manually regenerate: update-tools shell-init
 _atuin_cache="$HOME/.cache/shell-init/atuin.bash"
 if [[ -f "$_atuin_cache" ]]; then

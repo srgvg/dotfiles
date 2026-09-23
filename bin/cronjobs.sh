@@ -290,6 +290,8 @@ function execute() {
         # every rotation), which with log.verbosity=all is a few days -- the stall report and any
         # re-measurement need >= 4 weeks (~/etc/docs/nah.md). Keyed on the backup's mtime, so this
         # hourly check copies each rotation exactly once whatever the rotation rate.
+        # ~/.config/nah/nah.log.1 -> copied into ~/.local/state/nah-log/ (kept regardless of age,
+        # one copy per rotation); archived copies there older than 60 days are then pruned.
         logtitle archive rotated nah logs
         local nah_bak="$HOME/.config/nah/nah.log.1"
         local nah_archive="$HOME/.local/state/nah-log"
@@ -309,6 +311,9 @@ function execute() {
         # Retire abandoned g*-loop state files so they stop rendering as live/STALLED in the HUD.
         # The loops are instructed to write phase=done on exit, but a killed or abandoned session
         # never runs its exit path -- see the header of the script for the F18 history.
+        # ~/.claude/reviews/*/state: any state file more than 1 h past its own recorded deadline
+        # and not owned by a live pid gets its phase rewritten to `done` (not deleted) --
+        # implemented in ~/binc/claude-reviews-state-sweep, called here with no flags (live mode).
         logtitle sweep abandoned ~/.claude/reviews loop states
         $HOME/binc/claude-reviews-state-sweep
 

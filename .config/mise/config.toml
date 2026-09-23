@@ -1,200 +1,238 @@
+# Global mise config. Keep it canonical with `mise-config-fmt` (~/bin), which refuses any
+# rewrite that changes meaning.
+#
+# Every tool has a short name. [tool_alias] maps a name to its backend, grouped by backend, when
+# the registry lacks the name or maps it to a different backend; [tools] is one sorted list of
+# names. `mise use -g github:owner/repo` writes a long-form key: move it into [tool_alias]
+# (mise-config-fmt prints the line to add).
+#
+# Order in [tools] is not cosmetic: mise builds PATH in that order, so when two tools ship the
+# same binary the earlier one wins (e.g. `fd` before `rust`, whose ~/.cargo/bin also holds an fd).
+
 [settings]
-paranoid = false
-always_keep_download = false
-always_keep_install = true
-auto_install = true
-exec_auto_install = true
-experimental = true
+always_keep_download          = false
+always_keep_install           = true
+auto_install                  = true
+disable_backends              = ["asdf"]
+exec_auto_install             = true
+experimental                  = true
+fetch_remote_versions_timeout = "25s" # gcloud's version listing is slow
 lockfile = true
-log_level = "error"
-disable_backends = ["asdf"]
+log_level                     = "error"
+paranoid                      = false
 # Trust ~/etc so its task runner (mise-tasks/etc/*) runs non-interactively, incl. cron.
 # Second entry: kubernetes-platform's agent worktrees, so a fresh one runs `mise run` without a
 # per-worktree `mise trust` first (each is a checkout of the already-trusted main repo).
-trusted_config_paths = [
+trusted_config_paths          = [
   "~/etc",
   "~/src/teledyne-flir/TDY-MAR-CASC/kubernetes-platform/.claude/worktrees",
 ]
 
-[settings.status]
-show_env = true
-show_tools = true
-missing_tools = "always"
-
 [settings.github]
 credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 
+[settings.status]
+missing_tools = "always"
+show_env      = true
+show_tools    = true
+
 [env]
-# for gcloud
-MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "25s"
 # stable GOBIN so go install'd tools survive Go version upgrades
 GOBIN = "{{env.HOME}}/.local/bin"
 
-### ALIASES #################################################################
+# Names the registry lacks, or maps to a different backend than the one wanted here.
 [tool_alias]
-docker-compose = "aqua:docker/compose"
-flux-operator  = "github:controlplaneio-fluxcd/flux-operator"
-flux9s         = "github:dgunzy/flux9s"
-forward-email  = "github:ginsys/forward-email"
-garage-webui   = "github:khairul169/garage-webui"
-goit-who       = "github:sinclairtarget/git-who"
-gitlab-cli     = "gitlab:gitlab-org/cli"
-hubble         = "github:cilium/hubble"
-hurlfmt        = "github:Orange-OpenSource/hurl"
-korb           = "github:BeryJu/korb"
-kubewall       = "github:kubewall/kubewall"
-nats-cli       = "github:nats-io/natscli"
-nats-server    = "github:nats-io/nats-server"
-nats-top       = "github:nats-io/nats-top"
-nsc            = "github:nats-io/nsc"
-snitch         = "github:karol-broda/snitch"
-keylightd-tray = "github:jmylchreest/keylightd"
-flyline        = "github:HalFrgrd/flyline"
-### ALIASES #################################################################
+# --- cargo ---
+mq                  = "cargo:mq-run"
+satty               = "cargo:satty"
+wlr-chooser         = "cargo:wlr-chooser"
 
+# --- github ---
+addt                = "github:jedi4ever/addt"
+b4n                 = "github:fioletoven/b4n"
+chief               = "github:MiniCodeMonkey/chief"
+flux-operator       = "github:controlplaneio-fluxcd/flux-operator"
+flux9s              = "github:dgunzy/flux9s"
+flyline             = "github:HalFrgrd/flyline"
+forward-email       = "github:ginsys/forward-email"
+garage-webui        = "github:khairul169/garage-webui"
+ghq                 = "github:x-motemen/ghq"
+git-who             = "github:sinclairtarget/git-who"
+git-xargs           = "github:gruntwork-io/git-xargs"
+hanoi-cli           = "github:k-krew/hanoi-cli"
+keylightd           = "github:jmylchreest/keylightd"
+keylightd-tray      = "github:jmylchreest/keylightd"
+korb                = "github:BeryJu/korb"
+kubewall            = "github:kubewall/kubewall"
+lfk                 = "github:janosmiko/lfk"
+lynxdb              = "github:lynxbase/lynxdb"
+nats-cli            = "github:nats-io/natscli"
+nats-server         = "github:nats-io/nats-server"
+nats-top            = "github:nats-io/nats-top"
+openbao             = "github:openbao/openbao"
+sem                 = "github:Ataraxy-Labs/sem"
+snitch              = "github:karol-broda/snitch"
+tanzu-cli           = "github:vmware-tanzu/tanzu-cli"
+utilyze             = "github:systalyze/utilyze"
+yaml-schema-router  = "github:traiproject/yaml-schema-router"
+zedis               = "github:vicanso/zedis"
+zitadel             = "github:zitadel/zitadel"
+ziti                = "github:openziti/ziti"
+ziti-edge-tunnel    = "github:openziti/ziti-tunnel-sdk-c"
 
-### TOOLS ###################################################################
+# --- go ---
+dlv                 = "go:github.com/go-delve/delve/cmd/dlv"
+errcheck            = "go:github.com/kisielk/errcheck"
+goimports           = "go:golang.org/x/tools/cmd/goimports"
+gomodifytags        = "go:github.com/fatih/gomodifytags"
+gonew               = "go:golang.org/x/tools/cmd/gonew"
+gopls               = "go:golang.org/x/tools/gopls"
+gops                = "go:github.com/google/gops"
+hcloud-upload-image = "go:github.com/apricote/hcloud-upload-image"
+impl                = "go:github.com/josharian/impl"
+nk                  = "go:github.com/nats-io/nkeys/nk"
+revive              = "go:github.com/mgechev/revive"
+staticcheck         = "go:honnef.co/go/tools/cmd/staticcheck"
+
 [tools]
-age                                             = { version = "latest" }
-argocd                                          = { version = "latest" }
-awscli                                          = { version = "latest" }
-"pipx:azure-cli"                                = { version = "latest", exe = "az", uvx_args = "--prerelease=allow" }
-bat                                             = { version = "latest" }
-bitwarden                                       = { version = "latest" }
-bun                                             = { version = "latest" }
-cilium-cli                                      = { version = "latest", exe = "cilium" }
-cilium-hubble                                   = { version = "latest" }
-civo                                            = { version = "latest", exe = "civo" }
-clusterctl                                      = { version = "latest" }
-cmctl                                           = { version = "latest" }
-cosign                                          = { version = "latest" }
-difftastic                                      = { version = "latest", exe = "difft" }
-direnv                                          = { version = "latest", exe = "direnv" }
-docker-compose                                  = { version = "2.30.3", rename_exe = "docker-compose" }
-doctl                                           = { version = "latest" }
-dyff                                            = { version = "latest", exe = "dyff" }
-eksctl                                          = { version = "latest" }
-fd                                              = { version = "latest" }
-flux-operator                                   = { version = "latest", exe = "flux-operator" }
-flux2                                           = { version = "latest" }
-flux9s                                          = { version = "latest" }
-forward-email                                   = { version = "v0.2.0-alpha.2" }
-fx                                              = { version = "latest", exe = "fx" }
-garage-webui                                    = { version = "latest" }
-"vfox:mise-plugins/vfox-gcloud"                 = { version = "latest" }
-git-who                                         = { version = "latest" }
-github-cli                                      = { version = "latest" }
-gitlab-cli                                      = { version = "latest" }
-go                                              = { version = "latest" }
-go-containerregistry                            = { version = "latest", exe = "crane" }
-grpcurl                                         = { version = "latest", exe = "grpcurl" }
-"aqua:hetznercloud/cli"                         = { version = "latest", exe = "hcloud" }
-helm                                            = { version = "latest" }
-hubble                                          = { version = "latest", exe = "hubble" }
-hugo                                            = { version = "latest" }
-hurl                                            = { version = "latest", exe = "hurl" }
-hurlfmt                                         = { version = "latest", exe = "hurlfmt" }
-jb                                              = { version = "latest" }
-jd                                              = { version = "latest", exe = "jd" }
-jless                                           = { version = "latest" }
-jnv                                             = { version = "latest", exe = "jnv" }
-jqp                                             = { version = "latest", exe = "jqp" }
-k9s                                             = { version = "latest" }
-kind                                            = { version = "latest" }
-kompose                                         = { version = "latest" }
-korb                                            = { version = "latest", exe = "korb" }
-krew                                            = { version = "latest" }
-kube-capacity                                   = { version = "latest" }
-kube-score                                      = { version = "latest" }
-kubebuilder                                     = { version = "latest" }
-kubecolor                                       = { version = "latest" }
-kubeconform                                     = { version = "latest" }
-kubectl                                         = { version = "latest" }
-"aqua:doitintl/kube-no-trouble"                 = { version = "latest", exe = "kubent" }
-"aqua:bitnami-labs/sealed-secrets"              = { version = "latest", exe = "kubeseal" }
-kubesec                                         = { version = "latest" }
-kubespy                                         = { version = "latest" }
-kubewall                                        = { version = "latest" }
-kubie                                           = { version = "latest" }
-kustomize                                       = { version = "latest" }
-nats-server                                     = { version = "latest", exe = "nats-server" }
-nats-cli                                        = { version = "latest", exe = "nats" }
-nats-top                                        = { version = "latest" }
-"vfox:mise-plugins/vfox-neovim"                 = { version = "latest" }
-node                                            = { version = "latest" }
-nova                                            = { version = "latest" }
-npm                                             = { version = "latest" }
-nsc                                             = { version = "latest" }
-"go:github.com/nats-io/nkeys/nk"                = { version = "latest" }
-"go:golang.org/x/tools/gopls"                   = { version = "latest" }
-"go:github.com/go-delve/delve/cmd/dlv"          = { version = "latest" }
-"go:golang.org/x/tools/cmd/goimports"           = { version = "latest" }
-"go:honnef.co/go/tools/cmd/staticcheck"         = { version = "latest" }
-"go:github.com/josharian/impl"                  = { version = "latest" }
-"go:golang.org/x/tools/cmd/gonew"               = { version = "latest" }
-"go:github.com/mgechev/revive"                  = { version = "latest" }
-"go:github.com/google/gops"                     = { version = "latest" }
-"go:github.com/kisielk/errcheck"                = { version = "latest" }
-"go:github.com/fatih/gomodifytags"              = { version = "latest" }
-"go:github.com/apricote/hcloud-upload-image"    = { version = "latest" }
-oras                                            = { version = "latest", exe = "oras" }
-osv-scanner                                     = { version = "latest" }
-pkl                                             = { version = "latest", exe = "pkl" }
-pluto                                           = { version = "latest" }
-"npm:pnpm"                                       = { version = "latest" }
-popeye                                          = { version = "latest" }
-rbac-lookup                                     = { version = "latest" }
-regsync                                         = { version = "latest" }
-regbot                                          = { version = "latest" }
-regctl                                          = { version = "latest" }
-ripgrep                                         = { version = "latest", exe = "rg" }
-ruff                                            = { version = "latest" }
-rust                                            = { version = "latest" }
-"cargo:satty"                                   = { version = "latest" }
-scaleway-cli                                    = { version = "latest" }
-slsa-verifier                                   = { version = "latest" }
-snitch                                          = { version = "latest" }
-sops                                            = { version = "latest" }
-starship                                        = { version = "latest" }
-stern                                           = { version = "latest" }
-superfile                                       = { version = "latest", exe = "spf" }
-talhelper                                       = { version = "latest" }
-talosctl                                        = { version = "latest", exe = "talosctl" }
-updatecli                                       = { version = "latest", exe = "updatecli" }
-usage                                           = { version = "latest" }
-uv                                              = { version = "latest" }
-vcluster                                        = { version = "latest" }
-velero                                          = { version = "latest" }
-yamlfmt                                         = { version = "latest" }
-yazi                                            = { version = "latest", exe = "yazi" }
-yq                                              = { version = "latest" }
-"github:vicanso/zedis"                          = "latest"
-"github:zitadel/zitadel"                        = "latest"
-"github:jedi4ever/addt" = "latest"
-"github:gruntwork-io/git-xargs" = "latest"
-vfox = "latest"
-"github:x-motemen/ghq" = "latest"
-"github:traiproject/yaml-schema-router" = "latest"
-"github:MiniCodeMonkey/chief" = "latest"
-"github:vmware-tanzu/tanzu-cli" = "latest"
-"github:dgunzy/flux9s" = "latest"
-"github:fioletoven/b4n" = "latest"
-"github:k-krew/hanoi-cli" = "latest"
-"github:systalyze/utilyze" = { version = "latest", exe = "utlz" }
-"github:lynxbase/lynxdb" = "latest"
-"github:openbao/openbao" = "latest"
-glab = { version = "latest", exe = "glab" }
-git-cliff = "latest"
-"cargo:mq-run" = { version = "latest", exe = "mq" }
-"cargo:wlr-chooser" = { version = "latest" }   # ships wlr-chooser + wlr-switcher (sway switcher + screencast chooser)
-"github:Ataraxy-Labs/sem" = "latest"
-"github:janosmiko/lfk" = "latest"
-gitleaks = "latest"
-"github:openziti/ziti" = "latest"
-"github:openziti/ziti-tunnel-sdk-c" = "latest"
-yamllint = "1.38.0"
-actionlint = "latest"
-keylightd-tray = { version = "latest", asset_pattern = "keylightd-tray_*_linux_amd64.tar.gz" }
-"github:jmylchreest/keylightd" = "0.1.9"
-hunk = "latest"
-flyline = { version = "latest", asset_pattern = "libflyline-*-x86_64-unknown-linux-gnu.tar.gz" }
+actionlint           = "latest"
+addt                 = "latest"
+age                  = "latest"
+argocd               = "latest"
+awscli               = "latest"
+azure-cli            = { version = "latest", exe = "az", uvx_args = "--prerelease=allow" }
+# 1.0.1+ fails GitHub attestation verification (Sigstore TSA timestamp) on the pinned
+# mise 2026.5.18; back to "latest" after the next mise upgrade (~/etc/config/versions).
+b4n                  = "0.5.7"
+bat                  = "latest"
+bitwarden            = "latest"
+bun                  = "latest"
+chief                = "latest"
+cilium-cli           = { version = "latest", exe = "cilium" }
+cilium-hubble        = "latest"
+civo                 = { version = "latest", exe = "civo" }
+clusterctl           = "latest"
+cmctl                = "latest"
+cosign               = "latest"
+difftastic           = { version = "latest", exe = "difft" }
+direnv               = { version = "latest", exe = "direnv" }
+dlv                  = "latest"
+docker-compose       = { version = "2.30.3", rename_exe = "docker-compose" }
+doctl                = "latest"
+dyff                 = { version = "latest", exe = "dyff" }
+eksctl               = "latest"
+errcheck             = "latest"
+fd                   = "latest"
+flux-operator        = { version = "latest", exe = "flux-operator" }
+flux2                = "latest"
+flux9s               = "latest"
+flyline              = { version = "latest", asset_pattern = "libflyline-*-x86_64-unknown-linux-gnu.tar.gz" }
+forward-email        = "v0.2.0-alpha.2"
+fx                   = { version = "latest", exe = "fx" }
+garage-webui         = "latest"
+gcloud               = "latest"
+ghq                  = "latest"
+git-cliff            = "latest"
+git-who              = "latest"
+git-xargs            = "latest"
+github-cli           = "latest"
+gitleaks             = "latest"
+glab                 = { version = "latest", exe = "glab" }
+go                   = "latest"
+go-containerregistry = { version = "latest", exe = "crane" }
+goimports            = "latest"
+gomodifytags         = "latest"
+gonew                = "latest"
+gopls                = "latest"
+gops                 = "latest"
+grpcurl              = { version = "latest", exe = "grpcurl" }
+hanoi-cli            = "latest"
+hcloud               = { version = "latest", exe = "hcloud" }
+hcloud-upload-image  = "latest"
+helm                 = "latest"
+hugo                 = "latest"
+hunk                 = "latest"
+hurl                 = { version = "latest", exe = "hurl" } # tarball also ships hurlfmt
+impl                 = "latest"
+jb                   = "latest"
+jd                   = { version = "latest", exe = "jd" }
+jless                = "latest"
+jnv                  = { version = "latest", exe = "jnv" }
+jqp                  = { version = "latest", exe = "jqp" }
+k9s                  = "latest"
+keylightd            = "0.1.9"
+keylightd-tray       = { version = "latest", asset_pattern = "keylightd-tray_*_linux_amd64.tar.gz" }
+kind                 = "latest"
+kompose              = "latest"
+korb                 = { version = "latest", exe = "korb" }
+krew                 = "latest"
+kube-capacity        = "latest"
+kube-score           = "latest"
+kubebuilder          = "latest"
+kubecolor            = "latest"
+kubeconform          = "latest"
+kubectl              = "latest"
+kubent               = { version = "latest", exe = "kubent" }
+kubeseal             = { version = "latest", exe = "kubeseal" }
+kubesec              = "latest"
+kubespy              = "latest"
+kubewall             = "latest"
+kubie                = "latest"
+kustomize            = "latest"
+lfk                  = "latest"
+lynxdb               = "latest"
+mq                   = { version = "latest", exe = "mq" }
+nats-cli             = { version = "latest", exe = "nats" }
+nats-server          = { version = "latest", exe = "nats-server" }
+nats-top             = "latest"
+neovim               = "latest"
+nk                   = "latest"
+node                 = "latest"
+nova                 = "latest"
+npm                  = "latest"
+nsc                  = "latest"
+openbao              = "latest"
+oras                 = { version = "latest", exe = "oras" }
+osv-scanner          = "latest"
+pkl                  = { version = "latest", exe = "pkl" }
+pluto                = "latest"
+pnpm                 = "latest"
+popeye               = "latest"
+rbac-lookup          = "latest"
+regbot               = "latest"
+regctl               = "latest"
+regsync              = "latest"
+revive               = "latest"
+ripgrep              = { version = "latest", exe = "rg" }
+ruff                 = "latest"
+rust                 = "latest" # bin dir is ~/.cargo/bin (rustup), not under mise/installs
+satty                = "latest"
+scaleway-cli         = "latest"
+sem                  = "latest"
+slsa-verifier        = "latest"
+snitch               = "latest"
+sops                 = "latest"
+starship             = "latest"
+staticcheck          = "latest"
+stern                = "latest"
+superfile            = { version = "latest", exe = "spf" }
+talhelper            = "latest"
+talosctl             = { version = "latest", exe = "talosctl" }
+tanzu-cli            = "latest"
+updatecli            = { version = "latest", exe = "updatecli" }
+usage                = "latest"
+utilyze              = { version = "latest", exe = "utlz", asset_pattern = "utlz-linux-amd64", bin = "utlz" }
+uv                   = "latest"
+vcluster             = "latest"
+velero               = "latest"
+vfox                 = "latest"
+wlr-chooser          = "latest" # ships wlr-chooser + wlr-switcher (sway switcher + screencast chooser)
+yaml-schema-router   = "latest"
+yamlfmt              = "latest"
+yamllint             = "1.38.0"
+yazi                 = { version = "latest", exe = "yazi" }
+yq                   = "latest"
+zedis                = "latest"
+zitadel              = "latest"
+ziti                 = "latest"
+ziti-edge-tunnel     = "latest"

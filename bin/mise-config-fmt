@@ -1,0 +1,515 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["tomlkit>=0.13"]
+# ///
+"""Rewrite a mise config.toml into one canonical layout, refusing any change of meaning.
+
+Layout
+  - Top-level tables: [settings], [env], [tool_alias], [tools], then any others in their
+    original order. Sub-tables follow their parent.
+  - [settings] (and sub-tables): keys sorted.
+  - [tool_alias]: grouped by backend ("# --- github ---"), sorted within each group.
+  - [tools]: one list sorted by name; `{ version = "x" }` is shortened to "x".
+  - [env], [tasks] and anything else: key order kept (mise evaluates [env] top to bottom).
+  - `=` aligned per table. A comment block moves with the key below it; a comment block at the
+    end of a table moves with the next table header.
+
+Safety -- any violation refuses the write (exit 3)
+  - the parsed content must be identical (modulo the "x" == { version = "x" } shorthand), and
+    key order must be unchanged wherever it is kept;
+  - every comment in the input must survive (generated "# --- x ---" headers excepted);
+  - formatting the result again must be a no-op;
+  - global config only: no binary may switch to a different tool. mise builds PATH in [tools]
+    order, so re-sorting can change which tool wins a binary two tools both ship.
+
+Long-form [tools] keys ("github:owner/repo", as `mise use -g` writes them) are reported with a
+suggested [tool_alias] line. They are not converted: renaming a tool reinstalls it.
+
+Exit: 0 formatted or already canonical, 1 --check found changes, 2 bad input, 3 refused.
+"""
+
+import argparse
+import difflib
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import tomllib
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import tomlkit
+from tomlkit import items as ti
+
+SORTED_TABLES = {"settings", "tool_alias", "alias", "tools"}
+TABLE_ORDER = {"settings": 0, "env": 1, "tool_alias": 2, "alias": 2, "tools": 3}
+GROUP_RE = re.compile(r"^#\s*---.*---\s*$")
+
+
+@dataclass
+class Entry:
+    key: str  # as rendered, quotes kept
+    name: str  # bare name, for sorting
+    item: object  # tomlkit value item
+    comment: str = ""
+    lead: list[str] = field(default_factory=list)  # comment lines above; "" = blank line
+    blank_before: bool = False
+
+
+@dataclass
+class Table:
+    path: list[str]
+    header: bool = True
+    aot: bool = False
+    comment: str = ""
+    lead: list[str] = field(default_factory=list)
+    entries: list[Entry] = field(default_factory=list)
+    children: list["Table"] = field(default_factory=list)
+
+
+class Unsupported(Exception):
+    pass
+
+
+# ---------------------------------------------------------------- comment scanner
+
+
+def scan_comments(text):
+    """Every `# ...` comment in TOML text, skipping `#` inside strings."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text.startswith(('"""', "'''"), i):
+            q = text[i : i + 3]
+            j = text.find(q, i + 3)
+            i = n if j == -1 else j + 3
+        elif text[i] == '"':
+            j = i + 1
+            while j < n and text[j] not in '"\n':
+                j += 2 if text[j] == "\\" else 1
+            i = j + 1
+        elif text[i] == "'":
+            j = text.find("'", i + 1)
+            i = n if j == -1 else j + 1
+        elif text[i] == "#":
+            j = text.find("\n", i)
+            j = n if j == -1 else j
+            out.append(text[i:j].rstrip())
+            i = j
+        else:
+            i += 1
+    return out
+
+
+# ---------------------------------------------------------------- parse into the model
+
+
+def key_str(k):
+    return k.as_string().strip()
+
+
+def is_dotted(tbl):
+    """A super table built from dotted keys (`_.path = ...`) rather than from [a.b] headers."""
+    for _, it in tbl.value.body:
+        if isinstance(it, ti.AoT):
+            return False
+        if isinstance(it, ti.Table) and (not it.is_super_table() or not is_dotted(it)):
+            return False
+    return True
+
+
+class Walker:
+    def __init__(self):
+        self.pending = []  # comment lines not yet attached
+        self.blank = False
+
+    def take(self):
+        lead = self.pending
+        while lead and lead[-1] == "":
+            lead.pop()
+        self.pending = []
+        return lead
+
+    def walk(self, container, table, prefix=""):
+        for k, it in container.body:
+            if k is None:
+                if isinstance(it, ti.Comment):
+                    self.pending.append(it.as_string().strip())
+                elif isinstance(it, ti.Whitespace) and "\n" in it.as_string():
+                    self.blank = True
+                    if self.pending and self.pending[-1] != "":
+                        self.pending.append("")
+                else:
+                    raise Unsupported(f"unexpected {type(it).__name__} in {table.path}")
+            elif isinstance(it, ti.Table) and it.is_super_table() and is_dotted(it):
+                self.walk(it.value, table, prefix + key_str(k) + ".")
+            elif isinstance(it, ti.Table):
+                child = Table(
+                    table.path + [key_str(k)],
+                    header=not it.is_super_table(),
+                    comment=it.trivia.comment,
+                    lead=self.take(),
+                )
+                self.blank = False
+                self.walk(it.value, child)
+                table.children.append(child)
+            elif isinstance(it, ti.AoT):
+                for t in it.body:
+                    child = Table(
+                        table.path + [key_str(k)],
+                        aot=True,
+                        comment=t.trivia.comment,
+                        lead=self.take(),
+                    )
+                    self.blank = False
+                    self.walk(t.value, child)
+                    table.children.append(child)
+            else:
+                name = prefix + (k.key if hasattr(k, "key") else key_str(k))
+                table.entries.append(
+                    Entry(
+                        prefix + key_str(k),
+                        name,
+                        it,
+                        comment=it.trivia.comment,
+                        lead=self.take(),
+                        blank_before=self.blank,
+                    )
+                )
+                self.blank = False
+
+
+def parse(src):
+    doc = tomlkit.parse(src)
+    root = Table([], header=False)
+    w = Walker()
+    # File header: the comment lines at the very top, up to the last blank line before the
+    # first key or table. Comments directly above a table stay with that table.
+    head = []
+    body = list(doc.body)
+    while body and body[0][0] is None:
+        head.append(body.pop(0)[1])
+    header_lines, trail = [], []
+    for it in head:
+        if isinstance(it, ti.Comment):
+            trail.append(it.as_string().strip())
+        elif "\n" in it.as_string() and trail:
+            header_lines += trail + [""]
+            trail = []
+    while header_lines and header_lines[-1] == "":
+        header_lines.pop()
+    w.pending = trail
+    fake = tomlkit.document()
+    fake.body.extend(body)
+    w.walk(fake, root)
+    return header_lines, root, w.take()
+
+
+# ---------------------------------------------------------------- canonical layout
+
+
+def top(table):
+    return table.path[0].strip('"') if table.path else ""
+
+
+def canonicalise(root):
+    for i, t in enumerate(root.children):
+        t._index = i
+    root.children.sort(key=lambda t: (TABLE_ORDER.get(top(t), 9), t._index))
+    for t in root.children:
+        canon_table(t)
+
+
+def canon_table(t):
+    section = top(t)
+    if section in SORTED_TABLES:
+        for e in t.entries:
+            e.lead = [ln for ln in e.lead if not GROUP_RE.match(ln)]
+            e.blank_before = False
+        t.entries.sort(key=lambda e: e.name.lower())
+        if section == "settings":
+            t.children.sort(key=lambda c: c.path[-1].strip('"').lower())
+    for c in t.children:
+        canon_table(c)
+
+
+def backend_of(entry):
+    v = entry.item
+    return str(v).split(":", 1)[0] if isinstance(v, ti.String) and ":" in str(v) else "other"
+
+
+# ---------------------------------------------------------------- render
+
+
+def render_value(it, tools_shorthand=False):
+    if isinstance(it, ti.InlineTable):
+        pairs = [(key_str(k), v) for k, v in it.value.body if k is not None]
+        if tools_shorthand and len(pairs) == 1 and pairs[0][0] == "version":
+            return render_value(pairs[0][1])
+        if tools_shorthand:
+            pairs.sort(key=lambda p: p[0] != "version")  # version first, others kept in order
+        if not pairs:
+            return "{}"
+        return "{ " + ", ".join(f"{k} = {render_value(v)}" for k, v in pairs) + " }"
+    if isinstance(it, ti.Array):
+        raw = it.as_string()
+        if scan_comments(raw):
+            return raw.strip()  # arrays with comments are kept verbatim
+        elems = [render_value(e) for e in it]
+        if "\n" in raw:
+            return "[\n" + "".join(f"  {e},\n" for e in elems) + "]"
+        return "[" + ", ".join(elems) + "]"
+    if not hasattr(it, "as_string"):
+        raise Unsupported(f"cannot render {type(it).__name__}")
+    return it.as_string().strip()
+
+
+def render_entries(entries, out, section, ordered):
+    width = max((len(e.key) for e in entries), default=0)
+    groups = [(None, entries)]
+    if section in ("tool_alias", "alias"):
+        by = {}
+        for e in entries:
+            by.setdefault(backend_of(e), []).append(e)
+        groups = [(b, by[b]) for b in sorted(by)]
+    for gi, (label, members) in enumerate(groups):
+        if label is not None:
+            if gi:
+                out.append("")
+            out.append(f"# --- {label} ---")
+        for ei, e in enumerate(members):
+            if ordered and e.blank_before and ei:
+                out.append("")
+            out.extend(e.lead)
+            line = f"{e.key.ljust(width)} = {render_value(e.item, section == 'tools')}"
+            out.append(line + (f" {e.comment}" if e.comment else ""))
+
+
+def render_table(t, out):
+    section = top(t)
+    if t.lead:
+        out.extend(t.lead)
+    if t.header:
+        name = ".".join(t.path)
+        hdr = f"[[{name}]]" if t.aot else f"[{name}]"
+        out.append(hdr + (f" {t.comment}" if t.comment else ""))
+    render_entries(t.entries, out, section, ordered=section not in SORTED_TABLES)
+    if t.header or t.entries:
+        out.append("")
+    for c in t.children:
+        render_table(c, out)
+
+
+def render(header_lines, root, trailer):
+    out = []
+    if header_lines:
+        out += header_lines + [""]
+    if root.entries:
+        render_entries(root.entries, out, "", ordered=True)
+        out.append("")
+    for t in root.children:
+        render_table(t, out)
+    if trailer:
+        out += trailer + [""]
+    while out and out[-1] == "":
+        out.pop()
+    return "\n".join(out) + "\n"
+
+
+def fmt(src):
+    header_lines, root, trailer = parse(src)
+    canonicalise(root)
+    return render(header_lines, root, trailer), root
+
+
+# ---------------------------------------------------------------- safety checks
+
+
+def normalise(data):
+    tools = data.get("tools")
+    if isinstance(tools, dict):
+        data = dict(data)
+        data["tools"] = {
+            k: (v["version"] if isinstance(v, dict) and set(v) == {"version"} else v)
+            for k, v in tools.items()
+        }
+    return data
+
+
+def order_problems(a, b, path=()):
+    """Key-order differences inside tables whose order the formatter promises to keep."""
+    if not (isinstance(a, dict) and isinstance(b, dict)):
+        return []
+    probs = []
+    if not path:  # tables are reordered on purpose; top-level plain keys keep their order
+        if [k for k in a if not isinstance(a[k], dict)] != [
+            k for k in b if not isinstance(b[k], dict)
+        ]:
+            probs.append("<top>")
+    elif path[0] not in SORTED_TABLES and list(a) != list(b):
+        probs.append(".".join(path))
+    for k in a.keys() & b.keys():
+        probs += order_problems(a[k], b[k], path + (k,))
+    return probs
+
+
+def check_content(src, out):
+    before, after = normalise(tomllib.loads(src)), normalise(tomllib.loads(out))
+    problems = []
+    if before != after:
+        problems.append("parsed content differs")
+    problems += [f"key order changed in [{p}]" for p in order_problems(before, after)]
+    lost = Counter(c for c in scan_comments(src) if not GROUP_RE.match(c))
+    lost.subtract(Counter(scan_comments(out)))
+    problems += [f"comment dropped: {c}" for c, n in lost.items() if n > 0]
+    if fmt(out)[0] != out:
+        problems.append("not idempotent: formatting the result changes it again")
+    return problems
+
+
+def global_config():
+    env = os.environ.get("MISE_GLOBAL_CONFIG_FILE")
+    return Path(env).expanduser() if env else Path.home() / ".config/mise/config.toml"
+
+
+def winners(text, lockfile):
+    """binary name -> tool install dir that provides it first, for a candidate global config."""
+    with tempfile.TemporaryDirectory(prefix="mise-config-fmt-") as tmp:
+        cfg = Path(tmp) / "config.toml"
+        cfg.write_text(text)
+        if lockfile.exists():
+            shutil.copy(lockfile, Path(tmp) / "mise.lock")
+        # Isolate the candidate: MISE_GLOBAL_CONFIG_FILE alone *adds* a config, the real
+        # ~/.config/mise/config.toml still loads (and dominates) unless MISE_CONFIG_DIR moves
+        # too; and cwd "/" keeps mise's upward walk from picking up ~/mise.toml and friends.
+        env = dict(
+            os.environ,
+            MISE_CONFIG_DIR=tmp,
+            MISE_GLOBAL_CONFIG_FILE=str(cfg),
+            MISE_OFFLINE="1",
+        )
+        res = subprocess.run(
+            ["mise", "bin-paths"], cwd="/", env=env, capture_output=True, text=True, check=False
+        )
+    if res.returncode != 0:
+        raise RuntimeError(f"mise bin-paths failed: {res.stderr.strip()[:300]}")
+    seen = {}
+    for d in res.stdout.splitlines():
+        try:
+            names = sorted(os.listdir(d))
+        except OSError:
+            continue
+        for n in names:
+            p = os.path.join(d, n)
+            if n not in seen and os.path.isfile(p) and os.access(p, os.X_OK):
+                seen[n] = d
+    return seen
+
+
+def check_precedence(path, src, out):
+    lock = path.parent / "mise.lock"
+    before, after = winners(src, lock), winners(out, lock)
+    return [
+        f"binary {n}: {before.get(n)} -> {after.get(n)}"
+        for n in sorted(before.keys() | after.keys())
+        if before.get(n) != after.get(n)
+    ]
+
+
+def suggest_name(backend_ref):
+    """A short name for "github:owner/repo"-style refs: the repo, minus vfox-/cli noise."""
+    parts = backend_ref.split(":", 1)[-1].strip("/").split("/")
+    name = parts[-1].removeprefix("vfox-")
+    if name in ("cli", "cmd") and len(parts) > 1:
+        name = parts[-2]
+    return name.lower()
+
+
+def long_form_notes(root):
+    notes = []
+    for t in root.children:
+        if top(t) == "tools" and len(t.path) == 1:
+            for e in t.entries:
+                if ":" in e.name:
+                    short = suggest_name(e.name)
+                    notes.append(
+                        f'long-form key {e.key}: add [tool_alias] {short} = "{e.name}" and '
+                        f"rename the [tools] key to {short} (reinstalls it). If `mise registry "
+                        f"{short}` already lists that backend first, skip the alias."
+                    )
+    return notes
+
+
+# ---------------------------------------------------------------- main
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("file", nargs="?", type=Path, help="default: the global mise config")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("-c", "--check", action="store_true", help="exit 1 if not canonical")
+    mode.add_argument("-d", "--diff", action="store_true", help="print the diff, write nothing")
+    ap.add_argument(
+        "--no-path-check",
+        action="store_true",
+        help="skip the which-tool-provides-each-binary comparison",
+    )
+    args = ap.parse_args()
+
+    path = (args.file or global_config()).expanduser().resolve()
+    try:
+        src = path.read_text()
+        out, root = fmt(src)
+    except (OSError, tomlkit.exceptions.TOMLKitError, Unsupported) as exc:
+        print(f"mise-config-fmt: {path}: {exc}", file=sys.stderr)
+        return 2
+
+    for note in long_form_notes(root):
+        print(f"note: {note}", file=sys.stderr)
+
+    if out == src:
+        if not args.check:
+            print(f"{path}: already canonical")
+        return 0
+
+    problems = check_content(src, out)
+    if not args.no_path_check:
+        if path == global_config().resolve():
+            try:
+                problems += check_precedence(path, src, out)
+            except (OSError, RuntimeError) as exc:
+                problems.append(f"precedence check could not run: {exc}")
+        else:
+            print("note: precedence check skipped (not the global config)", file=sys.stderr)
+
+    diff = "".join(
+        difflib.unified_diff(
+            src.splitlines(True), out.splitlines(True), str(path), f"{path} (formatted)"
+        )
+    )
+    if args.diff or args.check:
+        sys.stdout.write(diff)
+    if problems:
+        print("mise-config-fmt: REFUSED:", file=sys.stderr)
+        for p in problems:
+            print(f"  - {p}", file=sys.stderr)
+        return 3
+    if args.check:
+        return 1
+    if args.diff:
+        return 0
+
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.")
+    with os.fdopen(fd, "w") as fh:
+        fh.write(out)
+    shutil.copymode(path, tmp)
+    os.replace(tmp, path)
+    print(f"{path}: reformatted")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

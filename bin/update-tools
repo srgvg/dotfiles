@@ -615,13 +615,21 @@ get_shell_init_cache() {
         atuin init bash --disable-up-arrow --disable-ctrl-r
 
     log "mise"
+    # Run from a shell where mise is already active (inherited __MISE_DIFF), `mise activate`
+    # prepends a deactivate block: `export PATH='<this process's PATH>'` plus `unset GOBIN
+    # CARGO_HOME ...`. Cached, that clobbers every new shell. Generate from a clean mise state
+    # and refuse the result if the block still appears.
     _write_cache mise-activate "$cache_dir/mise-activate.bash" "" \
+        env -u __MISE_DIFF -u __MISE_SESSION -u __MISE_ORIG_PATH -u __MISE_WATCH -u MISE_SHELL \
         "$mise_bin" activate bash
-    # hook-env must run without shims in PATH to avoid the "shims + activation" conflict
-    local nonshim_path
-    nonshim_path=$(echo "$PATH" | tr ':' '\n' | grep -v 'mise/shims' | tr '\n' ':' | sed 's/:$//')
-    _write_cache mise-hook "$cache_dir/mise-hook.bash" "export PATH" \
-        env PATH="$nonshim_path" "$mise_bin" hook-env
+    if grep -q '^export PATH=' "$cache_dir/mise-activate.bash"; then
+        err "shell-init: mise-activate cache embeds a PATH (deactivate block); removed"
+        rm -f "$cache_dir/mise-activate.bash"
+        rc=1
+    fi
+    # hook-env is deliberately not cached: its output embeds this process's full PATH, which
+    # would overwrite the interactive PATH order. z80_mise.bash runs it live (~50ms).
+    rm -f "$cache_dir/mise-hook.bash"
 
     log "dircolors"
     _write_cache dircolors "$cache_dir/dircolors.bash" "" \
@@ -754,6 +762,8 @@ post() {
     #    FAILED_COMPONENTS+=("dotfiles")
     #    err "dotfiles add failed"
     #fi
+
+    :
 
 }
 

@@ -10,7 +10,11 @@ set -o pipefail
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 
-PATH=$HOME/bin:$PATH
+# Guarded: scripts that source this (cronjobs.sh -> update-tools) stacked one copy per level.
+case ":$PATH:" in
+	*":$HOME/bin:"*) ;;
+	*) PATH=$HOME/bin:$PATH ;;
+esac
 source "$HOME/bin/parameters.bash"
 source "$HOME/.bashrc.d/z86_functions.bash"
 # Use shims for scripts (faster than eval "$(mise env -s bash)")
