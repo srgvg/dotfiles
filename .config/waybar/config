@@ -162,7 +162,8 @@
             "dnd-inhibited-none": "󰂛"
         },
         "return-type": "json",
-        "exec": "swaync-client -swb",
+        // pdeathsig: the subscriber outlived every bar restart (17 orphans found 2026-10-01).
+        "exec": "setpriv --pdeathsig TERM swaync-client -swb",
         "on-click": "swaync-client -t -sw",
         "on-click-right": "swaync-client -d -sw",
         "escape": true

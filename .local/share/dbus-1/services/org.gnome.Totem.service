@@ -1,0 +1,7 @@
+[D-BUS Service]
+Name=org.gnome.Totem
+# User override of /usr/share/dbus-1/services/org.gnome.Totem.service.
+# Without GST_GL_API=opengl3, GStreamer creates an OpenGL ES context to share with
+# GTK's desktop OpenGL context; NVIDIA refuses that (EGL_BAD_CONTEXT) and totem shows
+# "Could not initialise OpenGL support". See ~/etc/docs/totem.md.
+Exec=/usr/bin/env GST_GL_API=opengl3 /usr/bin/totem --gapplication-service

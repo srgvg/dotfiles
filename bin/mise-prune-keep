@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# mise prune that keeps the newest N installed versions of every tool.
+#
+# `mise prune` deletes every version no tracked config pins, including the one `mise upgrade`
+# replaced minutes ago. Shells using `mise activate` put installs/<tool>/<version> dirs on PATH,
+# so long-running processes started from them (Claude sessions, editors, tmux commands) lose
+# the tool. This only removes a prunable version when it is not among the tool's newest N
+# installs, ranked by install-dir mtime (version strings here are not uniformly semver).
+# Non-prunable versions are never touched. See ~/etc/docs/mise.md §Maintenance.
+#
+# Usage: mise-prune-keep [--keep N] [--dry-run]
+set -euo pipefail
+
+keep=3
+dry_run=false
+while (($#)); do
+    case $1 in
+    --keep)
+        keep=${2:?--keep needs a number}
+        shift 2
+        ;;
+    -n | --dry-run)
+        dry_run=true
+        shift
+        ;;
+    -h | --help)
+        sed -n '2,11s/^# \{0,1\}//p' "$0"
+        exit 0
+        ;;
+    *)
+        echo "mise-prune-keep: unknown argument: $1" >&2
+        exit 64
+        ;;
+    esac
+done
+[[ $keep =~ ^[1-9][0-9]*$ ]] || {
+    echo "mise-prune-keep: --keep must be a positive integer, got '$keep'" >&2
+    exit 64
+}
+
+prunable=$(mise ls --prunable --json)
+installed=$(mise ls --installed --json)
+
+while IFS=$'\t' read -r tool version; do
+    # This tool's installed versions, newest install first.
+    ranked=$(jq -r --arg t "$tool" '.[$t][] | [.version, .install_path] | @tsv' <<<"$installed" |
+        while IFS=$'\t' read -r v path; do
+            printf '%s\t%s\n' "$(stat -L -c %Y -- "$path" 2>/dev/null || echo 0)" "$v"
+        done | sort -rn -k1,1 | cut -f2)
+    if head -n "$keep" <<<"$ranked" | grep -qxF -- "$version"; then
+        continue
+    fi
+    if $dry_run; then
+        echo "would uninstall $tool@$version"
+    else
+        echo "uninstall $tool@$version"
+        mise uninstall -- "$tool@$version"
+    fi
+done < <(jq -r 'to_entries[] | .key as $t | .value[] | [$t, .version] | @tsv' <<<"$prunable")

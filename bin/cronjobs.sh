@@ -240,6 +240,17 @@ function execute() {
                 -mtime +30 \
                 -print0 | xargs -r -0 rm -fv
         fi
+        # claude-sway-urgent.log: the Notification/Stop hook's JSONL audit log, ~700 B per record
+        # and ~1000 records a day (measured 2026-10-01: 30402 lines, 21 MB, never trimmed). Over
+        # 30000 lines keep the newest 20000. The lock is the one the appender takes (flock on
+        # <log>.lock, see ~/binc/claude-sway-urgent), so no record is torn or lost to the mv;
+        # umask keeps the replacement owner-only like the original (it can carry command text).
+        urgent_log="${XDG_STATE_HOME:-$HOME/.local/state}/claude-sway-urgent.log"
+        if [ -f "$urgent_log" ] && [ "$(wc -l <"$urgent_log")" -gt 30000 ]; then
+            logtitle trim claude-sway-urgent.log
+            flock -w 5 "$urgent_log.lock" -c \
+                "umask 077 && tail -n 20000 '$urgent_log' >'$urgent_log.tmp' && mv '$urgent_log.tmp' '$urgent_log'"
+        fi
         # ~/.claude/file-history, depth 1: per-session dirs older than 30 days, removed recursively.
         if [ -d "$HOME/.claude/file-history" ]; then
             scan $HOME/.claude/file-history/ \

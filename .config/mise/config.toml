@@ -136,7 +136,9 @@ git-cliff            = "latest"
 git-who              = "latest"
 git-xargs            = "latest"
 github-cli           = "latest"
-gitleaks             = "latest"
+"github:yepzdk/claude-sessions-monitor" = "latest"
+"github:yonahd/kor" = "latest"
+gitleaks             = "8.30.1"
 glab                 = { version = "latest", exe = "glab" }
 go                   = "latest"
 go-containerregistry = { version = "latest", exe = "crane" }
@@ -150,6 +152,10 @@ hanoi-cli            = "latest"
 hcloud               = { version = "latest", exe = "hcloud" }
 hcloud-upload-image  = "latest"
 helm                 = "latest"
+# Same Sigstore TSA failure as b4n on mise 2026.5.18. 0.9.3 was installed once with
+# MISE_GITHUB_GITHUB_ATTESTATIONS=false after `gh release verify-asset` passed and the digest
+# matched; back to "latest" after the next mise upgrade.
+herdr                = "0.9.3"
 hugo                 = "latest"
 hunk                 = "latest"
 hurl                 = { version = "latest", exe = "hurl" } # tarball also ships hurlfmt

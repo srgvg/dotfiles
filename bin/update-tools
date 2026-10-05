@@ -402,7 +402,8 @@ get_mise() {
     mise cache prune --verbose
     mise install --yes
     mise upgrade --yes --jobs 8
-    mise prune --yes
+    # not `mise prune`: it deletes versions long-running activated shells still have on PATH
+    "$HOME/bin/mise-prune-keep" --keep 3
     mise reshim
     mise lock --yes
     mise doctor --verbose

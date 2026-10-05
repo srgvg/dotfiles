@@ -275,9 +275,9 @@
 
 /* --- Per-urgency borders, carried over from the mako config (2026-08-03) ---
    mako had [urgency=low] grey #a9a9a9, [urgency=normal] blue #2a52be,
-   [urgency=high] red #b22222. That colour IS the signal: Claude Code popups are
-   sent -u low on purpose (~/binc/claude-sway-urgent), and critical must be
-   unmistakable. See ~/etc/docs/portal-notifications.md. */
+   [urgency=high] red #b22222. That colour IS the signal: red means "needs you
+   now" and belongs to critical only (2026-10-01); Claude Code popups are sent
+   -u critical (~/binc/claude-sway-urgent). See ~/etc/docs/portal-notifications.md. */
 .notification-row .notification-background .notification.low {
   border: 2px solid #a9a9a9;
 }

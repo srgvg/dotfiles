@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# totem wrapper for goldorak (NVIDIA, Wayland).
+# Without GST_GL_API=opengl3, GStreamer creates an OpenGL ES context to share with
+# GTK's desktop OpenGL context; NVIDIA refuses that (EGL_BAD_CONTEXT) and totem shows
+# "Could not initialise OpenGL support". See ~/etc/docs/totem.md.
+GST_GL_API=opengl3 exec /usr/bin/totem "$@"
