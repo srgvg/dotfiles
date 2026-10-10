@@ -1,0 +1,112 @@
+#!/bin/bash
+# Restart swaync when sway gets an output back after having none.
+#
+# Why: when every output disappears (TV and ultrawide both switched off), sway has nowhere to
+# put swaync's popup layer surface, logs "no output to auto-assign layer surface
+# 'swaync-notification-window'" and closes it. swaync 0.12.6 then logs "A window is shown
+# after it has been destroyed" and never shows a popup or the control center again, even
+# after the output returns. Notifications still arrive (swaync-client -c counts them), they
+# are just invisible. Seen 2026-10-07; see ~/etc/docs/portal-notifications.md.
+#
+# Restarts only on the 0 -> >=1 transition, so an ordinary TV on/off (ultrawide stays up)
+# never drops the notifications swaync is holding. It counts *connected* outputs, not active
+# ones: swayidle.sh cycles every output (`output X disable` then `enable`) on lock, unlock and
+# resume, and a disabled output stays in get_outputs with active:false. Counting active ones
+# would restart swaync on every lock with one screen. A monitor powering off disconnects and
+# drops out of the list. The do-not-disturb state swayidle.sh sets on lock is re-applied after
+# a restart.
+#
+# Started from the goldorak job list (~/bin/launch-desktop-jobs-goldorak), so it runs in an
+# i3jobs screen window and its log lines show there as well as in
+# `journalctl --user -t swaync-output-watch`. It is its own singleton: a second watch instance
+# for the same sway session exits at once.
+#
+# Usage:
+#   swaync-output-watch                 watch sway output events
+#   swaync-output-watch --simulate N..  feed a sequence of output counts, print actions
+#   swaync-output-watch --restart       restart a wedged swaync now, keeping do-not-disturb
+set -uo pipefail
+
+SETTLE=2  # seconds to let a returning output settle before restarting
+
+simulate=0
+[[ ${1:-} == --simulate ]] && { simulate=1; shift; }
+
+log() {
+    if ((simulate)); then
+        echo "$*"
+    else
+        echo "$(date '+%F %T') $*"
+        logger -t swaync-output-watch -- "$*"
+    fi
+}
+
+connected_outputs() {
+    swaymsg -t get_outputs -r | jq 'length'
+}
+
+restart_swaync() {
+    local dnd
+    dnd=$(timeout 5 swaync-client --get-dnd --skip-wait 2>/dev/null) || dnd=false
+    systemctl --user restart swaync.service || { log "swaync restart failed"; return; }
+    if [[ $dnd == true ]]; then
+        timeout 10 swaync-client --dnd-on >/dev/null || log "could not re-apply do-not-disturb"
+    fi
+    log "swaync restarted (dnd=$dnd)"
+}
+
+prev=
+# on_count <n>: act on one observed connected-output count.
+on_count() {
+    local n=$1
+    if [[ $prev == 0 ]] && ((n > 0)); then
+        if ((simulate)); then
+            log "0 -> $n outputs: restart swaync"
+        else
+            sleep "$SETTLE"
+            n=$(connected_outputs) || n=0
+            if ((n > 0)); then
+                log "0 -> $n outputs: restarting swaync"
+                restart_swaync
+            fi
+        fi
+    elif [[ -n $prev && $prev != "$n" ]]; then
+        log "$prev -> $n outputs"
+    fi
+    prev=$n
+}
+
+if ((simulate)); then
+    for n in "$@"; do on_count "$n"; done
+    exit 0
+fi
+if [[ ${1:-} == --restart ]]; then
+    restart_swaync
+    exit 0
+fi
+
+# Singleton per sway session: the lock name carries the sway IPC socket, so a leftover from an
+# old session never blocks a new one.
+: "${XDG_RUNTIME_DIR:?}" "${SWAYSOCK:?SWAYSOCK not set}"
+lock="$XDG_RUNTIME_DIR/swaync-output-watch-${SWAYSOCK##*/}.lock"
+exec {lockfd}>"$lock"
+if ! flock -n "$lockfd"; then
+    echo "already running for this sway session ($lock)"
+    exit 0
+fi
+
+# The subscription must not inherit the lock fd ({lockfd}>&-): an orphaned swaymsg holding it
+# would block every relaunch (seen 2026-10-07).
+exec {events}< <(exec swaymsg -t subscribe -m '["output"]' {lockfd}>&-)
+sub_pid=$!
+# Take the subscription down with us, so a killed watcher leaves no orphan behind.
+trap 'kill "$sub_pid" 2>/dev/null' EXIT
+trap 'exit 143' TERM INT HUP
+
+log "watching sway outputs ($(connected_outputs || echo '?') connected)"
+on_count "$(connected_outputs || echo 0)"
+# sway's output event carries no detail ({"change":"unspecified"}), so re-read the list.
+while read -r -u "$events" _; do
+    on_count "$(connected_outputs || echo 0)"
+done
+log "sway output subscription ended"

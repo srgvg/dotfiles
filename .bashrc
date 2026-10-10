@@ -38,6 +38,3 @@ fi
 # NOTE: Atuin and bash-preexec sourcing removed from here (was redundant)
 # They are now loaded only once via ~/.bashrc.d/3-atuin.bash
 # This prevents duplicate sourcing and improves startup performance
-
-# opencode: no PATH entry needed, ~/bin/opencode symlinks ~/.opencode/bin/opencode.
-# Its installer re-adds an `export PATH=...opencode/bin` line here on upgrade; delete it.

@@ -37,9 +37,11 @@
   background: @cc-bg;
 }
 
+/* 0.12 (GTK4) moved the inner spacing onto this element; 0 here left the text flush against the
+   border. User CSS outranks the default sheet regardless of selector specificity. */
 .notification-default-action {
   margin: 0;
-  padding: 0;
+  padding: 8px 10px;
   border-radius: 0px;
 }
 

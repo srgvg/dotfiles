@@ -129,7 +129,7 @@ MOUSE_DEVICE="1133:16507:Logitech_MX_Vertical"
 # Primary output config — used by low-res display recovery fallback.
 # WARNING: do NOT use 'swaymsg reload' in recovery paths — reloading during a
 # non-standard output mode causes sway/wlroots to lose all DRM outputs (confirmed 2026-04-29).
-OUTPUT_PRIMARY="DP-5"
+OUTPUT_PRIMARY="DP-4"
 OUTPUT_MODE="7680x2160"
 OUTPUT_SCALE="1.5"
 

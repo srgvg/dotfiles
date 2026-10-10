@@ -2,14 +2,34 @@
     "layer": "top",
     "position": "top",
     "height": 42,
-    "output": ["DP-5"],
+    "output": [
+        "DP-4"
+    ],
     "spacing": 12,
     "mode": "dock",
-
-    "modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad", "sway/window"],
-    "modules-center": ["idle_inhibitor", "custom/media"],
-    "modules-right": ["pulseaudio", "bluetooth", "network", "temperature", "cpu", "memory", "disk", "disk#2", "tray", "custom/notification", "clock"],
-
+    "modules-left": [
+        "sway/workspaces",
+        "sway/mode",
+        "sway/scratchpad",
+        "sway/window"
+    ],
+    "modules-center": [
+        "idle_inhibitor",
+        "custom/media"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "bluetooth",
+        "network",
+        "temperature",
+        "cpu",
+        "memory",
+        "disk",
+        "disk#2",
+        "tray",
+        "custom/notification",
+        "clock"
+    ],
     "sway/workspaces": {
         "disable-scroll": true,
         "all-outputs": false,
@@ -28,7 +48,10 @@
     "sway/scratchpad": {
         "format": "{icon} {count}",
         "show-empty": false,
-        "format-icons": ["", ""],
+        "format-icons": [
+            "",
+            ""
+        ],
         "tooltip": true,
         "tooltip-format": "{app}: {title}"
     },
@@ -90,7 +113,11 @@
         "critical-threshold": 80,
         "format": "{temperatureC}°C {icon}",
         "format-critical": "<span color='#f53c3c'>{temperatureC}°C {icon}</span>",
-        "format-icons": ["󱃃", "󰔏", "󱃂"],
+        "format-icons": [
+            "󱃃",
+            "󰔏",
+            "󱃂"
+        ],
         "tooltip-format": "Temperature: {temperatureC}°C"
     },
     "network": {
@@ -128,7 +155,11 @@
             "phone": "󰏲",
             "portable": "󰏲",
             "car": "󰄋",
-            "default": ["󰕿", "󰖀", "󰕾"]
+            "default": [
+                "󰕿",
+                "󰖀",
+                "󰕾"
+            ]
         },
         "on-click": "pavucontrol",
         "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+",
