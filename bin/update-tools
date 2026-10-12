@@ -698,17 +698,24 @@ get_ai() {
 
     log "codex"
     if hash codex >/dev/null 2>&1; then
-        # Unpinned 2026-09-04: was pinned to 0.148.0 after 0.149.0+ dropped
-        # approval_policy="untrusted", which nah's old launcher depended on as its sole
-        # approval mechanism. nah's main-local now defaults to on-request +
-        # workspace-write sandbox + widened AUTHORITY_RULE_PREFIXES instead
-        # (~/.claude/plans/codex-partitioned-gizmo.md), live-verified against 0.153.2.
-        # Re-pinned 2026-09-07: nah's Codex integration (authority rules, PermissionRequest
-        # hook, approval reviewer) tracks a moving upstream and broke silently on 0.149 and
-        # 0.153. Upgrade procedure — bump the pin, run nah's Codex test suite, then install:
-        # ~/etc/docs/nah.md §Codex upgrade procedure.
-        CODEX_PIN=0.153.4
-        npm install -g "@openai/codex@${CODEX_PIN}"
+        # Upgrade old npm installs to this baseline, never undo a user's newer update.
+        # nah's shared-daemon launcher requires >=0.160.1; the old 0.153.4 pin
+        # repeatedly downgraded Codex below that requirement. See ~/etc/docs/nah.md.
+        # Read npm metadata: PATH may resolve to the independently updated daemon CLI.
+        local codex_baseline=0.162.1 codex_installed
+        if ! codex_installed="$(npm list --global @openai/codex --depth=0 --json |
+            jq -er '.dependencies["@openai/codex"].version')"; then
+            err "Cannot read npm's Codex version; leaving the installation unchanged"
+            FAILED_COMPONENTS+=("codex")
+        elif [[ ! "$codex_installed" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            err "Unrecognized Codex version '$codex_installed'; leaving it unchanged"
+            FAILED_COMPONENTS+=("codex")
+        elif [[ "$(printf '%s\n' "$codex_baseline" "$codex_installed" | sort -V | head -n 1)" == "$codex_baseline" ]]; then
+            log "Codex $codex_installed meets baseline $codex_baseline; keeping it"
+        elif ! npm install -g "@openai/codex@${codex_baseline}"; then
+            err "Codex upgrade to $codex_baseline failed"
+            FAILED_COMPONENTS+=("codex")
+        fi
     else
         echo "# codex not installed. install with:"
         echo "  npm install -g @openai/codex"

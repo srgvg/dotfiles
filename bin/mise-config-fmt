@@ -16,23 +16,27 @@ Layout
     end of a table moves with the next table header.
 
 Safety -- any violation refuses the write (exit 3)
-  - the parsed content must be identical (modulo the "x" == { version = "x" } shorthand), and
+  - parsed content must match the exact planned alias conversions and version shorthand, and
     key order must be unchanged wherever it is kept;
   - every comment in the input must survive (generated "# --- x ---" headers excepted);
   - formatting the result again must be a no-op;
   - global config only: no binary may switch to a different tool. mise builds PATH in [tools]
     order, so re-sorting can change which tool wins a binary two tools both ship.
 
-Long-form [tools] keys ("github:owner/repo", as `mise use -g` writes them) are reported with a
-suggested [tool_alias] line. They are not converted: renaming a tool reinstalls it.
+Long-form [tools] keys are converted to short names with explicit [tool_alias] mappings.
+Renaming can require reinstallation: commands are printed, never executed. For missing short-name
+installs, the global PATH check projects the old installation's binaries into the new ordering.
 
 Exit: 0 formatted or already canonical, 1 --check found changes, 2 bad input, 3 refused.
 """
 
 import argparse
+import copy
 import difflib
+import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -321,6 +325,26 @@ def render(header_lines, root, trailer):
 
 def fmt(src):
     header_lines, root, trailer = parse(src)
+    renames = conversion_plan(tomllib.loads(src))
+    if renames:
+        tool_table = next(t for t in root.children if top(t) == "tools")
+        if set(renames) - {e.name for e in tool_table.entries}:
+            raise Unsupported("long-form tool subtables cannot be converted; use inline values")
+        aliases = next((t for t in root.children if top(t) == "tool_alias"), None)
+        if aliases is None:
+            aliases = Table(["tool_alias"])
+            root.children.append(aliases)
+        aliases.header = True
+        existing = tomllib.loads(src).get("tool_alias", {})
+        for e in tool_table.entries:
+            if e.name in renames:
+                ref, short = e.name, renames[e.name]
+                e.name = short
+                e.key = tomlkit.key(short).as_string()
+                if short not in existing:
+                    aliases.entries.append(
+                        Entry(tomlkit.key(short).as_string(), short, tomlkit.string(ref))
+                    )
     canonicalise(root)
     return render(header_lines, root, trailer), root
 
@@ -358,6 +382,10 @@ def order_problems(a, b, path=()):
 
 def check_content(src, out):
     before, after = normalise(tomllib.loads(src)), normalise(tomllib.loads(out))
+    before = copy.deepcopy(before)
+    for ref, short in conversion_plan(before).items():
+        before["tools"][short] = before["tools"].pop(ref)
+        before.setdefault("tool_alias", {})[short] = ref
     problems = []
     if before != after:
         problems.append("parsed content differs")
@@ -375,13 +403,19 @@ def global_config():
     return Path(env).expanduser() if env else Path.home() / ".config/mise/config.toml"
 
 
-def winners(text, lockfile):
-    """binary name -> tool install dir that provides it first, for a candidate global config."""
+def mise_read(text, lockfile, args, renames=None):
+    """Read an isolated candidate offline; only the temporary lock copy is remapped."""
     with tempfile.TemporaryDirectory(prefix="mise-config-fmt-") as tmp:
         cfg = Path(tmp) / "config.toml"
         cfg.write_text(text)
         if lockfile.exists():
-            shutil.copy(lockfile, Path(tmp) / "mise.lock")
+            lock = tomlkit.parse(lockfile.read_text())
+            for ref, short in (renames or {}).items():
+                records = lock.get("tools", {})
+                if ref in records:
+                    # An old short-name lock must not override the explicit backend.
+                    records[short] = records.pop(ref)
+            (Path(tmp) / "mise.lock").write_text(tomlkit.dumps(lock))
         # Isolate the candidate: MISE_GLOBAL_CONFIG_FILE alone *adds* a config, the real
         # ~/.config/mise/config.toml still loads (and dominates) unless MISE_CONFIG_DIR moves
         # too; and cwd "/" keeps mise's upward walk from picking up ~/mise.toml and friends.
@@ -390,14 +424,22 @@ def winners(text, lockfile):
             MISE_CONFIG_DIR=tmp,
             MISE_GLOBAL_CONFIG_FILE=str(cfg),
             MISE_OFFLINE="1",
+            MISE_AUTO_INSTALL="0",
+            MISE_EXEC_AUTO_INSTALL="0",
         )
         res = subprocess.run(
-            ["mise", "bin-paths"], cwd="/", env=env, capture_output=True, text=True, check=False
+            ["mise", *args], cwd="/", env=env, capture_output=True, text=True, check=False
         )
     if res.returncode != 0:
-        raise RuntimeError(f"mise bin-paths failed: {res.stderr.strip()[:300]}")
+        raise RuntimeError(f"mise {' '.join(args)} failed: {res.stderr.strip()[:300]}")
+    return res.stdout
+
+
+def winners(text, lockfile, renames=None):
+    """binary name -> first providing directory in mise's actual PATH order."""
+    paths = mise_read(text, lockfile, ["bin-paths"], renames)
     seen = {}
-    for d in res.stdout.splitlines():
+    for d in paths.splitlines():
         try:
             names = sorted(os.listdir(d))
         except OSError:
@@ -409,9 +451,55 @@ def winners(text, lockfile):
     return seen
 
 
+def project_names(text, reverse):
+    """Keep candidate order, but use old tool identities for missing installations."""
+    doc = tomlkit.parse(text)
+    table = tomlkit.table()
+    for name, value in doc["tools"].items():
+        table.add(reverse.get(name, name), value)
+    doc["tools"] = table
+    return tomlkit.dumps(doc)
+
+
 def check_precedence(path, src, out):
     lock = path.parent / "mise.lock"
-    before, after = winners(src, lock), winners(out, lock)
+    renames = conversion_plan(tomllib.loads(src))
+    reverse, installed, commands = {}, {}, []
+    if renames:
+        old = json.loads(mise_read(src, lock, ["ls", "--current", "--json"]))
+        new = json.loads(mise_read(out, lock, ["ls", "--current", "--json"], renames))
+        for ref, short in renames.items():
+            previous, current = old.get(ref, []), new.get(short, [])
+            if not previous or len(previous) != len(current):
+                raise RuntimeError(f"cannot establish installations for {ref} -> {short}")
+            for a, b in zip(previous, current):
+                if a["version"] != b["version"] or not a["installed"]:
+                    raise RuntimeError(f"cannot project {ref}: missing source or changed version")
+                if not b["installed"]:
+                    reverse[short] = ref
+                    commands.append(f"{short}@{a['version']}")
+                else:
+                    installed[b["install_path"]] = a["install_path"]
+    before = winners(src, lock)
+    # If any version of a tool is missing, project all its versions together.
+    projected = project_names(out, reverse) if reverse else out
+    after = winners(projected, lock, {r: s for r, s in renames.items() if s not in reverse})
+    for binary, directory in after.items():
+        for new_dir, old_dir in installed.items():
+            if directory == new_dir or directory.startswith(new_dir + os.sep):
+                after[binary] = old_dir + directory[len(new_dir) :]
+                break
+    if reverse:
+        print(
+            "note: PATH check projects existing binaries under the new names; "
+            "verify again after installation",
+            file=sys.stderr,
+        )
+        print(
+            "note: after writing the config, run from /: "
+            + shlex.join(["mise", "install", *commands]),
+            file=sys.stderr,
+        )
     return [
         f"binary {n}: {before.get(n)} -> {after.get(n)}"
         for n in sorted(before.keys() | after.keys())
@@ -428,19 +516,26 @@ def suggest_name(backend_ref):
     return name.lower()
 
 
-def long_form_notes(root):
-    notes = []
-    for t in root.children:
-        if top(t) == "tools" and len(t.path) == 1:
-            for e in t.entries:
-                if ":" in e.name:
-                    short = suggest_name(e.name)
-                    notes.append(
-                        f'long-form key {e.key}: add [tool_alias] {short} = "{e.name}" and '
-                        f"rename the [tools] key to {short} (reinstalls it). If `mise registry "
-                        f"{short}` already lists that backend first, skip the alias."
-                    )
-    return notes
+def conversion_plan(data):
+    """Only unambiguous, collision-free renames; never choose another backend."""
+    tools, aliases = data.get("tools", {}), data.get("tool_alias", {})
+    renames, occupied = {}, set(tools)
+    for ref in tools:
+        if ":" not in ref:
+            continue
+        matches = [name for name, target in aliases.items() if target == ref]
+        if len(matches) > 1:
+            raise Unsupported(f"ambiguous aliases for {ref}: {', '.join(matches)}")
+        short = matches[0] if matches else suggest_name(ref)
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", short):
+            raise Unsupported(f"cannot derive a safe short name for {ref}")
+        if short in occupied or (short in aliases and aliases[short] != ref):
+            raise Unsupported(f"short name {short!r} for {ref} already belongs to another entry")
+        if short in data.get("alias", {}):
+            raise Unsupported(f"legacy [alias] entry conflicts with {short!r}")
+        occupied.add(short)
+        renames[ref] = short
+    return renames
 
 
 # ---------------------------------------------------------------- main
@@ -462,13 +557,23 @@ def main():
     path = (args.file or global_config()).expanduser().resolve()
     try:
         src = path.read_text()
-        out, root = fmt(src)
-    except (OSError, tomlkit.exceptions.TOMLKitError, Unsupported) as exc:
+        out, _root = fmt(src)
+    except Unsupported as exc:
+        print(f"mise-config-fmt: REFUSED: {exc}", file=sys.stderr)
+        return 3
+    except (OSError, tomlkit.exceptions.TOMLKitError) as exc:
         print(f"mise-config-fmt: {path}: {exc}", file=sys.stderr)
         return 2
 
-    for note in long_form_notes(root):
-        print(f"note: {note}", file=sys.stderr)
+    renames = conversion_plan(tomllib.loads(src))
+    for ref, short in renames.items():
+        print(f"note: converting {ref} -> {short}", file=sys.stderr)
+    if renames and (args.no_path_check or path != global_config().resolve()):
+        print(
+            "note: converted tools may need installation; after writing the config, run "
+            "in its directory: " + shlex.join(["mise", "install", *renames.values()]),
+            file=sys.stderr,
+        )
 
     if out == src:
         if not args.check:
@@ -480,7 +585,7 @@ def main():
         if path == global_config().resolve():
             try:
                 problems += check_precedence(path, src, out)
-            except (OSError, RuntimeError) as exc:
+            except (OSError, RuntimeError, ValueError, KeyError) as exc:
                 problems.append(f"precedence check could not run: {exc}")
         else:
             print("note: precedence check skipped (not the global config)", file=sys.stderr)

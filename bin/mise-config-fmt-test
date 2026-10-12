@@ -1,0 +1,222 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["tomlkit>=0.13"]
+# ///
+"""Offline regression tests for the adjacent mise-config-fmt."""
+
+import importlib.machinery
+import importlib.util
+import json
+import subprocess
+import sys
+import tempfile
+import tomllib
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+SCRIPT = Path(__file__).with_name("mise-config-fmt")
+loader = importlib.machinery.SourceFileLoader("formatter", str(SCRIPT))
+spec = importlib.util.spec_from_loader(loader.name, loader)
+fmt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = fmt
+loader.exec_module(fmt)
+
+SOURCE = """[tools]
+"github:Handfish/talos-pilot" = "latest"
+"github:yepzdk/claude-sessions-monitor" = "latest"
+"github:yonahd/kor" = "latest"
+"""
+
+
+class ConversionTests(unittest.TestCase):
+    def test_three_reported_tools(self):
+        out, _ = fmt.fmt(SOURCE)
+        data = tomllib.loads(out)
+        self.assertEqual(
+            data["tools"],
+            {"claude-sessions-monitor": "latest", "kor": "latest", "talos-pilot": "latest"},
+        )
+        self.assertEqual(data["tool_alias"]["talos-pilot"], "github:Handfish/talos-pilot")
+        self.assertEqual(fmt.check_content(SOURCE, out), [])
+        self.assertEqual(fmt.fmt(out)[0], out)
+
+    def test_reuses_alias_preserving_options_and_comments(self):
+        src = """[tool_alias]
+pilot = "github:Handfish/talos-pilot" # alias comment
+[tools]
+# tool comment
+"github:Handfish/talos-pilot" = { version = "0.1.11", exe = "pilot", bin = "bin" } # pinned
+"""
+        out, _ = fmt.fmt(src)
+        self.assertEqual(
+            tomllib.loads(out)["tools"]["pilot"],
+            {"version": "0.1.11", "exe": "pilot", "bin": "bin"},
+        )
+        self.assertEqual(fmt.check_content(src, out), [])
+        for comment in ("# alias comment", "# tool comment", "# pinned"):
+            self.assertIn(comment, out)
+
+    def test_collisions_and_ambiguity_refused(self):
+        sources = [
+            '[tools]\n"github:one/kor"="latest"\nkor="latest"\n',
+            '[tools]\n"github:one/kor"="latest"\n"github:two/kor"="latest"\n',
+            '[tool_alias]\nkor="github:other/kor"\n[tools]\n"github:one/kor"="latest"\n',
+            '[tool_alias]\na="github:one/kor"\nb="github:one/kor"\n[tools]\n"github:one/kor"="latest"\n',
+        ]
+        for src in sources:
+            with self.subTest(src=src), self.assertRaises(fmt.Unsupported):
+                fmt.fmt(src)
+
+    def test_content_guard_still_rejects_changes(self):
+        out, _ = fmt.fmt(SOURCE)
+        for changed in (out.replace('"latest"', '"1"', 1), out.replace("Handfish/", "other/")):
+            self.assertIn("parsed content differs", fmt.check_content(SOURCE, changed))
+
+    def test_plain_formatting_and_order_guards(self):
+        src = '[env]\nZ="z"\nA="a"\n[tools]\nz="1"\na={version="2"}\n'
+        out, _ = fmt.fmt(src)
+        self.assertEqual(fmt.check_content(src, out), [])
+        self.assertEqual(list(tomllib.loads(out)["env"]), ["Z", "A"])
+        self.assertEqual(list(tomllib.loads(out)["tools"]), ["a", "z"])
+
+    def test_nested_aliases_and_multiple_versions(self):
+        src = """[alias.node.versions]
+old = "18"
+[tool_alias.custom]
+backend = "github:example/custom"
+[tools]
+"github:one/kor" = ["1", "2"]
+"""
+        out, _ = fmt.fmt(src)
+        self.assertEqual(fmt.check_content(src, out), [])
+        self.assertEqual(tomllib.loads(out)["tools"]["kor"], ["1", "2"])
+
+    def test_cli_collision_preserves_file(self):
+        src = '[tools]\n"github:one/kor"="1"\nkor="2"\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Path(tmp) / "config.toml"
+            cfg.write_text(src)
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), str(cfg)], capture_output=True, text=True, check=False
+            )
+            self.assertEqual(result.returncode, 3, result.stderr)
+            self.assertEqual(cfg.read_text(), src)
+
+    def test_guard_rejects_unrelated_alias_edit_and_reordering(self):
+        src = '[tool_alias]\nfoo="github:one/foo"\n[env]\nZ="z"\nA="a"\n' + SOURCE
+        out, _ = fmt.fmt(src)
+        self.assertIn(
+            "parsed content differs", fmt.check_content(src, out.replace("one/foo", "two/foo"))
+        )
+        self.assertIn(
+            "key order changed in [env]",
+            fmt.check_content(src, out.replace('Z = "z"\nA = "a"', 'A = "a"\nZ = "z"')),
+        )
+
+    def test_readonly_modes_and_normal_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Path(tmp) / "config.toml"
+            cfg.write_text(SOURCE)
+            for flag, expected in (("--check", 1), ("--diff", 0)):
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT), str(cfg), flag],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, expected, result.stderr)
+                self.assertEqual(cfg.read_text(), SOURCE)
+                self.assertIn("[tool_alias]", result.stdout)
+                self.assertIn("mise install", result.stderr)
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), str(cfg)], capture_output=True, text=True, check=False
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotEqual(cfg.read_text(), SOURCE)
+            again = subprocess.run(
+                [sys.executable, str(SCRIPT), str(cfg), "--check"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(again.returncode, 0, again.stderr)
+
+
+class PrecedenceTests(unittest.TestCase):
+    """Fake only mise's read API; use real executable files and candidate ordering."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        for tool in ("old", "new", "other"):
+            directory = self.root / tool / "1" / "bin"
+            directory.mkdir(parents=True)
+            binary = directory / "shared"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(0o755)
+
+    def reader(self, text, lock, args, renames=None):
+        result, paths = {}, []
+        for tool in tomllib.loads(text)["tools"]:
+            name = {"github:one/z": "old", "z": "new"}.get(tool, "other")
+            directory = self.root / name / "1"
+            installed = name != "new" or self.new_installed
+            result[tool] = [
+                {"version": "1", "installed": installed, "install_path": str(directory)}
+            ]
+            if installed:
+                paths.append(str(directory / "bin"))
+        return json.dumps(result) if "--json" in args else "\n".join(paths)
+
+    def test_missing_install_projection_detects_changed_winner(self):
+        self.new_installed = False
+        src = '[tools]\n"github:one/z"="1"\nother="1"\n'
+        out, _ = fmt.fmt(src)
+        with patch.object(fmt, "mise_read", side_effect=self.reader):
+            problems = fmt.check_precedence(self.root / "config.toml", src, out)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("binary shared:", problems[0])
+
+    def test_missing_install_projection_allows_same_winner(self):
+        self.new_installed = False
+        src = '[tools]\nother="1"\n"github:one/z"="1"\n'
+        out, _ = fmt.fmt(src)
+        with patch.object(fmt, "mise_read", side_effect=self.reader):
+            self.assertEqual(fmt.check_precedence(self.root / "config.toml", src, out), [])
+
+    def test_installed_rename_is_same_provider(self):
+        self.new_installed = True
+        src = '[tools]\n"github:one/z"="1"\n'
+        out, _ = fmt.fmt(src)
+        with patch.object(fmt, "mise_read", side_effect=self.reader):
+            self.assertEqual(fmt.check_precedence(self.root / "config.toml", src, out), [])
+
+    def test_missing_source_or_resolution_change_refused(self):
+        self.new_installed = True
+        src = '[tools]\n"github:one/z"="1"\n'
+        out, _ = fmt.fmt(src)
+        for previous, current in (
+            ([], []),
+            ([{"version": "1", "installed": False}], [{"version": "1"}]),
+            ([{"version": "1", "installed": True}], [{"version": "2"}]),
+        ):
+            with (
+                self.subTest(previous=previous, current=current),
+                patch.object(
+                    fmt,
+                    "mise_read",
+                    side_effect=[
+                        json.dumps({"github:one/z": previous}),
+                        json.dumps({"z": current}),
+                    ],
+                ),
+                self.assertRaises(RuntimeError),
+            ):
+                fmt.check_precedence(self.root / "config.toml", src, out)
+
+
+if __name__ == "__main__":
+    unittest.main()

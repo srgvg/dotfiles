@@ -38,8 +38,10 @@ SWAYIDLE_STATE_DIR="${XDG_RUNTIME_DIR:-/run/user/$UID}/swayidle"
 mkdir -p "$SWAYIDLE_STATE_DIR"
 LOCK_DEBOUNCE_FILE="$SWAYIDLE_STATE_DIR/lock-debounce"
 SLEEP_STATE_FILE="$SWAYIDLE_STATE_DIR/sleep-state"
-VRAM_STOPPED_PIDS_FILE="$SWAYIDLE_STATE_DIR/vram-stopped-pids"
-VRAM_RECOVERY_FILE="$SWAYIDLE_STATE_DIR/vram-recovery-active"
+# One empty marker file per output that a modeset cycle of ours has disabled and not yet seen
+# active again. resume_displays() re-enables exactly these, so an output the user disabled
+# (the TV switched off by hand) stays off.
+CYCLING_OUTPUTS_DIR="$SWAYIDLE_STATE_DIR/cycling-outputs"
 # Debounce window in seconds - ignore lock signals within this time of last lock
 LOCK_DEBOUNCE_SECONDS=2
 SLEEP_HANDLER_BUDGET_MS="${SLEEP_HANDLER_BUDGET_MS:-3000}"
@@ -64,17 +66,6 @@ log_event() {
 _get_sway_vram() {
     nvidia-smi pmon -c 1 -s m 2>/dev/null |
         awk '/sway/ && $4~/^[0-9]+$/{print $4;exit}'
-}
-
-# Safety trap: if swayidle is killed while processes are SIGSTOP'd, SIGCONT them.
-# No-op when file doesn't exist (normal exits, subcommand invocations).
-_vram_cleanup_trap() {
-    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-        echo "== swayidle trap: SIGCONT SIGSTOP'd processes before exit"
-        # shellcheck disable=SC2046
-        kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null || :
-    fi
-    rm -f "$VRAM_RECOVERY_FILE"
 }
 
 _supervised_pids=()
@@ -107,12 +98,13 @@ _cleanup_sleep_ready() {
 _swayidle_cleanup_trap() {
     _cleanup_sleep_ready
     _cleanup_supervised_children
-    _vram_cleanup_trap
 }
 trap _swayidle_cleanup_trap TERM INT
 
 # Auto-detect SWAYSOCK if not set (needed when called from SSH/TTY rescue context)
 if [ -z "${SWAYSOCK:-}" ]; then
+    # Newest socket by mtime; the names are sway-ipc.<uid>.<pid>.sock, so ls is safe here.
+    # shellcheck disable=SC2012
     SWAYSOCK=$(ls -t "/run/user/$(id -u)/sway-ipc."*.sock 2>/dev/null | head -1 || true)
     export SWAYSOCK
 fi
@@ -126,10 +118,9 @@ echo "==== swayidle called as '$0 $*' (SWAYSOCK=$SWAYSOCK)" | ts
 # List pointer devices with: swaymsg -t get_inputs | jq -r '.[] | select(.type == "pointer") | "\(.identifier) - \(.name)"'
 MOUSE_DEVICE="1133:16507:Logitech_MX_Vertical"
 
-# Primary output config — used by low-res display recovery fallback.
+# Primary output mode — used by low-res display recovery fallback.
 # WARNING: do NOT use 'swaymsg reload' in recovery paths — reloading during a
 # non-standard output mode causes sway/wlroots to lose all DRM outputs (confirmed 2026-04-29).
-OUTPUT_PRIMARY="DP-4"
 OUTPUT_MODE="7680x2160"
 OUTPUT_SCALE="1.5"
 
@@ -143,14 +134,46 @@ swaylock_running() {
     pgrep -x swaylock >/dev/null
 }
 
-clear_stale_stopped_clients() {
-    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-        echo "== SIGCONTing and clearing stale SIGSTOP'd processes"
-        # shellcheck disable=SC2046
-        kill -CONT $(cat "$VRAM_STOPPED_PIDS_FILE") 2>/dev/null || :
-        rm -f "$VRAM_STOPPED_PIDS_FILE"
+# Names of the outputs sway is driving right now. A DPMS-off output is still active; a
+# disabled one is not, so the modeset cycles never touch an output the user turned off.
+active_outputs() {
+    local out
+    out=$(swaymsg -t get_outputs -r 2>/dev/null) || return 0
+    jq -r '.[] | select(.active) | .name' <<<"$out" 2>/dev/null || :
+}
+
+# Print one of: active, inactive (connected but disabled), absent, unknown (sway did not answer).
+output_state() {
+    local out
+    out=$(swaymsg -t get_outputs -r 2>/dev/null) || {
+        echo unknown
+        return 0
+    }
+    jq -r --arg n "$1" \
+        '[.[] | select(.name == $n)] | if length == 0 then "absent" elif .[0].active then "active" else "inactive" end' \
+        <<<"$out" 2>/dev/null || echo unknown
+}
+
+# Modeset cycle for one output: disable, then enable. The marker exists for as long as the
+# output may have been left disabled by this script.
+cycle_output() {
+    local display="$1"
+    mkdir -p "$CYCLING_OUTPUTS_DIR"
+    : >"$CYCLING_OUTPUTS_DIR/$display"
+    if swaymsg output "${display}" disable; then
+        sleep 1
+        swaymsg output "${display}" enable || :
+    fi
+    if [ "$(output_state "$display")" != "active" ]; then
+        sleep 1
+    fi
+    if [ "$(output_state "$display")" = "active" ]; then
+        rm -f "$CYCLING_OUTPUTS_DIR/$display"
+    else
+        log_event "modeset_reenable_unconfirmed" "display=${display}"
     fi
 }
+
 function pause_mouse() {
     echo "== pause mouse"
     swaymsg "input \"${MOUSE_DEVICE}\" events disabled" || :
@@ -185,9 +208,9 @@ function pause_displays() {
     else
         echo "== pre-dpms modeset cycle (free Vulkan textures before DPMS off)" | ts
         log_event "pre_dpms_modeset" "sway=${pre_vram:-?}M"
-        for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null || :); do
+        for display in $(active_outputs); do
             echo "== pre-dpms: disable/enable ${display}" | ts
-            swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable || :
+            cycle_output "${display}"
         done
         sleep 1
         local post_vram
@@ -236,20 +259,35 @@ function resume_displays() {
     echo swaymsg 'output * dpms on'
     swaymsg 'output * dpms on' || :
     sleep 1
-    for display in $(wlr-randr --json | jq -r .[].name || : 2>/dev/null); do
+    for display in $(active_outputs); do
         echo swaymsg "output ${display} dpms on"
         swaymsg "output ${display} dpms on" || :
-        if [ "$(wlr-randr --json | jq -r ".[] | select(.name == \"${display}\") | .enabled" 2>/dev/null)" = "false" ]; then
-            echo wlr-randr --output "${display}" --on
-            wlr-randr --output "${display}" --on || :
-            sleep 1
-        fi
+    done
+    # Re-enable only what a modeset cycle of ours left disabled (failed re-enable, or the
+    # handler died mid-cycle). An output the user disabled has no marker and stays off.
+    local marker
+    for marker in "$CYCLING_OUTPUTS_DIR"/*; do
+        [ -e "$marker" ] || continue
+        display=${marker##*/}
+        case "$(output_state "$display")" in
+            inactive)
+                echo wlr-randr --output "${display}" --on
+                wlr-randr --output "${display}" --on || :
+                sleep 1
+                if [ "$(output_state "$display")" = "active" ]; then
+                    rm -f "$marker"
+                fi
+                ;;
+            active | absent)
+                rm -f "$marker"
+                ;;
+        esac
     done
     # Force modeset cycle in background — DPMS is already on above; this works around the
     # nvidia-drm bug where DPMS on succeeds at IPC level but GPU display engine doesn't drive output.
     # At >80% VRAM the normal disable/enable cycle fails (NVKMS GEM alloc error for
     # ~200 MiB 7680x2160 scanout framebuffers) — use low-res recovery path instead.
-    (sleep 3 && for display in $(wlr-randr --json | jq -r .[].name || : 2>/dev/null); do
+    (sleep 3 && for display in $(active_outputs); do
         local _vram _total _crit
         _vram=$(_get_sway_vram) || _vram=""
         _total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | grep -oP '^\d+$' | head -1)
@@ -262,7 +300,7 @@ function resume_displays() {
         else
             echo "== forcing modeset cycle on ${display}" | ts
             log_event "resume_modeset_normal" "display=${display} sway=${_vram:-?}M"
-            swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable || :
+            cycle_output "${display}"
         fi
     done) &
 }
@@ -300,7 +338,6 @@ lock_for_sleep() {
         return 1
     fi
 
-    clear_stale_stopped_clients
     pause_notifications
     pause_mouse
 
@@ -369,16 +406,7 @@ function lock() {
     # Record lock time for debouncing future calls
     date +%s >"$LOCK_DEBOUNCE_FILE"
 
-    # Clear recovery marker — a real lock is starting, any previous recovery window is over.
-    # Placed here (after both early-return guards) so debounced/skipped lock signals do NOT
-    # clear the marker and reopen the re-SIGSTOP race during an active recovery window.
-    rm -f "$VRAM_RECOVERY_FILE"
-
     echo "=== lock"
-
-    # Clear any stale SIGSTOP state from a previous session that didn't unlock cleanly.
-    # SIGCONT first in case processes survived the session restart (e.g. after sway crash).
-    clear_stale_stopped_clients
 
     # Pre-lock VRAM cleanup: cycle outputs to free leaked Vulkan textures BEFORE swaylock
     # starts suppressing frame presentation (which is when wlroots GC runs).
@@ -399,9 +427,9 @@ function lock() {
     else
         echo "== pre-lock modeset cycle (free leaked Vulkan textures)"
         log_event "pre_lock_modeset" "sway=${pre_vram:-?}M"
-        for display in $(wlr-randr --json | jq -r .[].name 2>/dev/null || :); do
+        for display in $(active_outputs); do
             echo "== pre-lock: disable/enable ${display}" | ts
-            swaymsg output "${display}" disable && sleep 1 && swaymsg output "${display}" enable || :
+            cycle_output "${display}"
         done
         sleep 1
         local _post_vram
@@ -422,20 +450,6 @@ function lock() {
 }
 function resume() {
     echo "=== resume"
-    # Resume any GPU clients SIGSTOP'd by nvidia-vram-monitor during DPMS-off.
-    # This mirrors the unlock() handler — both paths must send SIGCONT.
-    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-        echo "== resuming SIGSTOP'd GPU clients"
-        local _pids
-        _pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
-        # Write recovery marker BEFORE deleting PID file to close the gap where the monitor
-        # would see neither file and re-SIGSTOP clients during the display recovery window.
-        date +%s >"$VRAM_RECOVERY_FILE"
-        # shellcheck disable=SC2086
-        kill -CONT $_pids 2>/dev/null || :
-        rm -f "$VRAM_STOPPED_PIDS_FILE"
-        log_event "vram_clients_resumed" "pids=$(echo "$_pids" | tr '\n' ',')"
-    fi
     resume_mouse
     resume_notifications
     resume_displays
@@ -470,20 +484,6 @@ function idlecommand() {
         echo "= unlock"
         # Clear sleep state on unlock
         echo "awake" >"$SLEEP_STATE_FILE"
-
-        # Resume any GPU clients that were SIGSTOP'd by nvidia-vram-monitor during the lock session
-        if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-            echo "== resuming SIGSTOP'd GPU clients"
-            local _pids
-            _pids=$(cat "$VRAM_STOPPED_PIDS_FILE")
-            # Write recovery marker BEFORE deleting PID file to close the gap where the monitor
-            # would see neither file and re-SIGSTOP clients during the display recovery window.
-            date +%s >"$VRAM_RECOVERY_FILE"
-            # shellcheck disable=SC2086
-            kill -CONT $_pids 2>/dev/null || :
-            rm -f "$VRAM_STOPPED_PIDS_FILE"
-            log_event "vram_clients_resumed" "pids=$(echo "$_pids" | tr '\n' ',')"
-        fi
 
         resume_mouse
         resume_notifications
@@ -530,7 +530,9 @@ supervise_swayidle() {
     cache_pid=$!
     "$SWAYIDLE_BIN" -d -C "$SWAYIDLE_CONFIG" >>"$SWAYIDLE_LOG" 2>&1 &
     main_pid=$!
-    "$SWAYIDLE_BIN" -d -w before-sleep "$HOME/bin/swayidle.sh sleep" >>"$SWAYIDLE_LOG" 2>&1 &
+    # -C /dev/null: without it this watcher also loads $SWAYIDLE_CONFIG's default path and runs
+    # every lock/unlock/resume handler a second time, concurrently with the main watcher.
+    "$SWAYIDLE_BIN" -d -C /dev/null -w before-sleep "$HOME/bin/swayidle.sh sleep" >>"$SWAYIDLE_LOG" 2>&1 &
     sleep_pid=$!
     # Cache preparation is short-lived and atomic. Do not retain its PID for
     # long-term cleanup: after it exits that PID may be reused by another process.

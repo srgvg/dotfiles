@@ -32,17 +32,10 @@ GROWTH_THRESHOLD=100  # MiB delta per reading to count as growth
 GROWTH_ALERT_COUNT=3  # consecutive readings before alerting
 GROWTH_ALERTED=0      # only alert once per leak episode
 
-# Rate-limit "no stoppable clients" notification — tracks last alert timestamp
-VRAM_NOACT_LAST_NOTIF=0
-
-# VRAM protection via SIGSTOP during display-suppressed state (swaylock OR DPMS-off)
-# When sway VRAM exceeds threshold, SIGSTOP non-essential GPU clients.
-# This halts new wl_buffer commits, stopping texture leak accumulation.
-# SIGCONT is sent by swayidle.sh unlock/resume handler, which then runs resume_displays()
-# to free the accumulated textures via modeset cycle (safe when VRAM < 92%).
-# Note: SIGSTOP does NOT free existing leaked textures — it prevents further accumulation.
-SWAY_VRAM_STOP_THRESHOLD="${NVIDIA_VRAM_STOP_THRESHOLD:-2000}"  # MiB
-VRAM_STOPPED_PIDS_FILE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/swayidle/vram-stopped-pids"
+# This monitor only observes and notifies. It used to SIGSTOP Wayland clients above a sway
+# VRAM threshold while a display was off; that was removed 2026-10-11: the lock leak is
+# sway-internal (no client to stop) and a disabled output triggered it on a normal session.
+# See ~/etc/docs/nvidia-setup.md Phase 28.
 
 get_pmon_output() {
     # Parse nvidia-smi pmon output with PIDs
@@ -107,121 +100,6 @@ check_growth_rate() {
     PREV_SWAY_VRAM="$current_sway_vram"
 }
 
-find_swaysock() {
-    # Find the sway IPC socket for the current user
-    local uid
-    uid=$(id -u)
-    ls -t "/run/user/${uid}/sway-ipc."*.sock 2>/dev/null | head -1
-}
-
-# Export SWAYSOCK for swaymsg calls in is_display_suppressed().
-# The monitor runs in a screen session that doesn't inherit the sway environment.
-if [ -z "${SWAYSOCK:-}" ]; then
-    SWAYSOCK=$(find_swaysock)
-    export SWAYSOCK
-fi
-
-is_display_suppressed() {
-    # Returns 0 (true) when frame presentation is suppressed: swaylock running or any output DPMS-off.
-    # Both states block wlroots GC, causing DMA-BUF texture accumulation.
-    # Capture swaymsg output separately: piping into jq loses the timeout exit code (124 via
-    # pipefail looks like non-zero → "not suppressed"), which would silently bypass protection.
-    # Re-detect SWAYSOCK each call: sway restart changes the socket path (PID-encoded filename),
-    # and the monitor runs long enough that a sway restart during a session is plausible.
-    pgrep -x swaylock > /dev/null 2>&1 && return 0
-    local _out
-    SWAYSOCK=$(find_swaysock)
-    export SWAYSOCK
-    [ -n "$SWAYSOCK" ] || return 1
-    _out=$(timeout 3 swaymsg -t get_outputs 2>/dev/null) || return 1
-    echo "$_out" | jq -e 'any(.[]; .dpms == false)' > /dev/null 2>&1
-}
-
-check_vram_during_display_off() {
-    local current_sway_vram="$1"
-
-    if [ -z "$current_sway_vram" ] || [ "$current_sway_vram" -le "$SWAY_VRAM_STOP_THRESHOLD" ]; then
-        return
-    fi
-
-    # Only act during swaylock or DPMS-off (both suppress frame presentation → block GC)
-    if ! is_display_suppressed; then
-        return
-    fi
-
-    # Only act once per suppressed session (state file present = already handled)
-    if [ -f "$VRAM_STOPPED_PIDS_FILE" ]; then
-        return
-    fi
-
-    # Skip if swayidle just sent SIGCONT — allow 60s for display state to settle and GC to run.
-    # Prevents re-SIGSTOP in the window between SIGCONT and display becoming unsuppressed.
-    local _recovery_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/swayidle/vram-recovery-active"
-    if [ -f "$_recovery_file" ]; then
-        local _rts _now
-        _rts=$(cat "$_recovery_file" 2>/dev/null || echo 0)
-        _now=$(date +%s)
-        if [ $(( _now - _rts )) -lt 60 ]; then
-            return
-        fi
-    fi
-
-    # Find Wayland-connected processes that are likely surface submitters.
-    # Two sources:
-    #   1. nvidia-smi pmon: direct GPU users (alacritty, browsers using dmabuf)
-    #   2. ss wayland socket: ALL Wayland clients including flatpak apps (Signal, Slack,
-    #      Spotify, Mattermost — Electron apps that submit GPU-backed wl_buffers but
-    #      don't appear in pmon because they go through bwrap)
-    # Exclude: sway, swaylock, Xwayland, alacritty (user work), and infrastructure procs
-    local pids_to_stop
-    pids_to_stop=$(
-    {
-        # Source 1: direct GPU users from pmon
-        nvidia-smi pmon -c 1 -s m 2>/dev/null |
-            awk '/^[^#]/ && $4 ~ /^[0-9]+$/ && $4 > 0 { print $2 }'
-        # Source 2: Wayland socket connections
-        ss -xp 2>/dev/null | grep wayland | grep -oP 'pid=\K\d+'
-    } | sort -u |
-        while IFS= read -r pid; do
-            _comm=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
-            case "$_comm" in
-                sway|swaylock|Xwayland|alacritty|foot|nvidia-smi|nvidia-vram-m*) ;;
-                bash|sh|tee|wl-paste|swayidle|waybar|swaync|lxpolkit|wlr-randr) ;;
-                atuin|gdm-wayland-ses|systemd|claude|codex|node-MainThread|less|git|delta|kubie) ;;
-                "") ;;  # process already gone
-                *) echo "$pid" ;;
-            esac
-        done)
-
-    if [ -z "$pids_to_stop" ]; then
-        # Don't write PID file — allow retry next cycle in case GPU clients appear later.
-        # Rate-limit the notification to avoid bursts when display comes back on.
-        local _now; _now=$(date +%s)
-        if [ $(( _now - VRAM_NOACT_LAST_NOTIF )) -gt 300 ]; then
-            notify_desktop_always normal "VRAM Warning" \
-                "sway=${current_sway_vram}M during display-off — no stoppable GPU clients found"
-            VRAM_NOACT_LAST_NOTIF=$_now
-        fi
-        return
-    fi
-    VRAM_NOACT_LAST_NOTIF=0
-
-    notify_desktop_always normal "VRAM Protection" \
-        "Pausing GPU clients to halt leak (sway=${current_sway_vram}M). Will resume on display-on."
-    notify "SIGSTOP GPU clients: $(echo "$pids_to_stop" | tr '\n' ' ')"
-
-    # Write PIDs before stopping so unlock handler can always find them
-    mkdir -p "$(dirname "$VRAM_STOPPED_PIDS_FILE")"
-    echo "$pids_to_stop" > "$VRAM_STOPPED_PIDS_FILE"
-    # shellcheck disable=SC2086
-    kill -STOP $pids_to_stop 2>/dev/null ||:
-
-    local ts
-    ts=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "${ts} | EVENT | vram_clients_stopped (sway VRAM=${current_sway_vram}M, pids=$(echo "$pids_to_stop" | tr '\n' ','))" \
-        >>"${SNAPSHOT_LOG}"
-}
-
 write_snapshot() {
     local ts used total pct pmon_raw
     ts=$(date '+%Y-%m-%d %H:%M:%S')
@@ -244,7 +122,7 @@ write_snapshot() {
 }
 
 dump_snapshot() {
-    read -r total used free < <(
+    read -r total used _ < <(
         nvidia-smi --query-gpu=memory.total,memory.used,memory.free \
             --format=csv,noheader,nounits | tr -d ' ' | tr ',' ' '
     )
@@ -283,7 +161,7 @@ fi
 last_snapshot_ts=0
 
 while true; do
-    read -r total used free < <(
+    read -r total used _ < <(
         nvidia-smi --query-gpu=memory.total,memory.used,memory.free \
             --format=csv,noheader,nounits | tr -d ' ' | tr ',' ' '
     )
@@ -296,7 +174,7 @@ while true; do
 
     pct=$((used * 100 / total))
 
-    # Get process info — one pmon call feeds snapshot, growth check, and SIGSTOP check
+    # Get process info — feeds the notification line, the snapshot and the growth check
     top_procs=$(get_top_processes)
     all_procs=$(get_all_processes)
 
@@ -309,10 +187,9 @@ while true; do
         last_snapshot_ts=$_now
     fi
 
-    # Check sway VRAM growth rate and during-lock protection
+    # Check sway VRAM growth rate
     sway_vram=$(extract_sway_vram "$all_procs")
     check_growth_rate "${sway_vram:-}"
-    check_vram_during_display_off "${sway_vram:-}"
 
     if [ "${pct}" -ge "${CRIT_PCT}" ]; then
         notify_desktop_always critical "GPU VRAM Critical" \

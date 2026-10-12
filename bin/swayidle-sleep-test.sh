@@ -97,11 +97,8 @@ pause_notifications() {
 pause_mouse() {
 	printf 'pause-mouse\n' >> "$FAKE_CALLS"
 }
-clear_stale_stopped_clients() {
-	printf 'clear-stale\n' >> "$FAKE_CALLS"
-}
 # Called indirectly by lock_for_sleep() from the sourced script.
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 swaylock_running() {
 	return 1
 }
@@ -112,7 +109,7 @@ monotonic_ms
 start_ms=$_MONOTONIC_MS
 lock_for_sleep "$start_ms"
 assert_eq sleeping "$(cat "$SLEEP_STATE_FILE")" "ready sleep state"
-assert_eq $'clear-stale\npause-notifications\npause-mouse\nwrapper' "$(rg -v '^event:' "$FAKE_CALLS")" "ready action order"
+assert_eq $'pause-notifications\npause-mouse\nwrapper' "$(rg -v '^event:' "$FAKE_CALLS")" "ready action order"
 
 : > "$FAKE_CALLS"
 rm -f "$SLEEP_STATE_FILE" "$FAKE_WRAPPER_PID"
@@ -172,7 +169,7 @@ kill "$supervisor_pid"
 wait "$supervisor_pid" 2>/dev/null ||:
 assert_eq 2 "$(wc -l < "$FAKE_SWAYIDLE_TERMINATED")" "terminated swayidle child count"
 rg -q -- "-d -C $SWAYIDLE_CONFIG" "$FAKE_SWAYIDLE_CALLS" || fail "main watcher arguments missing"
-rg -F -q -- "-d -w before-sleep /home/serge/bin/swayidle.sh\\ sleep" "$FAKE_SWAYIDLE_CALLS" || fail "sleep watcher arguments missing"
+rg -F -q -- "-d -C /dev/null -w before-sleep /home/serge/bin/swayidle.sh\\ sleep" "$FAKE_SWAYIDLE_CALLS" || fail "sleep watcher arguments missing"
 rg -q '^prepare-cache$' "$FAKE_CALLS" || fail "cache preparation was not started"
 
 echo "PASS: swayidle sleep lock"

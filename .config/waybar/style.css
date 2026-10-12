@@ -77,6 +77,11 @@ window#waybar.empty {
     box-shadow: inset 0 -3px #888888;
 }
 
+/* "all-outputs": true lists every workspace; dim the ones that live on another output */
+#workspaces button:not(.current_output) {
+    color: #888888;
+}
+
 /* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {
     margin-left: 0;
