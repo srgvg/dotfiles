@@ -106,8 +106,15 @@ function execute() {
     #   -------------------------------------  ----------------------------  -----------  ------------
     #   ~/scratch, ~/tmp        (top level)    files + symlinks                 48 h       rm
     #   ${tempfolders}          (recursive)    files + symlinks                 48 h       rm
-    #   ${tempfolders}          (depth >= 2)   empty dirs                       -          rmdir
+    #   ${tempfolders}          (depth >= 2)   empty dirs                       48 h       rmdir
     #   ~/tmp                   (depth 1)      empty go-build work dirs         48 h       rmdir
+    #
+    # Age is ctime (-cmin), not mtime: a directory a tool has just created and not yet
+    # populated has a fresh ctime, and a file whose mtime a copy preserved still has a fresh
+    # ctime. The depth >= 2 empty-dir sweep carried no age test until 2026-10-17; at :00 it
+    # removed Go linker work dirs (~/tmp/go-build*/.../go-link-*) between their mkdir and
+    # their first write, failing the link ("cannot open output file", "cannot find
+    # go-link-*/0000NN.o"). A dir the file sweep empties now lingers up to 48 h; accepted.
     #   ~/scratch/.stfolder                    syncthing marker dir             -          recreate
     #   ~/core.*                               Edge crash dumps                 -          rm
     #   ~/logs                  (recursive)    log files                        8 d        rm
@@ -145,7 +152,7 @@ function execute() {
             -maxdepth 1 \
             -not -path '/home/serge/scratch/.stfolder' \
             -not -path '/home/serge/scratch/.stignore' \
-            -mmin ${cleantime} \( -type f -o -type l \) \
+            -cmin ${cleantime} \( -type f -o -type l \) \
             -print0 | xargs -r -0 rm -fv
 
         # ${tempfolders} recursively: files and symlinks idle > 48 h.
@@ -156,13 +163,13 @@ function execute() {
                 scan \
                     ${folder} \
                     -depth -mindepth 1 \
-                    -mmin ${cleantime} \( -type f -o -type l \) \
+                    -cmin ${cleantime} \( -type f -o -type l \) \
                     -print0 | xargs -r -0 rm -fv
             fi
         done
 
-        # ${tempfolders} at depth >= 2: any now-empty directory left behind by the file sweep
-        # above, regardless of age.
+        # ${tempfolders} at depth >= 2: empty directories whose ctime is > 48 h old (a dir
+        # a running tool just created, or one the file sweep just emptied, is left alone).
         logtitle looking for empty dirs in temp folders
         for folder in ${tempfolders}; do
             if [ -d ${folder} ]; then
@@ -170,8 +177,8 @@ function execute() {
                     ${folder} \
                     -depth -mindepth 2 \
                     -not -path '/home/serge/scratch/.stfolder*' \
-                    -type d -empty \
-                    -print0 | xargs -r -0 rmdir --parents --verbose --ignore-fail-on-non-empty
+                    -type d -empty -cmin ${cleantime} \
+                    -print0 | xargs -r -0 python3 "$HOME/bin/rmdir_enoent.py" --parents --verbose --ignore-fail-on-non-empty --
             fi
         done
 
@@ -182,8 +189,8 @@ function execute() {
         scan \
             $HOME/tmp \
             -mindepth 1 -maxdepth 1 \
-            -type d -empty -mmin ${cleantime} \
-            -print0 | xargs -r -0 rmdir --verbose --ignore-fail-on-non-empty
+            -type d -empty -cmin ${cleantime} \
+            -print0 | xargs -r -0 python3 "$HOME/bin/rmdir_enoent.py" --verbose --ignore-fail-on-non-empty --
         mkdir -pv $HOME/tmp
 
         logtitle misc stuff
