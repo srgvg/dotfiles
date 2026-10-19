@@ -21,6 +21,9 @@ usage() {
 	echo -e "${echo_bold_white}Usage:${echo_normal} $(basename "$0") [-y|--yes] [-w|--worktree]"
 	echo
 	echo "  Lists local and remote branches already merged or rebased into the repo's default branch."
+	echo "  Also lists superseded remote branches: an older version of a merged local branch (its tip"
+	echo "  is in that branch's reflog), left behind when the work landed via a replacement branch."
+	echo "  Those are deleted only if an MR/PR head ref on the remote still holds the tip."
 	echo "  Cleans up linked worktrees that can be removed without losing data: detached-HEAD"
 	echo "  worktrees and worktrees holding a stale branch (so the branch becomes deletable)."
 	echo "  In dry-run mode, prompts for confirmation before deleting."
@@ -192,18 +195,33 @@ declare -a WT_REMOVE_LABELS=()
 declare -a WT_SKIP_MSGS=()
 declare -A ALL_WT_BRANCHES=()   # branch -> worktree path, for every linked/main worktree
 
+# The remote's full ref list ("<sha>\t<ref>" lines), fetched once and cached. Empty if the
+# remote is unreachable, which makes every check below answer "no" (the safe side).
+REMOTE_REFS=""
+REMOTE_REFS_LOADED=false
+load_remote_refs() {
+	if ! $REMOTE_REFS_LOADED; then
+		REMOTE_REFS=$(git ls-remote "$REMOTE" 2>/dev/null) || REMOTE_REFS=""
+		REMOTE_REFS_LOADED=true
+	fi
+}
+
 # commit_on_remote SHA -> true if the commit is a ref tip on the remote (branches, tags,
-# and refs/pull/*), i.e. recoverable even if the local worktree is removed. The remote ref
-# list is fetched once and cached.
-REMOTE_TIP_SHAS=""
-REMOTE_TIP_SHAS_LOADED=false
+# and refs/pull/*), i.e. recoverable even if the local worktree is removed.
 commit_on_remote() {
 	local sha=$1
-	if ! $REMOTE_TIP_SHAS_LOADED; then
-		REMOTE_TIP_SHAS=$(git ls-remote "$REMOTE" 2>/dev/null | awk '{print $1}')
-		REMOTE_TIP_SHAS_LOADED=true
-	fi
-	[[ -n "$sha" ]] && grep -qxF "$sha" <<<"$REMOTE_TIP_SHAS"
+	load_remote_refs
+	[[ -n "$sha" ]] && awk -v s="$sha" '$1 == s { f = 1 } END { exit !f }' <<<"$REMOTE_REFS"
+}
+
+# mr_ref_for SHA -> prints the MR/PR head ref on the remote whose tip is SHA (GitLab
+# refs/merge-requests/<n>/head, GitHub refs/pull/<n>/head); fails if there is none.
+mr_ref_for() {
+	local sha=$1
+	load_remote_refs
+	awk -v s="$sha" '
+		$1 == s && $2 ~ /^refs\/(merge-requests|pull)\/[0-9]+\/head$/ { print $2; f = 1; exit }
+		END { exit !f }' <<<"$REMOTE_REFS"
 }
 
 # commit_merged_into_base SHA -> true if every commit in SHA beyond the base branch is
@@ -312,7 +330,44 @@ filter_pinned() {   # $1 = name of a branch array to rewrite in place
 filter_pinned MERGED
 filter_pinned REBASED
 
+# Superseded remote branches: an unmerged remote branch tracked by a stale local branch, whose
+# tip is an earlier state of that local branch (it is in the local reflog). The local branch
+# was rewritten and landed another way (typically a replacement MR/PR from a new branch) and
+# the old remote copy was never updated; a tip that is not in our reflog means someone else
+# pushed there, so it is left alone. Deleted only while an MR/PR head ref on the remote still
+# holds the tip, so the commit stays recoverable from the forge. Must run before deletion:
+# deleting the local branch drops its reflog and upstream config.
+declare -a REMOTE_SUPERSEDED=()
+declare -a REMOTE_SUPERSEDED_REFS=()
+declare -a SUPERSEDED_KEPT_MSGS=()
+declare -A REMOTE_NOT_MERGED_SET=() REMOTE_REBASED_SET=() SUPERSEDED_SEEN=()
+for b in "${REMOTE_NOT_MERGED[@]}"; do REMOTE_NOT_MERGED_SET["$b"]=1; done
+for b in "${REMOTE_REBASED[@]}"; do REMOTE_REBASED_SET["$b"]=1; done
+
+for branch in "${MERGED[@]}" "${REBASED[@]}"; do
+	[[ "$branch" == "$CURRENT_BRANCH" ]] && continue
+	[[ "$(git config --get "branch.${branch}.remote" 2>/dev/null || true)" == "$REMOTE" ]] || continue
+	upstream=$(git config --get "branch.${branch}.merge" 2>/dev/null || true)
+	[[ "$upstream" == refs/heads/* ]] || continue
+	rbranch=${upstream#refs/heads/}
+	[[ -n "${REMOTE_NOT_MERGED_SET[$rbranch]:-}" ]] || continue
+	[[ -z "${REMOTE_REBASED_SET[$rbranch]:-}" ]] || continue
+	[[ -z "${SUPERSEDED_SEEN[$rbranch]:-}" ]] || continue
+	tip=$(git rev-parse --verify --quiet "refs/remotes/${REMOTE}/${rbranch}^{commit}") || continue
+	# Captured first: `reflog | grep -q` can SIGPIPE the reflog and fail under pipefail.
+	reflog=$(git reflog show --format=%H "refs/heads/${branch}" 2>/dev/null) || continue
+	grep -qxF -- "$tip" <<<"$reflog" || continue
+	SUPERSEDED_SEEN["$rbranch"]=1
+	if mr_ref=$(mr_ref_for "$tip"); then
+		REMOTE_SUPERSEDED+=("$rbranch")
+		REMOTE_SUPERSEDED_REFS+=("$mr_ref")
+	else
+		SUPERSEDED_KEPT_MSGS+=("$rbranch  (superseded by merged ${branch}, not preserved by any MR/PR ref — kept)")
+	fi
+done
+
 LOCAL_TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
+REMOTE_TOTAL=$(( ${#REMOTE_MERGED[@]} + ${#REMOTE_REBASED[@]} + ${#REMOTE_SUPERSEDED[@]} ))
 TOTAL=$(( LOCAL_TOTAL + REMOTE_TOTAL ))
 
 if [[ $TOTAL -eq 0 && $WT_TOTAL -eq 0 ]]; then
@@ -338,7 +393,8 @@ fi
 
 # Column width for alignment
 MAX_WIDTH=0
-for branch in "${MERGED[@]}" "${REBASED[@]}" "${REMOTE_MERGED[@]}" "${REMOTE_REBASED[@]}"; do
+for branch in "${MERGED[@]}" "${REBASED[@]}" "${REMOTE_MERGED[@]}" "${REMOTE_REBASED[@]}" \
+	"${REMOTE_SUPERSEDED[@]}"; do
 	(( ${#branch} > MAX_WIDTH )) && MAX_WIDTH=${#branch}
 done
 
@@ -357,8 +413,10 @@ print_remote_branch() {
 	local branch=$1
 	local label=$2
 	local color=$3
+	local extra=${4:-}   # optional note appended to the info column
 	local info
 	info=$(git log -1 --format='%h "%s" (%cr)' "${REMOTE}/${branch}" 2>/dev/null || echo "")
+	[[ -n "$extra" ]] && info+="  ${extra}"
 	printf "  ${color}%-${MAX_WIDTH}s  %s${echo_normal}  ${echo_lightgray}%s${echo_normal}\n" \
 		"$branch" "$label" "$info"
 }
@@ -410,9 +468,12 @@ do_deletions() {
 	fi
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Deleting ${LOCAL_TOTAL} stale local branch(es):${echo_normal}"
+		# -D, not -d: merge into $BASE_REF is already verified above. -d re-checks against
+		# HEAD or the upstream instead, and refuses a branch whose upstream diverged (e.g. the
+		# work landed via a replacement branch and the old remote branch was never updated).
 		for branch in "${MERGED[@]}"; do
 			print_branch "$branch" "merged " "$echo_green"
-			delete_branch "$branch" -d
+			delete_branch "$branch" -D
 		done
 		for branch in "${REBASED[@]}"; do
 			print_branch "$branch" "rebased" "$echo_yellow"
@@ -430,7 +491,21 @@ do_deletions() {
 			print_remote_branch "$branch" "rebased" "$echo_yellow"
 			delete_remote_branch "$branch"
 		done
+		for i in "${!REMOTE_SUPERSEDED[@]}"; do
+			print_remote_branch "${REMOTE_SUPERSEDED[$i]}" "superseded" "$echo_yellow" \
+				"[kept at ${REMOTE_SUPERSEDED_REFS[$i]}]"
+			delete_remote_branch "${REMOTE_SUPERSEDED[$i]}"
+		done
 	fi
+}
+
+print_superseded_kept() {
+	[[ ${#SUPERSEDED_KEPT_MSGS[@]} -eq 0 ]] && return
+	echo
+	echo -e "${echo_bold_white}Skipped remote branch(es) (superseded, not recoverable after delete):${echo_normal}"
+	for msg in "${SUPERSEDED_KEPT_MSGS[@]}"; do
+		echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+	done
 }
 
 print_skipped_worktrees() {
@@ -455,6 +530,7 @@ if $DO_IT; then
 	do_deletions
 	print_skipped_worktrees
 	print_pinned_branches
+	print_superseded_kept
 else
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Stale local branches (${LOCAL_TOTAL}):${echo_normal}"
@@ -474,6 +550,10 @@ else
 		for branch in "${REMOTE_REBASED[@]}"; do
 			print_remote_branch "$branch" "rebased" "$echo_yellow"
 		done
+		for i in "${!REMOTE_SUPERSEDED[@]}"; do
+			print_remote_branch "${REMOTE_SUPERSEDED[$i]}" "superseded" "$echo_yellow" \
+				"[kept at ${REMOTE_SUPERSEDED_REFS[$i]}]"
+		done
 	fi
 	if [[ $WT_TOTAL -gt 0 ]]; then
 		echo
@@ -485,6 +565,7 @@ else
 	fi
 	print_skipped_worktrees
 	print_pinned_branches
+	print_superseded_kept
 	echo
 
 	# Build a prompt covering whichever of branches / worktrees are present.
