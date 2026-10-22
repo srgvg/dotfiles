@@ -1,41 +1,34 @@
 #!/usr/bin/env bash
 
-# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
-# vi: set shiftwidth=4 tabstop=4 noexpandtab:
-# :indentSize=4:tabSize=4:noTabs=false:
-
 set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
+# shellcheck source=lib/rename-safe.bash
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/rename-safe.bash"
 
-echo=""
-
-function rename() {
-	file="${1:-}"
-	if [ ! -f "$file" ]
-	then
-		echo "File '$file' does not exist?"
-		exit 1
-	fi
-	name="$(basename "$file")"
-	path="$(dirname  "$file")"
-	newname="${name// /_}"
-	$echo mv -v "$file" "$path/$newname"
-}
-
-if [ "${1:-}" = "do" ]
-then
+# Usage: rename4space [do] filenames...
+# Defaults to preview. Preflights the whole batch: existing or duplicate
+# destinations fail before any rename, unchanged names are no-ops. Never clobbers.
+preview=true
+if [[ "${1:-}" == "do" ]]; then
+    preview=false
     shift
-else
-	echo="echo"
 fi
 
-files=("$@")
-for file in "${files[@]}"
-do
-	rename "${file}"
+declare -a sources=() destinations=()
+for file in "$@"; do
+    if [[ ! -f "$file" ]]; then
+        printf 'File does not exist: %s\n' "$file" >&2
+        exit 1
+    fi
+    rename_path "$file"
+    file=$RENAME_PATH
+    name=${file##*/}
+    path=${file%/*}
+    sources+=("$file")
+    destinations+=("$path/${name// /_}")
 done
+rename_batch mv "$preview" sources destinations

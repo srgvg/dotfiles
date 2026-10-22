@@ -1,0 +1,603 @@
+#!/usr/bin/python3
+"""Stage and validate mise upgrades; never combine them with tool upgrades."""
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import urllib.request
+import uuid
+from contextlib import contextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+
+
+class Refused(RuntimeError):
+    pass
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def tree_digest(root):
+    """Include names, contents and link targets, without following directory links."""
+    root = Path(root)
+    h = hashlib.sha256()
+    if not root.exists():
+        return "absent"
+    for base, dirs, files in os.walk(root, followlinks=False):
+        for name in sorted(dirs + files):
+            p = Path(base) / name
+            value = ("link:" + os.readlink(p) if p.is_symlink() else
+                     "dir" if p.is_dir() else digest(p))
+            h.update(f"{p.relative_to(root)}\0{value}\0".encode())
+        dirs.sort()
+    return h.hexdigest()
+
+
+def atomic_write(path, content, mode=0o600):
+    path = Path(path)
+    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def save_json(path, obj):
+    atomic_write(path, (json.dumps(obj, indent=2) + "\n").encode())
+
+
+def version_tuple(version):
+    if not re.fullmatch(r"v?\d{4}\.\d+\.\d+", version):
+        raise Refused(f"not a stable mise version: {version}")
+    return tuple(map(int, version.lstrip("v").split(".")))
+
+
+def release_allowed(release, now):
+    version_tuple(release["tag_name"])
+    published = datetime.fromisoformat(release["published_at"])
+    if published.tzinfo is None:
+        raise Refused("release publication date has no timezone")
+    if release.get("draft") or release.get("prerelease"):
+        raise Refused("only published stable releases are eligible")
+    if published > now - timedelta(days=7):
+        raise Refused(f"{release['tag_name']} is younger than seven days; eligible at "
+                      f"{(published + timedelta(days=7)).isoformat()}")
+
+
+def fetch_release(version):
+    tag = "v" + version.lstrip("v")
+    version_tuple(tag)
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/jdx/mise/releases/tags/{tag}",
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "mise-self-upgrade"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        release = json.load(response)
+    if release.get("tag_name") != tag:
+        raise Refused("release API returned a different tag")
+    release_allowed(release, datetime.now(UTC))
+    return release
+
+
+def discover_releases(current, now):
+    """Inspect the latest 100 release records; eligibility is not validation."""
+    request = urllib.request.Request(
+        "https://api.github.com/repos/jdx/mise/releases?per_page=100",
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "mise-self-upgrade"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        releases = json.load(response)
+    rows = []
+    for release in releases:
+        tag = release.get("tag_name", "")
+        if (release.get("draft") or release.get("prerelease") or
+                not re.fullmatch(r"v?\d{4}\.\d+\.\d+", tag)):
+            continue
+        if version_tuple(tag) <= version_tuple(current):
+            continue
+        try:
+            release_allowed(release, now)
+            status = "eligible for validation"
+            eligible = True
+        except Refused as exc:
+            status, eligible = str(exc), False
+        rows.append((tag.lstrip("v"), eligible, status))
+    return sorted(rows, key=lambda row: version_tuple(row[0]), reverse=True)
+
+
+class Guard:
+    def __init__(self, home=None):
+        self.home = Path(home or Path.home()).resolve()
+        self.binary = self.home / ".local/bin/mise"
+        self.pin = self.home / "etc/config/versions"
+        self.config = self.home / ".config/mise"
+        self.data = self.home / ".local/share/mise"
+        self.state = self.home / ".local/state/mise/self-upgrade"
+        self.state.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.lock = self.state.parent / "maintenance.lock"
+        self.record = None
+
+    @contextmanager
+    def locked(self):
+        with self.lock.open("a") as stream:
+            try:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise Refused("mise maintenance or an upgrade is already running") from exc
+            yield
+
+    def clean_env(self):
+        env = {k: v for k, v in os.environ.items()
+               if not k.startswith(("MISE_", "__MISE_"))}
+        env.update(HOME=str(self.home), PATH=":".join(map(str, [
+            self.home / "binc", self.home / "bin", self.home / ".local/bin",
+            Path("/usr/local/bin"), Path("/usr/bin"), Path("/bin")])),
+            MISE_SELF_UPDATE_AUTO="false", MISE_AUTO_UPDATE="false",
+            MISE_SELF_UPDATE_REPOSITORY="jdx/mise",
+            MISE_SELF_UPDATE_API_URL="https://api.github.com",
+            MISE_YES="1", MISE_COLOR="0", NO_COLOR="1")
+        return env
+
+    def run(self, command, *, env=None, cwd="/", timeout=60):
+        p = subprocess.Popen(list(map(str, command)), cwd=cwd,
+                             env=env or self.clean_env(), stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, text=True, start_new_session=True)
+        try:
+            stdout, stderr = p.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as exc:
+            self.stop(p)
+            raise Refused(f"command timed out: {command[0]}") from exc
+        except BaseException:
+            self.stop(p)
+            raise
+        if p.returncode:
+            raise Refused(f"command failed ({p.returncode}): {' '.join(map(str, command))}\n"
+                          f"{stderr[-4000:]}{stdout[-4000:]}")
+        if stderr:
+            if self.record:
+                with (self.record / "diagnostics.txt").open("a") as log:
+                    log.write(stderr)
+            else:
+                print(stderr, file=sys.stderr, end="")
+        return stdout
+
+    @staticmethod
+    def stop(process):
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
+            process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate(timeout=2)
+
+    def pinned(self):
+        matches = re.findall(r"^MISE_VERSION=(v\d{4}\.\d+\.\d+)\s*$",
+                             self.pin.read_text(), flags=re.MULTILINE)
+        if len(matches) != 1:
+            raise Refused("versions must contain exactly one MISE_VERSION=vYYYY.M.N pin")
+        return matches[0].lstrip("v")
+
+    def installed(self):
+        version = self.run([self.binary, "--version"]).split()[0]
+        version_tuple(version)
+        return version.lstrip("v")
+
+    def fingerprints(self):
+        return {"binary": digest(self.binary), "pin": digest(self.pin),
+                "config": tree_digest(self.config), "shims": tree_digest(self.data / "shims")}
+
+    def pending(self):
+        for p in sorted(self.state.glob("*/transaction.json")):
+            if json.loads(p.read_text())["status"] in ("promoting", "rollback_failed"):
+                raise Refused(f"unfinished promotion; run mise-self-upgrade rollback {p.parent.name}")
+
+    def sandbox(self, stage, command, *, network=False, cwd="/", env=None):
+        # Live installs/plugins are visible through read-only mounts. Only stage is writable.
+        args = ["/usr/bin/bwrap", "--die-with-parent", "--new-session", "--unshare-pid",
+                "--ro-bind", "/", "/", "--bind", stage, stage,
+                "--dev", "/dev", "--proc", "/proc"]
+        if not network:
+            args += ["--unshare-net"]
+        args += ["--chdir", cwd, "--", *command]
+        return self.run(args, env=env, timeout=600 if network else 60)
+
+    def stage(self, root):
+        scratch = Path(self.run([self.home / "binc/scratch", "dir", "--purpose",
+                                 "mise self-upgrade validation"], cwd=self.home).strip())
+        stage = Path(tempfile.mkdtemp(prefix="mise-self-upgrade-", dir=scratch))
+        # Set before copying so partial staging is cleaned up if a copy fails.
+        self.work = stage
+        for name in ("cache", "state", "data", "tmp", "baseline", "candidate", "project"):
+            (stage / name).mkdir()
+        shutil.copytree(self.config, stage / "config", symlinks=False)
+        for p in self.data.iterdir():
+            if p.name != "shims":
+                (stage / "data" / p.name).symlink_to(p, target_is_directory=p.is_dir())
+        shutil.copytree(self.data / "shims", stage / "data/shims", symlinks=True)
+        for name in ("baseline", "candidate"):
+            shutil.copy2(self.binary, stage / name / "mise")
+        (stage / "project/mise.toml").write_text(
+            '[env]\nMISE_GUARD_FIXTURE = "ok"\n'
+            '[tasks.check]\nrun = \'test "$MISE_GUARD_FIXTURE" = ok && echo guard-task-ok\'\n')
+        return stage
+
+    def stage_env(self, stage):
+        env = self.clean_env()
+        env["PATH"] = str(stage / "data/shims") + ":" + env["PATH"]
+        env.update(MISE_CONFIG_DIR=str(stage / "config"),
+                   MISE_GLOBAL_CONFIG_FILE=str(stage / "config/config.toml"),
+                   MISE_DATA_DIR=str(stage / "data"), MISE_SHIMS_DIR=str(stage / "data/shims"),
+                   MISE_STATE_DIR=str(stage / "state"), MISE_CACHE_DIR=str(stage / "cache"),
+                   MISE_OFFLINE="1", MISE_AUTO_INSTALL="0", MISE_EXEC_AUTO_INSTALL="0",
+                   MISE_TRUSTED_CONFIG_PATHS=str(stage / "project"), TMPDIR=str(stage / "tmp"))
+        return env
+
+    def probe(self, stage, binary, projects):
+        # Each binary must discover state independently; baseline caches can mask regressions.
+        for name in ("cache", "state"):
+            shutil.rmtree(stage / name)
+            (stage / name).mkdir()
+        env = self.stage_env(stage)
+        if binary != self.binary:
+            env["PATH"] = str(binary.parent) + ":" + env["PATH"]
+        # Cloned shims must invoke the candidate, never the currently installed binary.
+        for p in (stage / "data/shims").iterdir():
+            if p.is_symlink() and p.resolve() in (
+                    self.binary.resolve(), stage / "baseline/mise", stage / "candidate/mise"):
+                p.unlink()
+                p.symlink_to(binary)
+        def call(*args, cwd="/"):
+            return self.sandbox(stage, [binary, *args], cwd=cwd, env=env)
+        def normalized(value):
+            return value.replace(str(stage / "data"), str(self.data)).replace(
+                str(stage / "config"), str(self.config)).replace(
+                str(stage / "baseline"), str(self.binary.parent)).replace(
+                str(stage / "candidate"), str(self.binary.parent))
+        def inventory(cwd):
+            tools = json.loads(call("ls", "--current", "--json", cwd=cwd))
+            result = {}
+            for key, rows in tools.items():
+                if any(not row["installed"] for row in rows):
+                    raise Refused(f"missing configured installation: {key}")
+                result[key] = [(row["version"], normalized(row["install_path"])) for row in rows]
+            return result
+        result = {"tools": inventory("/")}
+        # Compare every executable's winning PATH directory, including shadowed system tools.
+        paths = json.loads(call("env", "--json"))
+        winners = {}
+        for entry in paths["PATH"].split(":"):
+            directory = Path(entry)
+            if directory.is_dir():
+                for p in sorted(directory.iterdir()):
+                    if p.is_file() and os.access(p, os.X_OK):
+                        winners.setdefault(p.name, normalized(str(p)))
+        result["winners"] = winners
+        result["env"] = {k: normalized(v) for k, v in paths.items() if k != "PATH"}
+        # Doctor's JSON output is metadata only on some releases: use its text/exit status.
+        doctor = call("doctor")
+        if "No problems found" not in doctor:
+            raise Refused("doctor did not confirm a healthy setup")
+        if self.record:
+            (self.record / f"{binary.parent.name}-doctor.txt").write_text(doctor)
+        script = r'''set -euo pipefail
+eval "$("$1" activate bash)"
+declare -F _mise_hook >/dev/null
+eval "$("$1" hook-env -s bash)"
+test "$GOBIN" = "$HOME/.local/bin"
+test "$(command -v claude)" = "$HOME/binc/claude"
+test "$(type -P mise)" = "$1"
+node --version
+npm --version
+usage --version
+yamllint --version
+flux-operator version --client
+docker-compose version
+bat --version
+cd "$2"
+test "$MISE_GUARD_FIXTURE" = ok
+cd /
+test -z "${MISE_GUARD_FIXTURE-}"
+/bin/bash --noprofile --norc -ec 'eval "$("$1" activate --shims)"; npm --version' guard "$1"
+'''
+        result["smoke"] = self.sandbox(
+            stage, ["/bin/bash", "--noprofile", "--norc", "-c", script, "guard", binary,
+                    stage / "project"], env=env)
+        task = call("run", "check", cwd=stage / "project")
+        if "guard-task-ok" not in task:
+            raise Refused("task fixture failed")
+        result["projects"] = {}
+        for project in projects:
+            result["projects"][str(project)] = {
+                "tools": inventory(project),
+                "tasks": json.loads(call("tasks", "ls", "--json", cwd=project)),
+            }
+        return result
+
+    def validate(self, stage, projects):
+        before_config = tree_digest(stage / "config")
+        old = self.probe(stage, stage / "baseline/mise", projects)
+        new = self.probe(stage, stage / "candidate/mise", projects)
+        changed = [key for key in old if old[key] != new[key]]
+        if changed:
+            raise Refused(f"candidate changed {', '.join(changed)}; keep the current mise")
+        if tree_digest(stage / "config") != before_config:
+            raise Refused("candidate or baseline rewrote the copied configuration/lockfiles")
+        print("PASS: doctor, configured tools, PATH winners, environment, shell and task checks")
+
+    def promote(self, root, stage, version, before, projects):
+        if self.fingerprints() != before:
+            raise Refused("live binary, pin, configuration or shims changed during validation")
+        atomic_write(root / "mise.before", self.binary.read_bytes(), 0o755)
+        atomic_write(root / "versions.before", self.pin.read_bytes(), self.pin.stat().st_mode & 0o777)
+        shutil.copytree(self.config, root / "config.before", symlinks=False)
+        pin, count = re.subn(rb"(?m)^MISE_VERSION=v\d{4}\.\d+\.\d+(?=[ \t]*\r?$)",
+                            f"MISE_VERSION=v{version}".encode(), self.pin.read_bytes())
+        if count != 1:
+            raise Refused("could not replace exactly one version pin")
+        txn = {"status": "promoting", "version": version, "before": before,
+               "after_binary": digest(stage / "candidate/mise"),
+               "after_pin": hashlib.sha256(pin).hexdigest()}
+        save_json(root / "transaction.json", txn)
+        try:
+            atomic_write(self.binary, (stage / "candidate/mise").read_bytes(), 0o755)
+            atomic_write(self.pin, pin, self.pin.stat().st_mode & 0o777)
+            # Execute the promoted path inside the same read-only sandbox before accepting it.
+            self.probe(stage, self.binary, projects)
+            txn["status"] = "complete"
+            save_json(root / "transaction.json", txn)
+        except BaseException:
+            self.restore(root, txn)
+            raise
+        print(f"Promoted mise {version}; rollback: mise-self-upgrade rollback {root.name}")
+
+    def check_restore(self, root, txn):
+        current = self.fingerprints()
+        before = txn["before"]
+        if (current["config"] != before["config"] or current["shims"] != before["shims"] or
+            current["binary"] not in (before["binary"], txn["after_binary"]) or
+            current["pin"] not in (before["pin"], txn["after_pin"])):
+            raise Refused("state changed since promotion; refusing to overwrite later work during rollback")
+        if digest(root / "mise.before") != before["binary"] or digest(root / "versions.before") != before["pin"]:
+            raise Refused("rollback backup checksum mismatch")
+
+    def restore(self, root, txn):
+        self.check_restore(root, txn)
+        try:
+            atomic_write(self.binary, (root / "mise.before").read_bytes(), 0o755)
+            atomic_write(self.pin, (root / "versions.before").read_bytes(),
+                         (root / "versions.before").stat().st_mode & 0o777)
+            txn["status"] = "rolled_back"
+        except BaseException:
+            txn["status"] = "rollback_failed"
+            save_json(root / "transaction.json", txn)
+            raise
+        save_json(root / "transaction.json", txn)
+        print(f"Restored binary and pin from {root.name}; configuration/lockfiles unchanged")
+
+    def list_rollbacks(self):
+        records = sorted(self.state.glob("*/transaction.json"), reverse=True)
+        if not records:
+            print("No saved promotions to roll back. Check/verify runs do not create rollback backups.")
+            return
+        print("Saved promotions (newest first):")
+        for record in records:
+            root = record.parent
+            try:
+                txn = json.loads(record.read_text())
+                print(f"  {root.name}: applied {txn['version']} [{txn['status']}]")
+                if txn["status"] not in ("complete", "promoting", "rollback_failed"):
+                    print("    Unavailable: transaction is not eligible for rollback.")
+                    continue
+                self.check_restore(root, txn)
+                pin = re.search(r"^MISE_VERSION=(v\d{4}\.\d+\.\d+)\s*$",
+                                (root / "versions.before").read_text(), flags=re.MULTILINE)
+                if not pin:
+                    raise Refused("saved version pin is unreadable")
+                print(f"    Ready to restore {pin[1].lstrip('v')}")
+                print(f"    mise-self-upgrade rollback {root.name}")
+            except (Refused, OSError, ValueError, KeyError, TypeError) as exc:
+                print(f"    Unavailable ({root.name}): {exc}")
+        print("Listing only; nothing restored. The chosen command rechecks state before restoring.")
+
+    def rollback(self, run_id):
+        if run_id is None:
+            self.list_rollbacks()
+            return
+        if not re.fullmatch(r"[0-9TZ-]+-[0-9a-f]{8}", run_id):
+            raise Refused("invalid rollback ID; run mise-self-upgrade rollback to list saved promotions")
+        root = self.state / run_id
+        if not (root / "transaction.json").is_file():
+            raise Refused("no saved promotion for that ID; run mise-self-upgrade rollback to list them")
+        txn = json.loads((root / "transaction.json").read_text())
+        if txn["status"] not in ("complete", "promoting", "rollback_failed"):
+            raise Refused(f"transaction is {txn['status']}, not eligible for rollback")
+        self.restore(root, txn)
+
+    def upgrade(self, action, version, projects):
+        self.pending()
+        current = self.installed()
+        if current != self.pinned():
+            raise Refused("installed mise differs from MISE_VERSION; reconcile before upgrading")
+        if action != "verify":
+            version = version.lstrip("v")
+            if version_tuple(version) <= version_tuple(current):
+                raise Refused("candidate must be newer than installed mise; use rollback for downgrades")
+            release = fetch_release(version)
+        else:
+            version, release = current, None
+        before = self.fingerprints()
+        run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:8]
+        root = self.state / run_id
+        root.mkdir(mode=0o700)
+        self.record = root
+        self.work = None
+        stage = None
+        try:
+            stage = self.stage(root)
+            if release:
+                save_json(root / "release.json", release)
+                env = self.stage_env(stage)
+                env["MISE_OFFLINE"] = "0"
+                env["PATH"] = str(stage / "candidate") + ":" + env["PATH"]
+                output = self.sandbox(stage, [stage / "candidate/mise", "self-update",
+                    "--yes", "--no-plugins", version], network=True, env=env)
+                (root / "download.txt").write_text(output)
+            actual = self.sandbox(stage, [stage / "candidate/mise", "--version"],
+                                  env=self.stage_env(stage)).split()[0]
+            if actual != version:
+                raise Refused(f"downloaded version {actual} differs from requested {version}")
+            self.validate(stage, projects)
+            if self.fingerprints() != before:
+                raise Refused("live state changed during checks")
+            if action == "apply":
+                self.promote(root, stage, version, before, projects)
+            else:
+                print(f"{action}: mise {version} passed; live binary and pin unchanged")
+            save_json(root / "result.json", {"action": action, "version": version, "result": "passed"})
+        except BaseException as exc:
+            save_json(root / "result.json", {"action": action, "version": version,
+                                            "result": "failed", "error": str(exc)})
+            raise
+        finally:
+            if self.work is not None:
+                shutil.rmtree(self.work)
+            print(f"Record: {root}")
+
+    def maintain(self):
+        self.pending()
+        if self.installed() != self.pinned():
+            raise Refused("mise differs from MISE_VERSION; run the guarded upgrade, not self-update in cron")
+        env = self.clean_env()
+        env["PATH"] = str(self.data / "shims") + ":" + env["PATH"]
+        # No self-update, plugin update, backend switch or lock-format migration here.
+        for args in (["install", "--yes"], ["upgrade", "--yes", "--jobs", "8"],
+                     ["lock", "--global", "--yes"], ["reshim"], ["doctor"]):
+            print("mise " + " ".join(args), flush=True)
+            print(self.run([self.binary, *args], env=env, timeout=3600), end="")
+        print(self.run([self.home / "bin/mise-prune-keep", "--keep", "3"], env=env, timeout=300), end="")
+
+    def discover(self):
+        current = self.installed()
+        print(f"Installed: {current}; pinned: {self.pinned()}")
+        rows = discover_releases(current, datetime.now(UTC))
+        print("Newer stable versions in GitHub's latest 100 release records:")
+        for version, _, status in rows:
+            print(f"  {version}: {status}")
+            print(f"    https://github.com/jdx/mise/releases/tag/v{version}")
+        if not rows:
+            print("  None found.")
+        candidate = next((version for version, eligible, _ in rows if eligible), None)
+        if candidate:
+            print(f"Next: mise-self-upgrade check {candidate}")
+        else:
+            print("No eligible newer candidate found; check again later.")
+        print("Discovery only: no binaries downloaded, validated or installed.")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Start here:
+  mise-self-upgrade check                     discover newer releases and eligibility
+  mise-self-upgrade check YYYY.M.N            download and validate a chosen version
+  mise-self-upgrade apply YYYY.M.N            repeat checks, then install and pin it
+  mise-self-upgrade verify                    validate the currently installed mise
+  mise-self-upgrade check YYYY.M.N --project ~/src/group/repo
+  mise-self-upgrade rollback                  list saved upgrades and restore commands
+  mise-self-upgrade rollback RUN_ID           restore a saved binary and version pin
+
+Upgrades require a newer stable release published at least seven full days ago.
+Eligibility is not proof of compatibility: validation must pass before promotion.
+Run COMMAND --help for details. Full documentation: ~/etc/docs/mise.md
+Validation logs and rollback backups: ~/.local/state/mise/self-upgrade/RUN_ID/""")
+    sub = parser.add_subparsers(dest="action", required=True, title="commands", metavar="COMMAND")
+    descriptions = {
+        "check": ("discover releases, or validate VERSION without installing",
+                  ("Without VERSION, query GitHub's latest 100 release records and list newer "
+                  "stable versions, their seven-day eligibility and release-note links. "
+                  "No binary is downloaded or tested. With VERSION, download a signed candidate "
+                  "and compare it with installed mise in isolation; leave the live binary and pin unchanged.")),
+        "apply": ("validate and install VERSION, with automatic rollback on failure",
+                  ("Download and validate an explicit newer stable VERSION, then replace the mise "
+                  "binary and update MISE_VERSION. A separate check is optional: all checks run "
+                  "again here. A failed post-install check restores the old binary and pin. "
+                  "Prints the saved run ID for manual rollback. Does not upgrade managed tools.")),
+        "verify": ("validate installed mise without downloading or upgrading",
+                   ("Run isolated doctor, tool, PATH, environment, shell and task checks on the "
+                   "installed version. Requires no network. Leaves the live binary and pin unchanged.")),
+    }
+    for action, (summary, description) in descriptions.items():
+        p = sub.add_parser(action, help=summary, description=description)
+        if action != "verify":
+            p.add_argument("version", metavar="VERSION", nargs="?" if action == "check" else None,
+                           help="stable YYYY.M.N (optional v prefix), newer than installed and "
+                           "at least seven days old" + ("; omit to discover releases" if action == "check" else ""))
+        p.add_argument("--project", action="append", type=Path, default=[],
+                       metavar="PATH", help="also inspect this project's tools and task discovery "
+                       "(repeatable; ~/etc always included); does not run project tests/builds")
+    sub.add_parser("maintain", help="upgrade managed tools while keeping mise pinned",
+                   description="Scheduled maintenance used by update-tools: install/upgrade tools, "
+                   "refresh the global lockfile and shims, run doctor, then prune to the newest "
+                   "three installs per tool. Stops at the first failure. Shares the upgrade lock. "
+                   "Does not update mise itself or plugins, switch backends or migrate lock formats.")
+    rollback = sub.add_parser("rollback", help="list saved upgrades, or restore one by ID",
+                              description="Without RUN_ID, list saved promotions newest first with "
+                              "their versions, status and exact restore commands. Listing changes "
+                              "nothing and marks backups blocked by later edits or damage. With "
+                              "RUN_ID, restore a saved promotion's previous mise binary and "
+                              "version pin. Refuses if the binary, pin, global configuration or "
+                              "shims have changed since promotion. Check/verify records cannot be "
+                              "rolled back. No force override.")
+    rollback.add_argument("run_id", metavar="RUN_ID", nargs="?",
+                          help="omit to list saved upgrades; use an ID from that list to restore")
+    args = parser.parse_args()
+    if args.action == "check" and args.version is None and args.project:
+        parser.error("--project requires VERSION when checking; discovery does not validate projects")
+    def interrupted(signum, frame):
+        raise Refused(f"interrupted by signal {signum}")
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGHUP, interrupted)
+    try:
+        guard = Guard()
+        with guard.locked():
+            if args.action == "rollback":
+                guard.rollback(args.run_id)
+            elif args.action == "maintain":
+                guard.maintain()
+            elif args.action == "check" and args.version is None:
+                guard.discover()
+            else:
+                projects = [guard.home / "etc", *[p.resolve() for p in args.project]]
+                guard.upgrade(args.action, getattr(args, "version", None), projects)
+    except (Refused, OSError, ValueError, KeyError, KeyboardInterrupt) as exc:
+        print(f"mise-self-upgrade: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,117 +1,68 @@
 #!/usr/bin/env bash
 
-# c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t
-# vi: set shiftwidth=4 tabstop=4 noexpandtab:
-# :indentSize=4:tabSize=4:noTabs=false:
-
 set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
+# shellcheck source=lib/rename-safe.bash
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/rename-safe.bash"
 
-
-function rename() {
-	# rename $mvcp $action $files ...
-	local mvcp=${1:-echo mv}
-	local action=${2:-0}
-	local file=${3:-}
-
-	if [ -z "${file}" ]
-	then
-		cat >&2 <<- EOF
-			No file argument given
-			EOF
-		return 1
-	fi
-	if [ ! -r "${file}" ]
-	then
-		echo "Cannot read $file" >&2
-		return 1
-	fi
-
-	filepathname=$(realpath --no-symlinks "${file}")
-	filename=$(basename "${filepathname}")
-	filepath=$(dirname "${filepathname}")
-	filenamebase=${filename%.*}
-	filenamext=${filename##*.}
-	filepoch=$(stat -c %Y "${filepathname}")
-	filets=$(date -d @${filepoch} +%Y%m%d%H%M%S)
-	if [ "${action}" -eq 1 ]
-	then
-		newpathname="${filepath}/${filets}-${filenamebase}.${filenamext}"
-	elif [ "${action}" -eq 2 ]
-	then
-		newpathname="${filepath}/${filets}.${filenamext}"
-	else
-		cat >&2 <<- EOF
-			Bad action given, in rename function. Don't know what to do.
-			EOF
-		return 1
-	fi
-
-	if ifdebug3
-	then
-		notify_debug $mvcp --verbose "${filepathname}" "${newpathname}"
-	else
-		$mvcp --verbose "${filepathname}" "${newpathname}"
-	fi
+usage() {
+    cat >&2 <<'EOF'
+Usage: rename2timestamp [-c|--copy] [1|2|01|02] filenames...
+  -c, --copy  Copy instead of move.
+  1           Prepend timestamp: timestamp-filename.ext.
+  2           Replace name: timestamp.ext.
+  01, 02      Preview only; omitted action defaults to 01.
+Rejects existing destinations and duplicate names before changing any file.
+Unchanged names are no-ops. Existing files are never overwritten.
+EOF
 }
 
-
-param1="${1:-}"
-case ${param1} in
-	"")
-		cat >&2 <<- EOF
-			No file argument given
-
-			$(basename $0) [-c|--copy] [optional action: (0)1 or (0)2] filenames..
-
-			.	-c, --copy : copy the file with the new name instead of renaming it
-			.
-			.	option 1 : prepend a timestamp to the current filename timestamp-filename.ext
-			.	option 2 : just rename the file to timestamp.ext
-			.
-			.	prepend '0' ('01', '02') for no-act mode, showing what would happen
-			.				this is also the default when action is omitted
-			EOF
-    	exit 1
-		;;
-	"-c"|"--copy")
-		mvcp="cp"
-		shift
-		;;
-	*)
-		mvcp="mv"
-		;;
+operation="mv"
+preview=true
+action=1
+if [[ "${1:-}" == -c || "${1:-}" == --copy ]]; then
+    operation="cp"
+    shift
+fi
+case "${1:-}" in
+    1|2) action=$1; preview=false; shift ;;
+    0|01) shift ;;
+    02) action=2; shift ;;
 esac
+if (( $# == 0 )); then
+    usage
+    exit 1
+fi
 
-action="${1:-0}"
-case ${action} in
-	"1"|"2")
-		action="${1}"
-		shift
-		;;
-	"0"|"01")
-		mvcp="echo ${mvcp}"
-		action=1
-		shift
-		;;
-	"02")
-		mvcp="echo ${mvcp}"
-		action=2
-		shift
-		;;
-	*)
-		mvcp="echo ${mvcp}"
-		action=1
-		;;
-esac
-files=($@)
-
-for file in "${files[@]}"
-do
-	rename "${mvcp}" "${action}" "${file}"
+declare -a sources=() destinations=()
+for file in "$@"; do
+    if [[ ! -r "$file" ]]; then
+        printf 'Cannot read %s\n' "$file" >&2
+        exit 1
+    fi
+    rename_path "$file"
+    filepathname=$RENAME_PATH
+    filename=${filepathname##*/}
+    filepath=${filepathname%/*}
+    filenamebase=${filename%.*}
+    filenamext=${filename##*.}
+    filepoch=$(stat -c %Y -- "$filepathname")
+    filets=$(date -d "@$filepoch" +%Y%m%d%H%M%S)
+    if [[ "$action" == 1 ]]; then
+        newpathname="${filepath}/${filets}-${filenamebase}.${filenamext}"
+    else
+        newpathname="${filepath}/${filets}.${filenamext}"
+    fi
+    sources+=("$filepathname")
+    destinations+=("$newpathname")
 done
+
+# Keep the existing DEBUG=3 preview behavior.
+if ifdebug3; then
+    preview=true
+fi
+rename_batch "$operation" "$preview" sources destinations

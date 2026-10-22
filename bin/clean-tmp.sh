@@ -27,6 +27,11 @@ Options:
   --no-dry-run      Actually delete files (default: dry-run)
   -h, --help        Show this help
 
+Checks age and ownership for each entry recursively, without following symlinks
+or crossing filesystems. Skips ssh-* entries and their contents. Only removes
+empty directories; directories emptied by this run remain until a later run.
+Traversal or deletion errors produce a nonzero exit status.
+
 Examples:
   clean-tmp.sh
   clean-tmp.sh --no-dry-run
@@ -85,13 +90,15 @@ if [[ "$TARGET" != /* ]]; then
   exit 1
 fi
 
-# Extra paranoia: refuse obviously dangerous targets
-case "$TARGET" in
-  /|/etc|/var|/home|/usr|/opt|/root|/boot|/bin|/sbin|/lib|/lib64)
+# Resolve trailing slashes, .., and symlinks before checking protected directories.
+TARGET=$(realpath -e -- "$TARGET")
+for protected in / /etc /var /home /usr /opt /root /boot /bin /sbin /lib /lib64; do
+  # -ef also protects merged-/usr aliases such as /bin -> /usr/bin.
+  if [[ "$TARGET" == "$protected" || "$TARGET" -ef "$protected" ]]; then
     echo "Refusing to operate on extremely sensitive directory: $TARGET" >&2
     exit 1
-    ;;
-esac
+  fi
+done
 
 # Age must be a non-negative integer
 if ! [[ "$AGE_DAYS" =~ ^[0-9]+$ ]]; then
@@ -106,37 +113,33 @@ if (( ALL_USERS == 0 )); then
   owner_expr=(-user "$(id -u)")
 fi
 
-# Common find command (as an array for safety)
-# -mindepth 1 -maxdepth 1 : only top-level entries (rm -rf handles recursion)
-# -xdev                   : stay on this filesystem
-common_find=(find "$TARGET"
-  -mindepth 1
-  -maxdepth 1
-  -xdev
-  -not -name 'ssh-*'
-  \( -type f -o -type d -o -type l -o -type s -o -type p \)
-  -mtime +"$AGE_DAYS"
-  "${owner_expr[@]}"
-)
-
 # --- Run ---------------------------------------------------------------------
 if (( DRY_RUN == 1 )); then
   echo "# Dry run: showing entries that WOULD be deleted from '$TARGET'"
   echo "# Age > $AGE_DAYS day(s), scope: $([[ $ALL_USERS -eq 1 ]] && echo "all users" || echo "current user only")"
   echo
 
-  # shellcheck disable=SC2145
-  # Allow non-zero exit from find (permission errors are expected)
-  "${common_find[@]}" -print 2>/dev/null || true
+  file_action=(-print)
+  dir_action=(-print)
 else
   echo "# EXECUTION: deleting entries from '$TARGET'"
   echo "# Age > $AGE_DAYS day(s), scope: $([[ $ALL_USERS -eq 1 ]] && echo "all users" || echo "current user only")"
   echo "# Proceeding in 3 seconds. Press Ctrl+C to abort."
   sleep 3
 
-  # Actual deletion using rm -rf (handles nested permission issues)
-  "${common_find[@]}" -print0 2>/dev/null | xargs -0 --no-run-if-empty rm -rfv
-
-  echo "# Cleanup completed."
+  file_action=(-exec rm -v -- '{}' +)
+  dir_action=(-exec rmdir -v -- '{}' +)
 fi
 
+# Pre-order traversal deliberately leaves newly emptied directories for a later run.
+# Never use recursive rm: every removed entry must pass its own filters. -prune
+# protects the whole SSH subtree, whereas merely excluding its name would not.
+find "$TARGET" -xdev -mindepth 1 \
+  \( -name 'ssh-*' -prune \) -o \
+  \( -mtime +"$AGE_DAYS" "${owner_expr[@]}" \
+    \( \( -type d -empty "${dir_action[@]}" \) -o \
+       \( \( -type f -o -type l -o -type s -o -type p \) "${file_action[@]}" \) \) \)
+
+if (( DRY_RUN == 0 )); then
+  echo "# Cleanup completed."
+fi

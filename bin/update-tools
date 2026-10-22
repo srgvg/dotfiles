@@ -374,41 +374,10 @@ get_asdf() {
 ##########################################################################################################
 
 get_mise() {
-
     title "mise-en-place"
-
-    if ! hash mise >/dev/null 2>&1; then
-        title "install mise"
-        curl https://mise.run | sh
-        # comes in $HOME/.local/bin/mise $HOME/bin2/mise
-    fi
-
-    # Load pinned version
-    source "$HOME/etc/config/versions"
-
-    pushd $HOME
-    # https://github.com/mise-plugins/mise-gcloud/issues/2
-    export MISE_FETCH_REMOTE_VERSIONS_TIMEOUT="25s"
-    mise settings lockfile=true
-    local current_version="v$(mise version | awk '{print $1}')"
-    if [ "${current_version}" != "${MISE_VERSION}" ]; then
-        log "mise self-update: ${current_version} -> ${MISE_VERSION}"
-        mise self-update --yes --no-plugins --verbose "${MISE_VERSION#v}"
-    else
-        log "mise already at pinned version ${MISE_VERSION}"
-    fi
-    mise plugins update --verbose
-    mise outdated --verbose
-    mise cache prune --verbose
-    mise install --yes
-    mise upgrade --yes --jobs 8
-    # not `mise prune`: it deletes versions long-running activated shells still have on PATH
-    "$HOME/bin/mise-prune-keep" --keep 3
-    mise reshim
-    mise lock --yes
-    mise doctor --verbose
-    popd
-
+    # The guard owns the shared lock and returns the first failed step's status.
+    # Mise itself is promoted separately with `mise-self-upgrade apply VERSION`.
+    "$HOME/bin/mise-self-upgrade" maintain
 }
 
 ##########################################################################################################
@@ -581,7 +550,6 @@ get_misc() {
 get_shell_init_cache() {
 
     local cache_dir="$HOME/.cache/shell-init"
-    local mise_bin="${MISE_BIN:-$HOME/.local/bin/mise}" # overridable for testing
     local rc=0
     mkdir -p "$cache_dir"
 
@@ -615,22 +583,9 @@ get_shell_init_cache() {
     _write_cache atuin "$cache_dir/atuin.bash" "" \
         atuin init bash --disable-up-arrow --disable-ctrl-r
 
-    log "mise"
-    # Run from a shell where mise is already active (inherited __MISE_DIFF), `mise activate`
-    # prepends a deactivate block: `export PATH='<this process's PATH>'` plus `unset GOBIN
-    # CARGO_HOME ...`. Cached, that clobbers every new shell. Generate from a clean mise state
-    # and refuse the result if the block still appears.
-    _write_cache mise-activate "$cache_dir/mise-activate.bash" "" \
-        env -u __MISE_DIFF -u __MISE_SESSION -u __MISE_ORIG_PATH -u __MISE_WATCH -u MISE_SHELL \
-        "$mise_bin" activate bash
-    if grep -q '^export PATH=' "$cache_dir/mise-activate.bash"; then
-        err "shell-init: mise-activate cache embeds a PATH (deactivate block); removed"
-        rm -f "$cache_dir/mise-activate.bash"
-        rc=1
-    fi
-    # hook-env is deliberately not cached: its output embeds this process's full PATH, which
-    # would overwrite the interactive PATH order. z80_mise.bash runs it live (~50ms).
-    rm -f "$cache_dir/mise-hook.bash"
+    # Both activate (since mise 2026.10.13) and hook-env embed this process's PATH.
+    # z80_mise.bash runs them live; discard caches produced by older updater versions.
+    rm -f "$cache_dir/mise-activate.bash" "$cache_dir/mise-hook.bash"
 
     log "dircolors"
     _write_cache dircolors "$cache_dir/dircolors.bash" "" \
@@ -752,6 +707,22 @@ update_all() {
 
 }
 
+update_quick() {
+    local -a components=(downloads flatpak helm krew misc mise uv_tools bash_completions)
+    local -a pids=()
+    local component i
+    for component in "${components[@]}"; do
+        "get_${component}" &
+        pids+=("$!")
+    done
+    # A bare wait loses child failures, including the guarded mise maintenance result.
+    for i in "${!pids[@]}"; do
+        if ! wait "${pids[$i]}"; then
+            FAILED_COMPONENTS+=("${components[$i]}")
+        fi
+    done
+}
+
 init() {
 
     trap trap_exit SIGINT SIGHUP SIGQUIT SIGABRT
@@ -800,15 +771,7 @@ for command in ${commands}; do
             ;;
         quick)
             init
-            get_downloads &
-            get_flatpak &
-            get_helm &
-            get_krew &
-            get_misc &
-            get_mise &
-            get_uv_tools &
-            get_bash_completions &
-            wait
+            update_quick
             #post
             ;;
         mise)

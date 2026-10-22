@@ -38,6 +38,17 @@ pick_browser() {
         return 1 # Escape pressed → non-zero exit
 }
 
+launch_browser() {
+    # Config commands are trusted shell code; the URL is always a single argument.
+    # Keep %u unquoted in the template: printf %q supplies its shell quoting.
+    local template="$1" url_q cmd
+    printf -v url_q '%q' "$2"
+    # Quote the replacement too, so Bash does not interpret URL '&' as %u.
+    cmd="${template//%u/"$url_q"}"
+    eval "$cmd" &
+    disown
+}
+
 main() {
     local url="${1:-}"
 
@@ -48,9 +59,7 @@ main() {
     fi
 
     if ! command -v wofi >/dev/null 2>&1; then
-        local cmd="${COMMANDS[0]//%u/$url}"
-        eval "$cmd" &
-        disown
+        launch_browser "${COMMANDS[0]}" "$url"
         exit 0
     fi
 
@@ -60,13 +69,9 @@ main() {
     # If user selected the URL info line, do nothing
     [[ "$selected" == "── "* ]] && exit 0
 
-    local url_q
-    url_q="$(printf '%q' "$url")"
     for i in "${!LABELS[@]}"; do
         [[ "${LABELS[$i]}" == "$selected" ]] || continue
-        local cmd="${COMMANDS[$i]//%u/$url_q}"
-        eval "$cmd" &
-        disown
+        launch_browser "${COMMANDS[$i]}" "$url"
         exit 0
     done
 }

@@ -20,6 +20,10 @@ set -o pipefail
 #   ./wipe-removable            # interactive (removable only)
 #   ./wipe-removable sdc        # direct
 #   ./wipe-removable /dev/sdc   # direct
+#
+# Requires jq for checked device/mount inventories. Unmounts synchronously and
+# disables swap, then rechecks both before any wipe. Any discovery/unmount/swap
+# failure aborts. Checks cover this mount namespace, not concurrent new users.
 
 die() {
     echo "ERROR: $*" >&2
@@ -125,8 +129,78 @@ assert_safe_target() {
     is_removable "$name" || die "/dev/$name is NOT marked removable by the kernel. Refusing."
 }
 
+# Capture and validate inventories before using them. An empty/malformed or failed
+# command must never look like "nothing mounted" through process substitution.
+device_usage() {
+    local dev=$1 devices mounts swap_list swap_name swap_id line mount_lines node_lines node
+    devices=$(lsblk --json --paths --output NAME,MAJ:MIN "$dev") || die "Cannot enumerate $dev"
+    DEVICE_IDS=$(jq -ce '
+        [.blockdevices[] | recurse(.children[]?) | .["maj:min"]] |
+        if length > 0 and all(.[]; type == "string" and test("^[0-9]+:[0-9]+$"))
+        then unique else error("invalid device inventory") end
+    ' <<<"$devices") || die "Invalid device inventory for $dev"
+    node_lines=$(jq -c '
+        [.blockdevices[] | recurse(.children[]?) | .name] |
+        if length > 0 and all(.[]; type == "string" and startswith("/dev/"))
+        then unique | .[] else error("invalid device paths") end
+    ' <<<"$devices") || die "Invalid device paths for $dev"
+    DEVICE_NODES=()
+    while IFS= read -r line; do
+        IFS= read -r -d '' node < <(jq -j '. + "\u0000"' <<<"$line") || die "Cannot decode device path"
+        DEVICE_NODES+=("$node")
+    done <<<"$node_lines"
+
+    mounts=$(findmnt --json --list --output TARGET,MAJ:MIN) || die "Cannot enumerate mounts"
+    mount_lines=$(jq -c --argjson ids "$DEVICE_IDS" '
+        .filesystems |
+        if type == "array" and all(.[];
+            (.target | type == "string") and
+            (.["maj:min"] | type == "string" and test("^[0-9]+:[0-9]+$")))
+        then . else error("invalid mount inventory") end |
+        [.[] | select(.["maj:min"] as $id | $ids | index($id)) | .target] |
+        unique | sort_by(length) | reverse | .[]
+    ' <<<"$mounts") || die "Invalid mount inventory"
+    DEVICE_MOUNTS=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] || continue
+        # Each line is a JSON string. Decode with NUL framing to retain whitespace.
+        IFS= read -r -d '' mount_point < <(jq -j '. + "\u0000"' <<<"$line") || die "Cannot decode mount point"
+        DEVICE_MOUNTS+=("$mount_point")
+    done <<<"$mount_lines"
+
+    swap_list=$(swapon --show=NAME --noheadings --raw) || die "Cannot enumerate active swap"
+    DEVICE_SWAPS=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] || continue
+        # util-linux raw output hex-escapes unsafe pathname characters.
+        printf -v swap_name '%b' "$line"
+        swap_id=$(swap_device_id "$swap_name") || die "Cannot identify swap device: $swap_name"
+        [[ "$swap_id" =~ ^[0-9]+:[0-9]+$ ]] || die "Invalid swap device identity: $swap_name"
+        if jq -e --arg id "$swap_id" 'index($id) != null' <<<"$DEVICE_IDS" >/dev/null; then
+            DEVICE_SWAPS+=("$swap_name")
+        else
+            local rc=$?
+            [[ $rc -eq 1 ]] || die "Cannot compare swap device identity"
+        fi
+    done <<<"$swap_list"
+}
+
+swap_device_id() {
+    if [[ -b "$1" ]]; then
+        lsblk --nodeps --noheadings --raw --output MAJ:MIN "$1"
+    elif [[ -f "$1" ]]; then
+        # Swap files belong to their containing filesystem, not a /dev pathname.
+        findmnt --noheadings --raw --output MAJ:MIN --target "$1"
+    else
+        return 1
+    fi
+}
+
 wipe_device() {
     local DEV="/dev/$1"
+    local mp part
+    local DEVICE_IDS mount_point
+    local -a DEVICE_NODES=() DEVICE_MOUNTS=() DEVICE_SWAPS=()
 
     echo "Target: $DEV"
     lsblk -o NAME,MODEL,SIZE,TYPE,MOUNTPOINT,FSTYPE,UUID "$DEV"
@@ -134,21 +208,20 @@ wipe_device() {
     read -r -p "Type YES to WIPE $DEV permanently: " ans
     [[ "$ans" == "YES" ]] || die "Aborted."
 
-    echo "==> Unmounting anything on $DEV..."
-    while read -r mp; do
-        [[ -n "$mp" ]] || continue
-        echo "  umount $mp"
-        umount -fl "$mp" || true
-    done < <(lsblk -nrpo MOUNTPOINT "$DEV" | sed '/^$/d')
+    device_usage "$DEV"
+    # Swap files must be disabled while their containing filesystem is mounted.
+    echo "==> Disabling swap on $DEV (if any)..."
+    for part in "${DEVICE_SWAPS[@]}"; do
+        echo "  swapoff $part"
+        swapoff -- "$part" || die "Cannot disable swap: $part"
+    done
 
-    echo "==> Disabling swap on partitions (if any)..."
-    while read -r part; do
-        [[ -b "$part" ]] || continue
-        if swapon --show=NAME --noheadings | grep -qx "$part"; then
-            echo "  swapoff $part"
-            swapoff "$part" || true
-        fi
-    done < <(lsblk -nrpo PATH "$DEV" | tail -n +2)
+    echo "==> Unmounting anything on $DEV..."
+    # Longer paths precede parents, covering nested mounts and bind mounts.
+    for mp in "${DEVICE_MOUNTS[@]}"; do
+        echo "  umount $mp"
+        umount -- "$mp" || die "Cannot unmount: $mp"
+    done
 
     echo "==> Flushing I/O..."
     sync
@@ -158,12 +231,18 @@ wipe_device() {
     partprobe "$DEV" 2>/dev/null || true
     udevadm settle || true
 
+    device_usage "$DEV"
+    if (( ${#DEVICE_MOUNTS[@]} || ${#DEVICE_SWAPS[@]} )); then
+        die "$DEV still has mounts or active swap; refusing to wipe"
+    fi
+
     echo "==> Wiping signatures (disk + any visible partitions)..."
     wipefs -a "$DEV" || true
-    while read -r part; do
+    for part in "${DEVICE_NODES[@]}"; do
+        [[ "$part" == "$DEV" ]] && continue
         [[ -b "$part" ]] || continue
         wipefs -a "$part" || true
-    done < <(lsblk -nrpo PATH "$DEV" | tail -n +2)
+    done
 
     echo "==> Killing partition tables (GPT/MBR) with sgdisk if available..."
     if command -v sgdisk >/dev/null 2>&1; then
@@ -217,4 +296,6 @@ main() {
     wipe_device "$name"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

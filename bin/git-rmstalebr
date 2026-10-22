@@ -30,6 +30,7 @@ usage() {
 	echo "  -y, -Y, --yes, --YES    Delete without prompting"
 	echo "  -w, --worktree          Also remove worktrees on active (non-stale) branches;"
 	echo "                          requires -y/--yes"
+	echo "  A failed branch comparison aborts all branch/worktree deletions."
 }
 
 while [[ $# -gt 0 ]]; do
@@ -157,20 +158,57 @@ done < <(git for-each-ref --no-merged="$BASE_REF" \
 # Cherry-pick detection for non-merged branches — all jobs run in parallel
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
+declare -a CHERRY_PIDS=() CHERRY_LABELS=() CHERRY_ERRORS=()
 
 for i in "${!LOCAL_NOT_MERGED[@]}"; do
-	git cherry "$BASE_REF" "${LOCAL_NOT_MERGED[$i]}" > "${tmpdir}/l${i}" 2>/dev/null &
+	git cherry "$BASE_REF" "${LOCAL_NOT_MERGED[$i]}" > "${tmpdir}/l${i}" 2>"${tmpdir}/l${i}.err" &
+	CHERRY_PIDS+=("$!")
+	CHERRY_LABELS+=("${LOCAL_NOT_MERGED[$i]}")
+	CHERRY_ERRORS+=("${tmpdir}/l${i}.err")
 done
 for i in "${!REMOTE_NOT_MERGED[@]}"; do
-	git cherry "$BASE_REF" "${REMOTE}/${REMOTE_NOT_MERGED[$i]}" > "${tmpdir}/r${i}" 2>/dev/null &
+	git cherry "$BASE_REF" "${REMOTE}/${REMOTE_NOT_MERGED[$i]}" > "${tmpdir}/r${i}" 2>"${tmpdir}/r${i}.err" &
+	CHERRY_PIDS+=("$!")
+	CHERRY_LABELS+=("${REMOTE}/${REMOTE_NOT_MERGED[$i]}")
+	CHERRY_ERRORS+=("${tmpdir}/r${i}.err")
 done
 
-wait
+# Reap every worker before exiting/cleaning its files. Bare wait discards failures.
+cherry_failed=0
+for i in "${!CHERRY_PIDS[@]}"; do
+	if wait "${CHERRY_PIDS[$i]}"; then
+		:
+	else
+		cherry_rc=$?
+		echo "Cannot verify ${CHERRY_LABELS[$i]}: git cherry exited ${cherry_rc}." >&2
+		cat -- "${CHERRY_ERRORS[$i]}" >&2
+		cherry_failed=1
+	fi
+done
+if (( cherry_failed )); then
+	echo "Aborting: no branches or worktrees will be deleted." >&2
+	exit 1
+fi
+
+classify_cherry_result() {
+	local result=$1 branch=$2 rc
+	local -n rebased=$3
+	if grep -q '^+' "$result"; then
+		return 0 # At least one unique patch: keep the branch.
+	else
+		rc=$?
+	fi
+	if [[ $rc -ne 1 ]]; then
+		echo "Cannot read comparison for ${branch}; aborting all deletions." >&2
+		return 1
+	fi
+	rebased+=("$branch")
+}
 for i in "${!LOCAL_NOT_MERGED[@]}"; do
-	grep -q '^+' "${tmpdir}/l${i}" 2>/dev/null || REBASED+=("${LOCAL_NOT_MERGED[$i]}")
+	classify_cherry_result "${tmpdir}/l${i}" "${LOCAL_NOT_MERGED[$i]}" REBASED
 done
 for i in "${!REMOTE_NOT_MERGED[@]}"; do
-	grep -q '^+' "${tmpdir}/r${i}" 2>/dev/null || REMOTE_REBASED+=("${REMOTE_NOT_MERGED[$i]}")
+	classify_cherry_result "${tmpdir}/r${i}" "${REMOTE_NOT_MERGED[$i]}" REMOTE_REBASED
 done
 
 LOCAL_TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
