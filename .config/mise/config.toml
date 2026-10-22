@@ -194,3 +194,7 @@ keylightd-tray = { version = "latest", asset_pattern = "keylightd-tray_*_linux_a
 "github:jmylchreest/keylightd" = "0.1.9"
 hunk = "latest"
 flyline = { version = "latest", asset_pattern = "libflyline-*-x86_64-unknown-linux-gnu.tar.gz" }
+"cargo:swayr" = { version = "latest" }   # swayr + swayrd: sway MRU window switcher ($mod+Shift+q trial)
+# xAI Grok Build (official `grok` CLI): bare binary, no GitHub releases; x.ai/cli/stable = current stable version
+"http:grok" = { version = "latest", url = "https://x.ai/cli/grok-{{ version }}-linux-x86_64", version_list_url = "https://x.ai/cli/stable", version_regex = "^([0-9.]+)$", bin = "grok" }
+opencode = "latest"

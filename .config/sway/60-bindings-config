@@ -237,10 +237,12 @@ bindsym --no-repeat $mod+Control+Alt+x exec swaymsg -t get_tree | \
 # quickswitch
 #bindsym $mod+q	exec sway-list-windows.py
 # --no-repeat for menu/picker tools - should only open once
-# mod+q: wlr-switcher grid exposé (live previews, all workspaces; focuses picked window)
-bindsym --no-repeat $mod+q		exec wlr-switcher --layout grid
-# mod+Shift+q: dfzf-windows fzf popup (fuzzy search + color-mark/kill/urgent extras)
-bindsym --no-repeat $mod+Shift+q	exec $dfzf_term dfzf-windows
+# mod+q: wlr-switcher card (rofi-like card + search, live previews; focuses picked window)
+#        grid layout dropped 2026-10-21: hard to use on the ultrawide, suspected VRAM growth
+#        --no-gpu: shm capture instead of dma-buf, keeps previews out of NVIDIA VRAM
+bindsym --no-repeat $mod+q		exec wlr-switcher --no-gpu --layout card
+# mod+Shift+q: swayr switch-window trial (MRU-sorted fuzzel menu, no capture; needs swayrd)
+bindsym --no-repeat $mod+Shift+q	exec swayr switch-window
 
 # run launcher
 bindsym --no-repeat $mod+r	        exec wofi --insensitive --show run  --gtk-dark

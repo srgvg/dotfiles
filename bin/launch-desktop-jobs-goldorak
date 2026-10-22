@@ -42,6 +42,10 @@ JOBS2=$(cat <<- EOF | sed -e '/\s*#/d' -e 's/^\s*$//' -e '/^ *$/d'
     /home/serge/bin/sway-layout apply --wait
     keylightd
     keylightd-tray
+    # daemon behind swayr switch-window, the Super+Shift+q MRU window switcher trial (2026-10-21);
+    # tracks focus order. Config in .config/swayr/config.toml is read at startup only:
+    # after editing it run swayr reload-config. See ~/etc/docs/sway-setup.md, swayr section.
+    swayrd
 
 EOF
 )
