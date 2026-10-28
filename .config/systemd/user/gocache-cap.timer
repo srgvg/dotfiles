@@ -1,0 +1,11 @@
+[Unit]
+Description=Cap the Go build cache every hour
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

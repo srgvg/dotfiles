@@ -1,0 +1,9 @@
+[Unit]
+Description=Cap the Go build cache: drop entries unused for 24 h, or 2 h while /home is low
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/gocache-cap
+Nice=19
+IOSchedulingClass=idle

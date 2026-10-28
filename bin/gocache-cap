@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# Keep the Go build cache (~/.cache/go-build) bounded; run hourly by
+# gocache-cap.timer. Writes exactly one line per run to the journal.
+#
+# Go trims its own cache only of entries unused for 5 days, so on this host it
+# grows past 10 GiB. This removes cache entries last used more than 24 hours
+# ago and, while the cache's filesystem has less than 30 GiB free after that,
+# entries last used more than 2 hours ago. Go rebuilds a missing entry.
+#
+# "Last used" is the entry's mtime, judged as Go's own trim does
+# (cmd/go/internal/cache): Go bumps it on use at most once an hour, so each
+# threshold gets that hour added. /home is mounted relatime, so atime is not a
+# usable signal.
+#
+# Scope mirrors Go's trimSubdir: names ending in -a or -d directly inside the
+# two-hex-digit directories; a -d directory is a cached executable and goes as
+# a whole, judged by its own mtime. Never README, trim.txt, fuzz/ (fuzzing
+# corpora), a symlink or what it points to, or another filesystem. Refuses when
+# the directory is a symlink, is not this user's, or resolves elsewhere. The
+# low-disk pass is skipped while a `go` command runs, so a build cannot lose
+# an entry it selected minutes earlier.
+#
+# Exit 0: done, directory absent, or another run holds the lock.
+# Exit 1: refused, or any step failed (named in the line).
+# Test hooks: GOCACHE_CAP_DIR, GOCACHE_CAP_LOW_FREE_GIB, GOCACHE_CAP_GO_NAME
+# (the process name that counts as a running go command).
+# See ~/etc/docs/memory-oom.md §7.
+set -o nounset -o pipefail
+export LC_ALL=C
+
+cache="${GOCACHE_CAP_DIR:-$HOME/.cache/go-build}"
+low_free_gib="${GOCACHE_CAP_LOW_FREE_GIB:-30}"
+go_name="${GOCACHE_CAP_GO_NAME:-go}"
+files=0 bytes=0 free="" rule="none" problems=""
+
+# line <exit> <outcome>: the run's one journal line, then exit.
+line() {
+	awk -v o="$2" -v b="$bytes" -v n="$files" -v f="$free" -v r="$rule" -v p="$problems" 'BEGIN {
+		printf "gocache-cap: %s; removed %.0f bytes (%.1f MiB, logical size) in %d entries; rule %s; free %s%s\n",
+			o, b, b / 1048576, n, r, (f == "" ? "unknown" : sprintf("%.1f GiB", f / 1073741824)),
+			(p == "" ? "" : "; FAILED: " p)
+	}'
+	exit "$1"
+}
+problem() { problems="${problems:+$problems, }$*"; }
+
+if [ ! -e "$cache" ] && [ ! -L "$cache" ]; then
+	line 0 "absent: $cache"
+fi
+# Work from inside the validated directory from here on, so a path component
+# swapped later cannot redirect find or df.
+if [ -L "$cache" ] || ! cd -P -- "$cache" 2>/dev/null || [ "$(pwd -P)" != "$cache" ] || [ ! -O . ]; then
+	line 1 "refused: $cache is not this user's directory at its own path"
+fi
+# The lock is the cache directory itself: nothing is created or truncated.
+{ exec 9<.; } 2>/dev/null || line 1 "cannot open $cache for locking"
+flock -n -E 75 9 2>/dev/null
+case $? in
+0) ;;
+75) line 0 "skipped: another run holds the lock" ;;
+*) line 1 "lock failed" ;;
+esac
+
+# sum: "<count> <bytes>" from one size per line.
+sum() { awk '{ n++; b += $1 } END { printf "%d %.0f\n", n, b }'; }
+add() { local n b; read -r n b <<<"$1"; files=$((files + n)) bytes=$((bytes + b)); }
+
+# prune <minutes>: remove entries whose mtime is older than <minutes>.
+# -printf comes before -delete: find may not have stat'ed a file until %s asks,
+# and after the unlink it no longer can. A deletion that then fails makes find
+# exit non-zero, so the run is reported FAILED rather than miscounted silently.
+prune() {
+	local out d dirs_pid
+	local -a dirs=()
+	out=$(find . -xdev -mindepth 2 -maxdepth 2 -regextype posix-extended -regex '\./[0-9a-f]{2}/[^/]+-[ad]' \
+		-type f -mmin "+$1" -printf '%s\n' -delete 2>/dev/null | sum) || problem "find (files, >$1 min)"
+	add "$out"
+	mapfile -d '' -t dirs < <(find . -xdev -mindepth 2 -maxdepth 2 -regextype posix-extended \
+		-regex '\./[0-9a-f]{2}/[^/]+-d' -type d -mmin "+$1" -print0 2>/dev/null)
+	dirs_pid=$!
+	wait "$dirs_pid" || problem "find (executables, >$1 min)"
+	for d in "${dirs[@]}"; do
+		# -xdev reports a mount point itself; never descend into another filesystem.
+		if [ "$(stat -c %d -- "$d" 2>/dev/null)" != "$dev" ]; then
+			problem "other filesystem at $d"
+			continue
+		fi
+		out=$(find "$d" -mindepth 1 -maxdepth 1 -type f -printf '%s\n' -delete 2>/dev/null | sum) ||
+			problem "find in $d"
+		add "$out"
+		rmdir -- "$d" 2>/dev/null || problem "non-file content kept in $d"
+	done
+}
+free_bytes() { df -B1 --output=avail -- . 2>/dev/null | awk 'NR == 2 { print $1 }'; }
+dev=$(stat -c %d -- . 2>/dev/null) || line 1 "cannot stat $cache"
+
+prune $((24 * 60 + 60))
+rule=">24h"
+free=$(free_bytes)
+if [ -z "$free" ]; then
+	problem "df"
+elif [ "$free" -lt $((low_free_gib * 1024 * 1024 * 1024)) ]; then
+	pgrep -u "$(id -u)" -x -- "$go_name" >/dev/null 2>&1
+	case $? in
+	1)
+		prune $((2 * 60 + 60))
+		rule=">24h, then >2h (under $low_free_gib GiB free)"
+		free=$(free_bytes)
+		[ -n "$free" ] || problem "df"
+		;;
+	0) rule=">24h; >2h pass skipped while go runs (under $low_free_gib GiB free)" ;;
+	*) problem "pgrep" ;;
+	esac
+fi
+[ -z "$problems" ] || line 1 "done with errors"
+line 0 "done"

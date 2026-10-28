@@ -106,7 +106,9 @@ function execute() {
     #   -------------------------------------  ----------------------------  -----------  ------------
     #   ~/scratch, ~/tmp        (top level)    files + symlinks                 48 h       rm
     #   ${tempfolders}          (recursive)    files + symlinks                 48 h       rm
-    #   ${tempfolders}          (depth >= 2)   empty dirs                       48 h       rmdir
+    #                                          (not ~/tmp/claude-*)
+    #   ~/tmp/claude-*          (recursive)    Claude session files + links     14 d       rm
+    #   ${tempfolders}          (depth >= 2)   empty dirs (not ~/tmp/claude-*)  48 h       rmdir
     #   ~/tmp                   (depth 1)      empty go-build work dirs         48 h       rmdir
     #
     # Age is ctime (-cmin), not mtime: a directory a tool has just created and not yet
@@ -155,7 +157,11 @@ function execute() {
             -cmin ${cleantime} \( -type f -o -type l \) \
             -print0 | xargs -r -0 rm -fv
 
-        # ${tempfolders} recursively: files and symlinks idle > 48 h.
+        # ${tempfolders} recursively: files and symlinks idle > 48 h. Claude Code session
+        # dirs (~/tmp/claude-<uid>/<project>/<session>/{scratchpad,tasks}) are excluded here
+        # and swept at 14 d below: a lead session runs for days and its scratch helpers sit
+        # untouched for more than 48 h (2026-10-24 17:00, the 48 h sweep deleted live
+        # sessions' scratch scripts and run notes).
         logtitle looking for files in temp folders
         for folder in ${tempfolders}; do
             if [ -d ${folder} ]; then
@@ -163,7 +169,20 @@ function execute() {
                 scan \
                     ${folder} \
                     -depth -mindepth 1 \
+                    -not -path "$HOME/tmp/claude-*" \
                     -cmin ${cleantime} \( -type f -o -type l \) \
+                    -print0 | xargs -r -0 rm -fv
+            fi
+        done
+
+        # ~/tmp/claude-*: Claude Code session dirs, files and symlinks idle > 14 d.
+        logtitle looking for idle Claude session files under ~/tmp
+        for folder in "$HOME"/tmp/claude-*; do
+            if [ -d "${folder}" ]; then
+                scan \
+                    "${folder}" \
+                    -depth -mindepth 1 \
+                    -cmin +20160 \( -type f -o -type l \) \
                     -print0 | xargs -r -0 rm -fv
             fi
         done
@@ -177,6 +196,7 @@ function execute() {
                     ${folder} \
                     -depth -mindepth 2 \
                     -not -path '/home/serge/scratch/.stfolder*' \
+                    -not -path "$HOME/tmp/claude-*" \
                     -type d -empty -cmin ${cleantime} \
                     -print0 | xargs -r -0 python3 "$HOME/bin/rmdir_enoent.py" --parents --verbose --ignore-fail-on-non-empty --
             fi

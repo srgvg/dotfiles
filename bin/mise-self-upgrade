@@ -66,6 +66,76 @@ def save_json(path, obj):
     atomic_write(path, (json.dumps(obj, indent=2) + "\n").encode())
 
 
+# Fields that decide what a task does. Listing metadata such as config_sources,
+# and empty fields a newer mise adds to every task, are not behavior.
+TASK_BEHAVIOR = (
+    "name", "aliases", "args", "description", "source", "file", "depends",
+    "depends_post", "wait_for", "env", "dir", "hide", "global", "raw",
+    "interactive", "sources", "outputs", "shell", "quiet", "silent", "tools",
+    "run", "usage", "timeout",
+)
+TASK_PROVENANCE = {"config_sources"}
+
+
+def task_behavior(tasks):
+    if not isinstance(tasks, list):
+        raise Refused("task list was not a list")
+    rows = []
+    for task in tasks:
+        if not isinstance(task, dict) or "name" not in task:
+            raise Refused("task list entry has no name")
+        active = sorted(
+            key for key, value in task.items()
+            if key not in TASK_BEHAVIOR and key not in TASK_PROVENANCE
+            and value not in (None, False, "", [], {})
+        )
+        if active:
+            raise Refused(
+                f"task {task['name']} gained behavior fields: {', '.join(active)}")
+        rows.append({key: task.get(key) for key in TASK_BEHAVIOR})
+    return sorted(rows, key=lambda row: (row["name"], json.dumps(row, sort_keys=True)))
+
+
+def compare_probes(old, new):
+    """Refuse a different program or task. Allow a new path spelling and empty task fields."""
+    for key in ("tools", "env", "smoke"):
+        if old[key] != new[key]:
+            raise Refused(f"candidate changed {key}; keep the current mise")
+    old_wins, new_wins = old["winners"], new["winners"]
+    lost = sorted(set(old_wins) - set(new_wins))
+    if lost:
+        raise Refused("candidate dropped PATH commands: " + ", ".join(lost))
+    moved = []
+    shimmed = []
+    for name in sorted(set(old_wins) & set(new_wins)):
+        if old_wins[name] == new_wins[name]:
+            continue
+        # A mise shim and the direct file are the same command. The shell already
+        # finds shims first; mise env only differs in which of the two it lists.
+        if "shim" in (old_wins[name], new_wins[name]):
+            shimmed.append(name)
+        else:
+            moved.append(name)
+    if moved:
+        sample = ", ".join(f"{name} ({old_wins[name]} -> {new_wins[name]})" for name in moved[:8])
+        raise Refused(f"candidate changed which file these commands run: {sample}")
+    if set(old["projects"]) != set(new["projects"]):
+        raise Refused("candidate changed the set of compared projects")
+    for project in old["projects"]:
+        if old["projects"][project]["tools"] != new["projects"][project]["tools"]:
+            raise Refused(f"candidate changed tools in {project}")
+        if task_behavior(old["projects"][project]["tasks"]) != task_behavior(
+                new["projects"][project]["tasks"]):
+            raise Refused(f"candidate changed tasks in {project}")
+    notes = []
+    gained = sorted(set(new_wins) - set(old_wins))
+    if gained:
+        notes.append("PATH gained commands the installed mise did not expose: " + ", ".join(gained))
+    if shimmed:
+        notes.append("PATH prefers the mise shim for: " + ", ".join(shimmed))
+    return notes
+
+
 def version_tuple(version):
     if not re.fullmatch(r"v?\d{4}\.\d+\.\d+", version):
         raise Refused(f"not a stable mise version: {version}")
@@ -289,12 +359,20 @@ class Guard:
         # Compare every executable's winning PATH directory, including shadowed system tools.
         paths = json.loads(call("env", "--json"))
         winners = {}
+        shims = (stage / "data/shims").resolve()
+        mise_bins = {binary.resolve(), self.binary.resolve(),
+                     (stage / "baseline/mise").resolve(), (stage / "candidate/mise").resolve()}
         for entry in paths["PATH"].split(":"):
             directory = Path(entry)
             if directory.is_dir():
                 for p in sorted(directory.iterdir()):
                     if p.is_file() and os.access(p, os.X_OK):
-                        winners.setdefault(p.name, normalized(str(p)))
+                        # A shim is a link to mise. Keep that distinct from the program it runs.
+                        if p.parent.resolve() == shims or p.resolve() in mise_bins:
+                            winners.setdefault(p.name, "shim")
+                        else:
+                            # Resolve links so installs/<tool>/latest and the version dir match.
+                            winners.setdefault(p.name, normalized(str(p.resolve())))
         result["winners"] = winners
         result["env"] = {k: normalized(v) for k, v in paths.items() if k != "PATH"}
         # Doctor's JSON output is metadata only on some releases: use its text/exit status.
@@ -341,9 +419,8 @@ test -z "${MISE_GUARD_FIXTURE-}"
         before_config = tree_digest(stage / "config")
         old = self.probe(stage, stage / "baseline/mise", projects)
         new = self.probe(stage, stage / "candidate/mise", projects)
-        changed = [key for key in old if old[key] != new[key]]
-        if changed:
-            raise Refused(f"candidate changed {', '.join(changed)}; keep the current mise")
+        for note in compare_probes(old, new):
+            print(note)
         if tree_digest(stage / "config") != before_config:
             raise Refused("candidate or baseline rewrote the copied configuration/lockfiles")
         print("PASS: doctor, configured tools, PATH winners, environment, shell and task checks")
@@ -530,6 +607,13 @@ def main():
   mise-self-upgrade rollback                  list saved upgrades and restore commands
   mise-self-upgrade rollback RUN_ID           restore a saved binary and version pin
 
+--project PATH compares that directory's selected tool versions and task list
+between the installed mise and the candidate. Repeat the flag for more than one
+directory. ~/etc is always compared. It does not install anything, and it does
+not install mise into the project. Mise is one binary for the machine. A
+project's versions.yaml "mise:" entry only records the version that project
+expects.
+
 Upgrades require a newer stable release published at least seven full days ago.
 Eligibility is not proof of compatibility: validation must pass before promotion.
 Run COMMAND --help for details. Full documentation: ~/etc/docs/mise.md
@@ -557,8 +641,10 @@ Validation logs and rollback backups: ~/.local/state/mise/self-upgrade/RUN_ID/""
                            help="stable YYYY.M.N (optional v prefix), newer than installed and "
                            "at least seven days old" + ("; omit to discover releases" if action == "check" else ""))
         p.add_argument("--project", action="append", type=Path, default=[],
-                       metavar="PATH", help="also inspect this project's tools and task discovery "
-                       "(repeatable; ~/etc always included); does not run project tests/builds")
+                       metavar="PATH",
+                       help="compare this directory's selected tool versions and task list too. "
+                            "Repeatable. ~/etc is always included. Does not install mise or run "
+                            "project tests. Mise is one binary for the machine, not one per directory")
     sub.add_parser("maintain", help="upgrade managed tools while keeping mise pinned",
                    description="Scheduled maintenance used by update-tools: install/upgrade tools, "
                    "refresh the global lockfile and shims, run doctor, then prune to the newest "

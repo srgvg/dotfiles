@@ -95,6 +95,72 @@ class Discovery(unittest.TestCase):
                     action, "2026.10.10", [Path("/home/test/etc")])
 
 
+class ProbeComparison(unittest.TestCase):
+    def probe(self, **overrides):
+        base = {
+            "tools": {"node": [("24.0.0", "/installs/node/24")]},
+            "env": {"GOBIN": "/home/user/.local/bin"},
+            "smoke": "ok\n",
+            "winners": {"node": "/installs/node/24/bin/node",
+                        "grok": "/installs/http-grok/1.0.62/grok"},
+            "projects": {"/home/user/etc": {
+                "tools": {},
+                "tasks": [{"name": "etc:status", "run": ["./status"], "description": "status",
+                           "source": "/home/user/etc/mise-tasks/etc/status"}],
+            }},
+        }
+        base.update(overrides)
+        return base
+
+    def test_same_file_and_empty_task_fields_pass(self):
+        old = self.probe()
+        new = self.probe()
+        new["winners"] = dict(new["winners"])
+        new["winners"]["pnpm"] = "/installs/npm-pnpm/11.20.0/node_modules/.bin/pnpm"
+        tasks = new["projects"]["/home/user/etc"]["tasks"]
+        tasks[0] = dict(tasks[0])
+        tasks[0]["config_sources"] = ["/home/user/etc/mise-tasks/etc/status"]
+        tasks[0]["secrets"] = []
+        tasks[0]["daemons"] = False
+        self.assertEqual(mod.compare_probes(old, new), [
+            "PATH gained commands the installed mise did not expose: pnpm"])
+
+    def test_shim_instead_of_the_direct_file_is_reported(self):
+        new = self.probe()
+        new["winners"] = dict(new["winners"])
+        new["winners"]["grok"] = "shim"
+        self.assertEqual(mod.compare_probes(self.probe(), new), [
+            "PATH prefers the mise shim for: grok"])
+
+    def test_different_file_dropped_command_and_real_task_change_refuse(self):
+        moved = self.probe()
+        moved["winners"] = dict(moved["winners"])
+        moved["winners"]["grok"] = "/installs/http-grok/9.9.9/grok"
+        with self.assertRaisesRegex(mod.Refused, "which file"):
+            mod.compare_probes(self.probe(), moved)
+        dropped = self.probe()
+        dropped["winners"] = {"node": dropped["winners"]["node"]}
+        with self.assertRaisesRegex(mod.Refused, "dropped PATH commands: grok"):
+            mod.compare_probes(self.probe(), dropped)
+        changed = self.probe()
+        changed["projects"] = {"/home/user/etc": {
+            "tools": {},
+            "tasks": [{"name": "etc:status", "run": ["./other"], "description": "status",
+                       "source": "/home/user/etc/mise-tasks/etc/status"}],
+        }}
+        with self.assertRaisesRegex(mod.Refused, "changed tasks"):
+            mod.compare_probes(self.probe(), changed)
+        secret = self.probe()
+        secret["projects"] = {"/home/user/etc": {
+            "tools": {},
+            "tasks": [{"name": "etc:status", "run": ["./status"], "description": "status",
+                       "source": "/home/user/etc/mise-tasks/etc/status",
+                       "secrets": ["DEPLOY_KEY"]}],
+        }}
+        with self.assertRaisesRegex(mod.Refused, "gained behavior fields: secrets"):
+            mod.compare_probes(self.probe(), secret)
+
+
 class Transaction(unittest.TestCase):
     def setUp(self):
         self.enterContext(redirect_stdout(io.StringIO()))
