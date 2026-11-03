@@ -241,7 +241,8 @@ bindsym --no-repeat $mod+Control+Alt+x exec swaymsg -t get_tree | \
 #        grid layout dropped 2026-10-21: hard to use on the ultrawide, suspected VRAM growth
 #        --no-gpu: shm capture instead of dma-buf, keeps previews out of NVIDIA VRAM
 bindsym --no-repeat $mod+q		exec wlr-switcher --no-gpu --layout card
-# mod+Shift+q: swayr switch-window trial (MRU-sorted fuzzel menu, no capture; needs swayrd)
+# mod+Shift+q: swayr switch-window (MRU fuzzel menu, no capture; needs swayrd).
+#              ~/bin/swayr-menu appends Firefox tabs from brotab to that list.
 bindsym --no-repeat $mod+Shift+q	exec swayr switch-window
 
 # run launcher

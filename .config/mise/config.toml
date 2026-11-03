@@ -1,15 +1,18 @@
 [settings]
-always_keep_download = false
-always_keep_install  = true
-auto_install         = true
-disable_backends     = ["asdf"]
-exec_auto_install    = true
-experimental         = true
-lockfile             = true
-log_level            = "error"
-paranoid             = false
+always_keep_download         = false
+always_keep_install          = true
+auto_install                 = true
+disable_backends             = ["asdf"]
+exec_auto_install            = true
+experimental                 = true
+lockfile                     = true
+log_level                    = "error"
+# default waits for 24h old
+# manual: mise use -g github:michaelrigart/tagteam@latest --minimum-release-age 0s
+minimum_release_age_excludes = ["github:michaelrigart/tagteam"]
+paranoid                     = false
 # Trust ~/etc so its task runner (mise-tasks/etc/*) runs non-interactively, incl. cron.
-trusted_config_paths = ["~/etc"]
+trusted_config_paths         = ["~/etc"]
 
 [settings.github]
 credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
@@ -66,8 +69,8 @@ nsc                 = "github:nats-io/nsc"
 openbao             = "github:openbao/openbao"
 sem                 = "github:Ataraxy-Labs/sem"
 snitch              = "github:karol-broda/snitch"
-tagteam             = "github:michaelrigart/tagteam"
 tanzu-cli           = "github:vmware-tanzu/tanzu-cli"
+tsui                = "github:kontrolplane/tsui"
 utilyze             = "github:systalyze/utilyze"
 yaml-schema-router  = "github:traiproject/yaml-schema-router"
 zedis               = "github:vicanso/zedis"
@@ -125,6 +128,7 @@ cilium-hubble        = "latest"
 civo                 = { version = "latest", exe = "civo" }
 clusterctl           = "latest"
 cmctl                = "latest"
+copilot              = "latest"
 cosign               = "latest"
 difftastic           = { version = "latest", exe = "difft" }
 direnv               = { version = "latest", exe = "direnv" }
@@ -207,7 +211,7 @@ nova                 = "latest"
 npm                  = "latest"
 nsc                  = "latest"
 openbao              = "latest"
-opencode             = "latest"
+opencode             = "2"
 oras                 = { version = "latest", exe = "oras" }
 osv-scanner          = "latest"
 pkl                  = { version = "latest", exe = "pkl" }
@@ -239,6 +243,7 @@ tagteam              = "latest"
 talhelper            = "latest"
 talosctl             = { version = "latest", exe = "talosctl" }
 tanzu-cli            = "latest"
+tsui                 = "latest"
 updatecli            = { version = "latest", exe = "updatecli" }
 usage                = "latest"
 utilyze              = { version = "latest", exe = "utlz" }

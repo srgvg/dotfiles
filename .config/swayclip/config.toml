@@ -29,14 +29,12 @@ max_entries = 1000
 # Keep history across daemon restarts.
 persist = true
 
-# Regular selection (Ctrl-C/Ctrl-V) only. cliphist did not watch the primary selection either,
-# so this keeps behaviour equivalent; flip to true if you want middle-click history too.
-#
-# Do not flip it casually: with primary = true, one copy lands TWICE, because the regular and
-# primary selections arrive as two separate events whose mime types hash differently, which
-# defeats dedup below. Measured 2026-08-02.
+# Synchronize regular Copy/Paste and PRIMARY (selection/middle-click).
+# Enabled 2026-11-03: selecting text in any app also replaces ordinary paste;
+# explicit copies and history picks also become the middle-click selection.
+# Different MIME offers can still create duplicate history entries.
 regular = true
-primary = false
+primary = true
 
 # Restore the most recent entry on startup / when a seat appears.
 set_on_startup = true

@@ -1,0 +1,347 @@
+#!/usr/bin/python3
+"""fuzzel wrapper used as swayr's menu.
+
+On the "Select window" prompt ($mod+Shift+q) this keeps swayr's rows and
+appends Firefox tabs from brotab. Any other prompt is passed straight to
+fuzzel.
+
+A tab choice is handled here and nothing is written to stdout. swayr treats
+unknown menu text as a workspace name and would create one
+(handle_non_matching_input in swayr). Empty stdout is the safe "do nothing"
+reply.
+
+Firefox does not tell Sway which toplevel a tab belongs to. The window name
+is "<page> — <profile> — Mozilla Firefox", and focus_on_window_activation is
+none, so after bt activate this script focuses the matched con_id itself.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from dataclasses import dataclass
+from urllib.parse import urlparse
+
+FUZZEL = "/usr/bin/fuzzel"
+BT = "/home/serge/.local/bin/bt"
+SWAYMSG = "/usr/bin/swaymsg"
+FIREFOX_APPS = {"firefox", "firefox-esr", "librewolf"}
+TAB_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[0-9]+){2}$")
+SELECT_WINDOW = "Select window"
+
+
+@dataclass
+class Win:
+    con_id: int
+    workspace: str
+    title: str
+
+
+@dataclass
+class Tab:
+    tid: str
+    title: str
+    host: str
+    brotab_window: str
+    con_id: int | None
+    workspace: str | None
+
+
+@dataclass
+class Row:
+    # "window" rows are echoed back to swayr. "tab" rows are acted on here.
+    kind: str
+    display: str
+    echo: str | None
+    tab: Tab | None
+
+
+def prompt_of(argv: list[str]) -> str:
+    for i, arg in enumerate(argv):
+        if arg.startswith("--prompt="):
+            return arg.split("=", 1)[1].strip()
+        if arg == "--prompt" and i + 1 < len(argv):
+            return argv[i + 1].strip()
+    return ""
+
+
+def one_line(text: str) -> str:
+    return " ".join(text.replace("\x00", " ").split())
+
+
+def run(cmd: list[str], timeout: float) -> subprocess.CompletedProcess[bytes] | None:
+    try:
+        return subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+    except (OSError, subprocess.TimeoutExpired) as err:
+        print(f"swayr-menu: {cmd[0]} failed: {err}", file=sys.stderr)
+        return None
+
+
+def firefox_windows() -> list[Win]:
+    proc = run([SWAYMSG, "-t", "get_tree"], 2)
+    if proc is None or proc.returncode != 0 or not proc.stdout:
+        return []
+    try:
+        tree = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return []
+    found: list[Win] = []
+    seen: set[int] = set()
+
+    def walk(node: dict, workspace: str | None) -> None:
+        if node.get("type") == "workspace":
+            workspace = node.get("name")
+        app = node.get("app_id") or ""
+        props = node.get("window_properties") or {}
+        cls = props.get("class") or ""
+        if (
+            node.get("pid") is not None
+            and node.get("type") in ("con", "floating_con")
+            and (app in FIREFOX_APPS or cls in FIREFOX_APPS or cls.lower() in FIREFOX_APPS)
+            and node["id"] not in seen
+        ):
+            seen.add(node["id"])
+            found.append(Win(node["id"], workspace or "?", node.get("name") or ""))
+        for key in ("nodes", "floating_nodes"):
+            for child in node.get(key) or []:
+                walk(child, workspace)
+
+    walk(tree, None)
+    return found
+
+
+def page_title(window_title: str) -> str:
+    # Firefox: "<page> — <profile> — Mozilla Firefox". Split the profile off
+    # the right so a page title that itself contains " — " still matches whole.
+    for dash, suffix in (
+        (" — ", " — Mozilla Firefox"),
+        (" - ", " - Mozilla Firefox"),
+    ):
+        if window_title.endswith(suffix):
+            rest = window_title[: -len(suffix)]
+            page, sep, _profile = rest.rpartition(dash)
+            return page if sep else rest
+    return window_title
+
+
+def title_matches(window_title: str, tab_title: str) -> bool:
+    tab_title = tab_title.strip()
+    return bool(tab_title) and page_title(window_title) == tab_title
+
+
+def brotab() -> tuple[list[tuple[str, str, str]], set[str]]:
+    listed = run([BT, "list"], 3)
+    active = run([BT, "active"], 3)
+    if listed is None or listed.returncode != 0:
+        return [], set()
+    rows: list[tuple[str, str, str]] = []
+    for line in listed.stdout.decode(errors="replace").splitlines():
+        parts = line.split("\t")
+        if len(parts) < 3 or not TAB_ID_RE.fullmatch(parts[0]):
+            continue
+        rows.append((parts[0], parts[1], parts[2]))
+    active_ids: set[str] = set()
+    if active is not None and active.returncode == 0:
+        for line in active.stdout.decode(errors="replace").splitlines():
+            tid = line.split("\t", 1)[0]
+            if TAB_ID_RE.fullmatch(tid):
+                active_ids.add(tid)
+    return rows, active_ids
+
+
+def window_for_brotab(wins: list[Win], active_title: str) -> Win | None:
+    hits = [win for win in wins if title_matches(win.title, active_title)]
+    if len(hits) == 1:
+        return hits[0]
+    return None
+
+
+def inactive_tabs(wins: list[Win], rows, active_ids: set[str]) -> list[Tab]:
+    by_window: dict[str, list[tuple[str, str, str]]] = {}
+    for tid, title, url in rows:
+        by_window.setdefault(".".join(tid.split(".")[:2]), []).append((tid, title, url))
+    mapped: dict[str, Win | None] = {}
+    for bwin, group in by_window.items():
+        active = [item for item in group if item[0] in active_ids]
+        mapped[bwin] = window_for_brotab(wins, active[0][1]) if len(active) == 1 else None
+    tabs: list[Tab] = []
+    for bwin, group in by_window.items():
+        win = mapped[bwin]
+        for tid, title, url in group:
+            if tid in active_ids:
+                continue
+            host = ""
+            try:
+                host = urlparse(url).hostname or ""
+            except ValueError:
+                host = ""
+            tabs.append(
+                Tab(
+                    tid=tid,
+                    title=title,
+                    host=host,
+                    brotab_window=bwin,
+                    con_id=win.con_id if win else None,
+                    workspace=win.workspace if win else None,
+                )
+            )
+    tabs.sort(key=lambda tab: (ws_sort_key(tab.workspace), tab.host, tab.title.casefold()))
+    return tabs
+
+
+def ws_sort_key(workspace: str | None) -> tuple:
+    if not workspace:
+        return (2, 0, "")
+    if workspace.isdigit():
+        return (0, int(workspace), workspace)
+    return (1, 0, workspace)
+
+
+def format_tab(tab: Tab) -> str:
+    title = one_line(tab.title) or "(no title)"
+    host = f"  {tab.host}" if tab.host else ""
+    return f"    ws {tab.workspace or '?':<3}  {'tab':<16}  {title}{host}"
+
+
+def build_rows(window_lines: list[str]) -> list[Row]:
+    rows = [
+        Row("window", line, line.split("\0", 1)[0], None)
+        for line in window_lines
+        if line != ""
+    ]
+    wins = firefox_windows()
+    listed, active_ids = brotab()
+    for tab in inactive_tabs(wins, listed, active_ids):
+        rows.append(Row("tab", format_tab(tab) + "\0icon\x1ffirefox", None, tab))
+    return rows
+
+
+def focus_con(con_id: int) -> None:
+    run([SWAYMSG, f"[con_id={con_id}] focus"], 2)
+
+
+def focus_by_title_change(tab_title: str, before: dict[int, str]) -> bool:
+    deadline = time.monotonic() + 0.6
+    while True:
+        wins = firefox_windows()
+        changed = [
+            win
+            for win in wins
+            if before.get(win.con_id) != win.title and title_matches(win.title, tab_title)
+        ]
+        if len(changed) == 1:
+            focus_con(changed[0].con_id)
+            return True
+        if time.monotonic() >= deadline:
+            hits = [win for win in wins if title_matches(win.title, tab_title)]
+            if len(hits) == 1:
+                focus_con(hits[0].con_id)
+                return True
+            return False
+        time.sleep(0.05)
+
+
+def activate_tab(tab: Tab) -> None:
+    if not TAB_ID_RE.fullmatch(tab.tid):
+        return
+    before = {win.con_id: win.title for win in firefox_windows()}
+    proc = run([BT, "activate", tab.tid], 3)
+    if proc is None or proc.returncode != 0:
+        err = (proc.stderr if proc else b"").decode(errors="replace").strip()
+        print(f"swayr-menu: bt activate {tab.tid} failed: {err}", file=sys.stderr)
+        return
+    if tab.con_id is not None:
+        focus_con(tab.con_id)
+        return
+    if not focus_by_title_change(tab.title, before):
+        print(f"swayr-menu: no Sway window for tab {tab.tid}", file=sys.stderr)
+
+
+def check() -> int:
+    client = run([BT, "clients"], 3)
+    if client is None or client.returncode != 0 or not client.stdout.strip():
+        print("brotab unreachable", file=sys.stderr)
+        return 1
+    wins = firefox_windows()
+    listed, active_ids = brotab()
+    by_window: dict[str, list[tuple[str, str, str]]] = {}
+    for row in listed:
+        by_window.setdefault(".".join(row[0].split(".")[:2]), []).append(row)
+    mapped = 0
+    for group in by_window.values():
+        active = [item for item in group if item[0] in active_ids]
+        if len(active) == 1 and window_for_brotab(wins, active[0][1]) is not None:
+            mapped += 1
+    inactive = len(inactive_tabs(wins, listed, active_ids))
+    print(
+        f"firefox_windows={len(wins)} brotab_windows={len(by_window)} "
+        f"mapped={mapped} tabs={len(listed)} inactive_rows={inactive}"
+    )
+    if by_window and mapped != len(by_window):
+        return 2
+    return 0
+
+
+def passthrough(argv: list[str], raw: bytes) -> int:
+    proc = subprocess.run([FUZZEL, *argv], input=raw, check=False)
+    return proc.returncode
+
+
+def pick(argv: list[str], raw: bytes) -> int:
+    dump = os.environ.get("SWAYR_MENU_DUMP") == "1"
+    text = raw.decode(errors="replace")
+    # swayr joins rows with "\n" and does not terminate the last row.
+    window_lines = text.split("\n") if text else []
+    rows = build_rows(window_lines)
+    if dump:
+        for i, row in enumerate(rows):
+            kind = "W" if row.kind == "window" else "T"
+            shown = row.display.split("\0", 1)[0]
+            print(f"{i} {kind} {shown}")
+        return 0
+    menu = "\n".join(row.display for row in rows).encode()
+    proc = subprocess.run(
+        [FUZZEL, *argv, "--index"],
+        input=menu,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return 0
+    choice = proc.stdout.decode(errors="replace").strip()
+    if not choice:
+        return 0
+    try:
+        index = int(choice)
+    except ValueError:
+        print(f"swayr-menu: bad fuzzel index {choice!r}", file=sys.stderr)
+        return 0
+    if index < 0 or index >= len(rows):
+        return 0
+    row = rows[index]
+    if row.kind == "window" and row.echo is not None:
+        sys.stdout.write(row.echo + "\n")
+        return 0
+    if row.kind == "tab" and row.tab is not None:
+        activate_tab(row.tab)
+    # Deliberately no stdout. See module docstring.
+    return 0
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    if argv[:1] == ["--check"]:
+        return check()
+    raw = sys.stdin.buffer.read()
+    if prompt_of(argv) != SELECT_WINDOW:
+        if os.environ.get("SWAYR_MENU_DUMP") == "1":
+            print("passthrough")
+            return 0
+        return passthrough(argv, raw)
+    return pick(argv, raw)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
