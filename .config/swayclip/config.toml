@@ -29,12 +29,11 @@ max_entries = 1000
 # Keep history across daemon restarts.
 persist = true
 
-# Synchronize regular Copy/Paste and PRIMARY (selection/middle-click).
-# Enabled 2026-11-03: selecting text in any app also replaces ordinary paste;
-# explicit copies and history picks also become the middle-click selection.
-# Different MIME offers can still create duplicate history entries.
+# Explicit Copy controls CLIPBOARD; mouse selection stays in PRIMARY.
+# Approved 2026-11-05 after two-way sync reproduced old-text paste when
+# selecting existing destination text. History picks update CLIPBOARD only.
 regular = true
-primary = true
+primary = false
 
 # Restore the most recent entry on startup / when a seat appears.
 set_on_startup = true
