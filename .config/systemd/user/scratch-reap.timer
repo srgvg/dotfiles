@@ -1,0 +1,11 @@
+[Unit]
+Description=Reap agent scratch under ~/vibes/scratch once a day
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Timer]
+OnCalendar=*-*-* 04:30
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

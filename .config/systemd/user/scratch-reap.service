@@ -1,0 +1,11 @@
+[Unit]
+Description=Reap agent scratch under ~/vibes/scratch: expired or closed-ticket entries, cold caches
+Documentation=file:%h/etc/docs/memory-oom.md
+
+[Service]
+Type=oneshot
+# gh and glab answer the ticket checks; an unanswered check keeps the entry.
+Environment=PATH=%h/.local/share/mise/shims:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/binc/scratch reap --apply
+Nice=19
+IOSchedulingClass=idle
