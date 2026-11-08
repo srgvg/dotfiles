@@ -10,13 +10,18 @@ bindsym $mod+h split h
 # split in vertical orientation
 bindsym $mod+v split v
 
-# tile the WHOLE focused workspace into an evenly-spaced / tabbed layout, computed on the
-# fly from whatever windows are on it (no saved layout needed). See ~/etc/docs/sway-setup.md
-# §10 and `sway-layout modes`. Same letters as $mod+h/v/w (split/layout act on one window);
+# tile the focused WORKSPACE (no saved layout needed). See ~/etc/docs/sway-setup.md §10 and
+# `sway-layout modes`. Same letters as $mod+h/v/w (split/layout act on one window);
 # +Shift acts on the whole workspace, same family as $mod+Shift+s (sway-layout save).
+#   $mod+Shift+h/v/w          even out the TOP-LEVEL containers only; tabbed groups and nested
+#                             splits inside them stay as they are (default)
+#   $mod+Control+Shift+h/v/w  rearrange ALL windows into one flat layout (--all), nesting lost
 bindsym $mod+Shift+h			exec $HOME/bin/sway-layout tile --mode evenh
 bindsym $mod+Shift+v			exec $HOME/bin/sway-layout tile --mode evenv
 bindsym $mod+Shift+w			exec $HOME/bin/sway-layout tile --mode tabbed
+bindsym $mod+Control+Shift+h		exec $HOME/bin/sway-layout tile --all --mode evenh
+bindsym $mod+Control+Shift+v		exec $HOME/bin/sway-layout tile --all --mode evenv
+bindsym $mod+Control+Shift+w		exec $HOME/bin/sway-layout tile --all --mode tabbed
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle

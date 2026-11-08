@@ -41,16 +41,21 @@ else
     JOBS="$(echo "$JOBS" | sort -u)"
 fi
 
-I3SCREENPID=$(pgrep -f "SCREEN -S i3jobs" 2>/dev/null || echo 0)
+I3SCREENPID=$(pgrep -f "SCREEN -S i3jobs" 2>/dev/null | head -n1 || true)
+I3SCREENPID=${I3SCREENPID:-0}
 
 function i3-launch-job() {
     if [ -z "$*" ]; then
         notify_error "Nothing to launch"
         return
     fi
+    # Anchor to the wrapper launch-screen writes ("bash -c <job> 2>&1 | ts ..."), so job
+    # "keylightd" does not match the "keylightd-tray" window (a multi-PID result broke the
+    # old numeric test: "[: 4103411 4103546: integer expression expected").
     _pattern=$(printf '%s\n' "$*" | sed 's/[[\.*^$()+?{|]/\\&/g')
-    _pid=$(pgrep -P ${I3SCREENPID} -f "$_pattern" -u $(whoami) -r R,S | xargs || echo -n 0)
-    if [ "${_pid}" -ne 0 ]; then
+    _pattern="^bash -c ${_pattern}( 2>&1|\$)"
+    _pid=$(pgrep -P "${I3SCREENPID}" -f "$_pattern" -u "$(whoami)" -r R,S | xargs || true)
+    if [ -n "${_pid}" ]; then
         echo -n "."
     else
         notify "starting  $*"
