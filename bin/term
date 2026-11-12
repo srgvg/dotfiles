@@ -12,18 +12,40 @@ set -o pipefail
 source "$HOME/bin/common.bash"
 
 ###############################################################################
+#
+# ~/bin/term launcher delegates this to Foot, which remembers the directory your shell last reported.
+#
+# The chain is:
+#
+# 1. Sway runs term for Mod+Enter. The binding is in 60-bindings-config:229 (/home/serge/.config/sway/60-bindings-config:229).
+#
+# 2. Your shell reports its directory before each prompt. The Starship hook in set_term_title.bash:1 (/home/serge/.bashrc.d/set_term_title.bash:1) sends:
+#
+#    printf '\033]7;file://%s%s\033\\' "${HOSTNAME}" "${PWD}"
+#
+#    This is OSC-7: an invisible terminal escape sequence telling Foot “my current directory is here.” Foot remembers it separately from the window title.
+#
+# 3. term checks the focused window’s process. If it is Foot, term:51 (/home/serge/bin/term:51) uses wtype to simulate Ctrl+Shift+N in that window.
+#
+# 4. Foot handles that as spawn-terminal, opening a new terminal in its remembered directory. foot.ini:95 (/home/serge/.config/foot/foot.ini:95) binds both Ctrl+Shift+N and Super+Ctrl+Shift+N, so this works whether you have released the physical Super key yet.
+#
+# That means the directory comes from the last shell prompt’s report. A program changing the window title—Claude, Vim, etc.—doesn’t disturb it. A program changing its own directory won’t update that report unless it also emits OSC-7.
+#
+# For non-Foot windows, sway-get-window-cwd:30 (/home/serge/bin/sway-get-window-cwd:30) takes the focused process’s first child, reads its directory using pwdx, and accepts it only if it starts with /home. term passes that as --working-directory, otherwise falling back to your home directory. Mod+Ctrl+Enter’s floating-terminal path skips this logic.
+#
+###############################################################################
 
 #DEBUG=1
 #TERMINAL="/usr/bin/gnome-terminal --geometry 100x40+0+0"
 TERMINAL="${TERMINAL:-foot}"
-TERMINAL="${TERMINAL%% *}"   # bare emulator only; never inherit/compound a built command line
+TERMINAL="${TERMINAL%% *}" # bare emulator only; never inherit/compound a built command line
 TERMINAL_COMMAND="${TERMINAL_COMMAND:-$TERMINAL -e}"
 
 # Emulator-agnostic app-id flag: --class (alacritty) vs --app-id (foot).
 # $TERMINAL is the single switch (set in ~/.config/environment.d/sway.conf).
 case "${TERMINAL##*/}" in
-	foot) IDFLAG="--app-id" ;;
-	*)    IDFLAG="--class" ;;
+    foot) IDFLAG="--app-id" ;;
+    *) IDFLAG="--class" ;;
 esac
 
 CARGS="$*"
@@ -35,40 +57,36 @@ CARGS="$*"
 # ~/etc/docs/foot-migration.md §0f.
 cmd="$TERMINAL"
 
-if [ -z "$CARGS" ]
-then
-	if [ "$(basename $0)" = "termf" ]
-	then
-		#cmd="$TERMINAL --role gnome-terminal-floating"
-		cmd="$cmd $IDFLAG terminal-floating"
-	else
-		# Same-dir spawn: if foot is the emulator and a foot window is focused, let foot spawn the
-		# new window itself via its OSC-7 tracking — inject its spawn-terminal binding with wtype.
-		# OSC-7 is the authoritative cwd: it survives OSC-2 title clobbering (claude/vim/ssh) and
-		# needs no pid probing. Non-foot windows fall through to the sway-get-window-cwd pid
-		# method. Needs foot.ini's Mod4+Control+Shift+n binding — see
-		# ~/etc/docs/foot-migration.md §0d.
-		_fpid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? == true)) | .pid // 0' 2>/dev/null || echo 0)"
-		if [ "$TERMINAL" = foot ] && [ "${_fpid:-0}" -gt 1 ] 2>/dev/null && [ "$(ps -o comm= -p "${_fpid}" 2>/dev/null)" = foot ]
-		then
-			exec wtype -M ctrl -M shift -k n -m shift -m ctrl
-		fi
-		PWD="$(sway-get-window-cwd ||:)"
-		[ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ] && PWD="$HOME"
-		#cmd="$TERMINAL --role gnome-terminal-tiled"
-		cmd="$cmd $IDFLAG terminal-tiled"
-		cmd="$cmd --working-directory=${PWD}"
-	fi
+if [ -z "$CARGS" ]; then
+    if [ "$(basename $0)" = "termf" ]; then
+        #cmd="$TERMINAL --role gnome-terminal-floating"
+        cmd="$cmd $IDFLAG terminal-floating"
+    else
+        # Same-dir spawn: if foot is the emulator and a foot window is focused, let foot spawn the
+        # new window itself via its OSC-7 tracking — inject its spawn-terminal binding with wtype.
+        # OSC-7 is the authoritative cwd: it survives OSC-2 title clobbering (claude/vim/ssh) and
+        # needs no pid probing. Non-foot windows fall through to the sway-get-window-cwd pid
+        # method. Needs foot.ini's Mod4+Control+Shift+n binding — see
+        # ~/etc/docs/foot-migration.md §0d.
+        _fpid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? == true)) | .pid // 0' 2>/dev/null || echo 0)"
+        if [ "$TERMINAL" = foot ] && [ "${_fpid:-0}" -gt 1 ] 2>/dev/null && [ "$(ps -o comm= -p "${_fpid}" 2>/dev/null)" = foot ]; then
+            exec wtype -M ctrl -M shift -k n -m shift -m ctrl
+        fi
+        PWD="$(sway-get-window-cwd || :)"
+        [ -z "${PWD}" ] || [ "$PWD" = "/snap/bin" ] && PWD="$HOME"
+        #cmd="$TERMINAL --role gnome-terminal-tiled"
+        cmd="$cmd $IDFLAG terminal-tiled"
+        cmd="$cmd --working-directory=${PWD}"
+    fi
 else
-	cmd="$cmd $CARGS"
+    cmd="$cmd $CARGS"
 fi
 
-if ifdebug1
-then
-	mkdir -p $HOMETMPDIR/tmp/term/
-	filename=$HOME/tmp/term/$(date +%Y%m%d-%H%M%S).trace.log
-	ln -nfs $filename $HOMETMPDIR/tmp/term/latest.trace.log
-	exec strace -o $filename -tt -T -y -yy -f $cmd
+if ifdebug1; then
+    mkdir -p $HOMETMPDIR/tmp/term/
+    filename=$HOME/tmp/term/$(date +%Y%m%d-%H%M%S).trace.log
+    ln -nfs $filename $HOMETMPDIR/tmp/term/latest.trace.log
+    exec strace -o $filename -tt -T -y -yy -f $cmd
 else
-	exec $cmd
+    exec $cmd
 fi

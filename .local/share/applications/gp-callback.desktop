@@ -1,0 +1,10 @@
+# Handler for globalprotectcallback: URLs (GlobalProtect SAML login in a browser).
+# Used by ~/etc/vpn/teledyne/go.sh; see the header of gp-callback.sh.
+# Registered with:
+#   xdg-mime default gp-callback.desktop x-scheme-handler/globalprotectcallback
+[Desktop Entry]
+Type=Application
+Name=GlobalProtect SAML callback
+Exec=/home/serge/etc/vpn/teledyne/gp-callback.sh %u
+NoDisplay=true
+MimeType=x-scheme-handler/globalprotectcallback;

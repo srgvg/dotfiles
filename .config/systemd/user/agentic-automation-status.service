@@ -1,0 +1,8 @@
+[Unit]
+Description=Regenerate the agentic automation status page (/home/serge/agentic-automation-status.html)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/serge/.claude/plans/workflow-watch-lead/status-page/generate.py
+Nice=10
+TimeoutStartSec=300

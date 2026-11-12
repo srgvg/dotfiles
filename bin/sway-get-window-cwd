@@ -23,7 +23,6 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-
 # shellcheck disable=SC1090
 source "$HOME/bin/common.bash"
 
@@ -34,10 +33,8 @@ app_pid="$(swaymsg -t get_tree | jq -r 'first(.. | objects | select(.focused? ==
 # focused pid → first child shell → its cwd. NB: ~/bin/term does not use this path for foot
 # windows — it lets foot spawn via its own OSC-7 tracking (spawn-terminal), which is also correct
 # when the child shell isn't the direct descendant. This stays the fallback for everything else.
-if [ "${app_pid:-0}" -gt 1 ] 2>/dev/null
-then
-	child_pid="$(pgrep -P "${app_pid}" 2>/dev/null | head -n1 || true)"
-	[ -n "${child_pid:-}" ] && cwd="$(pwdx "${child_pid}" 2>/dev/null | cut -d: -f2 | xargs -n1 || true)"
+if [ "${app_pid:-0}" -gt 1 ] 2>/dev/null; then
+    [ -n "${app_pid:-}" ] && cwd="$(pwdx "${app_pid}" 2>/dev/null | cut -d: -f2 | xargs -n1 || true)"
 fi
 
 # Emit only a real home-rooted path; leave empty/non-home for ~/bin/term to map to $HOME (term:55).
