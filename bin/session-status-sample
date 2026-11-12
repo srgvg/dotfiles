@@ -1,0 +1,20 @@
+#!/bin/bash
+# session-status-sample: once a minute (session-status-sample.timer), append to the sampler's scratch entry
+#   <ts> TAB hb  TAB <sessions> TAB <status=count ...>              one heartbeat row per run, so an empty result is distinguishable from a dead sampler
+#   <ts> TAB odd TAB <sessionId> TAB <kind> TAB <status> TAB <statusUpdatedAt ms> TAB <name>   one row per session whose status is not busy, idle or shell
+# Purpose (srgvg/claude-dotfiles#280): nobody has observed what the session registry shows for a background session that is
+# waiting on a permission prompt. A prompt-waiting status, if the registry carries one, lands as an odd row with its age.
+# Append only, never rewritten. The entry is a `scratch new` entry with a purpose; if it is gone the sampler stops quietly
+# and does not recreate the directory.
+set -u
+OUT=/home/serge/vibes/scratch/binc/20261112-2126-session-status-sampler-rows-for/status-samples.tsv
+[ -d "${OUT%/*}" ] || exit 0
+now=$(date -Is)
+jq -rs --arg now "$now" '
+	(["busy", "idle", "shell"]) as $known
+	| ([.[] | .status] | group_by(.) | map("\(.[0])=\(length)") | join(" ")) as $counts
+	| ([$now, "hb", length, $counts] | @tsv),
+	  (.[] | select(.status as $s | $known | index($s) | not)
+	       | [$now, "odd", .sessionId, .kind, .status, .statusUpdatedAt, (.name // "")[0:70]] | @tsv)
+' /home/serge/.claude/sessions/*.json >>"$OUT" 2>/dev/null
+exit 0
