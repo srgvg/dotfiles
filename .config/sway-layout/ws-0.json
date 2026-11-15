@@ -1,27 +1,21 @@
 {
-  "layout": "splith",
+  "layout": "tabbed",
   "nodes": [
     {
       "id": "com.rtosta.zapzap",
-      "percent": 0.3333984375
+      "percent": 1.0
     },
     {
       "id": "org.signal.Signal",
-      "percent": 0.3333984375
+      "percent": 1.0
     },
     {
-      "layout": "tabbed",
-      "nodes": [
-        {
-          "id": "com.slack.Slack",
-          "percent": 1.0
-        },
-        {
-          "id": "class:com.mattermost.Desktop",
-          "percent": 1.0
-        }
-      ],
-      "percent": 0.3328125
+      "id": "class:com.mattermost.Desktop",
+      "percent": 1.0
+    },
+    {
+      "id": "com.slack.Slack",
+      "percent": 1.0
     }
   ]
 }

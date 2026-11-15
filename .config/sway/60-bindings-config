@@ -329,9 +329,9 @@ bindsym --no-repeat Control+XF86AudioMute		exec i3-volume sonos toggle
 bindsym --no-repeat $mod+XF86AudioMute		exec i3-volume local set 50
 bindsym --no-repeat $mod+Control+XF86AudioMute	exec i3-volume sonos set 50
 
-# Audio output selection, including Bluetooth, lives entirely in
-# i3-pa-select-output ($mod+Control+m below). The old bt-speaker bindings on
-# $mod+Shift+b and $mod+Shift+XF86AudioMute were merged into it on 2026-08-03.
+# Audio output selection lives entirely in i3-pa-select-output ($mod+Control+m
+# below). The old bt-speaker bindings on $mod+Shift+b and $mod+Shift+XF86AudioMute
+# were merged into it on 2026-08-03, and its Bluetooth outputs were removed later.
 
 # Fn-F2  XF86AudioLowerVolume
 # Fn-F3  XF86AudioRaiseVolume
@@ -374,8 +374,9 @@ bindsym --no-repeat $mod+m			exec i3-playerctl-select-player
 bindsym --no-repeat $mod+Control+m	exec i3-pa-select-output
 bindsym --no-repeat $mod+Alt+m		exec pa-rotate-sinks
 
-# Fn-F4  XF86AudioMicMute
-bindsym --no-repeat XF86AudioMicMute				exec ponymix  --source --device 389 toggle
+# Fn-F4  XF86AudioMicMute (laptop key); $mod+Shift+m for keyboards without it
+bindsym --no-repeat XF86AudioMicMute				exec ponymix --source toggle
+bindsym --no-repeat $mod+Shift+m			exec ponymix --source toggle
 
 # Fn-F5  XF86MonBrightnessDown
 #bindsym XF86MonBrightnessDown			exec i3-brightness down

@@ -1,0 +1,11 @@
+[Unit]
+Description=Sample Claude session statuses every minute
+Documentation=file:%h/etc/docs/claude-session-hygiene.md
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+# No Persistent=: a catch-up after suspend would write rows for minutes nobody sampled.
+
+[Install]
+WantedBy=timers.target

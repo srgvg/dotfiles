@@ -1,0 +1,12 @@
+#!/usr/bin/python3
+"""mise-tools: update the tools mise installs. Mise itself is mise-self."""
+import importlib.machinery
+import importlib.util
+import sys
+from pathlib import Path
+
+loader = importlib.machinery.SourceFileLoader("mise_self", str(Path(__file__).resolve().with_name("mise-self")))
+spec = importlib.util.spec_from_loader(loader.name, loader)
+module = importlib.util.module_from_spec(spec)
+loader.exec_module(module)
+sys.exit(module.main_tools())

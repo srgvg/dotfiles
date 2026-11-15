@@ -1,5 +1,5 @@
 set $primary DP-4
-#set $secondary DP-2
+set $panel DP-7
 set $tv DP-5
 
 # https://major.io/2022/05/24/sway-reload-causes-a-firefox-crash/
@@ -26,29 +26,29 @@ input "1386:965:Wacom_Intuos_BT_S_Pen" {
 
 output $primary {
     enable
-    mode 7680x2160
     position 0 0
+    mode 7680x2160
     scale 1.5
     dpms on
     max_render_time off
 }
-#output $secondary {
-#    enable
-#    dpms on
-#    pos 0 0 res 3840x2160
-#    scale 1.5
-#    #transform 270
-#}
+output $panel {
+    enable
+    dpms on
+    pos 0 1440 res 2560x1600
+    scale 2
+    #transform 270
+}
 output $tv {
     enable
     #dpms on
-    pos 0 1700 res 1920x1080
+    pos 0 5000 res 1920x1080
 }
 
 seat seat0 keyboard_grouping smart
 
 ## Automatically putting workspaces on specific screens
-workspace 0     output $primary
+workspace 0     output $panel
 workspace 1     output $primary
 workspace 2     output $primary
 workspace 3     output $primary

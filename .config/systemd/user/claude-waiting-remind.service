@@ -1,0 +1,6 @@
+[Unit]
+Description=Repeat the popup for a Claude session that waits at a permission prompt (srgvg/claude-dotfiles#280)
+
+[Service]
+Type=oneshot
+ExecStart=%h/binc/claude-waiting-remind

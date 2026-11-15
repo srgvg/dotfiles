@@ -1,4 +1,8 @@
 #!/bin/bash
+# Drop an inherited WLR_DRM_DEVICES first: the systemd user manager keeps whatever value
+# environment.d had at boot, so an unset or changed value in sway.conf would otherwise
+# not take effect until reboot (2026-11-15: a stale by-path list gave sway 0 GPUs).
+unset WLR_DRM_DEVICES
 # Source environment.d vars that GDM doesn't load
 eval "$(/usr/lib/systemd/user-environment-generators/30-systemd-environment-d-generator)"
 # Unset stale vars that were commented out

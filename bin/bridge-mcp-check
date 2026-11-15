@@ -1,0 +1,149 @@
+#!/bin/bash
+# bridge-mcp-check: can the claude-uds-bridge plugin's required MCP server still find bun?
+#
+# A bun entry that a `mise upgrade` removed from a long-running session's PATH fails every Codex launch that loads the
+# server, with an error that names an unrelated server. Two things keep that from happening, and the verdict needs both:
+#   1. The link <link-dir>/bun (default ~/.local/bin/bun) points at the mise shim, so the bare name `bun` still resolves on a
+#      PATH with a dead mise entry, and a plugin update that restores a bare `bun` cannot reopen the failure. It is the durable
+#      fix. The check runs `bun --version` BY NAME, with a PATH of only the link directory, /usr/bin and /bin, which is the
+#      lookup the failing launch makes. A missing link, a dangling link and a link to something that does not run all fail it.
+#   2. The installed plugin's .mcp.json starts the server with that shim or with a bare `bun`, never with a path into a
+#      versioned install directory (that dies on a `mise upgrade` and the link cannot help it).
+# The installed copy is reverted by a reinstall or by a plugin update that makes a new version directory, and that is why
+# condition 1 exists. This check reads, never writes, the plugin and the link.
+# Context: srgvg/claude-dotfiles#270. Docs: ~/etc/docs/codex-claude-integration.md (section "Bridge lapse check") and
+# ~/etc/docs/mise.md (section "Shim links in ~/.local/bin", the registry entry for the link).
+#
+#   bridge-mcp-check [--cache-dir DIR] [--expected COMMAND] [--server NAME] [--marketplace-file FILE] [--state FILE]
+#                    [--alert-cmd COMMAND] [--link-dir DIR]
+#
+# --alert-cmd raises one critical popup when the verdict CROSSES into not-ok (the previous state file said ok, or it was
+# missing or unreadable). It is called as `COMMAND -u critical -a bridge-mcp-check <title> <body>`, so `notify-send` fits.
+# While the state stands the popup is not repeated: the state file carries alert=raised. A failed popup is retried on the
+# next run. Without --alert-cmd nothing is raised. The exit code is the verdict's, whatever the popup did. A dismissed popup
+# is not raised again until the verdict goes back to ok and crosses again. The shared claude-sway-urgent tool is not used:
+# it reads a Claude Code hook payload on stdin and needs a sway session, which a user timer does not have.
+#
+# Reads every version directory under the cache directory and judges the highest by `sort -V`, because an update makes a
+# NEW directory and leaves the old one alone. Exit: 0 ok, 1 lapse, 2 unknown. Unknown is never ok: a missing directory,
+# a missing or unparseable file, an absent server, or a missing jq all exit 2 (a clean reading must never come from a
+# check that could not read). Plain output names the file read, the command expected and the command found.
+# --state writes the same reading as JSON (atomically); a reader treats an old checked_at as unknown.
+# The marketplace copy is reported for information only: its command is what a reinstall copies, but it never sets the verdict.
+set -u
+
+HOME_DIR=${HOME:-/home/serge}
+cache_dir=$HOME_DIR/.codex/plugins/cache/leonkohli/claude-uds-bridge
+expected=$HOME_DIR/.local/share/mise/shims/bun
+server=claude_uds_bridge
+market=$HOME_DIR/.codex/.tmp/marketplaces/leonkohli/plugins/claude-uds-bridge/.mcp.json
+state=$HOME_DIR/.local/state/bridge-mcp-check/status.json
+alert_cmd=""
+link_dir=$HOME_DIR/.local/bin
+probe_seconds=20
+
+while [ $# -gt 0 ]; do
+	case $1 in
+	--cache-dir) cache_dir=${2:?}; shift 2 ;;
+	--expected) expected=${2:?}; shift 2 ;;
+	--server) server=${2:?}; shift 2 ;;
+	--marketplace-file) market=${2:?}; shift 2 ;;
+	--state) state=${2:?}; shift 2 ;;
+	--alert-cmd) alert_cmd=${2:?}; shift 2 ;;
+	--link-dir) link_dir=${2:?}; shift 2 ;;
+	--probe-seconds) probe_seconds=${2:?}; shift 2 ;;
+	*) echo "bridge-mcp-check: unknown argument: $1" >&2; exit 64 ;;
+	esac
+done
+
+file=""
+found=""
+link_info="none read"
+verdict=UNKNOWN
+code=2
+why=""
+
+finish() {
+	echo "file read: ${file:-none}"
+	echo "expected: $expected"
+	echo "found: ${found:-none}"
+	echo "link: $link_info"
+	[ -n "$why" ] && echo "why: $why"
+	echo "verdict: $verdict"
+	alert=none
+	if [ "$verdict" != ok ] && [ -n "$alert_cmd" ]; then
+		prev_v="" prev_a=""
+		if [ -r "$state" ] && command -v jq >/dev/null 2>&1; then
+			prev_v=$(jq -r '.verdict // empty' "$state" 2>/dev/null)
+			prev_a=$(jq -r '.alert // empty' "$state" 2>/dev/null)
+		fi
+		if [ -n "$prev_v" ] && [ "$prev_v" != ok ] && [ "$prev_a" = raised ]; then
+			alert=raised # the standing state already has its popup: carry it, raise nothing
+		elif "$alert_cmd" -u critical -a bridge-mcp-check "Codex bridge plugin: $verdict" "${why:-no reason}. Expected: $expected. Found: ${found:-none}." >/dev/null 2>&1; then
+			alert=raised
+		else
+			alert=failed
+		fi
+	fi
+	echo "alert: $alert"
+	if [ -n "$market" ] && [ -r "$market" ] && command -v jq >/dev/null 2>&1; then
+		echo "marketplace copy (information only, never the verdict): $market command=$(jq -r --arg s "$server" '.mcpServers[$s].command // "absent"' "$market" 2>/dev/null || echo unreadable)"
+	fi
+	if [ -n "$state" ]; then
+		mkdir -p "$(dirname "$state")" 2>/dev/null
+		tmp=$(mktemp "$state.XXXXXX" 2>/dev/null) || exit "$code"
+		if command -v jq >/dev/null 2>&1; then
+			jq -n --argjson at "$(date +%s)" --arg v "$verdict" --argjson c "$code" --arg f "$file" --arg e "$expected" --arg o "$found" --arg w "$why" --arg a "$alert" --arg l "$link_info" \
+				'{checked_at: $at, verdict: $v, exit: $c, file: $f, expected: $e, found: $o, link: $l, why: $w, alert: $a}' >"$tmp"
+		else
+			printf '{"checked_at":%s,"verdict":"%s","exit":%s,"why":"jq is not on PATH","alert":"%s"}\n' "$(date +%s)" "$verdict" "$code" "$alert" >"$tmp"
+		fi && mv -f "$tmp" "$state" || rm -f "$tmp"
+	fi
+	exit "$code"
+}
+
+command -v jq >/dev/null 2>&1 || { why="jq is not on PATH, so the file cannot be read"; finish; }
+[ -d "$cache_dir" ] || { why="no cache directory"; finish; }
+
+latest=$(find "$cache_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort -V | tail -n1)
+[ -n "$latest" ] || { why="the cache directory holds no version directory"; finish; }
+
+file=$cache_dir/$latest/.mcp.json
+[ -r "$file" ] || { why="the highest version directory ($latest) has no readable .mcp.json"; finish; }
+jq -e . "$file" >/dev/null 2>&1 || { why="the file is not valid JSON"; finish; }
+found=$(jq -r --arg s "$server" '.mcpServers[$s].command // empty' "$file" 2>/dev/null)
+[ -n "$found" ] || { why="server $server has no command in that file"; finish; }
+
+link=$link_dir/bun
+if [ -L "$link" ]; then
+	link_info="$link -> $(readlink -- "$link")"
+elif [ -e "$link" ]; then
+	link_info="$link (not a link)"
+else
+	link_info="$link (absent)"
+fi
+
+# The lookup the failing launch makes: the bare name, on a PATH that carries no mise entry. The link directory comes first, so
+# a link that is missing, dangling or not executable fails the probe. Exit 124 is a probe cut by its own clock: unknown, never ok.
+probe_out=$(env -i HOME="$HOME_DIR" PATH="$link_dir:/usr/bin:/bin" timeout "$probe_seconds" bun --version 2>&1)
+probe_rc=$?
+
+if [ "$probe_rc" = 124 ]; then
+	why="the probe 'bun --version' by name did not answer within ${probe_seconds}s, so the link is not proven"
+elif [ "$probe_rc" != 0 ]; then
+	verdict=LAPSE
+	code=1
+	why="the bare name bun does not run on a PATH that holds only the link directory, /usr/bin and /bin (exit $probe_rc: ${probe_out:0:120}). A plugin update that restores a bare bun now reopens the failure"
+elif [ "$found" != "$expected" ] && [ "$found" != bun ]; then
+	verdict=LAPSE
+	code=1
+	why="version $latest starts the server with a command that is neither the expected shim nor a bare bun, and the link cannot help a path into a versioned install directory"
+elif [ "$found" = "$expected" ] && [ ! -x "$expected" ]; then
+	verdict=LAPSE
+	code=1
+	why="the command is the expected shim, but that file is not executable"
+else
+	verdict=ok
+	code=0
+fi
+finish

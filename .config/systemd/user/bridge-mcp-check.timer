@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the claude-uds-bridge plugin command every hour
+
+[Timer]
+# A reinstall or plugin update reverts the fix at no known time, so the check polls. It reads one small file.
+OnCalendar=hourly
+# Run a missed check once after suspend or boot.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Once a minute, look for a Claude session that waits at a permission prompt
+
+[Timer]
+OnCalendar=minutely
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

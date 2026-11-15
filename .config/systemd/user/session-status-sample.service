@@ -1,0 +1,7 @@
+[Unit]
+Description=Sample Claude session statuses into a scratch entry (srgvg/claude-dotfiles#280)
+Documentation=file:%h/etc/docs/claude-session-hygiene.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/session-status-sample

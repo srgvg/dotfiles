@@ -373,11 +373,18 @@ get_asdf() {
 
 ##########################################################################################################
 
-get_mise() {
-    title "mise-en-place"
-    # The guard owns the shared lock and returns the first failed step's status.
-    # Mise itself is promoted separately with `mise-self-upgrade apply VERSION`.
-    "$HOME/bin/mise-self-upgrade" maintain
+get_mise_self() {
+    title "mise (the binary)"
+    # Follows the pin in ~/etc/config/versions, which another host may have moved. It never picks
+    # a version: choosing one is `mise-self update`, run by hand.
+    "$HOME/bin/mise-self" sync
+}
+
+get_mise_tools() {
+    title "mise-en-place (the tools mise installs)"
+    # The guard owns the shared lock and returns the first failed step's status. It runs
+    # `mise-self sync` first, so this is also safe to run alone.
+    "$HOME/bin/mise-tools" update
 }
 
 ##########################################################################################################
@@ -393,6 +400,14 @@ get_flatpak() {
     log ""
     log "flatpak update user"
     flatpak update --assumeyes --noninteractive --user || rc=$?
+    log ""
+
+    # Pinned runtimes (flatpak pin --list) are never removed by --unused.
+    log "flatpak uninstall unused global"
+    sudo -n flatpak uninstall --unused --assumeyes --noninteractive --system || rc=$?
+    log ""
+    log "flatpak uninstall unused user"
+    flatpak uninstall --unused --assumeyes --noninteractive --user || rc=$?
     log ""
 
     if [ "${HOSTNAME}" = "goldorak" ]; then
@@ -677,11 +692,12 @@ get_ai() {
     fi
 
     log "opencode"
+    # Installed by mise (opencode = "2" in ~/.config/mise/config.toml), so the mise component
+    # upgrades it. `opencode upgrade` cannot detect that install method and exits 1.
     if hash opencode >/dev/null 2>&1; then
-        opencode upgrade
+        echo "# opencode $(opencode --version 2>&1 | head -n1): upgraded by mise, nothing to do here"
     else
-        echo "# opencode not installed. install with:"
-        echo "  curl -fsSL https://opencode.ai/install | bash"
+        echo "# opencode not installed: add it to ~/.config/mise/config.toml"
     fi
 
 }
@@ -692,7 +708,8 @@ get_ai() {
 
 update_all() {
 
-    run_component "mise" get_mise
+    run_component "mise_self" get_mise_self
+    run_component "mise_tools" get_mise_tools
     run_component "mise_tasks" get_mise_tasks
     run_component "uv_tools" get_uv_tools
     run_component "krew" get_krew
@@ -708,7 +725,9 @@ update_all() {
 }
 
 update_quick() {
-    local -a components=(downloads flatpak helm krew misc mise uv_tools bash_completions)
+    # mise_tools only: components run in parallel here, mise_self would race it for the shared
+    # lock, and mise_tools syncs the binary to the pin first anyway.
+    local -a components=(downloads flatpak helm krew misc mise_tools uv_tools bash_completions)
     local -a pids=()
     local component i
     for component in "${components[@]}"; do
@@ -774,9 +793,13 @@ for command in ${commands}; do
             update_quick
             #post
             ;;
-        mise)
+        mise-self | mise_self)
             init
-            run_component "mise" get_mise
+            run_component "mise_self" get_mise_self
+            ;;
+        mise-tools | mise_tools)
+            init
+            run_component "mise_tools" get_mise_tools
             ;;
         mise-tasks | mise_tasks)
             init
@@ -838,7 +861,8 @@ possible options are:
     helm
     krew
     misc
-    mise
+    mise-self
+    mise-tools
     mise-tasks
     uv-tools
     shell-init

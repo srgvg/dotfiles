@@ -1,0 +1,13 @@
+[Unit]
+Description=Check that the claude-uds-bridge plugin still starts its MCP server from the mise shim
+Documentation=file:%h/etc/docs/codex-claude-integration.md
+
+[Service]
+Type=oneshot
+# jq is a mise shim here; the check itself reads only the installed plugin copy and writes one state file.
+Environment=PATH=%h/.local/share/mise/shims:%h/bin:/usr/local/bin:/usr/bin:/usr/sbin
+# Exit 1 (lapse) and exit 2 (unknown) both fail the unit, so `systemctl --user --failed` shows them.
+# --alert-cmd raises one critical popup when the verdict crosses into not-ok, and none while it stands.
+ExecStart=%h/bin/bridge-mcp-check --alert-cmd /usr/bin/notify-send
+Nice=10
+TimeoutStartSec=30

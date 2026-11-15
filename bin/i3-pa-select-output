@@ -6,37 +6,17 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 #
-# TOPOLOGY -- two physical boxes, each reachable over two transports:
+# TOPOLOGY -- two physical boxes, each on one transport:
 #
 #   Trust SPK-05 (desk)   analog cable -> alsa_output.pci-0000_00_1f.3.analog-stereo
-#                         Bluetooth    -> F0:13:C3:4B:92:B1        (cable is preferred)
-#   LG DSP2 (soundbar)    Bluetooth    -> 54:15:89:12:5B:40
-#                         TV optical   -> alsa_output.pci-0000_01_00.1.hdmi-stereo-extra1
+#   LG DSP2 (soundbar)    TV optical   -> alsa_output.pci-0000_01_00.1.hdmi-stereo-extra1
 #                                         (only while the TV is switched on)
 #
-# The two combined entries are separate virtual sinks defined in
-# ~/.config/pipewire/pipewire.conf.d/50-combine-sinks.conf. They must stay separate:
-# the LG's two transports terminate in the same speaker, so one "everything" sink
-# would drive it twice.
-#
-# BLUETOOTH -- the AX201 controller carries only ONE live A2DP media transport at a
-# time (proven symmetric and codec-independent, 2026-08-02), so a second speaker
-# cannot simply be selected. Two complications follow from that:
-#
-#   * `bluetoothctl` reports the baseband link, not the audio stream, so both
-#     speakers routinely read "Connected" while only one has a sink. The transport
-#     objects under org.bluez are the only reliable indicator.
-#   * Setting a card profile to "off" is NOT enough to free the transport -- the
-#     object survives in state "idle" and still blocks the other speaker. Only a
-#     BlueZ-level disconnect releases it.
-#
-# A trusted idle speaker re-pages and reclaims the transport within ~30s, silently
-# stealing audio back; untrusting the others is what makes a switch actually stick.
-# Consequence: a speaker only auto-connects once selected here at least once.
+# The combined entry is a virtual sink defined in
+# ~/.config/pipewire/pipewire.conf.d/50-combine-sinks.conf.
 #
 # The output table below is deliberately hardcoded rather than discovered. There are
-# exactly two speakers, the labels are hand-written, and a discovered list cannot say
-# which transport is preferred.
+# exactly two speakers and the labels are hand-written.
 #
 # Usage:
 #   i3-pa-select-output            pick from a wofi menu
@@ -60,50 +40,36 @@ SINK_DELAY='desk_delayed'
 SINK_HDMI='alsa_output.pci-0000_01_00.1.hdmi-stereo-extra1'
 CARD_HDMI='alsa_card.pci-0000_01_00.1'
 PORT_HDMI='hdmi-output-1'
-MAC_LG='54:15:89:12:5B:40'
-MAC_TRUST='F0:13:C3:4B:92:B1'
 
-SWITCH_ATTEMPTS=4
-SINK_WAIT=12
-RELEASE_WAIT=10
-
-# Delay applied to the desk leg of a combined output, so the desk speakers line up
-# with the soundbar. The Bluetooth and TV-optical paths lag by different amounts;
-# a single `desk_delayed` filter-chain sink carries whichever value applies,
-# because only one combined sink is ever the default at a time. Tune with
-# `audio-delay`, which writes these back.
-DELAY_BT_MS=200
-DELAY_TV_MS=90
-if [ -r "${HOME}/.config/audio-delays.conf" ]; then
-	# shellcheck disable=SC1090,SC1091
-	source "${HOME}/.config/audio-delays.conf"
+# Delay applied to the desk leg of the combined output, so the desk speakers line up
+# with the soundbar. The value lives only in this file, written back by `audio-delay`.
+CONF_DELAYS="${HOME}/.config/audio-delays.conf"
+if [ ! -r "${CONF_DELAYS}" ]; then
+	printf '%s: cannot read %s\n' "$(basename "${0}")" "${CONF_DELAYS}" >&2
+	exit 1
 fi
+# shellcheck disable=SC1090,SC1091
+source "${CONF_DELAYS}"
+: "${DELAY_TV_MS:?DELAY_TV_MS is not set in ${CONF_DELAYS}}"
 
-# label | kind | target | mac | requires | delay
+# label | target | requires | delay
 #
-#   kind=sink     set the default to <target>
-#   kind=bt       connect <mac>, then set the default to its sink
-#   kind=combine  connect <mac> first, then set the default to <target>
+# <target> is the sink to make the default.
 #
 # <requires> is a sink node that must exist for the entry to be usable; empty
 # means always usable.
 #
 # <delay> is the desk-leg delay in milliseconds to write into desk_delayed, and is
-# set for the combined entries only. A single-speaker entry leaves it empty: it has
+# set for the combined entry only. A single-speaker entry leaves it empty: it has
 # nothing to sync to, and a stale delay there would just add latency for no reason.
 #
 # Order is fixed on purpose -- a picker whose entries move around defeats muscle
 # memory. The live one is marked instead.
 OUTPUTS=(
-	"Desk (Trust, cable)|sink|${SINK_DESK}||${SINK_DESK}|"
-	"Soundbar (LG, Bluetooth)|bt||${MAC_LG}||"
-	"Soundbar (LG, TV optical)|sink|${SINK_HDMI}||${SINK_HDMI}|"
-	"Desk + Soundbar (Bluetooth)|combine|combine_desk_soundbar_bt|${MAC_LG}|combine_desk_soundbar_bt|${DELAY_BT_MS}"
-	"Desk + Soundbar (TV optical)|sink|combine_desk_soundbar_tv||${SINK_HDMI}|${DELAY_TV_MS}"
-	"Desk (Trust, Bluetooth)|bt||${MAC_TRUST}||"
+	"Desk (Trust, cable)|${SINK_DESK}|${SINK_DESK}|"
+	"Soundbar (LG, TV optical)|${SINK_HDMI}|${SINK_HDMI}|"
+	"Desk + Soundbar (TV optical)|combine_desk_soundbar_tv|${SINK_HDMI}|${DELAY_TV_MS}"
 )
-
-ALL_MACS=("${MAC_LG}" "${MAC_TRUST}")
 
 ###############################################################################
 # PipeWire helpers -- everything is keyed on node names. Sink index numbers are
@@ -121,13 +87,6 @@ function sink_exists() {
 	local name=$1
 	pactl list short sinks 2>/dev/null \
 		| awk -v n="${name}" '$2 == n { found = 1 } END { exit !found }'
-}
-
-# Sink name for a MAC, empty if it has none. The trailing index is assigned by
-# PipeWire and is not always 1, so match the prefix instead of assuming it.
-function sink_for_mac() {
-	pactl list short sinks 2>/dev/null \
-		| awk -v p="bluez_output.${1//:/_}." 'index($2, p) == 1 { print $2; exit }'
 }
 
 # The HDMI sink node can outlive the TV being switched off; the card port is what
@@ -211,103 +170,21 @@ function activate_sink() {
 }
 
 ###############################################################################
-# Bluetooth helpers
-
-# MACs that currently own an A2DP transport. A transport is the only thing that
-# yields a sink; an ACL link on its own does not.
-function transport_macs() {
-	busctl tree org.bluez 2>/dev/null \
-		| grep -oE 'dev_([0-9A-F]{2}_){5}[0-9A-F]{2}/sep[0-9]+/fd[0-9]+$' \
-		| sed -E 's#^dev_##; s#/.*##; s#_#:#g' \
-		| sort -u || true
-}
-
-function wait_gone() {
-	local mac=$1 i
-	for ((i = 0; i < RELEASE_WAIT; i++)); do
-		transport_macs | grep -qxF -- "${mac}" || return 0
-		sleep 1
-	done
-	return 1
-}
-
-function wait_sink() {
-	local mac=$1 i
-	for ((i = 0; i < SINK_WAIT; i++)); do
-		[ -n "$(sink_for_mac "${mac}")" ] && return 0
-		sleep 1
-	done
-	return 1
-}
-
-# A card left at profile "off" by an earlier switch produces no sink even once
-# connected, so re-arm it before waiting on one.
-function restore_profile() {
-	local mac=$1 card
-	card="bluez_card.${mac//:/_}"
-	pactl list short cards 2>/dev/null | grep -qF -- "${card}" || return 0
-	if pactl list cards 2>/dev/null | grep -qF 'a2dp-sink-sbc_xq'; then
-		pactl set-card-profile "${card}" a2dp-sink-sbc_xq 2>/dev/null || true
-	fi
-}
-
-# Make <mac> the speaker that owns the single A2DP transport. Returns 0 once it
-# has a sink.
-function bt_connect() {
-	local target=$1 attempt mac
-
-	if [ -n "$(sink_for_mac "${target}")" ]; then
-		return 0
-	fi
-
-	for mac in "${ALL_MACS[@]}"; do
-		if [ "${mac}" = "${target}" ]; then
-			bluetoothctl trust "${mac}" >/dev/null 2>&1 || true
-		else
-			bluetoothctl untrust "${mac}" >/dev/null 2>&1 || true
-		fi
-	done
-
-	for ((attempt = 1; attempt <= SWITCH_ATTEMPTS; attempt++)); do
-		notify_debug "bt_connect ${target} attempt ${attempt}"
-
-		# Free the transport. Anything still holding one blocks the target with
-		# br-connection-create-socket or "Host is down (112)".
-		while read -r mac; do
-			if [ -z "${mac}" ] || [ "${mac}" = "${target}" ]; then continue; fi
-			bluetoothctl disconnect "${mac}" >/dev/null 2>&1 || true
-			wait_gone "${mac}" || true
-		done < <(transport_macs)
-
-		# The connect can exceed bluetoothctl's own timeout yet still succeed, so
-		# the sink -- not this exit status -- is what decides.
-		timeout 20 bluetoothctl connect "${target}" >/dev/null 2>&1 || true
-		restore_profile "${target}"
-
-		if wait_sink "${target}"; then
-			return 0
-		fi
-	done
-
-	return 1
-}
-
-###############################################################################
 # Menu
 
-# Emit "display|kind|target|mac|usable" for every entry.
+# Emit "display|target|usable|delay" for every entry.
 #
 # The separator is '|' and NOT a tab on purpose. Tab is an IFS-whitespace
 # character, so `IFS=$'\t' read` collapses runs of tabs and silently drops empty
 # fields -- every field after an empty one shifts left. '|' is not IFS
 # whitespace, so empty fields survive. No label contains '|'.
 function menu_rows() {
-	local entry label kind target mac requires delay current display usable
+	local entry label target requires delay current display usable
 
 	current=$(default_sink)
 
 	for entry in "${OUTPUTS[@]}"; do
-		IFS='|' read -r label kind target mac requires delay <<<"${entry}"
+		IFS='|' read -r label target requires delay <<<"${entry}"
 
 		usable=yes
 		if [ -n "${requires}" ] && ! sink_exists "${requires}"; then
@@ -318,15 +195,12 @@ function menu_rows() {
 		fi
 
 		display="  ${label}"
-		if [ -n "${target}" ] && [ "${target}" = "${current}" ]; then
-			display="* ${label}"
-		elif [ "${kind}" = 'bt' ] && [ "$(sink_for_mac "${mac}")" = "${current}" ]; then
+		if [ "${target}" = "${current}" ]; then
 			display="* ${label}"
 		fi
 		[ "${usable}" = 'no' ] && display="${display} [unavailable]"
 
-		printf '%s|%s|%s|%s|%s|%s\n' "${display}" "${kind}" "${target}" "${mac}" \
-			"${usable}" "${delay}"
+		printf '%s|%s|%s|%s\n' "${display}" "${target}" "${usable}" "${delay}"
 	done
 }
 
@@ -346,7 +220,7 @@ function match() {
 ###############################################################################
 
 function main() {
-	local arg=${1:-} rows row display kind target mac usable delay sink previous
+	local arg=${1:-} rows row display target usable delay previous
 
 	rows=$(menu_rows)
 
@@ -362,7 +236,7 @@ function main() {
 		exit 1
 	fi
 
-	IFS='|' read -r display kind target mac usable delay <<<"${row}"
+	IFS='|' read -r display target usable delay <<<"${row}"
 	display=${display#??}
 	display=${display% \[unavailable\]}
 
@@ -373,22 +247,8 @@ function main() {
 
 	previous=$(default_sink)
 
-	if [ "${kind}" = 'bt' ] || [ "${kind}" = 'combine' ]; then
-		if ! bt_connect "${mac}"; then
-			notify "Could not connect ${display}" \
-				"no A2DP sink after ${SWITCH_ATTEMPTS} attempts"
-			exit 1
-		fi
-	fi
-
-	if [ "${kind}" = 'bt' ]; then
-		sink=$(sink_for_mac "${mac}")
-	else
-		sink=${target}
-	fi
-
-	if ! sink_exists "${sink}"; then
-		notify "${display} has no sink" "expected '${sink}'"
+	if ! sink_exists "${target}"; then
+		notify "${display} has no sink" "expected '${target}'"
 		exit 1
 	fi
 
@@ -398,9 +258,9 @@ function main() {
 	# a silently ignored delay is indistinguishable from a badly tuned one.
 	set_desk_delay "${delay}" || notify "${display}: could not set the desk delay"
 
-	activate_sink "${sink}"
+	activate_sink "${target}"
 
-	if [ "${sink}" = "${previous}" ]; then
+	if [ "${target}" = "${previous}" ]; then
 		notify "Confirming: ${display}"
 	else
 		notify "Activated: ${display}"

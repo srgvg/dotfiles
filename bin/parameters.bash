@@ -16,7 +16,7 @@ HOMETMPDIR="$(readlink --canonicalize-missing --no-newline "$HOME/$HOMETMPDIRNAM
 # (cron, systemd units) inherit it too. Mirrors ~/.bashrc.d/tmpdir.bash; NOT
 # derived from HOMETMPDIR (~/scratch), which update-tools rm -rf's wholesale.
 # See ~/etc/docs/memory-oom.md §7.
-export TMPDIR="$HOME/tmp"
+export TMPDIR="$HOME/vibes/tmp"
 mkdir -p "$TMPDIR"
 BACKGROUND_PICTURES="$HOME/Pictures/Wallpapers"
 

@@ -20,7 +20,6 @@ alias bwl='export BW_SESSION='
 # c
 # claude's default flags (auto-mode, remote-control, ...) live in ~/binc/claude,
 # not here -- see that script. Applies via PATH to any shell, not just this one.
-alias codex="nah run codex"
 if [ "${MY_WM}" = "sway" ]; then
     # --trim-newline pairs with paste's --no-newline below: without it, `echo foo | copy` stores
     # a trailing \n that `paste` never added back, so `copy | diff <(paste)` looked lossy.

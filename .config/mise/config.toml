@@ -100,10 +100,12 @@ staticcheck         = "go:honnef.co/go/tools/cmd/staticcheck"
 grok                = "http:grok"
 
 # --- npm ---
+pi                  = "npm:@earendil-works/pi-coding-agent"
 pnpm                = "npm:pnpm"
 
 # --- pipx ---
 azure-cli           = "pipx:azure-cli"
+omnigent            = "pipx:omnigent"
 
 # --- vfox ---
 gcloud              = "vfox:mise-plugins/vfox-gcloud"
@@ -126,7 +128,7 @@ bun                  = "latest"
 chief                = "latest"
 cilium-cli           = { version = "latest", exe = "cilium" }
 cilium-hubble        = "latest"
-civo                 = { version = "latest", exe = "civo" }
+civo                 = { version = "latest", filter_bins = "civo" }
 clusterctl           = "latest"
 cmctl                = "latest"
 copilot              = "latest"
@@ -153,10 +155,9 @@ git-cliff            = "latest"
 git-who              = "latest"
 git-xargs            = "latest"
 github-cli           = "latest"
-"github:michaelrigart/tagteam" = "latest"
 gitlab-cli           = "latest"
 gitleaks             = "latest"
-glab                 = { version = "latest", exe = "glab" }
+glab                 = { version = "latest", filter_bins = "glab" }
 go                   = "latest"
 go-containerregistry = { version = "latest", exe = "crane" }
 goimports            = "latest"
@@ -171,11 +172,11 @@ hanoi-cli            = "latest"
 hcloud-upload-image  = "latest"
 helm                 = "latest"
 hetznercloud         = { version = "latest", exe = "hcloud" }
-hubble               = { version = "latest", exe = "hubble" }
+hubble               = { version = "latest", filter_bins = "hubble" }
 hugo                 = "latest"
 hunk                 = "latest"
 hurl                 = { version = "latest", exe = "hurl" }
-hurlfmt              = { version = "latest", exe = "hurlfmt" }
+hurlfmt              = { version = "latest", filter_bins = "hurlfmt" }
 impl                 = "latest"
 jd                   = { version = "latest", exe = "jd" }
 jless                = "latest"
@@ -186,7 +187,7 @@ keylightd            = "0.1.9"
 keylightd-tray       = { version = "latest", asset_pattern = "keylightd-tray_*_linux_amd64.tar.gz" }
 kind                 = "latest"
 kompose              = "latest"
-korb                 = { version = "latest", exe = "korb" }
+korb                 = { version = "latest", filter_bins = "korb" }
 krew                 = "latest"
 kube-capacity        = "latest"
 kube-no-trouble      = { version = "latest", exe = "kubent" }
@@ -203,8 +204,8 @@ kustomize            = "latest"
 lfk                  = "latest"
 lynxdb               = "latest"
 mq-run               = "latest"
-nats-cli             = { version = "latest", exe = "nats" }
-nats-server          = { version = "latest", exe = "nats-server" }
+nats-cli             = { version = "latest", filter_bins = "nats" }
+nats-server          = { version = "latest", filter_bins = "nats-server" }
 nats-top             = "latest"
 neovim               = "latest"
 nk                   = "latest"
@@ -212,10 +213,12 @@ node                 = "latest"
 nova                 = "latest"
 npm                  = "latest"
 nsc                  = "latest"
+omnigent             = "latest"
 openbao              = "latest"
 opencode             = "2"
 oras                 = { version = "latest", exe = "oras" }
 osv-scanner          = "latest"
+pi                   = "latest"
 pkl                  = { version = "latest", exe = "pkl" }
 pluto                = "latest"
 pnpm                 = "latest"
@@ -248,7 +251,7 @@ tanzu-cli            = "latest"
 tsui                 = "latest"
 updatecli            = { version = "latest", exe = "updatecli" }
 usage                = "latest"
-utilyze              = { version = "latest", exe = "utlz" }
+utilyze              = { version = "latest", filter_bins = "utlz" }
 uv                   = "latest"
 vcluster             = "latest"
 velero               = "latest"

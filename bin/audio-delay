@@ -7,32 +7,24 @@
 # vi: set shiftwidth=4 tabstop=4 noexpandtab:
 # :indentSize=4:tabSize=4:noTabs=false:
 #
-# The Bluetooth and TV-optical paths both lag the desk speakers, by different
-# amounts, so the desk leg of each combine sink is delayed to match. A single
-# filter-chain sink `desk_delayed` carries that delay; i3-pa-select-output writes
-# the right value into it when you pick a combined output. This tool is how you
-# find those values in the first place.
-#
-# Which path you are tuning is read from the current default sink, so `save` and
-# `apply` normally take no argument -- if you are listening to
-# combine_desk_soundbar_bt, `save` writes DELAY_BT_MS. Name the path explicitly
-# only to override that, or when no combined output is active.
+# The TV-optical path lags the desk speakers, so the desk leg of the combine sink is
+# delayed to match. A single filter-chain sink `desk_delayed` carries that delay;
+# i3-pa-select-output writes the saved value into it when you pick the combined
+# output. This tool is how you find that value in the first place.
 #
 # Usage:
-#   audio-delay                 show the live delay, the saved values, active path
+#   audio-delay                 show the live delay and the saved value
 #   audio-delay 180             set the live delay to 180 ms
 #   audio-delay +10             nudge the live delay by 10 ms (also -10)
-#   audio-delay save            persist the live delay for the active path
-#   audio-delay save bt|tv      ... or for a named path
-#   audio-delay apply           reload the saved value for the active path
-#   audio-delay apply bt|tv     ... or a named one
+#   audio-delay save            persist the live delay as DELAY_TV_MS
+#   audio-delay apply           reload the saved value into the live delay
 #
-# Workflow: play something with a strong transient (percussion, speech) on a
+# Workflow: play something with a strong transient (percussion, speech) on the
 # combined output, then nudge until the flam collapses into one sound.
 #
-#   i3-pa-select-output "Desk + Soundbar (Bluetooth)"
+#   i3-pa-select-output "Desk + Soundbar (TV optical)"
 #   audio-delay +20      # repeat until it locks
-#   audio-delay save     # knows it was the Bluetooth path
+#   audio-delay save
 
 set -o nounset
 set -o errexit
@@ -86,57 +78,21 @@ function set_ms() {
 	printf 'desk delay: %s ms\n' "${ms}"
 }
 
-# Which combined output is live, as bt|tv. Fails if the default sink is not a
-# combined one -- there is then no path to attribute a delay to, and guessing
-# would silently write the wrong one.
-function active_path() {
-	case "$(pactl get-default-sink 2>/dev/null)" in
-		combine_desk_soundbar_bt) printf 'bt\n' ;;
-		combine_desk_soundbar_tv) printf 'tv\n' ;;
-		*) return 1 ;;
-	esac
-}
-
-function path_label() {
-	case "$1" in
-		bt) printf 'Bluetooth\n' ;;
-		tv) printf 'TV optical\n' ;;
-		*)  printf '%s\n' "$1" ;;
-	esac
-}
-
-# Resolve the path for save/apply: explicit argument wins, else the active one.
-function resolve_path() {
-	local verb=$1 arg=${2:-} key
-	if [ -n "${arg}" ]; then
-		printf '%s\n' "${arg}"
-		return 0
-	fi
-	if key=$(active_path); then
-		printf '%s\n' "${key}"
-		return 0
-	fi
-	die "no combined output is active, so there is nothing to ${verb} for; say: audio-delay ${verb} bt|tv"
+# Whether the combined output is the live default.
+function combined_active() {
+	[ "$(pactl get-default-sink 2>/dev/null)" = 'combine_desk_soundbar_tv' ]
 }
 
 function saved() {
-	local key=$1
+	[ -r "${CONF}" ] || die "cannot read ${CONF}"
 	# shellcheck disable=SC1090
-	[ -r "${CONF}" ] && source "${CONF}"
-	case "${key}" in
-		bt) printf '%s\n' "${DELAY_BT_MS:-0}" ;;
-		tv) printf '%s\n' "${DELAY_TV_MS:-0}" ;;
-		*)  die "unknown path '${key}'; use bt or tv" ;;
-	esac
+	source "${CONF}"
+	[ -n "${DELAY_TV_MS:-}" ] || die "${CONF} has no DELAY_TV_MS line"
+	printf '%s\n' "${DELAY_TV_MS}"
 }
 
 function save() {
-	local key=$1 ms=$2 var
-	case "${key}" in
-		bt) var=DELAY_BT_MS ;;
-		tv) var=DELAY_TV_MS ;;
-		*)  die "unknown path '${key}'; use bt or tv" ;;
-	esac
+	local ms=$1 var=DELAY_TV_MS
 	[ -w "${CONF}" ] || die "cannot write ${CONF}"
 	# The assignment always exists in the shipped file, so rewrite it in place
 	# rather than appending -- an appended duplicate would shadow the original
@@ -147,26 +103,22 @@ function save() {
 }
 
 id=$(node_id)
-key=''
 
 case "${1:-}" in
 	''|show)
 		printf 'live:   %s ms\n' "$(live_ms "${id}")"
-		printf 'saved:  bt=%s ms  tv=%s ms\n' "$(saved bt)" "$(saved tv)"
-		if key=$(active_path); then
-			printf 'active: %s path -- "audio-delay save" writes the %s value\n' \
-				"$(path_label "${key}")" "${key}"
+		printf 'saved:  %s ms\n' "$(saved)"
+		if combined_active; then
+			printf 'active: combined output is the default\n'
 		else
-			printf 'active: no combined output -- save/apply need bt|tv\n'
+			printf 'active: combined output is not the default\n'
 		fi
 		;;
 	save)
-		key=$(resolve_path save "${2:-}")
-		save "${key}" "$(live_ms "${id}")"
+		save "$(live_ms "${id}")"
 		;;
 	apply)
-		key=$(resolve_path apply "${2:-}")
-		set_ms "${id}" "$(saved "${key}")"
+		set_ms "${id}" "$(saved)"
 		;;
 	+*|-*)
 		set_ms "${id}" "$(( $(live_ms "${id}") + ${1} ))"

@@ -28,7 +28,6 @@ source "$HOME/bin/common.bash"
 #                                                                          of this file)
 #   cleanup             user crontab         hourly at :00                crontab -l
 #   backup              user crontab         every 2 h at :30             crontab -l (branch below is a no-op)
-#   nah-stall-report    user crontab         Mondays 07:00                crontab -l
 #   update-tools        systemd user timer   01,05,09,13,17,21:15         ~/.config/systemd/user/update-tools.timer
 #   firefoxpwa-relink   systemd user timer   02,06,10,14,18,22:35         ~/.config/systemd/user/firefoxpwa-relink.timer
 #   etc-drift           none                 manual only -- not currently scheduled (see the
@@ -104,12 +103,16 @@ function execute() {
     #
     #   location                              what                          older than   action
     #   -------------------------------------  ----------------------------  -----------  ------------
-    #   ~/scratch, ~/tmp        (top level)    files + symlinks                 48 h       rm
+    #   ~/scratch, ~/tmp,       (top level)    files + symlinks                 48 h       rm
+    #   ~/vibes/tmp
     #   ${tempfolders}          (recursive)    files + symlinks                 48 h       rm
-    #                                          (not ~/tmp/claude-*)
-    #   ~/tmp/claude-*          (recursive)    Claude session files + links     14 d       rm
-    #   ${tempfolders}          (depth >= 2)   empty dirs (not ~/tmp/claude-*)  48 h       rmdir
-    #   ~/tmp                   (depth 1)      empty go-build work dirs         48 h       rmdir
+    #                                          (not {~,~/vibes}/tmp/claude-*)
+    #   {~,~/vibes}/tmp/claude-* (recursive)   Claude session files + links     14 d       rm
+    #   ${tempfolders}          (depth >= 2)   empty dirs (not .../claude-*)    48 h       rmdir
+    #   ~/tmp, ~/vibes/tmp      (depth 1)      empty go-build work dirs         48 h       rmdir
+    #
+    # ~/vibes/tmp is TMPDIR from 2026-11-14 (Serge: centralise under ~/vibes). ~/tmp stays in
+    # every sweep until it has drained; drop it then.
     #
     # Age is ctime (-cmin), not mtime: a directory a tool has just created and not yet
     # populated has a fresh ctime, and a file whose mtime a copy preserved still has a fresh
@@ -142,7 +145,8 @@ function execute() {
     if [ "${command}" = "cleanup" ]; then
 
         cleantime="+2880" # 48 hours
-        tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/ $HOME/logs $HOME/logs/cronjobs"
+        # ~/vibes/tmp is TMPDIR since 2026-11-14; ~/tmp stays listed until it has drained.
+        tempfolders="$HOME/scratch/clips $HOME/scratch/temp $HOME/scratch/tmp $HOME/scratch/t $HOME/tmp/ $HOME/vibes/tmp/ $HOME/logs $HOME/logs/cronjobs"
 
         # cleanup files:
         # ~/scratch and ~/tmp, top level only (maxdepth 1): files and symlinks idle > 48 h.
@@ -151,6 +155,7 @@ function execute() {
         scan \
             $HOME/scratch/ \
             $HOME/tmp/ \
+            $HOME/vibes/tmp/ \
             -maxdepth 1 \
             -not -path '/home/serge/scratch/.stfolder' \
             -not -path '/home/serge/scratch/.stignore' \
@@ -170,6 +175,7 @@ function execute() {
                     ${folder} \
                     -depth -mindepth 1 \
                     -not -path "$HOME/tmp/claude-*" \
+                    -not -path "$HOME/vibes/tmp/claude-*" \
                     -cmin ${cleantime} \( -type f -o -type l \) \
                     -print0 | xargs -r -0 rm -fv
             fi
@@ -177,7 +183,7 @@ function execute() {
 
         # ~/tmp/claude-*: Claude Code session dirs, files and symlinks idle > 14 d.
         logtitle looking for idle Claude session files under ~/tmp
-        for folder in "$HOME"/tmp/claude-*; do
+        for folder in "$HOME"/tmp/claude-* "$HOME"/vibes/tmp/claude-*; do
             if [ -d "${folder}" ]; then
                 scan \
                     "${folder}" \
@@ -197,6 +203,7 @@ function execute() {
                     -depth -mindepth 2 \
                     -not -path '/home/serge/scratch/.stfolder*' \
                     -not -path "$HOME/tmp/claude-*" \
+                    -not -path "$HOME/vibes/tmp/claude-*" \
                     -type d -empty -cmin ${cleantime} \
                     -print0 | xargs -r -0 python3 "$HOME/bin/rmdir_enoent.py" --parents --verbose --ignore-fail-on-non-empty --
             fi
@@ -208,10 +215,11 @@ function execute() {
         logtitle looking for empty go-build dirs directly under ~/tmp
         scan \
             $HOME/tmp \
+            $HOME/vibes/tmp \
             -mindepth 1 -maxdepth 1 \
             -type d -empty -cmin ${cleantime} \
             -print0 | xargs -r -0 python3 "$HOME/bin/rmdir_enoent.py" --verbose --ignore-fail-on-non-empty --
-        mkdir -pv $HOME/tmp
+        mkdir -pv $HOME/tmp $HOME/vibes/tmp
 
         logtitle misc stuff
 
@@ -359,8 +367,9 @@ function execute() {
     elif [ "${command}" = "update-tools" ]; then
 
         # Trigger: systemd user timer update-tools.timer, 01/05/09/13/17/21:15.
-        # Delegates to ~/bin/update-tools, which runs 12 independent components (mise, mise_tasks,
-        # uv_tools, krew, helm, flatpak, misc, downloads, github, ai, bash_completions,
+        # Delegates to ~/bin/update-tools, which runs 13 independent components (mise_self,
+        # mise_tools, mise_tasks, uv_tools, krew, helm, flatpak, misc, downloads, github, ai,
+        # bash_completions,
         # shell_init) -- see update-tools:724-735 for the full list and per-component detail.
         $HOME/bin/update-tools
 
@@ -383,16 +392,6 @@ function execute() {
         # manual-tarball Firefox after that Firefox auto-updates itself in place. BuildID-guarded
         # (marker file), so this is a no-op on every run except right after a Firefox update.
         $HOME/bin/firefoxpwa-relink
-
-    ###############################################################################
-    elif [ "${command}" = "nah-stall-report" ]; then
-
-        # Trigger: user crontab, Mondays 07:00.
-        # Weekly automation-stall report: real permission prompts joined to the nah
-        # decision that preceded them, ask/allow/block ratios, blocks with inputs.
-        # Writes ~/.local/state/nah-stall/<ISO week>.md; the tuning loop reads it
-        # (~/etc/docs/nah.md §Stall report).
-        "$HOME/binc/nah-stall-report"
 
     ###############################################################################
     elif [ "${command}" = "backup" ]; then
