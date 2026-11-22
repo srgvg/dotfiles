@@ -30,6 +30,8 @@ usage() {
 	echo "  -y, -Y, --yes, --YES    Delete without prompting"
 	echo "  -w, --worktree          Also remove worktrees on active (non-stale) branches;"
 	echo "                          requires -y/--yes"
+	echo "  Release lines are never listed: release/* and hotfix/* branches, and any unmerged branch"
+	echo "  holding a tagged commit that is not in the default branch."
 	echo "  A failed branch comparison aborts all branch/worktree deletions."
 }
 
@@ -61,15 +63,15 @@ REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo 
 # checks are unreliable (truncated history makes fast-forwardable branches look diverged
 # and reachable worktree commits look orphaned), so unshallow first for accurate analysis.
 echo -e "${echo_lightgray}Fetching from ${REMOTE}...${echo_normal}"
-declare -a FETCH_ARGS=("$REMOTE")
+declare -a FETCH_ARGS=(--prune "$REMOTE")
 if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
 	echo -e "  ${echo_yellow}Shallow clone — unshallowing for accurate branch/worktree analysis...${echo_normal}"
-	FETCH_ARGS=(--unshallow "$REMOTE")
+	FETCH_ARGS=(--prune --unshallow "$REMOTE")
 fi
 if git fetch "${FETCH_ARGS[@]}" 2>/dev/null; then
 	# Ensure remote HEAD is resolved so symbolic-ref works
 	git remote set-head "$REMOTE" --auto &>/dev/null || true
-elif [[ "${FETCH_ARGS[0]}" == "--unshallow" ]] && git fetch "$REMOTE" 2>/dev/null; then
+elif [[ "${FETCH_ARGS[1]}" == "--unshallow" ]] && git fetch --prune "$REMOTE" 2>/dev/null; then
 	# Unshallow can fail offline or if already complete — fall back to a plain fetch.
 	echo -e "  ${echo_yellow}Unshallow failed — proceeding with existing (shallow) history.${echo_normal}"
 	git remote set-head "$REMOTE" --auto &>/dev/null || true
@@ -119,6 +121,38 @@ if git show-ref --verify --quiet "refs/heads/${DEFAULT_BRANCH}"; then
 fi
 echo
 
+# Release lines are never stale: a release branch holds backports of the default branch, so
+# "merged" (cut from the tip) and "rebased" (every commit cherry-picked from it) both read as
+# landed while the branch is live. Protected by name (PROTECTED_GLOBS), and, when unmerged, by
+# holding a tagged commit that is not in the default branch.
+PROTECTED_GLOBS=('release/*' 'hotfix/*')
+declare -a PROTECTED_MSGS=()
+
+is_protected_name() {
+	local b=$1 g
+	for g in "${PROTECTED_GLOBS[@]}"; do
+		# shellcheck disable=SC2053  # $g is a glob on purpose
+		[[ "$b" == $g ]] && return 0
+	done
+	return 1
+}
+
+# has_unmerged_tag REF -> true if REF contains a tagged commit that the base does not.
+has_unmerged_tag() {
+	local out
+	out=$(git tag --merged "$1" --no-merged "$BASE_REF" 2>/dev/null) || return 1
+	[[ -n "$out" ]]
+}
+
+print_protected() {
+	[[ ${#PROTECTED_MSGS[@]} -eq 0 ]] && return
+	echo
+	echo -e "${echo_bold_white}Kept (release lines, never deleted):${echo_normal}"
+	for msg in "${PROTECTED_MSGS[@]}"; do
+		echo -e "  ${echo_lightgray}${msg}${echo_normal}"
+	done
+}
+
 # Collect stale local branches — single batch call for merged, then cherry for the rest
 declare -a MERGED=()
 declare -a REBASED=()
@@ -126,11 +160,19 @@ declare -a LOCAL_NOT_MERGED=()
 
 while IFS= read -r branch; do
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
+	if is_protected_name "$branch"; then
+		PROTECTED_MSGS+=("$branch  (local, release line)")
+		continue
+	fi
 	MERGED+=("$branch")
 done < <(git for-each-ref --merged="$BASE_REF" --format='%(refname:short)' 'refs/heads/')
 
 while IFS= read -r branch; do
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
+	if is_protected_name "$branch"; then
+		PROTECTED_MSGS+=("$branch  (local, release line)")
+		continue
+	fi
 	LOCAL_NOT_MERGED+=("$branch")
 done < <(git for-each-ref --no-merged="$BASE_REF" --format='%(refname:short)' 'refs/heads/')
 
@@ -142,6 +184,10 @@ declare -a REMOTE_NOT_MERGED=()
 while IFS= read -r branch; do
 	[[ "$branch" == "HEAD" ]] && continue
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
+	if is_protected_name "$branch"; then
+		PROTECTED_MSGS+=("$branch  (remote, release line)")
+		continue
+	fi
 	REMOTE_MERGED+=("$branch")
 done < <(git for-each-ref --merged="$BASE_REF" \
 	--format='%(refname)' "refs/remotes/${REMOTE}/" \
@@ -150,6 +196,10 @@ done < <(git for-each-ref --merged="$BASE_REF" \
 while IFS= read -r branch; do
 	[[ "$branch" == "HEAD" ]] && continue
 	[[ "$branch" == "$DEFAULT_BRANCH" ]] && continue
+	if is_protected_name "$branch"; then
+		PROTECTED_MSGS+=("$branch  (remote, release line)")
+		continue
+	fi
 	REMOTE_NOT_MERGED+=("$branch")
 done < <(git for-each-ref --no-merged="$BASE_REF" \
 	--format='%(refname)' "refs/remotes/${REMOTE}/" \
@@ -202,13 +252,19 @@ classify_cherry_result() {
 		echo "Cannot read comparison for ${branch}; aborting all deletions." >&2
 		return 1
 	fi
+	if has_unmerged_tag "$4"; then
+		local kind=remote
+		[[ "$4" == "$branch" ]] && kind=local
+		PROTECTED_MSGS+=("$branch  (${kind}, tagged commit not in ${BASE_REF})")
+		return 0
+	fi
 	rebased+=("$branch")
 }
 for i in "${!LOCAL_NOT_MERGED[@]}"; do
-	classify_cherry_result "${tmpdir}/l${i}" "${LOCAL_NOT_MERGED[$i]}" REBASED
+	classify_cherry_result "${tmpdir}/l${i}" "${LOCAL_NOT_MERGED[$i]}" REBASED "${LOCAL_NOT_MERGED[$i]}"
 done
 for i in "${!REMOTE_NOT_MERGED[@]}"; do
-	classify_cherry_result "${tmpdir}/r${i}" "${REMOTE_NOT_MERGED[$i]}" REMOTE_REBASED
+	classify_cherry_result "${tmpdir}/r${i}" "${REMOTE_NOT_MERGED[$i]}" REMOTE_REBASED "${REMOTE}/${REMOTE_NOT_MERGED[$i]}"
 done
 
 LOCAL_TOTAL=$(( ${#MERGED[@]} + ${#REBASED[@]} ))
@@ -426,6 +482,7 @@ if [[ $TOTAL -eq 0 && $WT_TOTAL -eq 0 ]]; then
 	else
 		echo -e "${echo_green}Nothing to clean.${echo_normal}"
 	fi
+	print_protected
 	exit 0
 fi
 
@@ -569,6 +626,7 @@ if $DO_IT; then
 	print_skipped_worktrees
 	print_pinned_branches
 	print_superseded_kept
+	print_protected
 else
 	if [[ $LOCAL_TOTAL -gt 0 ]]; then
 		echo -e "${echo_bold_white}Stale local branches (${LOCAL_TOTAL}):${echo_normal}"
@@ -604,6 +662,7 @@ else
 	print_skipped_worktrees
 	print_pinned_branches
 	print_superseded_kept
+	print_protected
 	echo
 
 	# Build a prompt covering whichever of branches / worktrees are present.

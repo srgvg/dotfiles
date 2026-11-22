@@ -74,7 +74,10 @@
 	lo = -c color.diff=true log --oneline --decorate
 
 	lol =  log --graph --decorate --abbrev-commit		--pretty=custom --date=short
-	lola = log --graph --decorate --abbrev-commit --all --pretty=custom --date=short
+	# Histories that share no ancestor with origin/HEAD stay out (orphan branches such as gh-pages).
+	# If origin/HEAD is missing, HEAD is the anchor. lolaa is the unfiltered form.
+	lola = "!f() { anchor=$(git rev-parse --verify -q refs/remotes/origin/HEAD) || anchor=$(git rev-parse --verify -q HEAD) || return 1; roots=$(git rev-list --max-parents=0 \"$anchor\") || return 1; related=$(for root in $roots; do git for-each-ref --contains \"$root\" --format='%(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)'; done); head=$(git rev-parse -q --verify HEAD) || head=; orphans=$( { echo \"$related\" | sed 's/^/R /'; git for-each-ref --format='%(if)%(*objectname)%(then)%(*objecttype) %(*objectname)%(else)%(objecttype) %(objectname)%(end)' | awk '$1 == \"commit\" { print \"A\", $2 }'; if [ -n \"$head\" ]; then echo \"A $head\"; for root in $roots; do if git merge-base --is-ancestor \"$root\" \"$head\"; then echo \"R $head\"; break; fi; done; fi; } | awk '$1 == \"R\" { r[$2] = 1; next } $1 == \"A\" && !r[$2] && !seen[$2]++ { print $2 }' ); if [ -n \"${GIT_PREFIX:-}\" ]; then cd -- \"$GIT_PREFIX\" || return 1; fi; if [ -n \"$orphans\" ]; then git log --graph --decorate --abbrev-commit --pretty=custom --date=short \"$@\" --all --not $orphans; else git log --graph --decorate --abbrev-commit --pretty=custom --date=short \"$@\" --all; fi; }; f"
+	lolaa = log --graph --decorate --abbrev-commit --all --pretty=custom --date=short
 	lold = log --graph --decorate --abbrev-commit --all --pretty=custom
 	lolt = log --graph --decorate --abbrev-commit --all --pretty=custom --simplify-by-decoration
 	ls = ls-files

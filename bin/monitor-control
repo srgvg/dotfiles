@@ -20,6 +20,10 @@ source "$HOME/bin/common.bash"
 MONITOR_MODEL="Odyssey G95NC"
 SCRIPT_NAME="monitor-control"
 
+# Sony TV on DP-5 has no DDC/CI; probing it adds ~6s to every ddcutil call.
+# Format: <mfg>-<model>-<product code>.
+DDCUTIL_IGNORE_MMID="SNY-SONY TV-5123"
+
 # VCP codes
 VCP_BRIGHTNESS=0x10
 VCP_CONTRAST=0x12
@@ -134,7 +138,7 @@ run_ddcutil() {
     local rc
 
     # Try without sudo first
-    if output=$(ddcutil --model "$MONITOR_MODEL" "$@" 2>&1); then
+    if output=$(ddcutil --model "$MONITOR_MODEL" --ignore-mmid "$DDCUTIL_IGNORE_MMID" "$@" 2>&1); then
         echo "$output"
         return 0
     fi
@@ -143,7 +147,7 @@ run_ddcutil() {
     # Check if it's a permission error
     if echo "$output" | grep -qi "permission denied\|EACCES"; then
         # Retry with sudo
-        if output=$(sudo ddcutil --model "$MONITOR_MODEL" "$@" 2>&1); then
+        if output=$(sudo ddcutil --model "$MONITOR_MODEL" --ignore-mmid "$DDCUTIL_IGNORE_MMID" "$@" 2>&1); then
             echo "$output"
             return 0
         fi
@@ -153,7 +157,7 @@ run_ddcutil() {
     # Check for DDC retry errors and retry with slower timing
     if echo "$output" | grep -qi "Maximum DDC retries"; then
         notify_debug "DDC communication unstable, retrying with slower timing..."
-        if output=$(sudo ddcutil --model "$MONITOR_MODEL" --sleep-multiplier 2 "$@" 2>&1); then
+        if output=$(sudo ddcutil --model "$MONITOR_MODEL" --ignore-mmid "$DDCUTIL_IGNORE_MMID" --sleep-multiplier 2 "$@" 2>&1); then
             echo "$output"
             return 0
         fi

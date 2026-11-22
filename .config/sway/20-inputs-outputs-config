@@ -34,15 +34,19 @@ output $primary {
 }
 output $panel {
     enable
-    dpms on
-    pos 0 1440 res 2560x1600
+    # 60 Hz: the 120 Hz mode made sway's backend commit fail (2026-11-16), leaving the panel black
+    position 0 1440
+    resolution 2560x1600@59.972Hz
     scale 2
+    dpms on
     #transform 270
 }
 output $tv {
     enable
+    position 0 2500
+    resolution 1920x1080
+    scale 1
     #dpms on
-    pos 0 5000 res 1920x1080
 }
 
 seat seat0 keyboard_grouping smart
